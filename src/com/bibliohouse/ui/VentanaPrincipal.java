@@ -146,7 +146,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         barraMenu = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         menuItemImportar = new javax.swing.JMenuItem();
-        menuItemExportar = new javax.swing.JMenu();
+        menuItemExportar = new javax.swing.JMenuItem();
         menuItemSalir = new javax.swing.JMenuItem();
         menuHerramuentas = new javax.swing.JMenu();
         menuItemBuscarDuplicados = new javax.swing.JMenuItem();
@@ -926,39 +926,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClosedActionPerformed
 
     /**
-     * Maneja la acción de exportar la base de datos.
-     *
-     * @param evt El evento de acción que desencadena este método.
-     */
-    private void menuItemExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExportarActionPerformed
-
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Exportar base de datos");
-
-        // Obtenemos la ruta guardada y la usamos como directorio por defecto
-        String defaultPath = prefs.get(EXPORT_PATH_KEY, null);
-        if (defaultPath != null && !defaultPath.isEmpty()) {
-            fileChooser.setCurrentDirectory(new File(defaultPath));
-        }
-
-        fileChooser.setSelectedFile(new File("biblioteca_exportada.xml"));
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XML", "xml"));
-
-        int userSelection = fileChooser.showSaveDialog(this);
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File archivoAExportar = fileChooser.getSelectedFile();
-            File archivoFuente = new File(xmlManager.getDatabasePath());
-            try {
-                Files.copy(archivoFuente.toPath(), archivoAExportar.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                JOptionPane.showMessageDialog(this, "Base de datos exportada con éxito a:\n" + archivoAExportar.getAbsolutePath(), "Exportación Completa", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException e) {
-                LOGGER.log(java.util.logging.Level.SEVERE, "Error al exportar la base de datos.", e);
-                JOptionPane.showMessageDialog(this, "No se pudo exportar el archivo.", "Error de Exportación", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }//GEN-LAST:event_menuItemExportarActionPerformed
-
-    /**
      * Maneja la acción de importar una base de datos.
      *
      * @param evt El evento de acción que desencadena este método.
@@ -1132,6 +1099,45 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_txtBusquedaLocalActionPerformed
 
     /**
+     * Maneja la acción de exportar la base de datos a un archivo XML. Muestra
+     * un cuadro de diálogo para que el usuario seleccione la ubicación y el
+     * nombre del archivo de exportación. Utiliza las preferencias del usuario
+     * para recordar el último directorio utilizado. Si la operación de
+     * exportación es exitosa, muestra un mensaje de confirmación. En caso de
+     * error durante la exportación, muestra un mensaje de error.
+     *
+     * @param evt El evento de acción que desencadena este método, generalmente
+     * generado por la selección de un elemento de menú.
+     */
+    private void menuItemExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExportarActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Exportar base de datos");
+
+        // Obtenemos la ruta guardada y la usamos como directorio por defecto
+        String defaultPath = prefs.get(EXPORT_PATH_KEY, null);
+        if (defaultPath != null && !defaultPath.isEmpty()) {
+            fileChooser.setCurrentDirectory(new File(defaultPath));
+        }
+
+        fileChooser.setSelectedFile(new File("biblioteca_exportada.xml"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos XML", "xml"));
+
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File archivoAExportar = fileChooser.getSelectedFile();
+            File archivoFuente = new File(xmlManager.getDatabasePath());
+            try {
+                Files.copy(archivoFuente.toPath(), archivoAExportar.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                JOptionPane.showMessageDialog(this, "Base de datos exportada con éxito a:\n" + archivoAExportar.getAbsolutePath(), "Exportación Completa", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                LOGGER.log(java.util.logging.Level.SEVERE, "Error al exportar la base de datos.", e);
+                JOptionPane.showMessageDialog(this, "No se pudo exportar el archivo.", "Error de Exportación", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+    }//GEN-LAST:event_menuItemExportarActionPerformed
+
+    /**
      * Actualiza la tabla de resultados con una lista de libros. Este método se
      * utiliza para mostrar los resultados de una búsqueda en una tabla.
      *
@@ -1207,7 +1213,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuItemAcercaDe;
     private javax.swing.JMenuItem menuItemBuscarDuplicados;
     private javax.swing.JMenuItem menuItemConfiguracion;
-    private javax.swing.JMenu menuItemExportar;
+    private javax.swing.JMenuItem menuItemExportar;
     private javax.swing.JMenuItem menuItemImportar;
     private javax.swing.JMenuItem menuItemManual;
     private javax.swing.JMenuItem menuItemSalir;
