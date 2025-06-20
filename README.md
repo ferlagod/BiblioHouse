@@ -7,16 +7,21 @@
 ### Capturas de Pantalla
 
 **Pantalla Principal - Añadir Libro**
+
 ![Imagen de la pestaña para añadir un libro](https://imgur.com/zCZ0YfJ.png)
 
+
 **Búsqueda en OpenLibrary**
+
 ![Búsqueda en OpenLibrary](https://i.imgur.com/cQc6Jfl.png)
 
 
 **Gestión de la Biblioteca**
+
 ![Imagen de la pestaña para buscar y editar tus libros](https://imgur.com/cQ2Buau.png)
 
 **Ventana de editar**
+
 ![Ventana de editar](https://imgur.com/sivEUK5.png)
 
 
