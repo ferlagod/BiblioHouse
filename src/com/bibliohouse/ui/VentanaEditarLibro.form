@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="2"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Component id="btnGuardarCambios" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="488" max="32767" attributes="0"/>
+                      <Component id="btnCancelar" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="btnSeleccionarImagen" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblPortadaPreview" min="-2" pref="150" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+              </Group>
+              <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
+          </Group>
+          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="lblAnio" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="lblGenero" alignment="0" max="32767" attributes="0"/>
+                          <Component id="lblEditorial" alignment="0" max="32767" attributes="0"/>
+                          <Component id="lblAutor" alignment="0" max="32767" attributes="0"/>
+                          <Component id="lblTitulo" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="spinnerAnio" min="-2" pref="93" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="lblIsbn" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="txtIsbn" pref="239" max="32767" attributes="0"/>
+                      </Group>
+                      <Component id="txtGenero" alignment="0" max="32767" attributes="0"/>
+                      <Component id="txtEditorial" alignment="0" max="32767" attributes="0"/>
+                      <Component id="txtAutor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="txtTitulo" alignment="0" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="242" max="32767" attributes="0"/>
+              </Group>
+          </Group>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" attributes="0">
+              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+              <Component id="lblPortadaPreview" min="-2" pref="200" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="btnSeleccionarImagen" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="59" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="btnGuardarCambios" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnCancelar" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+          </Group>
+          <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblTitulo" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtTitulo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblAutor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtAutor" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblEditorial" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtEditorial" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblGenero" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtGenero" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblAnio" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="spinnerAnio" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblIsbn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtIsbn" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="123" max="32767" attributes="0"/>
+              </Group>
+          </Group>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Component class="javax.swing.JLabel" name="lblTitulo">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="T&#xed;tulo:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblAutor">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Autor:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblEditorial">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Editorial:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblAnio">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="A&#xf1;o:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblGenero">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="G&#xe9;nero:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblIsbn">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ISBN:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnGuardarCambios">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Guardar libro"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGuardarCambiosActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtTitulo">
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtAutor">
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtEditorial">
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtGenero">
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblPortadaPreview">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
+            <LineBorder/>
+          </Border>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[150, 200]"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="txtIsbn">
+    </Component>
+    <Component class="javax.swing.JSpinner" name="spinnerAnio">
+    </Component>
+    <Component class="javax.swing.JButton" name="btnCancelar">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Cancelar"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCancelarActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnSeleccionarImagen">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Seleccionar imagen..."/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSeleccionarImagenActionPerformed"/>
+      </Events>
+    </Component>
+  </SubComponents>
+</Form>

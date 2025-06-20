@@ -1,0 +1,24 @@
+# Archivos específicos de NetBeans que deben ser ignorados
+nbproject/private/
+build/
+dist/
+nbdist/
+.nb-gradle/
+
+# Archivos de configuración de usuario local
+/private/
+
+# Archivos de logs y tokens generados por la aplicación
+*.log
+credentials.json
+tokens/
+
+# Archivos de caché y compilación de otros IDEs
+.idea
+*.iml
+*.iws
+out/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
