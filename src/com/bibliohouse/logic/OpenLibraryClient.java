@@ -43,8 +43,7 @@ import org.json.JSONObject;
 public class OpenLibraryClient {
 
     private static final Logger LOGGER = Logger.getLogger(OpenLibraryClient.class.getName());
-    private static final String API_BASE_URL = "https://openlibrary.org/search.json";
-    // --- NUEVO: Se especifican los campos que queremos obtener ---
+    private static final String API_BASE_URL = "https://openlibrary.org/search.json";    
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i";
 
     /**
@@ -58,7 +57,6 @@ public class OpenLibraryClient {
 
         try {
             String terminoCodificado = URLEncoder.encode(terminoDeBusqueda, StandardCharsets.UTF_8);
-            // --- NUEVO: Se construye la URL con los campos específicos ---
             String urlCompleta = String.format("%s?q=%s&fields=%s&limit=20", API_BASE_URL, terminoCodificado, FIELDS_TO_GET);
             
             LOGGER.log(Level.INFO, "Realizando búsqueda en OpenLibrary: {0}", urlCompleta);
@@ -83,7 +81,6 @@ public class OpenLibraryClient {
                 String anio = String.valueOf(doc.optInt("first_publish_year"));
                 String editorial = doc.optJSONArray("publisher") != null ? doc.optJSONArray("publisher").optString(0, "") : "";
 
-                // --- NUEVO: Procesamiento mejorado de géneros ---
                 String genero = "";
                 if (doc.has("subject")) {
                     JSONArray subjects = doc.getJSONArray("subject");
