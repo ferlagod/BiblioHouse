@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  * utilizando la librería XStream.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class XMLManager {
 
@@ -45,6 +45,7 @@ public class XMLManager {
     // Se define una ruta de guardado en la carpeta de usuario para ser multiplataforma
     private static final String APP_DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "BiblioHouse";
     private static final String DATABASE_FILE_PATH = APP_DIRECTORY_PATH + File.separator + "biblioteca.xml";
+    private static final String PRESTAMOS_DATABASE_PATH = APP_DIRECTORY_PATH + File.separator + "prestamos.xml";
     private final XStream xstream;
 
     /**
@@ -61,8 +62,18 @@ public class XMLManager {
         xstream.allowTypeHierarchy(Collection.class);
         xstream.allowTypes(new Class[]{com.bibliohouse.logic.Libro.class});
 
+        // Permitimos las clases Libro, Prestamo y LocalDate 
+        xstream.allowTypes(new Class[]{
+            com.bibliohouse.logic.Libro.class,
+            com.bibliohouse.logic.Prestamo.class,
+            java.time.LocalDate.class
+        });
+
         xstream.alias("biblioteca", List.class);
         xstream.alias("libro", com.bibliohouse.logic.Libro.class);
+
+        xstream.alias("prestamos", List.class);
+        xstream.alias("prestamo", com.bibliohouse.logic.Prestamo.class);
 
         // Asegurarse de que el directorio de la aplicación existe
         crearDirectorioSiNoExiste();
@@ -79,6 +90,54 @@ public class XMLManager {
             if (!created) {
                 LOGGER.log(Level.SEVERE, "No se pudo crear el directorio de la aplicación.");
             }
+        }
+    }
+
+    /**
+     * Guarda una lista de préstamos en un archivo XML especificado por la ruta
+     * PRESTAMOS_DATABASE_PATH.
+     *
+     * Registra información sobre la operación, incluyendo el número de
+     * préstamos guardados y la ruta del archivo.
+     *
+     *
+     * @param prestamos La lista de préstamos a guardar en el archivo XML. No
+     * debe ser nula.
+     */
+    public void guardarPrestamos(List<Prestamo> prestamos) {
+        try (FileOutputStream fos = new FileOutputStream(PRESTAMOS_DATABASE_PATH)) {
+            xstream.toXML(prestamos, fos);
+            LOGGER.log(Level.INFO, "Se han guardado {0} préstamos en {1}", new Object[]{prestamos.size(), PRESTAMOS_DATABASE_PATH});
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error al guardar los préstamos en el archivo XML.", e);
+        }
+    }
+
+    /**
+     * Carga una lista de préstamos desde un archivo XML especificado por la
+     * ruta PRESTAMOS_DATABASE_PATH. Utiliza la biblioteca XStream para
+     * deserializar el contenido del archivo XML a una lista de préstamos.
+     * Registra el número de préstamos cargados.
+     *
+     * @return Una lista de préstamos cargados desde el archivo XML. Si el
+     * archivo no existe o hay un error, se devuelve una lista vacía.
+     */
+    public List<Prestamo> cargarPrestamos() {
+        File file = new File(PRESTAMOS_DATABASE_PATH);
+        if (!file.exists()) {
+            LOGGER.info("El archivo de préstamos no existe. Se creará uno nuevo.");
+            return new ArrayList<>();
+        }
+
+        try (FileInputStream fis = new FileInputStream(PRESTAMOS_DATABASE_PATH)) {
+            @SuppressWarnings("unchecked")
+            List<Prestamo> prestamos = (List<Prestamo>) xstream.fromXML(fis);
+
+            LOGGER.log(Level.INFO, "Se han cargado {0} préstamos desde {1}", new Object[]{prestamos != null ? prestamos.size() : 0, PRESTAMOS_DATABASE_PATH});
+            return prestamos != null ? prestamos : new ArrayList<>();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error al cargar el archivo de préstamos.", e);
+            return new ArrayList<>();
         }
     }
 

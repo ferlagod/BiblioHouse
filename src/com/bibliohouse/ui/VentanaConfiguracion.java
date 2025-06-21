@@ -25,7 +25,7 @@ import javax.swing.JFileChooser;
  * BiblioHouse.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class VentanaConfiguracion extends javax.swing.JDialog {
 

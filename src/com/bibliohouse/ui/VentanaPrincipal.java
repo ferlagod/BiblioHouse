@@ -19,6 +19,7 @@ package com.bibliohouse.ui;
 
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.logic.OpenLibraryClient;
+import com.bibliohouse.logic.Prestamo;
 import com.bibliohouse.logic.XMLManager;
 import java.io.File;
 import java.io.IOException;
@@ -26,11 +27,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -40,7 +43,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * clase gestiona la ventana principal de la aplicación y sus funcionalidades.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
 
@@ -54,6 +57,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private List<Libro> resultadosBusquedaActual; // Para guardar los resultados de OpenLibrary
     private String rutaImagenSeleccionada;
     private OpenLibraryClient openLibraryClient;
+    private List<Prestamo> listaDePrestamos;
 
     /**
      * Crea una nueva instancia de VentanaPrincipal. Inicializa los componentes
@@ -77,10 +81,100 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         prepararComponentesBusquedaLocal();
         actualizarTablaMiBiblioteca(listaDeLibros); // Carga inicial de libros
 
+        this.listaDePrestamos = xmlManager.cargarPrestamos();
+        prepararComponentesPrestamos();
+
         // Inicializa las preferencias
         prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
 
         setLocationRelativeTo(null);
+    }
+
+    /**
+     * Inicializa y configura los componentes de la pestaña de préstamos.
+     * Configura la tabla de préstamos, el combo box de criterios de búsqueda y
+     * carga los datos iniciales.
+     */
+    private void prepararComponentesPrestamos() {
+        // Configurar la tabla de préstamos
+        javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"Libro", "Prestado a", "Fecha Préstamo", "Fecha Devolución"}
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblPrestamos.setModel(model);
+
+        // Configurar el JComboBox de búsqueda de préstamos 
+        cmbCriterioBusquedaPrestamo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{
+            "Nombre del Libro", "Nombre de Persona"
+        }));
+
+        // Cargar los datos iniciales
+        actualizarPestanaPrestamos();
+    }
+
+    /**
+     * Actualiza los componentes de la pestaña de préstamos en la interfaz de
+     * usuario. Este método se encarga de refrescar la tabla de préstamos con la
+     * lista actual de préstamos y actualizar el ComboBox con los libros
+     * disponibles para préstamo.
+     */
+    private void actualizarPestanaPrestamos() {
+        // 1. Actualizar la tabla de préstamos
+        actualizarTablaPrestamos(this.listaDePrestamos);
+
+        // 2. Actualizar el ComboBox con los libros disponibles para prestar
+        actualizarLibrosDisponibles();
+    }
+
+    /**
+     * Actualiza la tabla de préstamos en la interfaz de usuario con la lista
+     * proporcionada de préstamos. Este método limpia la tabla existente y añade
+     * cada préstamo de la lista como una nueva fila en la tabla.
+     *
+     * @param prestamos La lista de préstamos a mostrar en la tabla.
+     */
+    private void actualizarTablaPrestamos(List<Prestamo> prestamos) {
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tblPrestamos.getModel();
+        model.setRowCount(0); // Limpiar tabla
+
+        for (Prestamo p : prestamos) {
+            model.addRow(new Object[]{
+                p.getTituloLibro(),
+                p.getNombrePersona(),
+                p.getFechaPrestamoFormateada(),
+                p.getFechaDevolucionFormateada()
+            });
+        }
+    }
+
+    /**
+     * Actualiza el ComboBox de libros disponibles para mostrar solo los libros
+     * que no están actualmente prestados. Este método primero limpia todos los
+     * elementos actuales del ComboBox. Luego, filtra la lista de préstamos para
+     * obtener los ISBNs de los libros que están prestados y no han sido
+     * devueltos. Finalmente, añade al ComboBox solo aquellos libros cuya ISBN
+     * no está en la lista de libros prestados.
+     */
+    private void actualizarLibrosDisponibles() {
+        cmbLibrosDisponibles.removeAllItems(); // Limpiar ComboBox
+
+        // Obtener la lista de ISBN de libros que ya están prestados y no devueltos
+        List<String> isbnsPrestados = listaDePrestamos.stream()
+                .filter(p -> !p.isDevuelto())
+                .map(Prestamo::getIsbnLibro)
+                .collect(Collectors.toList());
+
+        // Añadir solo los libros que NO están en la lista de prestados
+        for (Libro libro : listaDeLibros) {
+            if (!isbnsPrestados.contains(libro.getIsbn())) {
+                cmbLibrosDisponibles.addItem(libro); // Guardamos el objeto entero
+            }
+        }
     }
 
     /**
@@ -143,6 +237,22 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         btnEditar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
         btnClosed1 = new javax.swing.JButton();
+        Prestamos = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cmbLibrosDisponibles = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        txtNombrePersona = new javax.swing.JTextField();
+        btnPrestar = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblPrestamos = new javax.swing.JTable();
+        btnDevolver = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        jSeparator3 = new javax.swing.JSeparator();
+        cmbCriterioBusquedaPrestamo = new javax.swing.JComboBox<>();
+        txtBusquedaPrestamo = new javax.swing.JTextField();
+        btnClosedPrestamo = new javax.swing.JButton();
+        btnBuscarPrestamo = new javax.swing.JButton();
         barraMenu = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         menuItemImportar = new javax.swing.JMenuItem();
@@ -300,7 +410,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                                     .addComponent(btnSeleccionarImagen)
                                     .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(btnGuardarManual))))
-                        .addContainerGap(12, Short.MAX_VALUE))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         addBookPaneLayout.setVerticalGroup(
             addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -422,7 +532,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         .addComponent(cmbCriterioBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(48, 48, 48)
                         .addComponent(txtBusquedaLocal, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 72, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                         .addComponent(btnBuscarLocal)))
                 .addGap(30, 30, 30))
             .addGroup(searchBookPaneLayout.createSequentialGroup()
@@ -451,6 +561,132 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("Buscar en mi Biblioteca", searchBookPane);
+
+        jLabel1.setText("Prestar libro:");
+
+        jLabel2.setText("a:");
+
+        btnPrestar.setText("Prestar");
+        btnPrestar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrestarActionPerformed(evt);
+            }
+        });
+
+        tblPrestamos.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(tblPrestamos);
+
+        btnDevolver.setText("Marcar como Devuelto");
+        btnDevolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDevolverActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Buscar por:");
+
+        cmbCriterioBusquedaPrestamo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbCriterioBusquedaPrestamo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbCriterioBusquedaPrestamoActionPerformed(evt);
+            }
+        });
+
+        txtBusquedaPrestamo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBusquedaPrestamoActionPerformed(evt);
+            }
+        });
+
+        btnClosedPrestamo.setText("Cerrar");
+        btnClosedPrestamo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClosedPrestamoActionPerformed(evt);
+            }
+        });
+
+        btnBuscarPrestamo.setText("Buscar préstamo");
+        btnBuscarPrestamo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarPrestamoActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout PrestamosLayout = new javax.swing.GroupLayout(Prestamos);
+        Prestamos.setLayout(PrestamosLayout);
+        PrestamosLayout.setHorizontalGroup(
+            PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PrestamosLayout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(btnClosedPrestamo)
+                    .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(btnBuscarPrestamo)
+                        .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnDevolver)
+                            .addComponent(btnPrestar, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PrestamosLayout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(18, 18, 18)
+                                .addComponent(cmbLibrosDisponibles, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtNombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, 345, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jSeparator3)
+                            .addGroup(PrestamosLayout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addGap(18, 18, 18)
+                                .addComponent(cmbCriterioBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, 296, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, 334, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(25, Short.MAX_VALUE))
+        );
+        PrestamosLayout.setVerticalGroup(
+            PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PrestamosLayout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(cmbLibrosDisponibles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtNombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(btnPrestar)
+                .addGap(46, 46, 46)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnDevolver)
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(cmbCriterioBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(30, 30, 30)
+                .addComponent(btnBuscarPrestamo)
+                .addGap(34, 34, 34)
+                .addComponent(btnClosedPrestamo)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Préstamos", Prestamos);
 
         getContentPane().add(jTabbedPane1, new java.awt.GridBagConstraints());
 
@@ -867,7 +1103,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             xmlManager.guardarLibros(listaDeLibros);
 
             // 7. Actualizar la tabla para que refleje la eliminación
-            // La forma más sencilla es volver a ejecutar la última búsqueda o mostrar la lista completa
             btnBuscarLocal.doClick(); // Simulamos un clic en el botón de búsqueda para refrescar la vista actual
 
             JOptionPane.showMessageDialog(this, "Libro eliminado y sincronizado.", "Eliminado", JOptionPane.INFORMATION_MESSAGE);
@@ -917,10 +1152,24 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnEditarActionPerformed
 
+    /**
+     * Maneja la acción de cerrar la ventana actual cuando se hace clic en el
+     * botón "Cerrar". Este método se activa al hacer clic en el botón
+     * correspondiente y cierra la ventana actual.
+     *
+     * @param evt El evento de acción que desencadena este método.
+     */
     private void btnClosed1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClosed1ActionPerformed
         dispose();
     }//GEN-LAST:event_btnClosed1ActionPerformed
 
+    /**
+     * Maneja la acción de cerrar la ventana actual cuando se hace clic en el
+     * botón "Cerrar". Este método se activa al hacer clic en el botón
+     * correspondiente y cierra la ventana actual.
+     *
+     * @param evt El evento de acción que desencadena este método.
+     */
     private void btnClosedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClosedActionPerformed
         dispose();
     }//GEN-LAST:event_btnClosedActionPerformed
@@ -969,14 +1218,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_menuItemImportarActionPerformed
 
-    /**
-     * Este método es llamado cuando se realiza una acción sobre el ítem de menú
-     * "Ayuda". Actualmente, no tiene implementación, pero se espera que maneje
-     * la lógica de la opción de menú de ayuda.
-     *
-     * @param evt El evento que se genera cuando el ítem de menú es
-     * seleccionado.
-     */
+
     private void menuAyudaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuAyudaActionPerformed
         // TODO add your handling code here:
 
@@ -1138,6 +1380,154 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_menuItemExportarActionPerformed
 
     /**
+     * Este método cierra la ventana actual y termina la ejecución de la
+     * aplicación.
+     *
+     * @param evt El evento que se genera cuando el botón cerrar es
+     * seleccionado.
+     */
+    private void btnClosedPrestamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClosedPrestamoActionPerformed
+
+        this.dispose();
+    }//GEN-LAST:event_btnClosedPrestamoActionPerformed
+
+    /**
+     * Maneja la acción de prestar un libro cuando se hace clic en el botón
+     * "Prestar". Este método valida que se haya seleccionado un libro y que se
+     * haya proporcionado un nombre de persona. Crea un nuevo préstamo con la
+     * información proporcionada, lo añade a la lista de préstamos, guarda la
+     * lista actualizada y actualiza la interfaz de usuario.
+     *
+     * @param evt El evento de acción que desencadena este método, generado por
+     * un clic en el botón "Prestar".
+     */
+    private void btnPrestarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrestarActionPerformed
+        Libro libroSeleccionado = (Libro) cmbLibrosDisponibles.getSelectedItem();
+        String nombrePersona = txtNombrePersona.getText().trim();
+
+        if (libroSeleccionado == null) {
+            JOptionPane.showMessageDialog(this, "No hay ningún libro disponible para prestar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (nombrePersona.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, introduce el nombre de la persona.", "Campo Vacío", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Creamos el nuevo préstamo
+        Prestamo nuevoPrestamo = new Prestamo(
+                libroSeleccionado.getIsbn(),
+                libroSeleccionado.getTitulo(),
+                nombrePersona,
+                LocalDate.now()
+        );
+
+        listaDePrestamos.add(nuevoPrestamo);
+        xmlManager.guardarPrestamos(listaDePrestamos);
+
+        JOptionPane.showMessageDialog(this, "Préstamo registrado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+        txtNombrePersona.setText(""); // Limpiamos el campo de texto
+        actualizarPestanaPrestamos(); // Actualizamos toda la pestaña
+
+    }//GEN-LAST:event_btnPrestarActionPerformed
+
+    /**
+     * Maneja la acción de marcar un libro como devuelto cuando se hace clic en
+     * el botón "Devolver". Este método verifica que se haya seleccionado una
+     * fila en la tabla de préstamos. Actualiza la fecha de devolución del
+     * préstamo seleccionado a la fecha actual, guarda la lista de préstamos
+     * actualizada y actualiza la interfaz de usuario.
+     *
+     * @param evt El evento de acción que desencadena este método, generado por
+     * un clic en el botón "Devolver".
+     */
+    private void btnDevolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDevolverActionPerformed
+        int filaSeleccionada = tblPrestamos.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un préstamo de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Tenemos que encontrar el objeto Prestamo real en nuestra lista
+        Prestamo prestamoSeleccionado = listaDePrestamos.get(filaSeleccionada);
+
+        if (prestamoSeleccionado.isDevuelto()) {
+            JOptionPane.showMessageDialog(this, "Este libro ya ha sido devuelto.", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        prestamoSeleccionado.setFechaDevolucion(LocalDate.now());
+        xmlManager.guardarPrestamos(listaDePrestamos);
+
+        JOptionPane.showMessageDialog(this, "Libro marcado como devuelto.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
+        actualizarPestanaPrestamos();
+
+    }//GEN-LAST:event_btnDevolverActionPerformed
+
+    /**
+     * Maneja la acción de búsqueda de préstamos cuando se hace clic en el botón
+     * "Buscar". Este método recupera el término de búsqueda ingresado por el
+     * usuario y el criterio de búsqueda seleccionado. Realiza una búsqueda en
+     * la lista de préstamos según el criterio seleccionado y actualiza la tabla
+     * de préstamos con los resultados.
+     *
+     * @param evt El evento de acción que desencadena este método, generado por
+     * un clic en el botón "Buscar".
+     */
+    private void btnBuscarPrestamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarPrestamoActionPerformed
+        String terminoBusqueda = txtBusquedaPrestamo.getText().trim().toLowerCase();
+
+        if (terminoBusqueda.isEmpty()) {
+            actualizarTablaPrestamos(this.listaDePrestamos); // Muestra todos si está vacío
+            return;
+        }
+
+        String criterio = (String) cmbCriterioBusquedaPrestamo.getSelectedItem();
+        List<Prestamo> resultados = new ArrayList<>();
+
+        for (Prestamo prestamo : this.listaDePrestamos) {
+            String valorAComparar = "";
+            if ("Nombre del Libro".equals(criterio)) {
+                valorAComparar = prestamo.getTituloLibro().toLowerCase();
+            } else if ("Nombre de Persona".equals(criterio)) {
+                valorAComparar = prestamo.getNombrePersona().toLowerCase();
+            }
+
+            if (valorAComparar.contains(terminoBusqueda)) {
+                resultados.add(prestamo);
+            }
+        }
+
+        actualizarTablaPrestamos(resultados);
+    }//GEN-LAST:event_btnBuscarPrestamoActionPerformed
+
+    /**
+     * Maneja la acción de búsqueda de préstamos cuando se activa el campo de
+     * texto. Este método se activa típicamente al presionar "Enter" en el campo
+     * de texto de búsqueda.
+     *
+     * @param evt El evento de acción que desencadena este método, generado por
+     * una acción en el campo de texto.
+     */
+    private void txtBusquedaPrestamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBusquedaPrestamoActionPerformed
+        btnBuscarPrestamo.doClick();
+    }//GEN-LAST:event_txtBusquedaPrestamoActionPerformed
+    /**
+     * Maneja el evento de cambio de selección en el combo box de criterio de
+     * búsqueda de préstamos. Este método se ejecuta automáticamente cuando el
+     * usuario selecciona un nuevo criterio en el combo box de búsqueda de
+     * préstamos.
+     *
+     * @param evt el evento de acción generado por el cambio de selección en el
+     * combo box.
+     */
+    private void cmbCriterioBusquedaPrestamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbCriterioBusquedaPrestamoActionPerformed
+        btnBuscarPrestamo.doClick();
+    }//GEN-LAST:event_cmbCriterioBusquedaPrestamoActionPerformed
+
+    /**
      * Actualiza la tabla de resultados con una lista de libros. Este método se
      * utiliza para mostrar los resultados de una búsqueda en una tabla.
      *
@@ -1182,21 +1572,34 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel Prestamos;
     private javax.swing.JPanel addBookPane;
     private javax.swing.JMenuBar barraMenu;
     private javax.swing.JButton btnAnadirSeleccionado;
     private javax.swing.JButton btnBuscarLocal;
     private javax.swing.JButton btnBuscarOpenLibrary;
+    private javax.swing.JButton btnBuscarPrestamo;
     private javax.swing.JButton btnClosed;
     private javax.swing.JButton btnClosed1;
+    private javax.swing.JButton btnClosedPrestamo;
+    private javax.swing.JButton btnDevolver;
     private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JButton btnGuardarManual;
+    private javax.swing.JButton btnPrestar;
     private javax.swing.JButton btnSeleccionarImagen;
     private javax.swing.JComboBox<String> cmbCriterioBusqueda;
+    private javax.swing.JComboBox<String> cmbCriterioBusquedaPrestamo;
+    private javax.swing.JComboBox<Libro> cmbLibrosDisponibles;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblAnio;
     private javax.swing.JLabel lblAutor;
@@ -1220,13 +1623,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JPanel searchBookPane;
     private javax.swing.JSpinner spinnerAnio;
     private javax.swing.JTable tblMiBiblioteca;
+    private javax.swing.JTable tblPrestamos;
     private javax.swing.JTable tblResultadosBusqueda;
     private javax.swing.JTextField txtAutor;
     private javax.swing.JTextField txtBusquedaLocal;
     private javax.swing.JTextField txtBusquedaOpenLibrary;
+    private javax.swing.JTextField txtBusquedaPrestamo;
     private javax.swing.JTextField txtEditorial;
     private javax.swing.JTextField txtGenero;
     private javax.swing.JTextField txtIsbn;
+    private javax.swing.JTextField txtNombrePersona;
     private javax.swing.JTextField txtTitulo;
     // End of variables declaration//GEN-END:variables
 

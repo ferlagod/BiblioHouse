@@ -22,7 +22,7 @@ package com.bibliohouse.ui;
  * BiblioHouse.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class VentanaAyuda extends javax.swing.JDialog {
 

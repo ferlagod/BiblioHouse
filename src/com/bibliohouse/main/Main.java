@@ -26,7 +26,7 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
  * lanzar la interfaz gráfica de forma segura.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class Main {
 

@@ -21,7 +21,7 @@ package com.bibliohouse.ui;
  * JDialog que muestra la información "Acerca de" la aplicación BiblioHouse.
  *
  * @author ferlagod
- * @version 0.1
+ * @version 0.3
  */
 public class VentanaAcercaDe extends javax.swing.JDialog {
 

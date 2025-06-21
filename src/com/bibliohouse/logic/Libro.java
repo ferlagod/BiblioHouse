@@ -22,7 +22,7 @@ package com.bibliohouse.logic;
  * atributos que definen a un libro en nuestra biblioteca.
  *
  * @author ferlagod
- * @version 0.2
+ * @version 0.3
  */
 public class Libro {
 
@@ -196,10 +196,6 @@ public class Libro {
      */
     @Override
     public String toString() {
-        return "Libro{"
-                + "titulo='" + titulo + '\''
-                + ", autor='" + autor + '\''
-                + ", año='" + año + '\''
-                + '}';
+        return this.titulo; // Devuelve solo el título para mostrarlo en el JComboBox
     }
 }
