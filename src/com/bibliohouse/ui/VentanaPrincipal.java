@@ -43,21 +43,21 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * clase gestiona la ventana principal de la aplicación y sus funcionalidades.
  *
  * @author ferlagod
- * @version 0.3
+ * @version 0.4
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
 
-    private Preferences prefs;
+    private final Preferences prefs;
     private static final String EXPORT_PATH_KEY = "exportPath";
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(VentanaPrincipal.class.getName());
 
-    private XMLManager xmlManager;
+    private final XMLManager xmlManager;
     private List<Libro> listaDeLibros;
     private List<Libro> resultadosBusquedaActual; // Para guardar los resultados de OpenLibrary
     private String rutaImagenSeleccionada;
-    private OpenLibraryClient openLibraryClient;
-    private List<Prestamo> listaDePrestamos;
+    private final OpenLibraryClient openLibraryClient;
+    private final List<Prestamo> listaDePrestamos;
 
     /**
      * Crea una nueva instancia de VentanaPrincipal. Inicializa los componentes
@@ -66,6 +66,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     public VentanaPrincipal() {
         initComponents();
         setTitle("BiblioHouse");
+        establecerIcono();
+
         // Formatear el JSpinner para que no use separador de miles
         javax.swing.JSpinner.NumberEditor editor = new javax.swing.JSpinner.NumberEditor(spinnerAnio, "#");
         spinnerAnio.setEditor(editor);
@@ -88,6 +90,38 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
 
         setLocationRelativeTo(null);
+        actualizarTodaLaUI();
+    }
+
+    /**
+     * Establece el icono de la aplicación cargándolo desde un archivo de
+     * recursos. Este método intenta cargar el icono de la aplicación desde la
+     * ruta especificada "/com/bibliohouse/resources/icono.png".
+     */
+    private void establecerIcono() {
+        try {
+            java.net.URL iconURL = getClass().getResource("/com/bibliohouse/resources/icono.png");
+            if (iconURL != null) {
+                setIconImage(new javax.swing.ImageIcon(iconURL).getImage());
+            } else {
+                LOGGER.warning("No se pudo encontrar el archivo del icono.");
+            }
+        } catch (Exception e) {
+            LOGGER.log(java.util.logging.Level.SEVERE, "Error al cargar el icono de la aplicación.", e);
+        }
+    }
+
+    /**
+     * Actualiza todos los componentes de la interfaz de usuario. Este método se
+     * utiliza para sincronizar la interfaz de usuario con el estado actual de
+     * los datos.
+     */
+    private void actualizarTodaLaUI() {
+        LOGGER.info("Actualizando todos los componentes de la interfaz...");
+        // 1. Actualiza la tabla de la biblioteca principal
+        actualizarTablaMiBiblioteca(this.listaDeLibros);
+        // 2. Actualiza toda la pestaña de préstamos (tabla y combo box)
+        actualizarPestanaPrestamos();
     }
 
     /**
@@ -161,6 +195,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      * no está en la lista de libros prestados.
      */
     private void actualizarLibrosDisponibles() {
+        Libro seleccionActual = (Libro) cmbLibrosDisponibles.getSelectedItem();
         cmbLibrosDisponibles.removeAllItems(); // Limpiar ComboBox
 
         // Obtener la lista de ISBN de libros que ya están prestados y no devueltos
@@ -175,6 +210,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 cmbLibrosDisponibles.addItem(libro); // Guardamos el objeto entero
             }
         }
+        cmbLibrosDisponibles.setSelectedItem(seleccionActual);
     }
 
     /**
@@ -266,9 +302,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         menuItemManual = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         lblTitulo.setText("Título:");
 
@@ -373,44 +408,42 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addGroup(addBookPaneLayout.createSequentialGroup()
                         .addComponent(btnClosed)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnAnadirSeleccionado)
-                        .addGap(74, 74, 74))
+                        .addComponent(btnAnadirSeleccionado))
+                    .addComponent(jScrollPane1)
+                    .addGroup(addBookPaneLayout.createSequentialGroup()
+                        .addComponent(lblBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(txtBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(41, 41, 41)
+                        .addComponent(btnBuscarOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(addBookPaneLayout.createSequentialGroup()
                         .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jScrollPane1)
-                                .addGroup(addBookPaneLayout.createSequentialGroup()
-                                    .addComponent(lblBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(txtBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 335, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(41, 41, 41)
-                                    .addComponent(btnBuscarOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(addBookPaneLayout.createSequentialGroup()
-                                .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblAnio)
-                                    .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(lblGenero, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblEditorial, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblAutor, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblTitulo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addGap(33, 33, 33)
-                                .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, addBookPaneLayout.createSequentialGroup()
-                                        .addComponent(spinnerAnio, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(lblIsbn)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(txtIsbn, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE))
-                                    .addComponent(txtGenero, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtEditorial, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtAutor, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtTitulo, javax.swing.GroupLayout.Alignment.LEADING))
-                                .addGap(130, 130, 130)
-                                .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(btnSeleccionarImagen)
-                                    .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnGuardarManual))))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(lblAnio)
+                            .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(lblGenero, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblEditorial, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblAutor, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblTitulo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(33, 33, 33)
+                        .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, addBookPaneLayout.createSequentialGroup()
+                                .addComponent(spinnerAnio, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblIsbn)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtIsbn))
+                            .addComponent(txtGenero, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtEditorial, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtAutor, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtTitulo, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(130, 130, 130)
+                        .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnSeleccionarImagen)
+                            .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnGuardarManual))
+                        .addGap(4, 4, 4)))
+                .addGap(50, 50, 50))
         );
         addBookPaneLayout.setVerticalGroup(
             addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -453,12 +486,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(txtBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnBuscarOpenLibrary))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAnadirSeleccionado)
                     .addComponent(btnClosed))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Añadir Libro", addBookPane);
@@ -532,7 +565,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         .addComponent(cmbCriterioBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(48, 48, 48)
                         .addComponent(txtBusquedaLocal, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnBuscarLocal)))
                 .addGap(30, 30, 30))
             .addGroup(searchBookPaneLayout.createSequentialGroup()
@@ -632,27 +665,27 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(btnClosedPrestamo)
                     .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(btnBuscarPrestamo)
-                        .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnDevolver)
                             .addComponent(btnPrestar, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PrestamosLayout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addGap(18, 18, 18)
-                                .addComponent(cmbLibrosDisponibles, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(cmbLibrosDisponibles, 0, 289, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel2)
                                 .addGap(18, 18, 18)
-                                .addComponent(txtNombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, 345, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtNombrePersona, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
                             .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jSeparator3)
                             .addGroup(PrestamosLayout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addGap(18, 18, 18)
-                                .addComponent(cmbCriterioBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, 296, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.PREFERRED_SIZE, 334, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(25, Short.MAX_VALUE))
+                                .addComponent(cmbCriterioBusquedaPrestamo, 0, 296, Short.MAX_VALUE)
+                                .addGap(56, 56, 56)
+                                .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)))))
+                .addGap(69, 69, 69))
         );
         PrestamosLayout.setVerticalGroup(
             PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -688,7 +721,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Préstamos", Prestamos);
 
-        getContentPane().add(jTabbedPane1, new java.awt.GridBagConstraints());
+        getContentPane().add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
         menuArchivo.setText("Archivo");
 
@@ -847,6 +880,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // 6. Mostrar un mensaje de confirmación al usuario
         JOptionPane.showMessageDialog(this, "Libro guardado y sincronizado con éxito.", "Guardado", JOptionPane.INFORMATION_MESSAGE);
 
+        actualizarTodaLaUI();
         // 7. Limpiar el formulario para poder añadir otro libro
         limpiarFormulario();
     }
@@ -965,6 +999,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         JOptionPane.showMessageDialog(this, "Libro '" + libroSeleccionado.getTitulo() + "' añadido a tu biblioteca.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
+        actualizarTodaLaUI();
     }//GEN-LAST:event_btnAnadirSeleccionadoActionPerformed
 
     /**
@@ -1106,6 +1141,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             btnBuscarLocal.doClick(); // Simulamos un clic en el botón de búsqueda para refrescar la vista actual
 
             JOptionPane.showMessageDialog(this, "Libro eliminado y sincronizado.", "Eliminado", JOptionPane.INFORMATION_MESSAGE);
+
+            actualizarTodaLaUI();
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
@@ -1146,9 +1183,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         if (dialogoEditar.fueGuardado()) {
             // El libro ya fue modificado dentro del diálogo, así que solo necesitamos guardar y refrescar
             xmlManager.guardarLibros(listaDeLibros);
-
+            dialogoEditar.getLibroEditado();
             btnBuscarLocal.doClick();
             JOptionPane.showMessageDialog(this, "Libro actualizado y sincronizado.", "Actualizado", JOptionPane.INFORMATION_MESSAGE);
+            actualizarTodaLaUI();
         }
     }//GEN-LAST:event_btnEditarActionPerformed
 
@@ -1210,6 +1248,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     actualizarTablaMiBiblioteca(this.listaDeLibros);
 
                     JOptionPane.showMessageDialog(this, "Base de datos importada con éxito.", "Importación Completa", JOptionPane.INFORMATION_MESSAGE);
+                    actualizarTodaLaUI();
                 } catch (IOException e) {
                     LOGGER.log(java.util.logging.Level.SEVERE, "Error al importar la base de datos.", e);
                     JOptionPane.showMessageDialog(this, "No se pudo importar el archivo.", "Error de Importación", JOptionPane.ERROR_MESSAGE);
@@ -1463,6 +1502,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Libro marcado como devuelto.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
         actualizarPestanaPrestamos();
+
+        actualizarTodaLaUI();
 
     }//GEN-LAST:event_btnDevolverActionPerformed
 
