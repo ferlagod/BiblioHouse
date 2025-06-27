@@ -38,7 +38,6 @@ import org.json.JSONObject;
  * libros utilizando la API de OpenLibrary.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class OpenLibraryClient {
 

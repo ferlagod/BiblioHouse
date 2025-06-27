@@ -22,7 +22,6 @@ package com.bibliohouse.ui;
  * aplicación BiblioHouse.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class VentanaDuplicados extends javax.swing.JDialog {
 

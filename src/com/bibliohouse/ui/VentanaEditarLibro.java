@@ -29,7 +29,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * JDialog para editar la información de un libro en la aplicación BiblioHouse.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class VentanaEditarLibro extends javax.swing.JDialog {
 

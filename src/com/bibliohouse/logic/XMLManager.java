@@ -37,7 +37,6 @@ import java.util.logging.Logger;
  * utilizando la librería XStream.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class XMLManager {
 

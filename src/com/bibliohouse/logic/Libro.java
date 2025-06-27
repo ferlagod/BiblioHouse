@@ -22,7 +22,6 @@ package com.bibliohouse.logic;
  * atributos que definen a un libro en nuestra biblioteca.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class Libro {
 

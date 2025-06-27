@@ -21,7 +21,6 @@ package com.bibliohouse.ui;
  * JDialog que muestra la información "Acerca de" la aplicación BiblioHouse.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class VentanaAcercaDe extends javax.swing.JDialog {
 
@@ -64,7 +63,7 @@ public class VentanaAcercaDe extends javax.swing.JDialog {
         lblTitulo.setForeground(new java.awt.Color(51, 51, 51));
         lblTitulo.setText("Bibliohouse");
 
-        lblVersion.setText("Versión 0.2");
+        lblVersion.setText("Versión 0.4");
 
         lblDesarrollador.setText("Desarrollado por: ferlagod");
 

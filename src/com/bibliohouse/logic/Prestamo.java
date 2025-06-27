@@ -19,7 +19,6 @@ import java.time.format.DateTimeFormatter;
  * préstamo y devolución.
  *
  * @author ferlagod
- * @version 0.3
  */
 public class Prestamo {
 
