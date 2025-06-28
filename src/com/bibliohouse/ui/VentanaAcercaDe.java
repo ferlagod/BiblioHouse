@@ -64,7 +64,7 @@ public class VentanaAcercaDe extends javax.swing.JDialog {
         lblTitulo.setForeground(new java.awt.Color(51, 51, 51));
         lblTitulo.setText("Bibliohouse");
 
-        lblVersion.setText("Versión 0.4");
+        lblVersion.setText("Versión 0.5");
 
         lblDesarrollador.setText("Desarrollado por: ferlagod");
 
