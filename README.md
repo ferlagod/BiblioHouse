@@ -32,8 +32,16 @@
     * **Entrada Manual**: Añade libros rellenando los campos tú mismo.
     * **Búsqueda en OpenLibrary**: Busca un libro por título o ISBN en la enorme base de datos de OpenLibrary y añádelo a tu colección con un solo clic. La información principal (incluida la portada) se descarga y guarda automáticamente.
 * **Gestión Completa**: Busca en tu biblioteca por cualquier campo, edita la información de un libro existente o elimínalo si ya no lo tienes.
+* **Gestión de Préstamos**:
+      * Mantén un control total sobre los libros que prestas gracias a una pestaña dedicada.
+      * Anota fácilmente a quién prestas un libro, la fecha del préstamo y márcalo como devuelto con un solo clic.
+      * Encuentra rápidamente qué libros están prestados o a quién le has prestado un libro con su potente buscador.
+  * **Calificaciones y Reseñas Personales**:
+       * Califica tus libros con un sistema de 1 a 5 estrellas.
+       * Añade tus propias notas y reseñas para no olvidar qué te pareció cada libro.
 * **Prevención de Duplicados**: La aplicación te avisa si intentas añadir un libro que ya existe en tu biblioteca.
 * **Base de Datos Local**: Toda tu información se guarda en un archivo `biblioteca.xml` en una carpeta dedicada en tu ordenador, dándote control total sobre tus datos.
+* **Vista de Detalle**: Haz doble clic en un libro de tu biblioteca para abrir una ventana con toda su información detallada y de solo lectura.
 * **Importar y Exportar**:
     * **Exporta** tu base de datos para tener una copia de seguridad.
     * **Importa** una base de datos para restaurar una copia o mover tu colección a otro ordenador.
