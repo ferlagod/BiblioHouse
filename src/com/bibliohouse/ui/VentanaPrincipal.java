@@ -89,8 +89,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Inicializa las preferencias
         prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
 
-        setLocationRelativeTo(null);
+        tblMiBiblioteca.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    mostrarDetalleLibro();
+                }
+            }
+        });
+
         actualizarTodaLaUI();
+        setLocationRelativeTo(null);
+
     }
 
     /**
@@ -1047,8 +1057,56 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 libro.getAño(),
                 libro.getGenero(),
                 libro.getIsbn(),
-                libro.getCalificacion()
+                getRatingAsStars(libro.getCalificacion())
             });
+        }
+    }
+
+    /**
+     * Método para convertir la calificación a estrellas. Si la calificación es
+     * menor o igual a cero, devuelve una cadena vacía.
+     *
+     * @param rating La calificación numérica a convertir, que debe ser un valor
+     * entre 0 y 5.
+     * @return Una cadena de estrellas que representa visualmente la
+     * calificación.
+     */
+    private String getRatingAsStars(int rating) {
+        if (rating <= 0) {
+            return ""; // No mostrar nada si no hay calificación
+        }
+        return "★".repeat(rating) + "☆".repeat(5 - rating);
+    }
+
+    /**
+     * Muestra los detalles de un libro seleccionado en la tabla de la
+     * biblioteca. Este método se activa cuando se selecciona una fila en la
+     * tabla de la biblioteca. Si no hay ninguna fila seleccionada, el método no
+     * realiza ninguna acción. Busca el libro seleccionado en la lista principal
+     * de libros utilizando el título y el autor, y muestra los detalles del
+     * libro en una ventana de diálogo si se encuentra.
+     */
+    private void mostrarDetalleLibro() {
+        int filaSeleccionada = tblMiBiblioteca.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            return; // No hay nada seleccionado
+        }
+
+        // Para evitar errores si la tabla está filtrada, buscamos el libro en la lista principal
+        String titulo = (String) tblMiBiblioteca.getValueAt(filaSeleccionada, 0);
+        String autor = (String) tblMiBiblioteca.getValueAt(filaSeleccionada, 1);
+
+        Libro libroSeleccionado = null;
+        for (Libro libro : listaDeLibros) {
+            if (libro.getTitulo().equals(titulo) && libro.getAutor().equals(autor)) {
+                libroSeleccionado = libro;
+                break;
+            }
+        }
+
+        if (libroSeleccionado != null) {
+            VentanaDetalleLibro dialogo = new VentanaDetalleLibro(this, true, libroSeleccionado);
+            dialogo.setVisible(true);
         }
     }
 
@@ -1161,7 +1219,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // 1. Obtener la fila seleccionada
         int filaSeleccionada = tblMiBiblioteca.getSelectedRow();
         if (filaSeleccionada == -1) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Por favor, selecciona un libro de la tabla para editar.", "Ningún libro seleccionado", javax.swing.JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecciona un libro para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -1177,7 +1235,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
 
         if (libroAEditar == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "No se pudo encontrar el libro seleccionado en la base de datos.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            LOGGER.severe("No se pudo encontrar el libro seleccionado para editar.");
             return;
         }
 
@@ -1188,8 +1246,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // 4. Después de que el diálogo se cierra, comprobar si el usuario guardó los cambios
         if (dialogoEditar.fueGuardado()) {
             // El libro ya fue modificado dentro del diálogo, así que solo necesitamos guardar y refrescar
-            xmlManager.guardarLibros(listaDeLibros);
             dialogoEditar.getLibroEditado();
+            xmlManager.guardarLibros(listaDeLibros);
             btnBuscarLocal.doClick();
             JOptionPane.showMessageDialog(this, "Libro actualizado y sincronizado.", "Actualizado", JOptionPane.INFORMATION_MESSAGE);
             actualizarTodaLaUI();

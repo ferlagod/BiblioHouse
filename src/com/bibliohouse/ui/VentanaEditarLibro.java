@@ -68,7 +68,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
             spinnerAnio.setValue(java.time.LocalDate.now().getYear());
         }
 
-        spinnerCalificacion.setValue(libroAEditar.getCalificacion());
+        cmbCalificacion.setSelectedIndex(libroAEditar.getCalificacion());
         txtResena.setText(libroAEditar.getReseña());
         
         setLocationRelativeTo(parent);
@@ -104,7 +104,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
         libroAEditar.setIsbn(txtIsbn.getText().trim());
         libroAEditar.setAño(spinnerAnio.getValue().toString());
         libroAEditar.setPortadaURL(this.nuevaRutaImagen); // Asigna la nueva ruta de la imagen
-        libroAEditar.setCalificacion((int) spinnerCalificacion.getValue());
+        libroAEditar.setCalificacion(cmbCalificacion.getSelectedIndex());
         libroAEditar.setReseña(txtResena.getText().trim());
 
         return libroAEditar;
@@ -145,9 +145,9 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
         btnCancelar = new javax.swing.JButton();
         btnSeleccionarImagen = new javax.swing.JButton();
         lblCalificacion = new javax.swing.JLabel();
-        spinnerCalificacion = new javax.swing.JSpinner();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtResena = new javax.swing.JTextArea();
+        cmbCalificacion = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -189,12 +189,12 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
 
         lblCalificacion.setText("Calificación");
 
-        spinnerCalificacion.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10, 1));
-
         txtResena.setColumns(20);
         txtResena.setRows(5);
         txtResena.setBorder(javax.swing.BorderFactory.createTitledBorder("Reseña"));
         jScrollPane1.setViewportView(txtResena);
+
+        cmbCalificacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Sin calificar", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -206,7 +206,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblCalificacion)
                         .addGap(18, 18, 18)
-                        .addComponent(spinnerCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cmbCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -252,17 +252,20 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
                 .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSeleccionarImagen)
-                .addGap(14, 14, 14)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblCalificacion)
-                    .addComponent(spinnerCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnGuardarCambios)
-                    .addComponent(btnCancelar))
-                .addGap(32, 32, 32))
+                .addGap(17, 17, 17)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblCalificacion)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnGuardarCambios)
+                            .addComponent(btnCancelar))
+                        .addGap(32, 32, 32))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cmbCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addGap(25, 25, 25)
@@ -353,6 +356,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnGuardarCambios;
     private javax.swing.JButton btnSeleccionarImagen;
+    private javax.swing.JComboBox<String> cmbCalificacion;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAnio;
     private javax.swing.JLabel lblAutor;
@@ -363,7 +367,6 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
     private javax.swing.JLabel lblPortadaPreview;
     private javax.swing.JLabel lblTitulo;
     private javax.swing.JSpinner spinnerAnio;
-    private javax.swing.JSpinner spinnerCalificacion;
     private javax.swing.JTextField txtAutor;
     private javax.swing.JTextField txtEditorial;
     private javax.swing.JTextField txtGenero;
