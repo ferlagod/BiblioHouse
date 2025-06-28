@@ -43,7 +43,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * clase gestiona la ventana principal de la aplicación y sus funcionalidades.
  *
  * @author ferlagod
- * @version 0.4
+ * @version 0.5
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
 

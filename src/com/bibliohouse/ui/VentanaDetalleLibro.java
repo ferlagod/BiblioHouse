@@ -42,7 +42,7 @@ import javax.swing.border.EmptyBorder;
  * Muestra una vista detallada y de solo lectura de un libro.
  *
  * @author ferlagod
- * @version 1.0
+ * @version 0.5
  */
 public class VentanaDetalleLibro extends JDialog {
 
