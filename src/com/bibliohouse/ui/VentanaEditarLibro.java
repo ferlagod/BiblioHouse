@@ -68,6 +68,9 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
             spinnerAnio.setValue(java.time.LocalDate.now().getYear());
         }
 
+        spinnerCalificacion.setValue(libroAEditar.getCalificacion());
+        txtResena.setText(libroAEditar.getReseña());
+        
         setLocationRelativeTo(parent);
 
     }
@@ -101,6 +104,8 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
         libroAEditar.setIsbn(txtIsbn.getText().trim());
         libroAEditar.setAño(spinnerAnio.getValue().toString());
         libroAEditar.setPortadaURL(this.nuevaRutaImagen); // Asigna la nueva ruta de la imagen
+        libroAEditar.setCalificacion((int) spinnerCalificacion.getValue());
+        libroAEditar.setReseña(txtResena.getText().trim());
 
         return libroAEditar;
     }
@@ -139,6 +144,10 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
         spinnerAnio = new javax.swing.JSpinner();
         btnCancelar = new javax.swing.JButton();
         btnSeleccionarImagen = new javax.swing.JButton();
+        lblCalificacion = new javax.swing.JLabel();
+        spinnerCalificacion = new javax.swing.JSpinner();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtResena = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -178,23 +187,40 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
             }
         });
 
+        lblCalificacion.setText("Calificación");
+
+        spinnerCalificacion.setModel(new javax.swing.SpinnerNumberModel(1, 1, 10, 1));
+
+        txtResena.setColumns(20);
+        txtResena.setRows(5);
+        txtResena.setBorder(javax.swing.BorderFactory.createTitledBorder("Reseña"));
+        jScrollPane1.setViewportView(txtResena);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnGuardarCambios)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 488, Short.MAX_VALUE)
-                        .addComponent(btnCancelar))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSeleccionarImagen)
-                            .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(54, 54, 54))
+                        .addComponent(lblCalificacion)
+                        .addGap(18, 18, 18)
+                        .addComponent(spinnerCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnGuardarCambios)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 488, Short.MAX_VALUE)
+                                .addComponent(btnCancelar))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnSeleccionarImagen)
+                                    .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(54, 54, 54))))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
@@ -226,7 +252,13 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
                 .addComponent(lblPortadaPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSeleccionarImagen)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addGap(14, 14, 14)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblCalificacion)
+                    .addComponent(spinnerCalificacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnGuardarCambios)
                     .addComponent(btnCancelar))
@@ -255,7 +287,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
                         .addComponent(spinnerAnio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblIsbn)
                         .addComponent(txtIsbn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(123, Short.MAX_VALUE)))
+                    .addContainerGap(223, Short.MAX_VALUE)))
         );
 
         pack();
@@ -321,18 +353,22 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnGuardarCambios;
     private javax.swing.JButton btnSeleccionarImagen;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAnio;
     private javax.swing.JLabel lblAutor;
+    private javax.swing.JLabel lblCalificacion;
     private javax.swing.JLabel lblEditorial;
     private javax.swing.JLabel lblGenero;
     private javax.swing.JLabel lblIsbn;
     private javax.swing.JLabel lblPortadaPreview;
     private javax.swing.JLabel lblTitulo;
     private javax.swing.JSpinner spinnerAnio;
+    private javax.swing.JSpinner spinnerCalificacion;
     private javax.swing.JTextField txtAutor;
     private javax.swing.JTextField txtEditorial;
     private javax.swing.JTextField txtGenero;
     private javax.swing.JTextField txtIsbn;
+    private javax.swing.JTextArea txtResena;
     private javax.swing.JTextField txtTitulo;
     // End of variables declaration//GEN-END:variables
 }

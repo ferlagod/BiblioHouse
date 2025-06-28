@@ -1019,7 +1019,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Preparamos el modelo de la tabla que mostrará nuestros libros
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
-                new String[]{"Título", "Autor", "Editorial", "Año", "Género", "ISBN"}
+                new String[]{"Título", "Autor", "Editorial", "Año", "Género", "ISBN", "Calificación"}
         ) {
             // Hacemos que las celdas no sean editables
             @Override
@@ -1046,7 +1046,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 libro.getEditorial(),
                 libro.getAño(),
                 libro.getGenero(),
-                libro.getIsbn()
+                libro.getIsbn(),
+                libro.getCalificacion()
             });
         }
     }

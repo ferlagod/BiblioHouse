@@ -34,6 +34,9 @@ public class Libro {
     private String isbn;
     private String portadaURL; // URL a la imagen de la portada
 
+    private int calificacion; // Calificación de 0 a 5 estrellas
+    private String reseña;    // Notas o reseña personal
+
     /**
      * Constructor vacío para la clase Libro.
      */
@@ -50,8 +53,10 @@ public class Libro {
      * @param genero El género del libro.
      * @param isbn El ISBN del libro.
      * @param portadaURL La URL de la imagen de la portada del libro.
+     * @param calificacion La puntuación dada por el usuario
+     * @param reseña La reseña escrita por el usuario
      */
-    public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn, String portadaURL) {
+    public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn, String portadaURL, int calificacion, String reseña) {
         this.titulo = titulo;
         this.autor = autor;
         this.editorial = editorial;
@@ -59,6 +64,26 @@ public class Libro {
         this.genero = genero;
         this.isbn = isbn;
         this.portadaURL = portadaURL;
+        this.calificacion = calificacion;
+        this.reseña = reseña;
+    }
+
+    /**
+     * Constructor simplificado para crear una instancia de Libro. Este
+     * constructor se utiliza cuando no se dispone de todos los datos del libro,
+     * como en el caso de la integración con OpenLibrary. Establece valores por
+     * defecto para las estrellas y la reseña del libro.
+     *
+     * @param titulo El título del libro.
+     * @param autor El autor del libro.
+     * @param editorial La editorial del libro.
+     * @param año El año de publicación del libro.
+     * @param genero El género del libro.
+     * @param isbn El ISBN del libro, que se utiliza como identificador único.
+     * @param portadaURL La URL de la portada del libro.
+     */
+    public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn, String portadaURL) {
+        this(titulo, autor, editorial, año, genero, isbn, portadaURL, 0, ""); // Por defecto, 0 estrellas y sin reseña
     }
 
     // --- Métodos Getter y Setter ---
@@ -186,6 +211,46 @@ public class Libro {
      */
     public void setPortadaURL(String portadaURL) {
         this.portadaURL = portadaURL;
+    }
+
+    /**
+     * Obtiene la calificación del libro. La calificación es un valor numérico
+     * que representa la valoración del libro.
+     *
+     * @return La calificación del libro.
+     */
+    public int getCalificacion() {
+        return calificacion;
+    }
+
+    /**
+     * Establece la calificación del libro. La calificación es un valor numérico
+     * que representa la valoración del libro.
+     *
+     * @param calificacion La calificación a establecer para el libro.
+     */
+    public void setCalificacion(int calificacion) {
+        this.calificacion = calificacion;
+    }
+
+    /**
+     * Obtiene la reseña del libro. La reseña es un texto que describe la
+     * opinión o crítica sobre el libro.
+     *
+     * @return La reseña del libro.
+     */
+    public String getReseña() {
+        return reseña;
+    }
+
+    /**
+     * Establece la reseña del libro. La reseña es un texto que describe la
+     * opinión o crítica sobre el libro.
+     *
+     * @param reseña La reseña a establecer para el libro.
+     */
+    public void setReseña(String reseña) {
+        this.reseña = reseña;
     }
 
     /**
