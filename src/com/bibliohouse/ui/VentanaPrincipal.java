@@ -21,6 +21,7 @@ import com.bibliohouse.logic.Libro;
 import com.bibliohouse.logic.OpenLibraryClient;
 import com.bibliohouse.logic.Prestamo;
 import com.bibliohouse.logic.XMLManager;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,8 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -110,7 +113,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      */
     private void establecerIcono() {
         try {
-            java.net.URL iconURL = getClass().getResource("/com/bibliohouse/resources/icono.png");
+            java.net.URL iconURL = getClass().getResource("/resources/icono.png");
             if (iconURL != null) {
                 setIconImage(new javax.swing.ImageIcon(iconURL).getImage());
             } else {
@@ -1396,18 +1399,59 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      * @param evt El evento de acción que desencadena este método.
      */
     private void menuItemConfiguracionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemConfiguracionActionPerformed
-        // TODO add your handling code here:
+        String THEME_KEY = "appTheme";
         String rutaActual = prefs.get(EXPORT_PATH_KEY, "");
-        VentanaConfiguracion dialogo = new VentanaConfiguracion(this, true, rutaActual);
+        String temaActual = prefs.get(THEME_KEY, "com.formdev.flatlaf.themes.FlatMacLightLaf");
+
+        VentanaConfiguracion dialogo = new VentanaConfiguracion(this, true, rutaActual, temaActual);
         dialogo.setVisible(true);
 
-        // Después de que se cierra el diálogo, comprobamos si se guardó una nueva ruta
+        // Después de que se cierra el diálogo, comprobamos si se guardó una nueva ruta y el nuevo tema
         String nuevaRuta = dialogo.getRutaSeleccionada();
+        String nuevoTema = dialogo.getTemaSeleccionado();
         if (nuevaRuta != null) { // Si el usuario no pulsó Cancelar
             prefs.put(EXPORT_PATH_KEY, nuevaRuta);
             LOGGER.log(java.util.logging.Level.INFO, "Nueva ruta de exportación guardada: {0}", nuevaRuta);
         }
+        if (nuevoTema != null) {
+            // Si el tema ha cambiado, lo guardamos y avisamos al usuario
+            if (nuevoTema != null) {
+                // Si el tema ha cambiado, lo guardamos y lo aplicamos al instante
+                if (!nuevoTema.equals(temaActual)) {
+                    prefs.put(THEME_KEY, nuevoTema);
+                    aplicarNuevoTema(nuevoTema);
+                }
+            }
+        }
     }//GEN-LAST:event_menuItemConfiguracionActionPerformed
+
+    /**
+     * Aplica un nuevo Look and Feel a la aplicación y actualiza todos los
+     * componentes de la interfaz de usuario para reflejar el cambio al
+     * instante.
+     *
+     * @param themeClassName El Look and Feel a aplicar.
+     */
+    private void aplicarNuevoTema(String themeClassName) {
+        try {
+            // Establece el nuevo Look and Feel
+            UIManager.setLookAndFeel(themeClassName);
+
+            // Actualiza la UI de todas las ventanas abiertas para que el cambio sea visible
+            for (Window window : Window.getWindows()) {
+                SwingUtilities.updateComponentTreeUI(window);
+            }
+
+            LOGGER.info("Tema de la aplicación cambiado a: " + themeClassName);
+
+        } catch (Exception e) {
+            LOGGER.log(java.util.logging.Level.SEVERE, "No se pudo aplicar el nuevo tema.", e);
+            JOptionPane.showMessageDialog(this,
+                    "Ocurrió un error al cambiar el tema.",
+                    "Error de Tema",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     /**
      * Este método es llamado cuando se realiza una acción sobre un ítem de

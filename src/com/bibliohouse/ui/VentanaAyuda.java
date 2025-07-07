@@ -40,42 +40,46 @@ public class VentanaAyuda extends javax.swing.JDialog {
 
         // Texto del Manual de Usuario
         String textoAyuda = """
-        Bienvenido a BiblioHouse - Manual de Usuario
-        
-        ----------------------------------------------------------
+   Bienvenido a BiblioHouse - Manual de Usuario
+        ============================================
         
         1. AÑADIR UN LIBRO
-        
-        - Manualmente: Rellena los campos del formulario en la primera pestaña y pulsa "Guardar Libro". Puedes añadir una imagen de portada con el botón "Seleccionar Imagen".
-        
-        - Desde OpenLibrary: Escribe un título o ISBN en el campo de búsqueda de OpenLibrary y pulsa "Buscar". Selecciona un libro de la tabla de resultados y pulsa "Añadir Libro Seleccionado".
-        
-        
-        2. BUSCAR EN MI BIBLIOTECA
-        
-        - Usa la segunda pestaña para ver todos tus libros.
-        - Para filtrar tu colección, selecciona un criterio (Título, Autor, etc.), escribe un término en el campo de texto y pulsa "Buscar".
-        - Para ver de nuevo toda la biblioteca, borra el campo de búsqueda y pulsa "Buscar".
+        --------------------
+        - **Manualmente**: En la primera pestaña, rellena los campos del formulario y pulsa "Guardar Libro". Puedes añadir una imagen de portada con el botón "Seleccionar Imagen".
+        - **Desde OpenLibrary**: Escribe un título o ISBN en el campo de búsqueda de OpenLibrary y pulsa "Buscar" (o la tecla Intro). Selecciona un libro de la tabla de resultados y pulsa "Añadir Libro Seleccionado". La información principal, incluida la portada, se descargará y guardará automáticamente.
         
         
-        3. EDITAR Y ELIMINAR LIBROS
+        2. GESTIONAR MI BIBLIOTECA
+        --------------------------
+        - **Ver tu colección**: La pestaña "Mi Biblioteca" muestra todos los libros que has añadido.
+        - **Buscar en tu colección**: Para filtrar tu biblioteca, selecciona un criterio (Título, Autor, etc.), escribe un término en el campo de texto y pulsa "Buscar". Para ver de nuevo toda la biblioteca, borra el campo de búsqueda y pulsa "Buscar".
+        - **Ver detalles del libro**: Haz **doble clic** en cualquier libro de la tabla para abrir una ventana con toda su información detallada, incluyendo la portada en grande y tu reseña personal.
+        - **Editar un libro**: Selecciona un libro de la tabla y pulsa "Editar Libro Seleccionado". Se abrirá una ventana donde podrás modificar todos sus datos, incluyendo:
+            - **Calificación**: Puntúa el libro usando el menú desplegable de estrellas.
+            - **Reseña**: Escribe tus notas y opiniones personales sobre el libro.
+        - **Eliminar un libro**: Selecciona un libro y pulsa "Eliminar Libro Seleccionado" para borrarlo permanentemente (se pedirá confirmación).
         
-        - En la pestaña "Buscar en mi Biblioteca", selecciona un libro de la tabla.
-        - Pulsa "Editar Libro Seleccionado" para abrir una ventana y modificar sus datos.
-        - Pulsa "Eliminar Libro Seleccionado" para borrarlo permanentemente (se pedirá confirmación).
+        
+        3. GESTIONAR PRÉSTAMOS
+        ----------------------
+        - **Prestar un libro**: En la pestaña "Préstamos", selecciona un libro disponible en el menú desplegable, escribe el nombre de la persona a quien se lo prestas y pulsa "Prestar".
+        - **Marcar como devuelto**: Selecciona un préstamo de la tabla y pulsa "Marcar como Devuelto". La fecha de devolución se registrará automáticamente.
+        - **Buscar préstamos**: Usa la barra de búsqueda de esta pestaña para filtrar los préstamos por el título del libro o por el nombre de la persona.
         
         
         4. MENÚ ARCHIVO
-        
-        - Importar base de datos: Te permite reemplazar tu biblioteca actual con un archivo 'biblioteca.xml' guardado previamente.
-        - Exportar base de datos: Guarda una copia de seguridad de tu 'biblioteca.xml' en la ubicación que elijas.
+        ---------------
+        - **Importar base de datos**: Te permite reemplazar tu biblioteca actual con un archivo `biblioteca.xml` guardado previamente.
+        - **Exportar base de datos**: Guarda una copia de seguridad de tu `biblioteca.xml` en la ubicación que elijas.
+        - **Salir**: Cierra la aplicación.
         
         
         5. MENÚ HERRAMIENTAS
-        
-        - Buscar duplicados: Analiza tu biblioteca y te muestra una lista de libros que podrían estar duplicados.
-        - Configuración: Te permite elegir una carpeta por defecto para que el diálogo de "Exportar" se abra siempre ahí.
-        
+        --------------------
+        - **Buscar duplicados**: Analiza tu biblioteca y te muestra una lista de libros que podrían estar duplicados.
+        - **Configuración**: Te permite:
+            - Elegir una carpeta por defecto para tus exportaciones.
+            - Cambiar el tema visual de la aplicación entre un **modo claro** y un **modo oscuro**. El cambio se aplica al instante.
         """;
 
         txtAreaAyuda.setText(textoAyuda);

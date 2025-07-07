@@ -29,6 +29,8 @@ import javax.swing.JFileChooser;
 public class VentanaConfiguracion extends javax.swing.JDialog {
 
     private String rutaSeleccionada;
+    private String temaSeleccionado;
+    private boolean guardado = false;
 
     /**
      * Crea una nueva instancia de VentanaConfiguracion.
@@ -38,11 +40,19 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
      * @param rutaActual La ruta actual de exportación que se mostrará en el
      * diálogo.
      */
-    public VentanaConfiguracion(java.awt.Frame parent, boolean modal, String rutaActual) {
+    public VentanaConfiguracion(java.awt.Frame parent, boolean modal, String rutaActual, String temaActual) {
         super(parent, modal);
         initComponents();
         this.rutaSeleccionada = rutaActual;
         txtRutaExportacion.setText(rutaActual); // Muestra la ruta actual
+        this.temaSeleccionado = temaActual;
+
+        // Seleccionar el tema actual en el ComboBox
+        if (temaActual != null && temaActual.contains("Dark")) {
+            cmbTema.setSelectedIndex(1);
+        } else {
+            cmbTema.setSelectedIndex(0);
+        }
 
         setTitle("Configuración - BiblioHouse");
         setResizable(false);
@@ -56,6 +66,15 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
      */
     public String getRutaSeleccionada() {
         return rutaSeleccionada;
+    }
+
+    /**
+     * Devuelve el tema seleccionada por el usuario.
+     *
+     * @return El tema seleccionado.
+     */
+    public String getTemaSeleccionado() {
+        return guardado ? temaSeleccionado : null;
     }
 
     /**
@@ -73,11 +92,14 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
         btnCancelar = new javax.swing.JButton();
         txtRutaExportacion = new javax.swing.JTextField();
         lblDescripcionRuta = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        lblTema = new javax.swing.JLabel();
+        cmbTema = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         lblTitulo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        lblTitulo.setText("Preferencias de Exportación");
+        lblTitulo.setText("Configuración");
 
         btnCambiar.setText("Cambiar...");
         btnCambiar.addActionListener(new java.awt.event.ActionListener() {
@@ -104,6 +126,33 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
 
         lblDescripcionRuta.setText("Carpeta por defecto para exportar:");
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Cambio de tema"));
+
+        lblTema.setText("Tema Claro / Oscuro");
+
+        cmbTema.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tema Claro (Estilo Mac)", "Tema Oscuro (Estilo Mac)" }));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblTema)
+                .addGap(59, 59, 59)
+                .addComponent(cmbTema, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(88, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTema)
+                    .addComponent(cmbTema, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(34, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -121,22 +170,25 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(114, 114, 114)
-                                .addComponent(lblTitulo))
-                            .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(btnCambiar)
-                                    .addComponent(lblDescripcionRuta))))
-                        .addGap(0, 92, Short.MAX_VALUE)))
+                                    .addComponent(lblDescripcionRuta)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(152, 152, 152)
+                                .addComponent(lblTitulo)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
+                .addGap(22, 22, 22)
                 .addComponent(lblTitulo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblDescripcionRuta)
                 .addGap(18, 18, 18)
                 .addComponent(txtRutaExportacion, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -180,6 +232,13 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
      */
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         this.rutaSeleccionada = txtRutaExportacion.getText();
+        //Guardamos el nombre de la clase del tema, no el texto descriptivo
+        if (cmbTema.getSelectedIndex() == 1) {
+            this.temaSeleccionado = "com.formdev.flatlaf.themes.FlatMacDarkLaf";
+        } else {
+            this.temaSeleccionado = "com.formdev.flatlaf.themes.FlatMacLightLaf";
+        }
+        this.guardado = true;
         this.dispose();
     }//GEN-LAST:event_btnGuardarActionPerformed
 
@@ -190,6 +249,7 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
      */
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
         this.rutaSeleccionada = null;
+        this.guardado = false; //
         this.dispose();
     }//GEN-LAST:event_btnCancelarActionPerformed
 
@@ -198,7 +258,10 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
     private javax.swing.JButton btnCambiar;
     private javax.swing.JButton btnCancelar;
     private javax.swing.JButton btnGuardar;
+    private javax.swing.JComboBox<String> cmbTema;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblDescripcionRuta;
+    private javax.swing.JLabel lblTema;
     private javax.swing.JLabel lblTitulo;
     private javax.swing.JTextField txtRutaExportacion;
     // End of variables declaration//GEN-END:variables

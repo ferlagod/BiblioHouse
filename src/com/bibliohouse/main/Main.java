@@ -19,14 +19,15 @@ package com.bibliohouse.main;
 
 import com.bibliohouse.ui.VentanaPrincipal;
 import javax.swing.SwingUtilities;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import java.util.prefs.Preferences;
+import javax.swing.UIManager;
 
 /**
  * Clase principal que inicia la aplicación BiblioHouse. Su único propósito es
  * lanzar la interfaz gráfica de forma segura.
  *
  * @author ferlagod
- * @version 0.5
+ * @version 0.5.01
  */
 public class Main {
 
@@ -36,9 +37,12 @@ public class Main {
      * @param args Argumentos de la línea de comandos (no se utilizan).
      */
     public static void main(String[] args) {
+
+        Preferences prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
+        String themeClassName = prefs.get("appTheme", "com.formdev.flatlaf.themes.FlatMacLightLaf"); // Tema claro por defecto
+
         try {
-            // Establece el Look and Feel FlatLaf estilo Mac claro.
-            FlatMacLightLaf.setup();
+            UIManager.setLookAndFeel(themeClassName);
         } catch (Exception e) {
             System.err.println("No se pudo inicializar el Look and Feel de FlatLaf.");
         }
