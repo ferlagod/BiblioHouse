@@ -66,4 +66,6 @@ Este proyecto está licenciado bajo la **Licencia Pública General de GNU v3.0**
 
 ---
 
+[![Donate using Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/ferlagod./donate)
+
 Desarrollado con ❤️ por **ferlagod**.
