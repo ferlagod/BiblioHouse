@@ -45,6 +45,7 @@ public class XMLManager {
     private static final String APP_DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "BiblioHouse";
     private static final String DATABASE_FILE_PATH = APP_DIRECTORY_PATH + File.separator + "biblioteca.xml";
     private static final String PRESTAMOS_DATABASE_PATH = APP_DIRECTORY_PATH + File.separator + "prestamos.xml";
+    private static final String SOCIOS_DATABASE_PATH = APP_DIRECTORY_PATH + File.separator + "socios.xml";
     private final XStream xstream;
 
     /**
@@ -65,6 +66,7 @@ public class XMLManager {
         xstream.allowTypes(new Class[]{
             com.bibliohouse.logic.Libro.class,
             com.bibliohouse.logic.Prestamo.class,
+            com.bibliohouse.logic.Socio.class,
             java.time.LocalDate.class
         });
 
@@ -73,6 +75,8 @@ public class XMLManager {
 
         xstream.alias("prestamos", List.class);
         xstream.alias("prestamo", com.bibliohouse.logic.Prestamo.class);
+        xstream.alias("socios", List.class);
+        xstream.alias("socio", com.bibliohouse.logic.Socio.class);
 
         // Asegurarse de que el directorio de la aplicación existe
         crearDirectorioSiNoExiste();
@@ -174,6 +178,55 @@ public class XMLManager {
             return libros != null ? libros : new ArrayList<>();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al cargar/leer el archivo XML. Puede estar corrupto. Se devuelve una lista vacía.", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Guarda una lista de socios en un archivo XML especificado por la ruta
+     * SOCIOS_DATABASE_PATH. Utiliza la biblioteca XStream para serializar la
+     * lista de socios a formato XML. Registra información sobre la operación,
+     * incluyendo el número de socios guardados y la ruta del archivo. En caso
+     * de error durante el guardado, registra una excepción severa.
+     *
+     * @param socios La lista de socios a guardar en el archivo XML. No debe ser
+     * nula.
+     */
+    public void guardarSocios(List<Socio> socios) {
+        try (FileOutputStream fos = new FileOutputStream(SOCIOS_DATABASE_PATH)) {
+            xstream.toXML(socios, fos);
+            LOGGER.log(Level.INFO, "Se han guardado {0} socios en {1}", new Object[]{socios.size(), SOCIOS_DATABASE_PATH});
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error al guardar los socios en el archivo XML.", e);
+        }
+    }
+
+    /**
+     * Carga una lista de socios desde un archivo XML especificado por la ruta
+     * SOCIOS_DATABASE_PATH. Utiliza la biblioteca XStream para deserializar el
+     * contenido del archivo XML a una lista de socios. Si el archivo no existe,
+     * se registra la información y se devuelve una lista vacía. En caso de
+     * éxito, registra el número de socios cargados. Si ocurre un error durante
+     * la carga, registra una excepción severa y devuelve una lista vacía.
+     *
+     * @return Una lista de socios cargados desde el archivo XML. Si el archivo
+     * no existe o hay un error, se devuelve una lista vacía.
+     */
+    public List<Socio> cargarSocios() {
+        File file = new File(SOCIOS_DATABASE_PATH);
+        if (!file.exists()) {
+            LOGGER.info("El archivo de socios no existe. Se creará uno nuevo.");
+            return new ArrayList<>();
+        }
+
+        try (FileInputStream fis = new FileInputStream(SOCIOS_DATABASE_PATH)) {
+            @SuppressWarnings("unchecked")
+            List<Socio> socios = (List<Socio>) xstream.fromXML(fis);
+
+            LOGGER.log(Level.INFO, "Se han cargado {0} socios desde {1}", new Object[]{socios != null ? socios.size() : 0, SOCIOS_DATABASE_PATH});
+            return socios != null ? socios : new ArrayList<>();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error al cargar el archivo de socios.", e);
             return new ArrayList<>();
         }
     }

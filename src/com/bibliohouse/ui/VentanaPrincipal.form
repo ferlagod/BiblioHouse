@@ -578,11 +578,13 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Component id="cmbLibrosDisponibles" pref="289" max="32767" attributes="0"/>
+                              <Component id="cmbLibrosDisponibles" pref="258" max="32767" attributes="0"/>
                               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                              <Component id="txtNombrePersona" pref="345" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="cmbSocios" min="-2" pref="252" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="btnAnadirSocio" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="jSeparator2" alignment="1" max="32767" attributes="0"/>
                           <Component id="jScrollPane3" alignment="1" max="32767" attributes="0"/>
@@ -607,7 +609,8 @@
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cmbLibrosDisponibles" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txtNombrePersona" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cmbSocios" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnAnadirSocio" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="btnPrestar" min="-2" max="-2" attributes="0"/>
@@ -632,7 +635,7 @@
                           <Component id="btnBuscarPrestamo" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnClosedPrestamo" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="65" max="32767" attributes="0"/>
+                      <EmptySpace pref="64" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -657,8 +660,6 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="a:"/>
               </Properties>
-            </Component>
-            <Component class="javax.swing.JTextField" name="txtNombrePersona">
             </Component>
             <Component class="javax.swing.JButton" name="btnPrestar">
               <Properties>
@@ -740,6 +741,24 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnBuscarPrestamoActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JComboBox" name="cmbSocios">
+              <Properties>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+                  <StringArray count="0"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Socio&gt;"/>
+              </AuxValues>
+            </Component>
+            <Component class="javax.swing.JButton" name="btnAnadirSocio">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Nuevo Socio..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAnadirSocioActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

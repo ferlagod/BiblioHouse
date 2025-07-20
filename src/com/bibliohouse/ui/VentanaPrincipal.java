@@ -40,13 +40,17 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import com.bibliohouse.logic.Socio;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JTable;
 
 /**
  * Clase principal de la interfaz gráfica de la aplicación BiblioHouse. Esta
  * clase gestiona la ventana principal de la aplicación y sus funcionalidades.
  *
  * @author ferlagod
- * @version 0.5
+ * @version 0.6
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
 
@@ -61,6 +65,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private String rutaImagenSeleccionada;
     private final OpenLibraryClient openLibraryClient;
     private final List<Prestamo> listaDePrestamos;
+    private List<Socio> listaDeSocios;
 
     /**
      * Crea una nueva instancia de VentanaPrincipal. Inicializa los componentes
@@ -80,6 +85,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         openLibraryClient = new OpenLibraryClient();
         listaDeLibros = xmlManager.cargarLibros();
         resultadosBusquedaActual = new ArrayList<>();
+        listaDeSocios = xmlManager.cargarSocios();
 
         // --- Preparación de las tablas y componentes ---
         prepararTablaResultados();
@@ -92,14 +98,19 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Inicializa las preferencias
         prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
 
-        tblMiBiblioteca.addMouseListener(new java.awt.event.MouseAdapter() {
+        MouseAdapter doubleClickListener = new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
-                    mostrarDetalleLibro();
+                    JTable sourceTable = (JTable) evt.getSource();
+                    abrirVentanaDetalleDesdeTabla(sourceTable);
                 }
             }
-        });
+        };
+
+        tblMiBiblioteca.addMouseListener(doubleClickListener);
+        tblResultadosBusqueda.addMouseListener(doubleClickListener);
+        tblPrestamos.addMouseListener(doubleClickListener);
 
         actualizarTodaLaUI();
         setLocationRelativeTo(null);
@@ -135,6 +146,102 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         actualizarTablaMiBiblioteca(this.listaDeLibros);
         // 2. Actualiza toda la pestaña de préstamos (tabla y combo box)
         actualizarPestanaPrestamos();
+        // 3. Actualiza el ComboBox de socios
+        actualizarComboSocios();
+    }
+
+    /**
+     * Abre una ventana de detalles para un libro seleccionado en una tabla
+     * específica. Este método determina de qué tabla proviene la selección y
+     * utiliza la información de la fila seleccionada para encontrar el libro
+     * correspondiente. Dependiendo de la tabla, el método emplea diferentes
+     * estrategias para localizar el libro: por título y autor en la tabla de la
+     * biblioteca, directamente de la lista de resultados de búsqueda, o a
+     * través de un préstamo en la tabla de préstamos. Si se encuentra el libro,
+     * se muestra en una ventana de diálogo.
+     *
+     * @param table La tabla desde la cual se ha seleccionado el libro. Puede
+     * ser la tabla de la biblioteca, la tabla de resultados de búsqueda o la
+     * tabla de préstamos.
+     */
+    private void abrirVentanaDetalleDesdeTabla(JTable table) {
+        int filaSeleccionada = table.getSelectedRow();
+        if (filaSeleccionada == -1) {
+            return;
+        }
+
+        Libro libroParaMostrar = null;
+
+        if (table == tblMiBiblioteca) {
+            String titulo = (String) table.getValueAt(filaSeleccionada, 0);
+            String autor = (String) table.getValueAt(filaSeleccionada, 1);
+            libroParaMostrar = findLibroByTitleAndAuthor(listaDeLibros, titulo, autor);
+        } else if (table == tblResultadosBusqueda) {
+            libroParaMostrar = resultadosBusquedaActual.get(filaSeleccionada);
+        } else if (table == tblPrestamos) {
+            // Lógica robusta para encontrar el préstamo incluso si la tabla está filtrada
+            String tituloLibro = (String) table.getValueAt(filaSeleccionada, 0);
+            String nombreSocio = (String) table.getValueAt(filaSeleccionada, 1);
+            String fechaPrestamo = (String) table.getValueAt(filaSeleccionada, 2);
+
+            Prestamo prestamoSeleccionado = null;
+            for (Prestamo p : listaDePrestamos) {
+                if (p.getTituloLibro().equals(tituloLibro) && p.getNombreSocio().equals(nombreSocio) && p.getFechaPrestamoFormateada().equals(fechaPrestamo)) {
+                    prestamoSeleccionado = p;
+                    break;
+                }
+            }
+
+            if (prestamoSeleccionado != null) {
+                libroParaMostrar = findLibroByIsbn(listaDeLibros, prestamoSeleccionado.getIsbnLibro());
+            }
+        }
+
+        if (libroParaMostrar != null) {
+            VentanaDetalleLibro dialogo = new VentanaDetalleLibro(this, true, libroParaMostrar);
+            if (getIconImage() != null) {
+                dialogo.setIconImage(getIconImage());
+            }
+            dialogo.setVisible(true);
+        }
+    }
+
+    /**
+     * Busca un libro en una lista de libros por su título y autor. Este método
+     * utiliza el API de Streams de Java para filtrar la lista de libros y
+     * encontrar el primer libro que coincida con el título y autor
+     * proporcionados.
+     *
+     * @param lista La lista de libros en la que se realizará la búsqueda.
+     * @param titulo El título del libro a buscar.
+     * @param autor El autor del libro a buscar.
+     * @return El primer libro que coincida con el título y autor
+     * proporcionados, o null si no se encuentra ningún libro.
+     */
+    private Libro findLibroByTitleAndAuthor(List<Libro> lista, String titulo, String autor) {
+        return lista.stream()
+                .filter(libro -> libro.getTitulo().equals(titulo) && libro.getAutor().equals(autor))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Busca un libro en una lista de libros por su ISBN. Este método primero
+     * verifica si el ISBN proporcionado es nulo o está vacío. Si el ISBN es
+     * válido, utiliza el API de Streams de Java para filtrar la lista de libros
+     * y encontrar el primer libro que coincida con el ISBN proporcionado.
+     *
+     * @param lista La lista de libros en la que se realizará la búsqueda.
+     * @param isbn El ISBN del libro a buscar.
+     * @return El primer libro que coincida con el ISBN proporcionado, o null si
+     * el ISBN es nulo, está vacío o no se encuentra ningún libro.
+     */
+    private Libro findLibroByIsbn(List<Libro> lista, String isbn) {
+        if (isbn == null || isbn.isEmpty()) {
+            return null;
+        }
+        return lista.stream()
+                .filter(libro -> isbn.equals(libro.getIsbn()))
+                .findFirst().orElse(null);
     }
 
     /**
@@ -157,7 +264,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         // Configurar el JComboBox de búsqueda de préstamos 
         cmbCriterioBusquedaPrestamo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{
-            "Nombre del Libro", "Nombre de Persona"
+            "Título del Libro", "Socio (Nº o Nombre)"
         }));
 
         // Cargar los datos iniciales
@@ -179,6 +286,23 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     /**
+     * Actualiza el ComboBox de socios con la lista actual de socios. Este
+     * método guarda el socio actualmente seleccionado, limpia el ComboBox,
+     * añade todos los socios de la lista proporcionada y restaura la selección
+     * anterior si el socio seleccionado sigue estando en la lista. Si el socio
+     * seleccionado no está en la lista, no se selecciona ningún elemento en el
+     * ComboBox.
+     */
+    private void actualizarComboSocios() {
+        Socio seleccionActual = (Socio) cmbSocios.getSelectedItem();
+        cmbSocios.removeAllItems();
+        for (Socio socio : listaDeSocios) {
+            cmbSocios.addItem(socio);
+        }
+        cmbSocios.setSelectedItem(seleccionActual);
+    }
+
+    /**
      * Actualiza la tabla de préstamos en la interfaz de usuario con la lista
      * proporcionada de préstamos. Este método limpia la tabla existente y añade
      * cada préstamo de la lista como una nueva fila en la tabla.
@@ -192,7 +316,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         for (Prestamo p : prestamos) {
             model.addRow(new Object[]{
                 p.getTituloLibro(),
-                p.getNombrePersona(),
+                p.getNombreSocio(),
                 p.getFechaPrestamoFormateada(),
                 p.getFechaDevolucionFormateada()
             });
@@ -290,7 +414,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         cmbLibrosDisponibles = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
-        txtNombrePersona = new javax.swing.JTextField();
         btnPrestar = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -302,6 +425,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         txtBusquedaPrestamo = new javax.swing.JTextField();
         btnClosedPrestamo = new javax.swing.JButton();
         btnBuscarPrestamo = new javax.swing.JButton();
+        cmbSocios = new javax.swing.JComboBox<>();
+        btnAnadirSocio = new javax.swing.JButton();
         barraMenu = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         menuItemImportar = new javax.swing.JMenuItem();
@@ -669,6 +794,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
 
+        btnAnadirSocio.setText("Nuevo Socio...");
+        btnAnadirSocio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnadirSocioActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PrestamosLayout = new javax.swing.GroupLayout(Prestamos);
         Prestamos.setLayout(PrestamosLayout);
         PrestamosLayout.setHorizontalGroup(
@@ -689,11 +821,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PrestamosLayout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(18, 18, 18)
-                        .addComponent(cmbLibrosDisponibles, 0, 289, Short.MAX_VALUE)
+                        .addComponent(cmbLibrosDisponibles, 0, 258, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel2)
                         .addGap(18, 18, 18)
-                        .addComponent(txtNombrePersona, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
+                        .addComponent(cmbSocios, javax.swing.GroupLayout.PREFERRED_SIZE, 252, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnAnadirSocio))
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jSeparator3)
@@ -713,7 +847,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(cmbLibrosDisponibles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2)
-                    .addComponent(txtNombrePersona, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbSocios, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAnadirSocio))
                 .addGap(18, 18, 18)
                 .addComponent(btnPrestar)
                 .addGap(46, 46, 46)
@@ -734,7 +869,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnBuscarPrestamo)
                     .addComponent(btnClosedPrestamo))
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Préstamos", Prestamos);
@@ -1550,22 +1685,23 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      */
     private void btnPrestarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrestarActionPerformed
         Libro libroSeleccionado = (Libro) cmbLibrosDisponibles.getSelectedItem();
-        String nombrePersona = txtNombrePersona.getText().trim();
+        Socio socioSeleccionado = (Socio) cmbSocios.getSelectedItem();
 
         if (libroSeleccionado == null) {
-            JOptionPane.showMessageDialog(this, "No hay ningún libro disponible para prestar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un libro disponible para prestar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        if (nombrePersona.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, introduce el nombre de la persona.", "Campo Vacío", JOptionPane.WARNING_MESSAGE);
+        if (socioSeleccionado == null) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un socio a quien prestar el libro.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Creamos el nuevo préstamo
+        // Creamos el nuevo préstamo usando los datos del socio
         Prestamo nuevoPrestamo = new Prestamo(
                 libroSeleccionado.getIsbn(),
                 libroSeleccionado.getTitulo(),
-                nombrePersona,
+                socioSeleccionado.getNumeroSocio(),
+                socioSeleccionado.toString(), // toString() devuelve "Nombre Apellidos"
                 LocalDate.now()
         );
 
@@ -1574,8 +1710,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         JOptionPane.showMessageDialog(this, "Préstamo registrado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
-        txtNombrePersona.setText(""); // Limpiamos el campo de texto
-        actualizarPestanaPrestamos(); // Actualizamos toda la pestaña
+        actualizarTodaLaUI();
 
     }//GEN-LAST:event_btnPrestarActionPerformed
 
@@ -1629,7 +1764,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         String terminoBusqueda = txtBusquedaPrestamo.getText().trim().toLowerCase();
 
         if (terminoBusqueda.isEmpty()) {
-            actualizarTablaPrestamos(this.listaDePrestamos); // Muestra todos si está vacío
+            actualizarTablaPrestamos(this.listaDePrestamos);
             return;
         }
 
@@ -1638,10 +1773,11 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         for (Prestamo prestamo : this.listaDePrestamos) {
             String valorAComparar = "";
-            if ("Nombre del Libro".equals(criterio)) {
+            if ("Título del Libro".equals(criterio)) {
                 valorAComparar = prestamo.getTituloLibro().toLowerCase();
-            } else if ("Nombre de Persona".equals(criterio)) {
-                valorAComparar = prestamo.getNombrePersona().toLowerCase();
+            } else if ("Socio (Nº o Nombre)".equals(criterio)) {
+                // Gracias al nuevo toString() en Socio, getNombreSocio() ya contiene "Nº - Nombre Apellidos"
+                valorAComparar = prestamo.getNombreSocio().toLowerCase();
             }
 
             if (valorAComparar.contains(terminoBusqueda)) {
@@ -1675,6 +1811,35 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private void cmbCriterioBusquedaPrestamoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbCriterioBusquedaPrestamoActionPerformed
         btnBuscarPrestamo.doClick();
     }//GEN-LAST:event_cmbCriterioBusquedaPrestamoActionPerformed
+
+    /**
+     * Maneja la acción de añadir un nuevo socio cuando se hace clic en el botón
+     * "Añadir Socio". Este método abre un diálogo de gestión de socios para que
+     * el usuario pueda introducir la información del nuevo socio. Después de
+     * cerrar el diálogo, comprueba si se ha creado un nuevo socio. Si se ha
+     * creado un nuevo socio, lo añade a la lista de socios, guarda la lista
+     * actualizada en un archivo XML, muestra un mensaje de éxito y actualiza el
+     * ComboBox de socios para incluir al nuevo socio. Finalmente, selecciona
+     * automáticamente al nuevo socio en el ComboBox.
+     *
+     * @param evt El evento de acción que desencadena este método, generado por
+     * un clic en el botón "Añadir Socio".
+     */
+    private void btnAnadirSocioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnadirSocioActionPerformed
+        VentanaGestionSocios dialogo = new VentanaGestionSocios(this, true, listaDeSocios);
+        establecerIcono();
+        dialogo.setVisible(true);
+
+        // Después de que se cierra el diálogo, comprobamos si se creó un socio
+        Socio nuevoSocio = dialogo.getNuevoSocio();
+        if (nuevoSocio != null) {
+            listaDeSocios.add(nuevoSocio);
+            xmlManager.guardarSocios(listaDeSocios);
+            JOptionPane.showMessageDialog(this, "Socio añadido con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            actualizarComboSocios(); // Actualizamos el menú desplegable
+            cmbSocios.setSelectedItem(nuevoSocio); // Seleccionamos al nuevo socio automáticamente
+        }
+    }//GEN-LAST:event_btnAnadirSocioActionPerformed
 
     /**
      * Actualiza la tabla de resultados con una lista de libros. Este método se
@@ -1725,6 +1890,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JPanel addBookPane;
     private javax.swing.JMenuBar barraMenu;
     private javax.swing.JButton btnAnadirSeleccionado;
+    private javax.swing.JButton btnAnadirSocio;
     private javax.swing.JButton btnBuscarLocal;
     private javax.swing.JButton btnBuscarOpenLibrary;
     private javax.swing.JButton btnBuscarPrestamo;
@@ -1740,6 +1906,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cmbCriterioBusqueda;
     private javax.swing.JComboBox<String> cmbCriterioBusquedaPrestamo;
     private javax.swing.JComboBox<Libro> cmbLibrosDisponibles;
+    private javax.swing.JComboBox<Socio> cmbSocios;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1781,7 +1948,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JTextField txtEditorial;
     private javax.swing.JTextField txtGenero;
     private javax.swing.JTextField txtIsbn;
-    private javax.swing.JTextField txtNombrePersona;
     private javax.swing.JTextField txtTitulo;
     // End of variables declaration//GEN-END:variables
 

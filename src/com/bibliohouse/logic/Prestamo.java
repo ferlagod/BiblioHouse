@@ -6,6 +6,14 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.logic;
 
@@ -24,7 +32,8 @@ public class Prestamo {
 
     private String isbnLibro; // Usamos el ISBN para identificar el libro de forma única
     private String tituloLibro; // Guardamos el título para mostrarlo fácilmente
-    private String nombrePersona;
+    private int numeroSocio;
+    private String nombreSocio;
     private LocalDate fechaPrestamo;
     private LocalDate fechaDevolucion; // Será null si el libro no ha sido devuelto
 
@@ -40,15 +49,18 @@ public class Prestamo {
      *
      * @param isbnLibro El ISBN del libro prestado.
      * @param tituloLibro El título del libro prestado.
-     * @param nombrePersona El nombre de la persona que realiza el préstamo.
+     * @param numeroSocio El número de socio de la prsona que realiza el
+     * préstamo
+     * @param nombreSocio El nombre de la persona que realiza el préstamo.
      * @param fechaPrestamo La fecha en que se realiza el préstamo.
      */
-    public Prestamo(String isbnLibro, String tituloLibro, String nombrePersona, LocalDate fechaPrestamo) {
+    public Prestamo(String isbnLibro, String tituloLibro, int numeroSocio, String nombreSocio, LocalDate fechaPrestamo) {
         this.isbnLibro = isbnLibro;
         this.tituloLibro = tituloLibro;
-        this.nombrePersona = nombrePersona;
+        this.numeroSocio = numeroSocio;
+        this.nombreSocio = nombreSocio;
         this.fechaPrestamo = fechaPrestamo;
-        this.fechaDevolucion = null; // Un nuevo préstamo no está devuelto
+        this.fechaDevolucion = null;
     }
 
     // --- Getters y Setters ---
@@ -71,12 +83,21 @@ public class Prestamo {
     }
 
     /**
+     * Obtiene el numero de socio de la persona que realiza el préstamo.
+     *
+     * @return El numero de socio de la persona.
+     */
+    public int getNumeroSocio() {
+        return numeroSocio;
+    }
+
+    /**
      * Obtiene el nombre de la persona que realiza el préstamo.
      *
      * @return El nombre de la persona.
      */
-    public String getNombrePersona() {
-        return nombrePersona;
+    public String getNombreSocio() {
+        return nombreSocio;
     }
 
     /**

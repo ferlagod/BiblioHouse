@@ -27,7 +27,7 @@ import javax.swing.UIManager;
  * lanzar la interfaz gráfica de forma segura.
  *
  * @author ferlagod
- * @version 0.5.01
+ * @version 0.6
  */
 public class Main {
 
