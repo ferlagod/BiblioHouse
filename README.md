@@ -4,27 +4,6 @@
 
 **BiblioHouse** es una aplicación de escritorio de código abierto para catalogar y gestionar tu biblioteca personal. Creada con Java y Swing, te permite mantener un inventario ordenado de todos tus libros de forma sencilla y eficiente.
 
-### Capturas de Pantalla
-
-**Pantalla Principal - Añadir Libro**
-
-![Imagen de la pestaña para añadir un libro](https://imgur.com/zCZ0YfJ.png)
-
-
-**Búsqueda en OpenLibrary**
-
-![Búsqueda en OpenLibrary](https://i.imgur.com/cQc6Jfl.png)
-
-
-**Gestión de la Biblioteca**
-
-![Imagen de la pestaña para buscar y editar tus libros](https://imgur.com/cQ2Buau.png)
-
-**Ventana de editar**
-
-![Ventana de editar](https://imgur.com/sivEUK5.png)
-
-
 ### ✨ Características Principales
 
 * **Catalogación de Libros**: Guarda toda la información importante de tus libros: título, autor, editorial, año de publicación, género, ISBN y la imagen de la portada.
