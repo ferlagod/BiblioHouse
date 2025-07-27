@@ -27,6 +27,12 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -36,13 +42,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 /**
  * Muestra una vista detallada y de solo lectura de un libro.
  *
  * @author ferlagod
- * @version 0.5
+ * @version 0.6.1
  */
 public class VentanaDetalleLibro extends JDialog {
 
@@ -78,6 +85,8 @@ public class VentanaDetalleLibro extends JDialog {
             lblPortada.setText("Sin Portada");
         }
         panelPortada.add(lblPortada, BorderLayout.CENTER);
+
+        cargarYMostrarPortada(lblPortada, libro);
 
         // --- Panel Derecho: Detalles del Libro ---
         JPanel panelDetalles = new JPanel(new GridBagLayout());
@@ -198,7 +207,96 @@ public class VentanaDetalleLibro extends JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Carga una imagen de portada en un JLabel. Implementa un sistema de caché
+     * para mejorar el tiempo de carga. Si la ruta es una URL de internet, la
+     * descarga y la guarda localmente la primera vez. Si es una ruta local o ya
+     * está en caché, la carga directamente.
+     *
+     * @param label El JLabel donde se mostrará la imagen.
+     * @param libro El libro del que se quiere mostrar la portada.
+     */
+    private void cargarYMostrarPortada(JLabel label, Libro libro) {
+        String urlString = libro.getPortadaURL();
+        String isbn = libro.getIsbn();
 
+        if (urlString == null || urlString.isEmpty()) {
+            label.setText("Sin Portada");
+            label.setIcon(null);
+            return;
+        }
+
+        // Si la ruta es un archivo local, lo cargamos directamente
+        if (!urlString.toLowerCase().startsWith("http")) {
+            File imgFile = new File(urlString);
+            if (imgFile.exists()) {
+                ImageIcon icon = new ImageIcon(urlString);
+                Image scaledImage = icon.getImage().getScaledInstance(200, 300, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaledImage));
+                label.setText("");
+            } else {
+                label.setText("Portada no encontrada");
+                label.setIcon(null);
+            }
+            return;
+        }
+
+        // Si es una URL, gestionamos el caché
+        File coversDir = new File(System.getProperty("user.home") + File.separator + "BiblioHouse" + File.separator + "covers");
+        if (!coversDir.exists()) {
+            coversDir.mkdirs();
+        }
+
+        // Generamos un nombre de archivo único para el caché
+        String nombreArchivo = (isbn != null && !isbn.isEmpty() ? isbn.replaceAll("[^a-zA-Z0-9.-]", "_") : String.valueOf(urlString.hashCode())) + ".jpg";
+        File archivoCache = new File(coversDir, nombreArchivo);
+
+        if (archivoCache.exists()) {
+            // La imagen ya está en caché, la cargamos desde el disco
+            ImageIcon icon = new ImageIcon(archivoCache.getAbsolutePath());
+            Image scaledImage = icon.getImage().getScaledInstance(200, 300, Image.SCALE_SMOOTH);
+            label.setIcon(new ImageIcon(scaledImage));
+            label.setText("");
+        } else {
+            // La imagen no está en caché, la descargamos en segundo plano
+            new SwingWorker<ImageIcon, Void>() {
+                @Override
+                protected ImageIcon doInBackground() throws Exception {
+                    URL url = new URL(urlString);
+                    Image image = ImageIO.read(url);
+                    if (image != null) {
+                        // Guardamos la imagen descargada en nuestro caché
+                        try (InputStream in = url.openStream()) {
+                            Files.copy(in, archivoCache.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            System.err.println("Fallo al guardar la imagen en caché: " + e.getMessage());
+                        }
+                        // Redimensionamos y devolvemos para mostrar
+                        Image scaledImage = image.getScaledInstance(200, 300, Image.SCALE_SMOOTH);
+                        return new ImageIcon(scaledImage);
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        ImageIcon imageIcon = get();
+                        if (imageIcon != null) {
+                            label.setIcon(imageIcon);
+                            label.setText("");
+                        } else {
+                            label.setText("Portada no disponible");
+                            label.setIcon(null);
+                        }
+                    } catch (Exception e) {
+                        label.setText("Error al cargar portada");
+                        label.setIcon(null);
+                    }
+                }
+            }.execute();
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }
