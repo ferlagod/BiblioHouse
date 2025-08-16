@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import java.awt.Image;
 import java.io.File;
@@ -48,6 +49,7 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
         this.libroAEditar = libro;
         this.nuevaRutaImagen = libro.getPortadaURL();
         initComponents();
+        applyTranslations(); // Se aplican las traducciones
 
         setResizable(false);
 
@@ -75,6 +77,32 @@ public class VentanaEditarLibro extends javax.swing.JDialog {
 
     }
 
+    
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("dialog.edit.title") + " - BiblioHouse");
+        lblTitulo.setText(LanguageManager.getString("label.title"));
+        lblAutor.setText(LanguageManager.getString("label.author"));
+        lblEditorial.setText(LanguageManager.getString("label.publisher"));
+        lblAnio.setText(LanguageManager.getString("label.year"));
+        lblGenero.setText(LanguageManager.getString("label.genre"));
+        lblIsbn.setText(LanguageManager.getString("label.isbn"));
+        lblCalificacion.setText(LanguageManager.getString("label.rating"));
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(LanguageManager.getString("edit.reviewBorder")));
+        btnGuardarCambios.setText(LanguageManager.getString("edit.saveChangesButton"));
+        btnCancelar.setText(LanguageManager.getString("button.cancel"));
+        btnSeleccionarImagen.setText(LanguageManager.getString("edit.selectImageButton"));
+        
+        // Se actualizan los items del ComboBox de calificación
+        cmbCalificacion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { 
+            LanguageManager.getString("edit.rating.unrated"),
+            LanguageManager.getString("edit.rating.1star"),
+            LanguageManager.getString("edit.rating.2star"),
+            LanguageManager.getString("edit.rating.3star"),
+            LanguageManager.getString("edit.rating.4star"),
+            LanguageManager.getString("edit.rating.5star")
+        }));
+    }
+    
     /**
      * Muestra la imagen de la portada en el JLabel de vista previa.
      *

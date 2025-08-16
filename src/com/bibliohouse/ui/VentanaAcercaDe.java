@@ -17,11 +17,13 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
+
 /**
  * JDialog que muestra la información "Acerca de" la aplicación BiblioHouse.
  *
  * @author ferlagod
- * 
+ *
  */
 public class VentanaAcercaDe extends javax.swing.JDialog {
 
@@ -34,11 +36,29 @@ public class VentanaAcercaDe extends javax.swing.JDialog {
     public VentanaAcercaDe(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
+        applyTranslations();
+
         setResizable(false);
         setTitle("Acerca de - BiblioHouse");
 
         // Centra la ventana de diálogo respecto a la ventana principal
         setLocationRelativeTo(parent);
+    }
+
+    /**
+     * Aplica los textos del idioma actual a todos los componentes de la UI.
+     */
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("about.title"));
+
+        // El nombre de la app no se traduce, pero la versión sí
+        String appVersion = "0.7"; // Se podría obtener de una constante global
+        lblVersion.setText(LanguageManager.getString("about.version") + " " + appVersion);
+
+        lblDesarrollador.setText(LanguageManager.getString("about.developer") + " ferlagod");
+        lblContacto.setText(LanguageManager.getString("about.contact") + " bibliohouse@oniros.eu");
+        btnClosedAcercaDe.setText(LanguageManager.getString("button.close"));
     }
 
     /**
@@ -64,7 +84,7 @@ public class VentanaAcercaDe extends javax.swing.JDialog {
         lblTitulo.setForeground(new java.awt.Color(51, 51, 51));
         lblTitulo.setText("Bibliohouse");
 
-        lblVersion.setText("Versión 0.5.01");
+        lblVersion.setText("Versión 0.7");
 
         lblDesarrollador.setText("Desarrollado por: ferlagod");
 

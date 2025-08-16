@@ -17,6 +17,8 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
+
 /**
  * JDialog que muestra un manual de usuario básico para la aplicación
  * BiblioHouse.
@@ -34,6 +36,8 @@ public class VentanaAyuda extends javax.swing.JDialog {
     public VentanaAyuda(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
+        applyTranslations();
 
         setResizable(false);
         setTitle("Ayuda - BiblioHouse");
@@ -86,6 +90,48 @@ public class VentanaAyuda extends javax.swing.JDialog {
         txtAreaAyuda.setCaretPosition(0); // Muestra el scroll arriba del todo
 
         setLocationRelativeTo(parent);
+    }
+
+    /**
+     * Aplica los textos del idioma actual a todos los componentes de la UI.
+     */
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("help.title"));
+        btnClosedAyuda.setText(LanguageManager.getString("button.close"));
+
+        // Construimos el texto del manual a partir de las claves de idioma
+        String textoAyuda = new StringBuilder()
+                .append(LanguageManager.getString("help.manual.welcome")).append("\n")
+                .append(LanguageManager.getString("help.manual.header")).append("\n")
+                .append(LanguageManager.getString("help.manual.section1.title")).append("\n")
+                .append(LanguageManager.getString("help.manual.section1.subtitle")).append("\n")
+                .append(LanguageManager.getString("help.manual.section1.manual")).append("\n")
+                .append(LanguageManager.getString("help.manual.section1.openlibrary")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.title")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.subtitle")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.view")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.search")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.details")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.edit")).append("\n")
+                .append(LanguageManager.getString("help.manual.section2.delete")).append("\n")
+                .append(LanguageManager.getString("help.manual.section3.title")).append("\n")
+                .append(LanguageManager.getString("help.manual.section3.subtitle")).append("\n")
+                .append(LanguageManager.getString("help.manual.section3.loan")).append("\n")
+                .append(LanguageManager.getString("help.manual.section3.return")).append("\n")
+                .append(LanguageManager.getString("help.manual.section3.search")).append("\n")
+                .append(LanguageManager.getString("help.manual.section4.title")).append("\n")
+                .append(LanguageManager.getString("help.manual.section4.subtitle")).append("\n")
+                .append(LanguageManager.getString("help.manual.section4.import")).append("\n")
+                .append(LanguageManager.getString("help.manual.section4.export")).append("\n")
+                .append(LanguageManager.getString("help.manual.section4.exit")).append("\n")
+                .append(LanguageManager.getString("help.manual.section5.title")).append("\n")
+                .append(LanguageManager.getString("help.manual.section5.subtitle")).append("\n")
+                .append(LanguageManager.getString("help.manual.section5.duplicates")).append("\n")
+                .append(LanguageManager.getString("help.manual.section5.settings")).append("\n")
+                .toString();
+
+        txtAreaAyuda.setText(textoAyuda);
+        txtAreaAyuda.setCaretPosition(0); // Muestra el scroll arriba del todo
     }
 
     /**

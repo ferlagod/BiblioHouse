@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -53,13 +54,17 @@ import javax.swing.border.EmptyBorder;
  */
 public class VentanaDetalleLibro extends JDialog {
 
+    private JLabel lblHeaderResena;
+    private JButton btnCerrar;
+    private JLabel lblEtiquetaAnio, lblEtiquetaEditorial, lblEtiquetaGenero, lblEtiquetaIsbn, lblEtiquetaCalificacion;
+
     public VentanaDetalleLibro(java.awt.Frame parent, boolean modal, Libro libro) {
         super(parent, modal);
         initComponents(libro);
+        applyTranslations(); // Se aplican las traducciones
         if (parent != null && parent.getIconImage() != null) {
             setIconImage(parent.getIconImage());
         }
-        setTitle("Detalle del Libro - BiblioHouse");
         pack();
         setLocationRelativeTo(parent);
         setResizable(false);
@@ -158,7 +163,7 @@ public class VentanaDetalleLibro extends JDialog {
         setContentPane(panelPrincipal);
     }
 
-    private void addDetalle(JPanel panel, GridBagConstraints gbc, String etiqueta, String valor) {
+    private JLabel addDetalle(JPanel panel, GridBagConstraints gbc, String etiqueta, String valor) {
         JLabel lblEtiqueta = new JLabel(etiqueta);
         lblEtiqueta.setFont(new Font("Segoe UI", Font.BOLD, 12));
         gbc.gridx = 0;
@@ -171,6 +176,7 @@ public class VentanaDetalleLibro extends JDialog {
         panel.add(lblValor, gbc);
 
         gbc.gridy++;
+        return lblEtiqueta; // Devolvemos la etiqueta para poder traducirla luego
     }
 
     private String getRatingAsStars(int rating) {
@@ -296,6 +302,17 @@ public class VentanaDetalleLibro extends JDialog {
                 }
             }.execute();
         }
+    }
+
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("dialog.detail.title") + " - BiblioHouse");
+        btnCerrar.setText(LanguageManager.getString("button.close"));
+        lblEtiquetaAnio.setText(LanguageManager.getString("label.year"));
+        lblEtiquetaEditorial.setText(LanguageManager.getString("label.publisher"));
+        lblEtiquetaGenero.setText(LanguageManager.getString("label.genre"));
+        lblEtiquetaIsbn.setText(LanguageManager.getString("label.isbn"));
+        lblEtiquetaCalificacion.setText(LanguageManager.getString("label.rating"));
+        lblHeaderResena.setText(LanguageManager.getString("detail.reviewLabel"));
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

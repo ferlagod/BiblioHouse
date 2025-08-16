@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
 import java.io.File;
 import javax.swing.JFileChooser;
 
@@ -43,6 +44,9 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
     public VentanaConfiguracion(java.awt.Frame parent, boolean modal, String rutaActual, String temaActual) {
         super(parent, modal);
         initComponents();
+
+        applyTranslations();
+
         this.rutaSeleccionada = rutaActual;
         txtRutaExportacion.setText(rutaActual); // Muestra la ruta actual
         this.temaSeleccionado = temaActual;
@@ -57,6 +61,26 @@ public class VentanaConfiguracion extends javax.swing.JDialog {
         setTitle("Configuración - BiblioHouse");
         setResizable(false);
         setLocationRelativeTo(parent);
+    }
+
+    /**
+     * Aplica los textos del idioma actual a todos los componentes de la UI.
+     */
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("dialog.settings.title") + " - BiblioHouse");
+        lblTitulo.setText(LanguageManager.getString("settings.header"));
+        btnCambiar.setText(LanguageManager.getString("button.change"));
+        btnGuardar.setText(LanguageManager.getString("button.save"));
+        btnCancelar.setText(LanguageManager.getString("button.cancel"));
+        lblDescripcionRuta.setText(LanguageManager.getString("settings.export.label"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(LanguageManager.getString("settings.theme.group")));
+        lblTema.setText(LanguageManager.getString("settings.theme.label"));
+
+        // Se actualizan los items del ComboBox
+        cmbTema.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{
+            LanguageManager.getString("settings.theme.light"),
+            LanguageManager.getString("settings.theme.dark")
+        }));
     }
 
     /**

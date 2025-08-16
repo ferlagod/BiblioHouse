@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Socio;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -39,10 +40,23 @@ public class VentanaGestionSocios extends javax.swing.JDialog {
         this.listaDeSocios = socios;
 
         initComponents();
+        applyTranslations(); // Se aplican las traducciones
 
         setTitle("Añadir Nuevo Socio - BiblioHouse");
         setResizable(false);
         setLocationRelativeTo(parent);
+    }
+    
+        private void applyTranslations() {
+        setTitle(LanguageManager.getString("partners.title"));
+        jLabel1.setText(LanguageManager.getString("partners.header"));
+        lblNombre.setText(LanguageManager.getString("partners.name"));
+        lblApellidos.setText(LanguageManager.getString("partners.surname"));
+        lblDni.setText(LanguageManager.getString("partners.dni"));
+        lblDomicilio.setText(LanguageManager.getString("partners.address"));
+        lblNumeroSocio.setText(LanguageManager.getString("partners.partnerId"));
+        btnGuardar.setText(LanguageManager.getString("partners.saveButton"));
+        btnCancelar.setText(LanguageManager.getString("button.cancel"));
     }
 
     /**

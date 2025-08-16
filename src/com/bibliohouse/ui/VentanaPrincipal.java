@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.logic.OpenLibraryClient;
 import com.bibliohouse.logic.Prestamo;
@@ -61,10 +62,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
     private final XMLManager xmlManager;
     private List<Libro> listaDeLibros;
-    private List<Libro> resultadosBusquedaActual; // Para guardar los resultados de OpenLibrary
+    private List<Libro> resultadosBusquedaActual;
     private String rutaImagenSeleccionada;
     private final OpenLibraryClient openLibraryClient;
-    private final List<Prestamo> listaDePrestamos;
+    private List<Prestamo> listaDePrestamos;
     private List<Socio> listaDeSocios;
 
     /**
@@ -72,31 +73,24 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      * de la interfaz gráfica y configura la ventana principal.
      */
     public VentanaPrincipal() {
+// --- 1. Inicializar componentes visuales de Swing ---
         initComponents();
-        setTitle("BiblioHouse");
-        establecerIcono();
 
-        // Formatear el JSpinner para que no use separador de miles
-        javax.swing.JSpinner.NumberEditor editor = new javax.swing.JSpinner.NumberEditor(spinnerAnio, "#");
-        spinnerAnio.setEditor(editor);
-
-        // --- Inicialización de los componentes de lógica ---
+        // --- 2. Inicializar toda la lógica de negocio y cargar datos ---
         xmlManager = new XMLManager();
         openLibraryClient = new OpenLibraryClient();
-        listaDeLibros = xmlManager.cargarLibros();
-        resultadosBusquedaActual = new ArrayList<>();
-        listaDeSocios = xmlManager.cargarSocios();
-
-        // --- Preparación de las tablas y componentes ---
-        prepararTablaResultados();
-        prepararComponentesBusquedaLocal();
-        actualizarTablaMiBiblioteca(listaDeLibros); // Carga inicial de libros
-
-        this.listaDePrestamos = xmlManager.cargarPrestamos();
-        prepararComponentesPrestamos();
-
-        // Inicializa las preferencias
         prefs = Preferences.userNodeForPackage(VentanaPrincipal.class);
+
+        listaDeLibros = xmlManager.cargarLibros();
+        listaDePrestamos = xmlManager.cargarPrestamos();
+        listaDeSocios = xmlManager.cargarSocios();
+        resultadosBusquedaActual = new ArrayList<>();
+
+        // --- 3. Aplicar traducciones y configurar la UI con los datos ya cargados ---
+        applyTranslations();
+
+        // --- 4. Configuración final de la ventana ---
+        establecerIcono();
 
         MouseAdapter doubleClickListener = new MouseAdapter() {
             @Override
@@ -107,7 +101,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 }
             }
         };
-
         tblMiBiblioteca.addMouseListener(doubleClickListener);
         tblResultadosBusqueda.addMouseListener(doubleClickListener);
         tblPrestamos.addMouseListener(doubleClickListener);
@@ -115,6 +108,82 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         actualizarTodaLaUI();
         setLocationRelativeTo(null);
 
+    }
+
+    /**
+     * Aplica los textos del idioma actual a todos los componentes de la UI.
+     */
+    private void applyTranslations() {
+        setTitle("BiblioHouse"); // El nombre de la app no se traduce
+
+        // Menú
+        menuArchivo.setText(LanguageManager.getString("menu.file"));
+        menuItemImportar.setText(LanguageManager.getString("menu.file.import"));
+        menuItemExportar.setText(LanguageManager.getString("menu.file.export"));
+        menuItemSalir.setText(LanguageManager.getString("menu.file.exit"));
+        menuHerramuentas.setText(LanguageManager.getString("menu.tools"));
+        menuItemBuscarDuplicados.setText(LanguageManager.getString("menu.tools.duplicates"));
+        menuItemConfiguracion.setText(LanguageManager.getString("menu.tools.settings"));
+        menuIdioma.setText(LanguageManager.getString("menu.tools.language"));
+        menuAyuda.setText(LanguageManager.getString("menu.help"));
+        menuItemManual.setText(LanguageManager.getString("menu.help.manual"));
+        menuItemAcercaDe.setText(LanguageManager.getString("menu.help.about"));
+
+        // Opciones de Idioma
+        menuItemEs.setText(LanguageManager.getString("language.es"));
+        menuItemEn.setText(LanguageManager.getString("language.en"));
+        menuItemCa.setText(LanguageManager.getString("language.ca"));
+        menuItemGl.setText(LanguageManager.getString("language.gl"));
+        menuItemEu.setText(LanguageManager.getString("language.eu"));
+
+        // Pestañas
+        jTabbedPane1.setTitleAt(0, LanguageManager.getString("tab.add"));
+        jTabbedPane1.setTitleAt(1, LanguageManager.getString("tab.library"));
+        jTabbedPane1.setTitleAt(2, LanguageManager.getString("tab.loans"));
+
+        // Pestaña Añadir Libro
+        lblTitulo.setText(LanguageManager.getString("label.title"));
+        lblAutor.setText(LanguageManager.getString("label.author"));
+        lblEditorial.setText(LanguageManager.getString("label.publisher"));
+        lblAnio.setText(LanguageManager.getString("label.year"));
+        lblGenero.setText(LanguageManager.getString("label.genre"));
+        lblIsbn.setText(LanguageManager.getString("label.isbn"));
+        btnGuardarManual.setText(LanguageManager.getString("add.manual.saveButton"));
+        btnSeleccionarImagen.setText(LanguageManager.getString("add.manual.selectImageButton"));
+        lblBusquedaOpenLibrary.setText(LanguageManager.getString("add.openLibrary.searchLabel"));
+        btnBuscarOpenLibrary.setText(LanguageManager.getString("button.search"));
+        btnAnadirSeleccionado.setText(LanguageManager.getString("add.openLibrary.addButton"));
+        btnClosed.setText(LanguageManager.getString("button.close"));
+
+        // Pestaña Mi Biblioteca
+        lblCriterioBusqueda.setText(LanguageManager.getString("label.searchBy"));
+        btnBuscarLocal.setText(LanguageManager.getString("button.search"));
+        btnEditar.setText(LanguageManager.getString("library.editButton"));
+        btnEliminar.setText(LanguageManager.getString("library.deleteButton"));
+        btnClosed1.setText(LanguageManager.getString("button.close"));
+
+        // Pestaña Préstamos
+        jLabel1.setText(LanguageManager.getString("loans.loanBook"));
+        jLabel2.setText(LanguageManager.getString("loans.loanTo"));
+        btnPrestar.setText(LanguageManager.getString("loans.loanButton"));
+        btnAnadirSocio.setText(LanguageManager.getString("loans.newPartnerButton"));
+        btnDevolver.setText(LanguageManager.getString("loans.returnButton"));
+        jLabel3.setText(LanguageManager.getString("label.searchBy"));
+        btnBuscarPrestamo.setText(LanguageManager.getString("button.search"));
+        btnClosedPrestamo.setText(LanguageManager.getString("button.close"));
+
+        // Actualizar tablas para que los encabezados se traduzcan
+        prepararComponentesBusquedaLocal();
+        prepararComponentesPrestamos();
+        prepararTablaResultados();
+    }
+
+    /**
+     * Método para cambiar el idioma y refrescar la UI .
+     */
+    private void cambiarIdioma(String lang, String country) {
+        LanguageManager.setLanguage(lang, country);
+        applyTranslations();
     }
 
     /**
@@ -253,7 +322,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Configurar la tabla de préstamos
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
-                new String[]{"Libro", "Prestado a", "Fecha Préstamo", "Fecha Devolución"}
+                new String[]{
+                    LanguageManager.getString("table.header.book"),
+                    LanguageManager.getString("table.header.loanedTo"),
+                    LanguageManager.getString("table.header.loanDate"),
+                    LanguageManager.getString("table.header.returnDate")
+                }
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -435,6 +509,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         menuHerramuentas = new javax.swing.JMenu();
         menuItemBuscarDuplicados = new javax.swing.JMenuItem();
         menuItemConfiguracion = new javax.swing.JMenuItem();
+        menuIdioma = new javax.swing.JMenu();
+        menuItemEs = new javax.swing.JRadioButtonMenuItem();
+        menuItemEn = new javax.swing.JRadioButtonMenuItem();
+        menuItemCa = new javax.swing.JRadioButtonMenuItem();
+        menuItemGl = new javax.swing.JRadioButtonMenuItem();
+        menuItemEu = new javax.swing.JRadioButtonMenuItem();
         menuAyuda = new javax.swing.JMenu();
         menuItemAcercaDe = new javax.swing.JMenuItem();
         menuItemManual = new javax.swing.JMenuItem();
@@ -624,7 +704,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(txtBusquedaOpenLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnBuscarOpenLibrary))
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(addBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAnadirSeleccionado)
@@ -704,7 +784,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                                 .addComponent(cmbCriterioBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(48, 48, 48)
                                 .addComponent(txtBusquedaLocal, javax.swing.GroupLayout.PREFERRED_SIZE, 339, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 110, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                                 .addComponent(btnBuscarLocal))
                             .addGroup(searchBookPaneLayout.createSequentialGroup()
                                 .addComponent(btnEditar)
@@ -723,7 +803,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(btnBuscarLocal))
                 .addGap(30, 30, 30)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 405, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addGroup(searchBookPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEditar)
                     .addComponent(btnEliminar))
@@ -834,9 +914,9 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addGroup(PrestamosLayout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addGap(18, 18, 18)
-                        .addComponent(cmbCriterioBusquedaPrestamo, 0, 296, Short.MAX_VALUE)
+                        .addComponent(cmbCriterioBusquedaPrestamo, 0, 301, Short.MAX_VALUE)
                         .addGap(56, 56, 56)
-                        .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)))
+                        .addComponent(txtBusquedaPrestamo, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)))
                 .addGap(69, 69, 69))
         );
         PrestamosLayout.setVerticalGroup(
@@ -869,7 +949,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 .addGroup(PrestamosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnBuscarPrestamo)
                     .addComponent(btnClosedPrestamo))
-                .addContainerGap(64, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Préstamos", Prestamos);
@@ -921,6 +1001,55 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             }
         });
         menuHerramuentas.add(menuItemConfiguracion);
+
+        menuIdioma.setText("Idioma");
+
+        menuItemEs.setSelected(true);
+        menuItemEs.setText("Español");
+        menuItemEs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemEsActionPerformed(evt);
+            }
+        });
+        menuIdioma.add(menuItemEs);
+
+        menuItemEn.setSelected(true);
+        menuItemEn.setText("Inglés (English)");
+        menuItemEn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemEnActionPerformed(evt);
+            }
+        });
+        menuIdioma.add(menuItemEn);
+
+        menuItemCa.setSelected(true);
+        menuItemCa.setText("Catalán (Català)");
+        menuItemCa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemCaActionPerformed(evt);
+            }
+        });
+        menuIdioma.add(menuItemCa);
+
+        menuItemGl.setSelected(true);
+        menuItemGl.setText("Gallego (Galego)");
+        menuItemGl.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemGlActionPerformed(evt);
+            }
+        });
+        menuIdioma.add(menuItemGl);
+
+        menuItemEu.setSelected(true);
+        menuItemEu.setText("Euskera (Euskara)");
+        menuItemEu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemEuActionPerformed(evt);
+            }
+        });
+        menuIdioma.add(menuItemEu);
+
+        menuHerramuentas.add(menuIdioma);
 
         barraMenu.add(menuHerramuentas);
 
@@ -1167,9 +1296,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         // Preparamos el modelo de la tabla que mostrará nuestros libros
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
-                new String[]{"Título", "Autor", "Editorial", "Año", "Género", "ISBN", "Calificación"}
+                new String[]{
+                    LanguageManager.getString("table.header.title"),
+                    LanguageManager.getString("table.header.author"),
+                    LanguageManager.getString("table.header.publisher"),
+                    LanguageManager.getString("table.header.year"),
+                    LanguageManager.getString("table.header.genre"),
+                    LanguageManager.getString("table.header.isbn"),
+                    LanguageManager.getString("table.header.rating")
+                }
         ) {
-            // Hacemos que las celdas no sean editables
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -1505,26 +1641,32 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             mapaDeLibros.computeIfAbsent(clave, k -> new ArrayList<>()).add(libro);
         }
 
-        // Construimos un texto con los resultados
         StringBuilder sb = new StringBuilder();
         boolean duplicadosEncontrados = false;
 
         for (Map.Entry<String, List<Libro>> entry : mapaDeLibros.entrySet()) {
-            if (entry.getValue().size() > 1) { // Si hay más de un libro en el grupo, es un duplicado
+            if (entry.getValue().size() > 1) {
                 duplicadosEncontrados = true;
                 sb.append("----------------------------------------------------------\n");
-                sb.append("Libro: ").append(entry.getValue().get(0).getTitulo()).append("\n");
-                sb.append("Autor: ").append(entry.getValue().get(0).getAutor()).append("\n");
-                sb.append("Número de copias: ").append(entry.getValue().size()).append("\n");
-                sb.append("----------------------------------------------------------\n\n");
+                sb.append(LanguageManager.getString("label.title")).append(" ").append(entry.getValue().get(0).getTitulo()).append("\n");
+                sb.append(LanguageManager.getString("label.author")).append(" ").append(entry.getValue().get(0).getAutor()).append("\n");
+                sb.append("Copias: ").append(entry.getValue().size()).append("\n\n");
             }
         }
 
         if (duplicadosEncontrados) {
             VentanaDuplicados dialogo = new VentanaDuplicados(this, true, sb.toString());
+            if (getIconImage() != null) {
+                dialogo.setIconImage(getIconImage());
+            }
             dialogo.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(this, "No se encontraron libros duplicados en tu biblioteca.", "Búsqueda Finalizada", JOptionPane.INFORMATION_MESSAGE);
+            // --- CORRECCIÓN ---
+            // Ahora usamos el LanguageManager para mostrar el mensaje.
+            JOptionPane.showMessageDialog(this,
+                    LanguageManager.getString("duplicates.noDuplicatesFound"),
+                    LanguageManager.getString("duplicates.searchFinished"),
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_menuItemBuscarDuplicadosActionPerformed
 
@@ -1841,6 +1983,26 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnAnadirSocioActionPerformed
 
+    private void menuItemCaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemCaActionPerformed
+        cambiarIdioma("ca", "ES");
+    }//GEN-LAST:event_menuItemCaActionPerformed
+
+    private void menuItemEsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemEsActionPerformed
+        cambiarIdioma("es", "ES");
+    }//GEN-LAST:event_menuItemEsActionPerformed
+
+    private void menuItemEnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemEnActionPerformed
+        cambiarIdioma("en", "US");
+    }//GEN-LAST:event_menuItemEnActionPerformed
+
+    private void menuItemGlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemGlActionPerformed
+        cambiarIdioma("gl", "ES");
+    }//GEN-LAST:event_menuItemGlActionPerformed
+
+    private void menuItemEuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemEuActionPerformed
+        cambiarIdioma("eu", "ES");
+    }//GEN-LAST:event_menuItemEuActionPerformed
+
     /**
      * Actualiza la tabla de resultados con una lista de libros. Este método se
      * utiliza para mostrar los resultados de una búsqueda en una tabla.
@@ -1874,7 +2036,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private void prepararTablaResultados() {
         javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
                 new Object[][]{},
-                new String[]{"Título", "Autor", "Año", "Editorial", "ISBN"} // <-- Más columnas visibles
+                new String[]{
+                    LanguageManager.getString("table.header.title"),
+                    LanguageManager.getString("table.header.author"),
+                    LanguageManager.getString("table.header.year"),
+                    LanguageManager.getString("table.header.publisher"),
+                    LanguageManager.getString("table.header.isbn")
+                }
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1929,10 +2097,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenu menuArchivo;
     private javax.swing.JMenu menuAyuda;
     private javax.swing.JMenu menuHerramuentas;
+    private javax.swing.JMenu menuIdioma;
     private javax.swing.JMenuItem menuItemAcercaDe;
     private javax.swing.JMenuItem menuItemBuscarDuplicados;
+    private javax.swing.JRadioButtonMenuItem menuItemCa;
     private javax.swing.JMenuItem menuItemConfiguracion;
+    private javax.swing.JRadioButtonMenuItem menuItemEn;
+    private javax.swing.JRadioButtonMenuItem menuItemEs;
+    private javax.swing.JRadioButtonMenuItem menuItemEu;
     private javax.swing.JMenuItem menuItemExportar;
+    private javax.swing.JRadioButtonMenuItem menuItemGl;
     private javax.swing.JMenuItem menuItemImportar;
     private javax.swing.JMenuItem menuItemManual;
     private javax.swing.JMenuItem menuItemSalir;

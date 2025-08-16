@@ -17,6 +17,8 @@
  */
 package com.bibliohouse.ui;
 
+import com.bibliohouse.logic.LanguageManager;
+
 /**
  * JDialog que muestra una lista de los libros duplicados encontrados en la
  * aplicación BiblioHouse.
@@ -37,9 +39,9 @@ public class VentanaDuplicados extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
-        setResizable(false);
+        applyTranslations(); // Se aplican las traducciones
 
-        setTitle("Busqueda de duplicados - BiblioHouse");
+        setResizable(false);
 
         // Asigna el texto y asegura que el scroll se muestre desde el principio
         txtAreaDuplicados.setText(textoDuplicados);
@@ -126,4 +128,14 @@ public class VentanaDuplicados extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextArea txtAreaDuplicados;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Aplica los textos del idioma actual a todos los componentes de la UI.
+     */
+    private void applyTranslations() {
+        setTitle(LanguageManager.getString("dialog.duplicates.title") + " - BiblioHouse");
+        jLabel1.setText(LanguageManager.getString("duplicates.foundMessage"));
+        btnClosedDuplicados.setText(LanguageManager.getString("button.close"));
+    }
+
 }

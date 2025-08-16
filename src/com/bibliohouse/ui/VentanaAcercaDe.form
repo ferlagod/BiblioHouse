@@ -92,7 +92,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lblVersion">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Versi&#xf3;n 0.5.01"/>
+        <Property name="text" type="java.lang.String" value="Versi&#xf3;n 0.7"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lblDesarrollador">
