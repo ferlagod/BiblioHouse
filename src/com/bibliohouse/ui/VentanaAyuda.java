@@ -42,64 +42,39 @@ public class VentanaAyuda extends javax.swing.JDialog {
         setResizable(false);
         setTitle("Ayuda - BiblioHouse");
 
-        // Texto del Manual de Usuario
-        String textoAyuda = """
-   Bienvenido a BiblioHouse - Manual de Usuario
-        ============================================
-        
-        1. AÑADIR UN LIBRO
-        --------------------
-        - **Manualmente**: En la primera pestaña, rellena los campos del formulario y pulsa "Guardar Libro". Puedes añadir una imagen de portada con el botón "Seleccionar Imagen".
-        - **Desde OpenLibrary**: Escribe un título o ISBN en el campo de búsqueda de OpenLibrary y pulsa "Buscar" (o la tecla Intro). Selecciona un libro de la tabla de resultados y pulsa "Añadir Libro Seleccionado". La información principal, incluida la portada, se descargará y guardará automáticamente.
-        
-        
-        2. GESTIONAR MI BIBLIOTECA
-        --------------------------
-        - **Ver tu colección**: La pestaña "Mi Biblioteca" muestra todos los libros que has añadido.
-        - **Buscar en tu colección**: Para filtrar tu biblioteca, selecciona un criterio (Título, Autor, etc.), escribe un término en el campo de texto y pulsa "Buscar". Para ver de nuevo toda la biblioteca, borra el campo de búsqueda y pulsa "Buscar".
-        - **Ver detalles del libro**: Haz **doble clic** en cualquier libro de la tabla para abrir una ventana con toda su información detallada, incluyendo la portada en grande y tu reseña personal.
-        - **Editar un libro**: Selecciona un libro de la tabla y pulsa "Editar Libro Seleccionado". Se abrirá una ventana donde podrás modificar todos sus datos, incluyendo:
-            - **Calificación**: Puntúa el libro usando el menú desplegable de estrellas.
-            - **Reseña**: Escribe tus notas y opiniones personales sobre el libro.
-        - **Eliminar un libro**: Selecciona un libro y pulsa "Eliminar Libro Seleccionado" para borrarlo permanentemente (se pedirá confirmación).
-        
-        
-        3. GESTIONAR PRÉSTAMOS
-        ----------------------
-        - **Prestar un libro**: En la pestaña "Préstamos", selecciona un libro disponible en el menú desplegable, escribe el nombre de la persona a quien se lo prestas y pulsa "Prestar".
-        - **Marcar como devuelto**: Selecciona un préstamo de la tabla y pulsa "Marcar como Devuelto". La fecha de devolución se registrará automáticamente.
-        - **Buscar préstamos**: Usa la barra de búsqueda de esta pestaña para filtrar los préstamos por el título del libro o por el nombre de la persona.
-        
-        
-        4. MENÚ ARCHIVO
-        ---------------
-        - **Importar base de datos**: Te permite reemplazar tu biblioteca actual con un archivo `biblioteca.xml` guardado previamente.
-        - **Exportar base de datos**: Guarda una copia de seguridad de tu `biblioteca.xml` en la ubicación que elijas.
-        - **Salir**: Cierra la aplicación.
-        
-        
-        5. MENÚ HERRAMIENTAS
-        --------------------
-        - **Buscar duplicados**: Analiza tu biblioteca y te muestra una lista de libros que podrían estar duplicados.
-        - **Configuración**: Te permite:
-            - Elegir una carpeta por defecto para tus exportaciones.
-            - Cambiar el tema visual de la aplicación entre un **modo claro** y un **modo oscuro**. El cambio se aplica al instante.
-        """;
-
-        txtAreaAyuda.setText(textoAyuda);
-        txtAreaAyuda.setCaretPosition(0); // Muestra el scroll arriba del todo
-
+        // Muestra el scroll arriba del todo **/
         setLocationRelativeTo(parent);
     }
 
     /**
+     * Convierte texto con formato Markdown (negritas y cursivas) a HTML.
+     */
+    private String markdownToHtml(String markdownText) {
+        // Reemplazar **negritas** por <b>negritas</b>
+        markdownText = markdownText.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>");
+        // Reemplazar *cursivas* por <i>cursivas</i>
+        markdownText = markdownToHtmlCursivas(markdownText);
+        // Reemplazar saltos de línea por <br>
+        markdownText = markdownText.replaceAll("\n", "<br>");
+        // Añadir estilo CSS básico para mejorar la legibilidad
+        return "<html><head><style>body { font-family: Arial, sans-serif; margin: 10px; }</style></head><body>" + markdownText + "</body></html>";
+    }
+
+    /**
+     * Método auxiliar para reemplazar *cursivas* por <i>cursivas</i>
+     */
+    private String markdownToHtmlCursivas(String markdownText) {
+        return markdownText.replaceAll("\\*(.*?)\\*", "<i>$1</i>");
+    }
+
+        /**
      * Aplica los textos del idioma actual a todos los componentes de la UI.
      */
     private void applyTranslations() {
         setTitle(LanguageManager.getString("help.title"));
         btnClosedAyuda.setText(LanguageManager.getString("button.close"));
 
-        // Construimos el texto del manual a partir de las claves de idioma
+        // Construye el texto del manual
         String textoAyuda = new StringBuilder()
                 .append(LanguageManager.getString("help.manual.welcome")).append("\n")
                 .append(LanguageManager.getString("help.manual.header")).append("\n")
@@ -128,10 +103,16 @@ public class VentanaAyuda extends javax.swing.JDialog {
                 .append(LanguageManager.getString("help.manual.section5.subtitle")).append("\n")
                 .append(LanguageManager.getString("help.manual.section5.duplicates")).append("\n")
                 .append(LanguageManager.getString("help.manual.section5.settings")).append("\n")
+                .append(LanguageManager.getString("help.manual.section5.language")).append("\n")
                 .toString();
 
-        txtAreaAyuda.setText(textoAyuda);
-        txtAreaAyuda.setCaretPosition(0); // Muestra el scroll arriba del todo
+        // Convierte el texto Markdown a HTML
+        String htmlText = markdownToHtml(textoAyuda);
+
+        // Asigna el texto HTML al JEditorPane
+        txtAreaAyuda.setContentType("text/html");
+        txtAreaAyuda.setText(htmlText);
+        txtAreaAyuda.setCaretPosition(0);
     }
 
     /**
@@ -144,15 +125,12 @@ public class VentanaAyuda extends javax.swing.JDialog {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        txtAreaAyuda = new javax.swing.JTextArea();
+        txtAreaAyuda = new javax.swing.JEditorPane();
         btnClosedAyuda = new javax.swing.JButton();
         lblGpl = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        txtAreaAyuda.setEditable(false);
-        txtAreaAyuda.setColumns(20);
-        txtAreaAyuda.setRows(5);
         jScrollPane1.setViewportView(txtAreaAyuda);
 
         btnClosedAyuda.setText("Cerrar");
@@ -207,6 +185,6 @@ public class VentanaAyuda extends javax.swing.JDialog {
     private javax.swing.JButton btnClosedAyuda;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblGpl;
-    private javax.swing.JTextArea txtAreaAyuda;
+    private javax.swing.JEditorPane txtAreaAyuda;
     // End of variables declaration//GEN-END:variables
 }

@@ -19,6 +19,7 @@ package com.bibliohouse.logic;
 
 import com.bibliohouse.ui.VentanaPrincipal;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
@@ -45,17 +46,31 @@ public class LanguageManager {
 
     private static void loadLanguage(Locale locale) {
         try {
-            // Carga el archivo de propiedades (ej: messages_es.properties)
             bundle = ResourceBundle.getBundle("com.bibliohouse.lang.messages", locale);
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar el archivo de idioma para " + locale + ". Usando el idioma por defecto.");
-            // Si falla, intenta cargar el inglés como fallback
+        } catch (MissingResourceException e) {
+            System.err.println("No se encontró el archivo de idioma para " + locale + ". Usando inglés como fallback.");
             bundle = ResourceBundle.getBundle("com.bibliohouse.lang.messages", Locale.ENGLISH);
         }
     }
 
     /**
+     * Cambia el idioma de la aplicación y guarda la preferencia.
+     *
+     * @param language El código del idioma (ej: "es", "en").
+     * @param country El código del país (ej: "ES", "US").
+     */
+    public static void setLanguage(String language, String country) {
+        if (language == null || country == null || language.isEmpty() || country.isEmpty()) {
+            throw new IllegalArgumentException("El idioma y el país no pueden ser nulos o vacíos.");
+        }
+        prefs.put(LANGUAGE_KEY, language);
+        prefs.put(COUNTRY_KEY, country);
+        loadLanguage(new Locale(language, country));
+    }
+
+    /**
      * Obtiene una cadena de texto traducida a partir de su clave.
+     *
      * @param key La clave del texto (ej: "menu.file").
      * @return El texto traducido.
      */
@@ -68,14 +83,4 @@ public class LanguageManager {
         }
     }
 
-    /**
-     * Cambia el idioma de la aplicación y guarda la preferencia.
-     * @param language El código del idioma (ej: "es", "en").
-     * @param country El código del país (ej: "ES", "US").
-     */
-    public static void setLanguage(String language, String country) {
-        prefs.put(LANGUAGE_KEY, language);
-        prefs.put(COUNTRY_KEY, country);
-        loadLanguage(new Locale(language, country));
-    }
 }
