@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="444.0" prefWidth="320.0"  xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.LoginController">
+   
+    <VBox fx:id="cardLogin" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" spacing="10.0" styleClass="login-card">
+        <children>
+            <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@../../../resources/LogoBiblioHouse.png" />
+                </image>
+                <VBox.margin>
+                    <Insets bottom="10.0" />
+                </VBox.margin>
+            </ImageView>
+
+            <Label styleClass="heading-text" text="%login.welcome" />
+            <Label styleClass="subheading-text" text="%login.subtitle" />
+
+            <VBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 20 0 10 0;">
+                <children>
+                    <VBox spacing="5.0">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.user" />
+                        <TextField fx:id="txtLoginUser" promptText="%login.user.placeholder" styleClass="google-text-field" />
+                    </VBox>
+               
+                    <VBox spacing="5.0">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.password" />
+                        <PasswordField fx:id="txtLoginPass" onAction="#actionLogin" promptText="%login.password.placeholder" styleClass="google-text-field" />
+                    </VBox>
+               
+                    <Label fx:id="lblLoginError" styleClass="error-label" text="Error message" visible="false" />
+                </children>
+            </VBox>
+
+            <HBox alignment="CENTER_RIGHT" spacing="20.0">
+                <children>
+                    <Button onAction="#cerrarApp" styleClass="text-button" text="%menu.exit" />
+                    <Button defaultButton="true" onAction="#actionLogin" styleClass="google-button" text="%login.next" />
+                </children>
+            </HBox>
+         
+            <HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+                <Label text="%login.no_account" textFill="#5f6368" />
+                <Hyperlink onAction="#mostrarRegistro" styleClass="hyperlink" text="%login.create_account" />
+            </HBox>
+        </children>
+    </VBox>
+
+    <VBox fx:id="cardRegister" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" spacing="10.0" styleClass="login-card" visible="false">
+        <children>
+            <ImageView fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@../../../resources/LogoBiblioHouse.png" />
+                </image>
+            </ImageView>
+
+            <Label styleClass="heading-text" text="%login.register.title" />
+            <Label styleClass="subheading-text" text="%login.register.subtitle" />
+
+            <VBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 10 0 10 0;">
+                <children>
+                    <VBox spacing="5.0">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.register.user" />
+                        <TextField fx:id="txtRegUser" styleClass="google-text-field" />
+                    </VBox>
+               
+                    <VBox spacing="5.0">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.password" />
+                        <PasswordField fx:id="txtRegPass" styleClass="google-text-field" />
+                    </VBox>
+               
+                    <VBox spacing="5.0">
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.register.confirm_pass" />
+                        <PasswordField fx:id="txtRegPassConfirm" styleClass="google-text-field" />
+                    </VBox>
+
+                    <Label fx:id="lblRegError" styleClass="error-label" text="Error message" visible="false" />
+                </children>
+            </VBox>
+
+            <HBox alignment="CENTER_RIGHT" spacing="20.0">
+                <children>
+                    <Button onAction="#mostrarLogin" styleClass="text-button" text="%login.back" />
+                    <Button onAction="#actionRegister" styleClass="google-button" text="%login.register" />
+                </children>
+            </HBox>
+         
+            <HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+                <Label text="%login.have_account" textFill="#5f6368" />
+                <Hyperlink onAction="#mostrarLogin" styleClass="hyperlink" text="%login.sign_in" />
+            </HBox>
+        </children>
+    </VBox>
+
+</StackPane>

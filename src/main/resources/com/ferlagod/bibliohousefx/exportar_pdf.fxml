@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="500.0" minWidth="600.0" prefHeight="600.0" prefWidth="650.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ExportarPDFController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Exportar Informe de Biblioteca a PDF" />
+        <Label style="-fx-font-size: 11px; -fx-text-fill: #666;" text="Seleccione los filtros que desea aplicar al informe:" wrapText="true" />
+        
+        <Separator />
+        
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="15.0">
+                    <padding>
+                        <Insets right="10.0" />
+                    </padding>
+                    <children>
+                        <!-- Filtro por título/ISBN -->
+                        <VBox spacing="5.0">
+                            <Label style="-fx-font-weight: bold;" text="Buscar por Título o ISBN:" />
+                            <TextField fx:id="txtBuscar" promptText="Escriba título o ISBN..." />
+                        </VBox>
+                        
+                        <!-- Filtro por autor -->
+                        <VBox spacing="5.0">
+                            <Label style="-fx-font-weight: bold;" text="Buscar por Autor:" />
+                            <TextField fx:id="txtAutor" promptText="Escriba nombre del autor..." />
+                        </VBox>
+                        
+                        <!-- Filtro por estanterías -->
+                        <VBox spacing="5.0">
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <Label style="-fx-font-weight: bold;" text="Estanterías:" />
+                                <CheckBox fx:id="chkTodasEstanterias" onAction="#toggleTodasEstanterias" selected="true" text="Todas" />
+                            </HBox>
+                            <ListView fx:id="listaEstanterias" maxHeight="120.0" prefHeight="120.0" />
+                        </VBox>
+                        
+                        <!-- Filtro por géneros -->
+                        <VBox spacing="5.0">
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <Label style="-fx-font-weight: bold;" text="Géneros:" />
+                                <CheckBox fx:id="chkTodosGeneros" onAction="#toggleTodosGeneros" selected="true" text="Todos" />
+                            </HBox>
+                            <ListView fx:id="listaGeneros" maxHeight="120.0" prefHeight="120.0" />
+                        </VBox>
+                        
+                        <!-- Filtro por año -->
+                        <VBox spacing="5.0">
+                            <Label style="-fx-font-weight: bold;" text="Rango de Años:" />
+                            <HBox spacing="10.0">
+                                <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-font-size: 9px;" text="Desde:" />
+                                    <TextField fx:id="txtAnioDesde" prefWidth="80.0" promptText="YYYY" />
+                                </VBox>
+                                <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                    <Label style="-fx-font-size: 9px;" text="Hasta:" />
+                                    <TextField fx:id="txtAnioHasta" prefWidth="80.0" promptText="YYYY" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        
+                        <!-- Filtro por estado de lectura -->
+                        <VBox spacing="5.0">
+                            <Label style="-fx-font-weight: bold;" text="Estado de Lectura:" />
+                            <ComboBox fx:id="cmbEstadoLectura" prefWidth="200.0" promptText="Todos los estados" />
+                        </VBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+        
+        <Separator />
+        
+        <!-- Contador de libros filtrados -->
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label fx:id="lblContadorLibros" style="-fx-font-weight: bold;" text="Libros que coinciden con los filtros: 0" />
+            <ProgressIndicator fx:id="progressIndicator" maxHeight="20.0" maxWidth="20.0" visible="false" />
+        </HBox>
+        
+        <!-- Botones de acción -->
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Button onAction="#limpiarFiltros" text="Limpiar Filtros" />
+            <Button onAction="#cancelar" text="Cancelar" />
+            <Button fx:id="btnExportar" defaultButton="true" onAction="#exportarPDF" styleClass="google-button" text="Exportar PDF" />
+        </HBox>
+    </children>
+</VBox>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manual do Utilizador BiblioHouse</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #16a085;
+        }
+
+        .shortcut {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        ul {
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Manual do Utilizador - BiblioHouse</h1>
+    <p>Bem-vindo ao <strong>BiblioHouse</strong>, o seu gestor pessoal de bibliotecas. Esta aplicação permite-lhe
+        organizar a sua coleção de livros, gerir empréstimos e acompanhar as suas leituras.</p>
+
+    <h2>📚 Gestão de Livros</h2>
+    <h3>Adicionar Livros</h3>
+    <p>Pode adicionar livros de duas formas:</p>
+    <ul>
+        <li><strong>Automática (OpenLibrary):</strong> Escreva o título ou ISBN na barra superior e prima <span
+                class="shortcut">Enter</span> ou a lupa. Se encontrar o livro, clique em "Adicionar".</li>
+        <li><strong>Manual:</strong> Preencha os campos (Título, Autor, ISBN...) no painel "Adicionar manualmente" e
+            clique em "Adicionar à Biblioteca".</li>
+    </ul>
+
+    <h3>Editar e Eliminar</h3>
+    <p>Clique com o botão direito sobre qualquer livro na tabela para ver as opções:</p>
+    <ul>
+        <li><strong>Editar detalhes:</strong> Modifique a informação do livro.</li>
+        <li><strong>Mudar capa:</strong> Atualize a imagem da capa.</li>
+        <li><strong>Eliminar livro:</strong> Remova o livro permanentemente da sua coleção.</li>
+    </ul>
+
+    <h2>🔄 Empréstimos</h2>
+    <p>No separador "Empréstimos Ativos" pode emprestar os seus livros a amigos ou familiares (Sócios).</p>
+    <ol>
+        <li>Selecione um <strong>Livro</strong> disponível.</li>
+        <li>Selecione um <strong>Sócio</strong> (ou crie um novo com o botão <span class="shortcut">+</span>).</li>
+        <li>Clique em <strong>Realizar Empréstimo</strong>.</li>
+    </ol>
+    <p>Quando lhe devolverem o livro, selecione-o na tabela inferior e clique em <strong>Marcar como Devolvido</strong>.
+    </p>
+
+    <h2>⌨️ Atalhos de Teclado</h2>
+    <p>Aumente a sua produtividade com estes atalhos:</p>
+    <ul>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Pesquisar livro (Foco no filtro de
+            título).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Adicionar novo livro manual (Foco no
+            título).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Realizar empréstimo (Foco na seleção
+            de livro).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Sair da aplicação.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Nota:</strong> No macOS, utilize a tecla <span class="shortcut">Cmd ⌘</span> em vez de Ctrl.
+    </div>
+
+    <h2>⚙️ Configuração</h2>
+    <p>Vá a <em>Ferramentas > Configuração</em> para alterar o tema visual (Claro, Escuro, Verde...), o idioma e a
+        duração predefinida dos empréstimos.</p>
+</body>
+
+</html>

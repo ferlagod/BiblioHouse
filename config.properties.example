@@ -1,0 +1,7 @@
+# BiblioHousePro Configuration
+# Example configuration file
+# Copy this file to config.properties and fill in your API keys
+
+# Google Books API Key
+# Obtén tu API key en: https://console.cloud.google.com/apis/credentials
+google.books.api.key=TU_API_KEY_AQUI

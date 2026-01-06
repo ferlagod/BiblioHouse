@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manual d'Usuari BiblioHouse</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #16a085;
+        }
+
+        .shortcut {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        ul {
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Manual d'Usuari - BiblioHouse</h1>
+    <p>Benvingut a <strong>BiblioHouse</strong>, el teu gestor personal de biblioteques. Aquesta aplicació et permet
+        organitzar la teva col·lecció de llibres, gestionar préstecs i fer un seguiment de les teves lectures.</p>
+
+    <h2>📚 Gestió de Llibres</h2>
+    <h3>Afegir Llibres</h3>
+    <p>Pots afegir llibres de dues maneres:</p>
+    <ul>
+        <li><strong>Automàtica (OpenLibrary):</strong> Escriu el títol o ISBN a la barra superior i prem <span
+                class="shortcut">Enter</span> o la lupa. Si trobes el llibre, prem "Afegir".</li>
+        <li><strong>Manual:</strong> Omple els camps (Títol, Autor, ISBN...) al panell "Afegir manualment" i prem
+            "Afegir a Biblioteca".</li>
+    </ul>
+
+    <h3>Editar i Eliminar</h3>
+    <p>Fes clic dret sobre qualsevol llibre de la taula per veure les opcions:</p>
+    <ul>
+        <li><strong>Editar detalls:</strong> Modifica la informació del llibre.</li>
+        <li><strong>Canviar portada:</strong> Actualitza la imatge de la coberta.</li>
+        <li><strong>Eliminar llibre:</strong> Esborra el llibre permanentment de la teva col·lecció.</li>
+    </ul>
+
+    <h2>🔄 Préstecs</h2>
+    <p>A la pestanya "Préstecs Actius" pots deixar els teus llibres a amics o familiars (Socis).</p>
+    <ol>
+        <li>Selecciona un <strong>Llibre</strong> disponible.</li>
+        <li>Selecciona un <strong>Soci</strong> (o crea'n un de nou amb el botó <span class="shortcut">+</span>).</li>
+        <li>Prem <strong>Realitzar Préstec</strong>.</li>
+    </ol>
+    <p>Quan et retornin el llibre, selecciona'l a la taula inferior i prem <strong>Marcar com a Retornat</strong>.</p>
+
+    <h2>⌨️ Dreceres de Teclat</h2>
+    <p>Augmenta la teva productivitat amb aquestes dreceres:</p>
+    <ul>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Cercar llibre (Focus al filtre de
+            títol).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Afegir nou llibre manual (Focus al
+            títol).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Realitzar préstec (Focus a selecció
+            de llibre).</li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Sortir de l'aplicació.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Nota:</strong> A macOS, utilitza la tecla <span class="shortcut">Cmd ⌘</span> en lloc de Ctrl.
+    </div>
+
+    <h2>⚙️ Configuració</h2>
+    <p>Vés a <em>Eines > Configuració</em> per canviar el tema visual (Clar, Fosc, Verd...), l'idioma i la durada
+        predeterminada dels préstecs.</p>
+</body>
+
+</html>

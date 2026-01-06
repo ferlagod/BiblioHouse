@@ -1,0 +1,54 @@
+# Configuration files with sensitive data
+config.properties
+
+# Build directories
+target/
+build/
+
+# IDE specific files
+.vscode/
+.idea/
+*.iml
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+
+
+# Log files
+*.log
+
+# Archivos compilados y temporales
+target/
+*.class
+*.log
+
+# NetBeans (solo queremos la config del proyecto, no tus datos privados)
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Archivos de sistema (Mac y Windows)
+.DS_Store
+Thumbs.db
+
+# Datos de usuario (para que no subas tu propia base de datos de pruebas)
+# OJO: Mantén la estructura de carpetas, pero ignora los json si tienen datos reales
+BiblioHouse/
+*.json
+!src/main/resources/*.json 
+# (El ! significa "este sí", por si tienes jsons de configuración base)
+
+# Logs de la aplicación
+bibliohouse.log
+
+# Ignorar instaladores y empaquetados
+*.dmg
+*.pkg
+*.exe
+*.msi
+*.deb
+*.rpm

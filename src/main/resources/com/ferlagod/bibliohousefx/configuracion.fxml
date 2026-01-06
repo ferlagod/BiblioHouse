@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="532.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ConfiguracionController">
+    <children>
+        <Label styleClass="heading-text" text="%config.title" />
+        <Separator />
+      
+        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <tabs>
+                <Tab text="%config.tab.general">
+                    <content>
+                        <VBox spacing="20.0" style="-fx-padding: 20;">
+                            <children>
+                                <VBox spacing="8.0">
+                                    <Label style="-fx-font-weight: bold;" text="%config.user.prefs" />
+                                    <CheckBox fx:id="chkConfirmarBorrado" selected="true" text="%config.confirm.delete" />
+                                    <CheckBox fx:id="chkAbrirMaximizada" text="%config.maximize" />
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <children>
+                                            <Label text="%config.loan.days" />
+                                            <javafx.scene.control.Spinner fx:id="spinnerDiasPrestamo" editable="true" prefWidth="80.0" />
+                                        </children>
+                                    </HBox>
+                                </VBox>
+                                <Separator />
+                                <VBox spacing="8.0">
+                                    <Label style="-fx-font-weight: bold;" text="%config.appearance" />
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <children>
+                                            <Label text="%config.language" />
+                                            <ComboBox fx:id="comboIdioma" prefWidth="200.0" />
+                                        </children>
+                                    </HBox>
+                                </VBox>
+                                <Separator />
+                                <VBox spacing="8.0">
+                                    <Label style="-fx-font-weight: bold;" text="%config.personalization" />
+                                    <Label text="%config.library.name" />
+                                    <TextField fx:id="txtNombreBiblioteca" promptText="%config.library.name.placeholder" />
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+          
+                <Tab text="%config.tab.data">
+                    <content>
+                        <VBox spacing="20.0" style="-fx-padding: 20;">
+                            <children>
+                                <VBox spacing="5.0">
+                                    <Label style="-fx-font-weight: bold;" text="%config.file.location" />
+                                    <Label style="-fx-font-size: 11px; -fx-text-fill: #888;" text="%config.db.path" />
+                                    <HBox spacing="10.0">
+                                        <children>
+                                            <TextField fx:id="txtRutaDatos" editable="false" HBox.hgrow="ALWAYS" />
+                                            <Button onAction="#abrirCarpetaDatos" text="%config.open.folder" />
+                                        </children>
+                                    </HBox>
+                                    <Button onAction="#exportarBackup" text="%config.backup.button" maxWidth="Infinity" />
+                                </VBox>
+                    
+                                <Separator />
+                    
+                                <VBox spacing="10.0" style="-fx-border-color: #d93025; -fx-border-radius: 5; -fx-padding: 15; -fx-background-color: #3e2a2a;">
+                                    <children>
+                                        <Label style="-fx-font-weight: bold; -fx-text-fill: #ff6b6b;" text="%config.danger.zone" />
+                                        <Label text="%config.danger.desc" wrapText="true" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <Button onAction="#borrarTodosLosLibros" styleClass="danger-button" text="%config.delete.all" />
+                                                <Button onAction="#restaurarFabrica" text="%config.factory.reset" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+          
+                <Tab text="%config.tab.about">
+                    <content>
+                        <VBox alignment="CENTER" spacing="10.0">
+                            <children>
+                                <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../../../resources/LogoBiblioHouse.png" />
+                                    </image>
+                                </ImageView>
+                      
+                                <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="BiblioHouse FX" />
+                                <Label text="Versión 1.0.0 (Estable)" />
+                                <Label text="%config.about.desc" textFill="#888" />
+                      
+                                <Separator maxWidth="200.0" />
+                                <Label text="%config.about.copyright" />
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+      
+        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <children>
+                <Button cancelButton="true" onAction="#cancelar" text="%config.cancel" />
+                <Button defaultButton="true" onAction="#guardarCambios" styleClass="google-button" text="%config.save" />
+            </children>
+            <padding>
+                <Insets top="10.0" />
+            </padding>
+        </HBox>
+    </children>
+    <padding>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+    </padding>
+</VBox>

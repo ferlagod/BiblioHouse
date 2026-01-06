@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>BiblioHouse User Manual</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #16a085;
+        }
+
+        .shortcut {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        ul {
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>User Manual - BiblioHouse</h1>
+    <p>Welcome to <strong>BiblioHouse</strong>, your personal library manager. This application allows you to organize
+        your book collection, manage loans, and track your reading.</p>
+
+    <h2>📚 Book Management</h2>
+    <h3>Adding Books</h3>
+    <p>You can add books in two ways:</p>
+    <ul>
+        <li><strong>Automatic (OpenLibrary):</strong> Type the title or ISBN in the top bar and press <span
+                class="shortcut">Enter</span> or the search icon. If found, click "Add".</li>
+        <li><strong>Manual:</strong> Fill in the fields (Title, Author, ISBN...) in the "Add manually" panel and click
+            "Add to Library".</li>
+    </ul>
+
+    <h3>Edit and Delete</h3>
+    <p>Right-click on any book in the table to see options:</p>
+    <ul>
+        <li><strong>Edit details:</strong> Modify book information.</li>
+        <li><strong>Change cover:</strong> Update the cover image.</li>
+        <li><strong>Delete book:</strong> Permanently remove the book from your collection.</li>
+    </ul>
+
+    <h2>🔄 Loans</h2>
+    <p>In the "Active Loans" tab, you can lend your books to friends or family (Members).</p>
+    <ol>
+        <li>Select an available <strong>Book</strong>.</li>
+        <li>Select a <strong>Member</strong> (or create a new one with the <span class="shortcut">+</span> button).</li>
+        <li>Click <strong>Make Loan</strong>.</li>
+    </ol>
+    <p>When the book is returned, select it in the table below and click <strong>Mark as Returned</strong>.</p>
+
+    <h2>⌨️ Keyboard Shortcuts</h2>
+    <p>Boost your productivity with these shortcuts:</p>
+    <ul>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Search book (Focus on title filter).
+        </li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Add new manual book (Focus on title).
+        </li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Make loan (Focus on book selection).
+        </li>
+        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Exit application.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Note:</strong> On macOS, use the <span class="shortcut">Cmd ⌘</span> key instead of Ctrl.
+    </div>
+
+    <h2>⚙️ Settings</h2>
+    <p>Go to <em>Tools > Settings</em> to change the visual theme (Light, Dark, Green...), language, and default loan
+        duration.</p>
+</body>
+
+</html>

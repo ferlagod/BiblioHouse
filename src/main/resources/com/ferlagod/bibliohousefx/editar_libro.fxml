@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
+
+<VBox prefHeight="700.0" prefWidth="700.0" spacing="15.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EditarLibroController">
+   
+    <children>
+        <Label styleClass="heading-text" text="Editar detalles del libro" />
+      
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="20.0" style="-fx-background-color: white;">
+                    <children>
+                        <HBox spacing="30.0">
+                            <children>
+                                <VBox alignment="TOP_CENTER" spacing="15.0" minWidth="200.0">
+                                    <children>
+                                        <VBox alignment="CENTER" style="-fx-border-color: #dadce0; -fx-border-width: 1; -fx-padding: 5;">
+                                            <children>
+                                                <ImageView fx:id="imgPortada" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" />
+                                            </children>
+                                        </VBox>
+                                        <Button onAction="#cambiarPortada" styleClass="text-button" text="Cambiar portada..." />
+                              
+                                        <Separator />
+                              
+                                        <VBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Estado de Lectura:" textFill="#5f6368" />
+                                                <ComboBox fx:id="cmbEstadoLectura" prefWidth="180.0" />
+                                            </children>
+                                        </VBox>
+                              
+                                        <VBox alignment="CENTER_LEFT" spacing="5.0">
+                                            <children>
+                                                <Label text="Mi valoración:" textFill="#5f6368" />
+                                                <ComboBox fx:id="cmbCalificacion" prefWidth="180.0" />
+                                            </children>
+                                        </VBox>
+                                        
+                                        <Separator />
+                                        
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                            <children>
+                                                <CheckBox fx:id="chkPoseido" text="En propiedad" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                        
+                                <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <GridPane hgap="10.0" vgap="15.0">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="80.0" />
+                                                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Título:" />
+                                                <TextField fx:id="txtTitulo" styleClass="google-text-field" GridPane.columnIndex="1" />
+                                    
+                                                <Label text="Autor:" GridPane.rowIndex="1" />
+                                                <TextField fx:id="txtAutor" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    
+                                                <Label text="Editorial:" GridPane.rowIndex="2" />
+                                                <TextField fx:id="txtEditorial" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    
+                                                <Label text="Género:" GridPane.rowIndex="3" />
+                                                <TextField fx:id="txtGenero" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    
+                                                <Label text="Año:" GridPane.rowIndex="4" />
+                                                <Spinner fx:id="spinnerAnio" editable="true" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    
+                                                <Label text="ISBN:" GridPane.rowIndex="5" />
+                                                <TextField fx:id="txtIsbn" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                                <Label text="Serie/Saga:" GridPane.rowIndex="6" />
+                                                <TextField fx:id="txtSerie" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                                                <Label text="Orden:" GridPane.rowIndex="7" />
+                                                <TextField fx:id="txtOrden" promptText="Ej: 1.0, 2.5" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                            </children>
+                                        </GridPane>
+                              
+                                        <Separator />
+                              
+                                        <Label style="-fx-font-weight: bold;" text="Estanterías" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="cmbNuevaEstanteria" editable="true" promptText="Nueva estantería..." maxWidth="Infinity" HBox.hgrow="ALWAYS" />                                    
+                                                <Button onAction="#anadirEstanteria" text="Añadir" />
+                                            </children>
+                                        </HBox>
+                                        <ListView fx:id="listaEstanterias" prefHeight="100.0" />
+                                        <Button onAction="#eliminarEstanteria" style="-fx-text-fill: #d93025;" styleClass="text-button" text="Eliminar seleccionada" />
+                              
+                                        <Label style="-fx-font-weight: bold;" text="Reseña personal" />
+                                        <TextArea fx:id="txtResena" prefHeight="100.0" wrapText="true" styleClass="google-text-field" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </VBox>
+            </content>
+        </ScrollPane>
+      
+        <HBox alignment="CENTER_RIGHT" spacing="15.0">
+            <children>
+                <Button cancelButton="true" onAction="#cancelar" styleClass="text-button" text="Cancelar" />
+                <Button defaultButton="true" onAction="#guardar" styleClass="google-button" text="Guardar Cambios" />
+            </children>
+            <VBox.margin>
+                <Insets top="10.0" />
+            </VBox.margin>
+        </HBox>
+      
+    </children>
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+</VBox>
