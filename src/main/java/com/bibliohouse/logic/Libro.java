@@ -23,11 +23,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Clase simple que representa un Libro. Aquí se guarda toda la información de
- * cada libro de la biblioteca.
+ * Esta clase es como una ficha para cada libro.
+ * Aquí guardamos el título, autor y todo eso.
  *
  * @author Fernando Lago
- * @version 1.0
  */
 public class Libro {
 
@@ -54,29 +53,17 @@ public class Libro {
     private double ordenEnSerie; // double para permitir 1.5, 0.5, etc.
 
     /**
-     * Constructor usado al cargar desde JSON (requerido por Gson, pero puede
-     * usarse para crear libros vacíos).
+     * Constructor vacío.
      */
     public Libro() {
-        // Generar UUID si es un objeto nuevo y no ha sido cargado por Gson
+        // Si no tiene ID, le inventamos uno aleatorio
         if (this.id == null) {
             this.id = UUID.randomUUID().toString();
         }
     }
 
     /**
-     * Constructor con los datos. Útil cuando ya tenemos toda la info del libro
-     * y queremos crearlo de una vez.
-     *
-     * @param titulo       Nombre del libro.
-     * @param autor        Nombre del escritor.
-     * @param editorial    Nombre de la editorial.
-     * @param año          Año de publicación.
-     * @param genero       Género literario.
-     * @param isbn         Código ISBN.
-     * @param portadaURL   Link a la imagen.
-     * @param calificacion Puntos que le damos.
-     * @param reseña       Opinión personal.
+     * Constructor para crear el libro con todos los datos de golpe.
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
             String portadaURL, int calificacion, String reseña) {

@@ -53,12 +53,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Controlador principal de la aplicación. Gestiona la vista principal,
- * incluyendo la tabla de libros, la galería de portadas, la gestión de
- * préstamos, y las operaciones CRUD principales.
+ * Este es el controlador principal.
+ * Aquí manejo la tabla de libros, los préstamos y todo eso.
+ * Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
- * @version 1.0
  */
 public class PrimaryController implements Initializable {
 
@@ -240,13 +239,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Inicializa el controlador. Configura las columnas de las tablas,
-     * listeners y eventos.
-     *
-     * @param url La ubicación utilizada para resolver rutas relativas para el
-     *            objeto raíz, o null si no se conoce.
-     * @param rb  Los recursos utilizados para localizar el objeto raíz, o null
-     *            si no se conoce.
+     * Esta función arranca todo cuando se abre la ventana.
+     * Configura las columnas de las tablas y los botones.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -801,13 +795,10 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Actualiza los filtros de la tabla de libros. Combina múltiples filtros: -
-     * Filtro de título (txtBusquedaLocal) - Filtro de autor (txtFiltroAutor) -
-     * Filtro de ISBN (txtFiltroISBN) - Filtro de estado de lectura
-     * (cmbFiltroEstado) - Filtro de estantería (listaEstanterias)
-     *
-     * Todos los filtros se aplican con lógica AND: un libro debe cumplir TODOS
-     * los criterios especificados para aparecer en los resultados.
+     * Esta función filtra la tabla.
+     * Si escribes algo en los cuadros de búsqueda, aquí se decide qué libros se
+     * ven.
+     * Es un filtro acumulativo (TIENE que cumplir todo).
      */
     private void actualizarFiltros() {
         if (filteredData == null || listaEstanterias == null) {
@@ -1156,9 +1147,10 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Busca libros en la API de OpenLibrary en un hilo secundario.
+     * Busca libros en internet. Lanza hilos para buscar en OpenLi, Google e
+     * Inventaire a la vez.
      *
-     * @param event El evento del botón Buscar.
+     * @param event El botón pulsado.
      */
     @FXML
     private void buscarLibroOpenLibrary(ActionEvent event) {

@@ -57,39 +57,17 @@ public class OpenLibraryCliente {
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i";
 
     /**
-     * Busca libros en OpenLibrary por título, autor o ISBN.
-     * Si no se encuentran resultados o hay error de conexión, busca en
-     * Inventaire.io como respaldo.
+     * /**
+     * Busca libros en OpenLibrary.
+     * Si no encuentra nada, devuelve una lista vacía.
      *
-     * @param terminoDeBusqueda Término a buscar (título, autor, ISBN, etc.)
-     * @return Lista de libros encontrados. Lista vacía si no hay resultados o hay
-     *         error.
+     * @param busqueda Texto a buscar.
+     * @return Lista de libros.
      */
-    public static List<Libro> buscarLibros(String terminoDeBusqueda) {
-        List<Libro> librosEncontrados = buscarEnOpenLibrary(terminoDeBusqueda);
-
-        // Si OpenLibrary no devolvió resultados, intentar con Inventaire.io
-        if (librosEncontrados.isEmpty()) {
-            LOGGER.log(Level.INFO,
-                    "OpenLibrary no devolvió resultados. Intentando búsqueda en Inventaire.io como respaldo...");
-            librosEncontrados = InventaireCliente.buscarLibros(terminoDeBusqueda);
-
-            if (librosEncontrados.isEmpty()) {
-                LOGGER.log(Level.INFO,
-                        "Inventaire.io no devolvió resultados. Intentando búsqueda en Google Books como último recurso...");
-                librosEncontrados = GoogleBooksCliente.buscarLibros(terminoDeBusqueda);
-
-                if (!librosEncontrados.isEmpty()) {
-                    LOGGER.log(Level.INFO, "Resultados obtenidos de Google Books");
-                }
-            } else {
-                LOGGER.log(Level.INFO, "Resultados obtenidos de Inventaire.io");
-            }
-        } else {
-            LOGGER.log(Level.INFO, "Resultados obtenidos de OpenLibrary");
-        }
-
-        return librosEncontrados;
+    public static List<Libro> buscarLibros(String busqueda) {
+        // Solo buscamos en OpenLibrary.
+        // Si no hay resultados, devolvemos lista vacía y punto.
+        return buscarEnOpenLibrary(busqueda);
     }
 
     /**

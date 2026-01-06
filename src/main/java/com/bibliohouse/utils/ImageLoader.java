@@ -36,12 +36,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * Carga imágenes de forma asíncrona y las guarda en caché.
- * Evita bloquear la interfaz y ahorra memoria reutilizando imágenes ya
- * cargadas.
+ * Clase para cargar imágenes sin que se trabe la app.
+ * Guarda las fotos en una carpeta para no descargarlas dos veces.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.0 (Versión simple)
  */
 public class ImageLoader {
 
@@ -108,13 +107,13 @@ public class ImageLoader {
     }
 
     /**
-     * Carga una imagen con tamaño específico en un ImageView.
-     * Usa caché RAM y Disco.
+     * Esta función pone la imagen en el cuadro (ImageView).
+     * Si ya la tenemos en memoria, la usa. Si no, la busca.
      *
-     * @param urlOrPath URL de internet o ruta de archivo local.
-     * @param target    ImageView donde mostrar la imagen.
-     * @param w         Ancho deseado (o -1 para tamaño original).
-     * @param h         Alto deseado (o -1 para tamaño original).
+     * @param url    La dirección de la foto o la ruta del archivo.
+     * @param target El cuadro donde va la foto.
+     * @param w      Ancho que queremos.
+     * @param h      Alto que queremos.
      */
     public static void load(String urlOrPath, ImageView target, double w, double h) {
         if (target == null)
@@ -154,10 +153,10 @@ public class ImageLoader {
     }
 
     /**
-     * Maneja imágenes web:
-     * 1. Check DISK CACHE.
-     * 2. Si existe en disco -> Cargar como local.
-     * 3. Si no -> Descargar, guardar en disco, y luego cargar.
+     * Si la imagen es de internet:
+     * 1. Mira si ya la bajamos antes.
+     * 2. Si está, la carga del disco.
+     * 3. Si no, la descarga y la guarda.
      */
     private static void handleWebImage(String url, ImageView target, double w, double h, String memoryKey) {
         // Si no se ha configurado caché, no guardamos en disco (o usamos temp)

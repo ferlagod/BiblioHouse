@@ -33,11 +33,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Muestra el detalle completo de un libro.
- * Incluye la portada, resumen y valoración. Es la ficha técnica del libro.
+ * Ventana para ver la info de un libro.
+ * Sale la portada, resumen y las estrellitas.
  *
  * @author Fernando Lago
- * @version 1.0
  */
 public class DetalleLibroController {
 
@@ -78,8 +77,8 @@ public class DetalleLibroController {
     }
 
     /**
-     * Pone cada dato en su sitio: título, autor, estado de lectura...
-     * También pinta las estrellas de valoración y carga la portada.
+     * Pone los datos en los labels.
+     * También carga la imagen si tiene.
      */
     private void cargarDatos() {
         if (libroActual == null) {

@@ -38,10 +38,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Cliente para buscar libros en la API de Google Books.
+ * Cliente para conectar con Google Books.
+ * Si OpenLib no va, usamos esto.
  *
  * @author Fernando Lago
- * @version 1.0
  */
 public class GoogleBooksCliente {
 
@@ -49,11 +49,11 @@ public class GoogleBooksCliente {
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
 
     /**
-     * Busca libros en Google Books por título, autor o ISBN.
+     * Busca en Google.
+     * Devuelve una lista de libros.
      *
-     * @param terminoDeBusqueda Término a buscar (título, autor, ISBN, etc.)
-     * @return Lista de libros encontrados. Lista vacía si no hay resultados o hay
-     *         error.
+     * @param terminoDeBusqueda Lo que queremos buscar.
+     * @return Lista de libros que encontró.
      */
     public static List<Libro> buscarLibros(String terminoDeBusqueda) {
         List<Libro> librosEncontrados = new ArrayList<>();

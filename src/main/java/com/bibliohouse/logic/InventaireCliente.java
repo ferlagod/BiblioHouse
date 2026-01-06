@@ -37,11 +37,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Cliente para buscar libros en la API de Inventaire.io.
- * Hace peticiones HTTP y devuelve los resultados como objetos Libro.
+ * Cliente para buscar en Inventaire.io.
+ * Es otra página para buscar libros.
  *
  * @author Fernando Lago
- * @version 1.0
  */
 public class InventaireCliente {
 
@@ -52,11 +51,11 @@ public class InventaireCliente {
     private static final String API_BASE_URL = "https://inventaire.io/api/search";
 
     /**
-     * Busca libros en Inventaire.io por título, autor o ISBN.
+     * Busca libros en Inventaire.
+     * Llama a la URL y parsea el JSON.
      *
-     * @param terminoDeBusqueda Término a buscar (título, autor, ISBN, etc.)
-     * @return Lista de libros encontrados. Lista vacía si no hay resultados o hay
-     *         error.
+     * @param terminoDeBusqueda El texto.
+     * @return Lista de libros.
      */
     public static List<Libro> buscarLibros(String terminoDeBusqueda) {
         List<Libro> librosEncontrados = new ArrayList<>();
