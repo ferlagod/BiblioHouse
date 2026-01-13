@@ -58,6 +58,7 @@ import javafx.stage.Stage;
  * Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
+ * @version 1.0
  */
 public class PrimaryController implements Initializable {
 

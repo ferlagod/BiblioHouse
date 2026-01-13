@@ -42,6 +42,7 @@ import org.json.JSONObject;
  * Si OpenLib no va, usamos esto.
  *
  * @author Fernando Lago
+ * @version 1.0
  */
 public class GoogleBooksCliente {
 

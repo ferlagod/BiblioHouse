@@ -37,6 +37,7 @@ import javafx.stage.Stage;
  * Sale la portada, resumen y las estrellitas.
  *
  * @author Fernando Lago
+ * @version 1.0
  */
 public class DetalleLibroController {
 

@@ -38,8 +38,6 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-
-// OpenCV Imports
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 
@@ -48,8 +46,8 @@ import org.opencv.videoio.VideoCapture;
  * Utiliza OpenCV (vía OpenPnP) y ZXing para leer ISBNs.
  * VERSIÓN ACTUALIZADA PARA COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
- * @author Fernando Lago
- * @version 2.0 (OpenCV)
+ * @author Fernando Lago Dávila
+ * @version 1.0
  */
 public class EscanerController {
 

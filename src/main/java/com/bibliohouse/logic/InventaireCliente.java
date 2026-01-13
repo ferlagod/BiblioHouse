@@ -41,6 +41,7 @@ import org.json.JSONObject;
  * Es otra página para buscar libros.
  *
  * @author Fernando Lago
+ * @version 1.0
  */
 public class InventaireCliente {
 

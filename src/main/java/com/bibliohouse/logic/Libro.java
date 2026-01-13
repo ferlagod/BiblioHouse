@@ -27,6 +27,7 @@ import java.util.UUID;
  * Aquí guardamos el título, autor y todo eso.
  *
  * @author Fernando Lago
+ * @version 1.0
  */
 public class Libro {
 

@@ -15,7 +15,6 @@
  * Usted debería haber recibido una copia de la Licencia Pública General de GNU
  * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
-
 package com.ferlagod.bibliohousefx;
 
 /**
