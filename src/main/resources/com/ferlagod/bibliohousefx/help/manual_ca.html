@@ -5,105 +5,235 @@
     <meta charset="UTF-8">
     <title>Manual d'Usuari BiblioHouse</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --section-bg: #ffffff;
+            --border-color: #e0e0e0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
             padding: 20px;
         }
 
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--section-bg);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
         h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
             padding-bottom: 10px;
+            margin-bottom: 30px;
         }
 
         h2 {
-            color: #2980b9;
-            margin-top: 30px;
+            color: var(--accent-color);
+            margin-top: 40px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
         }
 
         h3 {
-            color: #16a085;
+            color: var(--primary-color);
+            margin-top: 25px;
+        }
+
+        p,
+        ul,
+        ol {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
         }
 
         .shortcut {
-            background: #f1f1f1;
+            background: #eee;
             padding: 2px 6px;
             border-radius: 4px;
             border: 1px solid #ccc;
             font-family: monospace;
             font-weight: bold;
-        }
-
-        ul {
-            margin-bottom: 20px;
-        }
-
-        li {
-            margin-bottom: 5px;
+            color: #555;
         }
 
         .note {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 10px;
-            margin: 15px 0;
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h1>Manual d'Usuari - BiblioHouse</h1>
-    <p>Benvingut a <strong>BiblioHouse</strong>, el teu gestor personal de biblioteques. Aquesta aplicació et permet
-        organitzar la teva col·lecció de llibres, gestionar préstecs i fer un seguiment de les teves lectures.</p>
+    <div class="container">
+        <h1>Manual d'Usuari - BiblioHouse Pro</h1>
+        <p>Benvingut a <strong>BiblioHouse</strong>, la teva solució integral per a la gestió de biblioteques personals.
+            Aquesta guia detallada t'ajudarà a treure el màxim profit de totes les funcionalitats, des de la catalogació
+            de llibres fins a la gestió de préstecs i socis.</p>
 
-    <h2>📚 Gestió de Llibres</h2>
-    <h3>Afegir Llibres</h3>
-    <p>Pots afegir llibres de dues maneres:</p>
-    <ul>
-        <li><strong>Automàtica (OpenLibrary):</strong> Escriu el títol o ISBN a la barra superior i prem <span
-                class="shortcut">Enter</span> o la lupa. Si trobes el llibre, prem "Afegir".</li>
-        <li><strong>Manual:</strong> Omple els camps (Títol, Autor, ISBN...) al panell "Afegir manualment" i prem
-            "Afegir a Biblioteca".</li>
-    </ul>
+        <h2>1. Primers Passos</h2>
+        <p>En iniciar BiblioHouse, et trobaràs amb el tauler principal. La interfície està dissenyada per ser intuïtiva
+            i està dividida en pestanyes per facilitar la navegació:</p>
+        <ul>
+            <li><strong>Catàleg (Taula/Galeria):</strong> La teva col·lecció completa de llibres.</li>
+            <li><strong>Préstecs:</strong> Gestió activa de llibres prestats.</li>
+            <li><strong>Historial:</strong> Registre històric de tots els moviments.</li>
+        </ul>
+        <div class="note">
+            <strong>Nota:</strong> Pots personalitzar l'idioma de l'aplicació en qualsevol moment des d'<em>Eines >
+                Configuració</em> o des del menú <em>Idioma</em>.
+        </div>
 
-    <h3>Editar i Eliminar</h3>
-    <p>Fes clic dret sobre qualsevol llibre de la taula per veure les opcions:</p>
-    <ul>
-        <li><strong>Editar detalls:</strong> Modifica la informació del llibre.</li>
-        <li><strong>Canviar portada:</strong> Actualitza la imatge de la coberta.</li>
-        <li><strong>Eliminar llibre:</strong> Esborra el llibre permanentment de la teva col·lecció.</li>
-    </ul>
+        <h2>2. Gestió de Llibres</h2>
+        <h3>Afegir Llibres</h3>
+        <p>BiblioHouse ofereix tres mètodes potents per afegir llibres a la teva col·lecció:</p>
 
-    <h2>🔄 Préstecs</h2>
-    <p>A la pestanya "Préstecs Actius" pots deixar els teus llibres a amics o familiars (Socis).</p>
-    <ol>
-        <li>Selecciona un <strong>Llibre</strong> disponible.</li>
-        <li>Selecciona un <strong>Soci</strong> (o crea'n un de nou amb el botó <span class="shortcut">+</span>).</li>
-        <li>Prem <strong>Realitzar Préstec</strong>.</li>
-    </ol>
-    <p>Quan et retornin el llibre, selecciona'l a la taula inferior i prem <strong>Marcar com a Retornat</strong>.</p>
+        <h4>A. Cerca Automàtica Unificada</h4>
+        <p>La forma més ràpida. BiblioHouse cerca simultàniament a <strong>OpenLibrary, Google Books i
+                Inventaire</strong>.</p>
+        <ol>
+            <li>Situa't a la pestanya "Catàleg".</li>
+            <li>A la barra superior (Cerca Online), escriu el títol, autor o ISBN.</li>
+            <li>Prem <span class="shortcut">Enter</span> o fes clic a la icona de la lupa.</li>
+            <li>Apareixerà una finestra amb els resultats trobats. Selecciona el llibre correcte i prem "Afegir".</li>
+        </ol>
 
-    <h2>⌨️ Dreceres de Teclat</h2>
-    <p>Augmenta la teva productivitat amb aquestes dreceres:</p>
-    <ul>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Cercar llibre (Focus al filtre de
-            títol).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Afegir nou llibre manual (Focus al
-            títol).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Realitzar préstec (Focus a selecció
-            de llibre).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Sortir de l'aplicació.</li>
-    </ul>
+        <h4>B. Escaneig de Codi de Barres</h4>
+        <p>Ideal si tens el llibre físic a la mà. Utilitza la càmera del teu ordinador.</p>
+        <ol>
+            <li>Fes clic al botó amb la icona de <strong>Càmera/Codi de Barres</strong>.</li>
+            <li>Mostra el codi de barres (ISBN) del llibre a la càmera.</li>
+            <li>El sistema detectarà automàticament el codi, tancarà la finestra i emplenarà les dades del llibre
+                cercant-lo a internet.</li>
+        </ol>
 
-    <div class="note">
-        <strong>Nota:</strong> A macOS, utilitza la tecla <span class="shortcut">Cmd ⌘</span> en lloc de Ctrl.
+        <h4>C. Afegit Manual</h4>
+        <p>Per a llibres antics o rars que no apareixen a internet.</p>
+        <ol>
+            <li>Emplena els camps del panell lateral esquerre: Títol, Autor, Editorial, Gènere, etc.</li>
+            <li>Si el llibre pertany a una saga, indica el nom de la <strong>Sèrie</strong> i l'<strong>Ordre</strong>
+                (ex. "Harry Potter", 1).</li>
+            <li>Pots arrossegar una imatge de portada directament sobre el quadre d'imatge o prémer "Seleccionar
+                Portada".</li>
+            <li>Fes clic a <strong>Afegir a la Biblioteca</strong>.</li>
+        </ol>
+
+        <h3>Editar i Organitzar</h3>
+        <ul>
+            <li><strong>Editar:</strong> Fes doble clic sobre qualsevol llibre a la llista per obrir l'editor complet.
+                Pots modificar totes les dades, canviar la prestatgeria o actualitzar la portada.</li>
+            <li><strong>Organitzar per Prestatgeries:</strong> Assigna llibres a "Prestatgeries" personalitzades (ex.
+                "Favorits", "Ciència-Ficció") des del menú d'edició. Utilitza el panell lateral esquerre per filtrar la
+                teva vista per prestatgeria.</li>
+            <li><strong>Estoc Múltiple:</strong> Si tens diverses còpies d'un mateix llibre, BiblioHouse gestiona la
+                quantitat. En eliminar, et preguntarà si vols esborrar una unitat o tot el registre.</li>
+        </ul>
+
+        <h2>3. Gestió de Socis</h2>
+        <p>Per prestar llibres, primer necessites registrar les persones (Socis).</p>
+        <ol>
+            <li>Ves al menú <strong>Socis > Gestió de Socis</strong>.</li>
+            <li>Utilitza el formulari per donar d'alta un nou soci (Nom, DNI, Telèfon...).</li>
+            <li>Des d'aquesta finestra també pots editar dades de contacte o eliminar socis (sempre que no tinguin
+                llibres pendents de tornar).</li>
+        </ol>
+
+        <h2>4. Sistema de Préstecs</h2>
+        <h3>Realitzar un Préstec</h3>
+        <ol>
+            <li>Ves a la pestanya <strong>Préstecs</strong>.</li>
+            <li>Al panell "Nou Préstec", selecciona el llibre desplegable (només veuràs els disponibles en estoc).</li>
+            <li>Selecciona el soci que s'emporta el llibre.</li>
+            <li>Prem <strong>Realitzar Préstec</strong>.</li>
+        </ol>
+
+        <h3>Devolucions i Venciments</h3>
+        <p>A la taula inferior veuràs tots els préstecs actius.</p>
+        <ul>
+            <li><strong>Retornar:</strong> Selecciona la línia del préstec i prem <strong>Marcar com a
+                    Retornat</strong>. El llibre tornarà a estar disponible al teu estoc.</li>
+            <li><strong>Alertes de Retard:</strong> Si un préstec supera el temps límit configurat (per defecte 30
+                dies), la fila es marcarà en <span style="color:red; font-weight:bold;">vermell</span> i rebràs una
+                alerta en obrir l'aplicació.</li>
+        </ul>
+
+        <h2>5. Eines Avançades</h2>
+        <h3>Còpies de Seguretat</h3>
+        <p>Protegeix les teves dades. Ves a <em>Eines > Configuració</em>.</p>
+        <ul>
+            <li><strong>Exportar Backup (ZIP):</strong> Crea un arxiu comprimit amb totes les teves dades i portades.
+                Ideal per moure la teva biblioteca a un altre ordinador.</li>
+            <li><strong>Importar/Exportar JSON:</strong> Des del menú <em>Arxiu</em>, pots exportar només les dades dels
+                llibres en format JSON lleuger o importar una base de dades externa.</li>
+        </ul>
+
+        <h3>Informes PDF</h3>
+        <p>Genera catàlegs professionals de la teva biblioteca. Ves a <em>Arxiu > Exportar a PDF</em>. Pots filtrar per
+            prestatgeria o gènere abans de generar el document.</p>
+
+        <h2>6. Dreceres de Teclat</h2>
+        <p>Augmenta la teva productivitat amb aquestes dreceres ràpides:</p>
+        <ul>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Cercar a la meva biblioteca
+                (Focus a filtre local).</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Nou llibre (Focus a formulari
+                manual).</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Anar a pestanya de Préstecs.</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Sortir de l'aplicació.</li>
+        </ul>
+        <div class="note">
+            En macOS, utilitza la tecla <span class="shortcut">Cmd ⌘</span> en lloc de Ctrl.
+        </div>
+
+        <div class="footer">
+            BiblioHouse Pro &copy; 2026 Fernando Lago Dávila - Llicència GNU GPL v3
+        </div>
     </div>
-
-    <h2>⚙️ Configuració</h2>
-    <p>Vés a <em>Eines > Configuració</em> per canviar el tema visual (Clar, Fosc, Verd...), l'idioma i la durada
-        predeterminada dels préstecs.</p>
 </body>
 
 </html>

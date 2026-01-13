@@ -5,105 +5,233 @@
     <meta charset="UTF-8">
     <title>BiblioHouse User Manual</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --section-bg: #ffffff;
+            --border-color: #e0e0e0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
             padding: 20px;
         }
 
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--section-bg);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
         h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
             padding-bottom: 10px;
+            margin-bottom: 30px;
         }
 
         h2 {
-            color: #2980b9;
-            margin-top: 30px;
+            color: var(--accent-color);
+            margin-top: 40px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
         }
 
         h3 {
-            color: #16a085;
+            color: var(--primary-color);
+            margin-top: 25px;
+        }
+
+        p,
+        ul,
+        ol {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
         }
 
         .shortcut {
-            background: #f1f1f1;
+            background: #eee;
             padding: 2px 6px;
             border-radius: 4px;
             border: 1px solid #ccc;
             font-family: monospace;
             font-weight: bold;
-        }
-
-        ul {
-            margin-bottom: 20px;
-        }
-
-        li {
-            margin-bottom: 5px;
+            color: #555;
         }
 
         .note {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 10px;
-            margin: 15px 0;
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h1>User Manual - BiblioHouse</h1>
-    <p>Welcome to <strong>BiblioHouse</strong>, your personal library manager. This application allows you to organize
-        your book collection, manage loans, and track your reading.</p>
+    <div class="container">
+        <h1>User Manual - BiblioHouse Pro</h1>
+        <p>Welcome to <strong>BiblioHouse</strong>, your comprehensive solution for personal library management. This
+            detailed guide will help you get the most out of every feature, from cataloging books to managing loans and
+            members.</p>
 
-    <h2>📚 Book Management</h2>
-    <h3>Adding Books</h3>
-    <p>You can add books in two ways:</p>
-    <ul>
-        <li><strong>Automatic (OpenLibrary):</strong> Type the title or ISBN in the top bar and press <span
-                class="shortcut">Enter</span> or the search icon. If found, click "Add".</li>
-        <li><strong>Manual:</strong> Fill in the fields (Title, Author, ISBN...) in the "Add manually" panel and click
-            "Add to Library".</li>
-    </ul>
+        <h2>1. Getting Started</h2>
+        <p>When you start BiblioHouse, you will see the main dashboard. The interface is designed to be intuitive and is
+            divided into tabs for easy navigation:</p>
+        <ul>
+            <li><strong>Catalog (Table/Gallery):</strong> Your complete collection of books.</li>
+            <li><strong>Loans:</strong> Active management of lent books.</li>
+            <li><strong>History:</strong> Historical record of all transactions.</li>
+        </ul>
+        <div class="note">
+            <strong>Note:</strong> You can customize the application language at any time from <em>Tools > Settings</em>
+            or from the <em>Language</em> menu.
+        </div>
 
-    <h3>Edit and Delete</h3>
-    <p>Right-click on any book in the table to see options:</p>
-    <ul>
-        <li><strong>Edit details:</strong> Modify book information.</li>
-        <li><strong>Change cover:</strong> Update the cover image.</li>
-        <li><strong>Delete book:</strong> Permanently remove the book from your collection.</li>
-    </ul>
+        <h2>2. Book Management</h2>
+        <h3>Adding Books</h3>
+        <p>BiblioHouse offers three powerful methods to add books to your collection:</p>
 
-    <h2>🔄 Loans</h2>
-    <p>In the "Active Loans" tab, you can lend your books to friends or family (Members).</p>
-    <ol>
-        <li>Select an available <strong>Book</strong>.</li>
-        <li>Select a <strong>Member</strong> (or create a new one with the <span class="shortcut">+</span> button).</li>
-        <li>Click <strong>Make Loan</strong>.</li>
-    </ol>
-    <p>When the book is returned, select it in the table below and click <strong>Mark as Returned</strong>.</p>
+        <h4>A. Unified Automatic Search</h4>
+        <p>The fastest way. BiblioHouse searches simultaneously on <strong>OpenLibrary, Google Books, and
+                Inventaire</strong>.</p>
+        <ol>
+            <li>Go to the "Catalog" tab.</li>
+            <li>In the top bar (Online Search), type the title, author, or ISBN.</li>
+            <li>Press <span class="shortcut">Enter</span> or click the magnifying glass icon.</li>
+            <li>A window with search results will appear. Select the correct book and click "Add".</li>
+        </ol>
 
-    <h2>⌨️ Keyboard Shortcuts</h2>
-    <p>Boost your productivity with these shortcuts:</p>
-    <ul>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Search book (Focus on title filter).
-        </li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Add new manual book (Focus on title).
-        </li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Make loan (Focus on book selection).
-        </li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Exit application.</li>
-    </ul>
+        <h4>B. Barcode Scanning</h4>
+        <p>Ideal if you have the physical book. Uses your computer's webcam.</p>
+        <ol>
+            <li>Click the button with the <strong>Camera/Barcode</strong> icon.</li>
+            <li>Show the book's barcode (ISBN) to the camera.</li>
+            <li>The system will automatically detect the code, close the window, and fill in the book data by searching
+                online.</li>
+        </ol>
 
-    <div class="note">
-        <strong>Note:</strong> On macOS, use the <span class="shortcut">Cmd ⌘</span> key instead of Ctrl.
+        <h4>C. Manual Entry</h4>
+        <p>For old or rare books not found online.</p>
+        <ol>
+            <li>Fill in the fields on the left sidebar: Title, Author, Publisher, Genre, etc.</li>
+            <li>If the book belongs to a saga, indicate the <strong>Series</strong> name and <strong>Order</strong>
+                (e.g., "Harry Potter", 1).</li>
+            <li>You can drag a cover image directly onto the image box or click "Select Cover".</li>
+            <li>Click <strong>Add to Library</strong>.</li>
+        </ol>
+
+        <h3>Editing and Organizing</h3>
+        <ul>
+            <li><strong>Edit:</strong> Double-click on any book in the list to open the full editor. You can modify all
+                data, change the shelf, or update the cover.</li>
+            <li><strong>Organize by Shelves:</strong> Assign books to custom "Shelves" (e.g., "Favorites", "Sci-Fi")
+                from the edit menu. Use the left sidebar to filter your view by shelf.</li>
+            <li><strong>Multiple Stock:</strong> If you have multiple copies of the same book, BiblioHouse manages the
+                quantity. When deleting, it will ask if you want to remove one unit or the entire record.</li>
+        </ul>
+
+        <h2>3. Member Management</h2>
+        <p>To lend books, you first need to register people (Members).</p>
+        <ol>
+            <li>Go to the menu <strong>Members > Member Management</strong>.</li>
+            <li>Use the form to register a new member (Name, ID, Phone...).</li>
+            <li>From this window, you can also edit contact details or delete members (provided they have no pending
+                books to return).</li>
+        </ol>
+
+        <h2>4. Loan System</h2>
+        <h3>Making a Loan</h3>
+        <ol>
+            <li>Go to the <strong>Loans</strong> tab.</li>
+            <li>In the "New Loan" panel, select the book from the dropdown (only books in stock are shown).</li>
+            <li>Select the member who is taking the book.</li>
+            <li>Click <strong>Make Loan</strong>.</li>
+        </ol>
+
+        <h3>Returns and Due Dates</h3>
+        <p>In the bottom table, you will see all active loans.</p>
+        <ul>
+            <li><strong>Return:</strong> Select the loan row and click <strong>Mark as Returned</strong>. The book will
+                become available in your stock again.</li>
+            <li><strong>Overdue Alerts:</strong> If a loan exceeds the configured time limit (default is 30 days), the
+                row will be marked in <span style="color:red; font-weight:bold;">red</span> and you will receive an
+                alert upon opening the application.</li>
+        </ul>
+
+        <h2>5. Advanced Tools</h2>
+        <h3>Backups</h3>
+        <p>Protect your data. Go to <em>Tools > Settings</em>.</p>
+        <ul>
+            <li><strong>Export Backup (ZIP):</strong> Creates a compressed file with all your data and covers. Ideal for
+                moving your library to another computer.</li>
+            <li><strong>Import/Export JSON:</strong> From the <em>File</em> menu, you can export only book data in
+                lightweight JSON format or import an external database.</li>
+        </ul>
+
+        <h3>PDF Reports</h3>
+        <p>Generate professional catalogs of your library. Go to <em>File > Export to PDF</em>. You can filter by shelf
+            or genre before generating the document.</p>
+
+        <h2>6. Keyboard Shortcuts</h2>
+        <p>Boost your productivity with these quick shortcuts:</p>
+        <ul>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Search in my library (Focus on
+                local filter).</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : New book (Focus on manual form).
+            </li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Go to Loans tab.</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Quit application.</li>
+        </ul>
+        <div class="note">
+            On macOS, use the <span class="shortcut">Cmd ⌘</span> key instead of Ctrl.
+        </div>
+
+        <div class="footer">
+            BiblioHouse Pro &copy; 2026 Fernando Lago Dávila - GNU GPL v3 License
+        </div>
     </div>
-
-    <h2>⚙️ Settings</h2>
-    <p>Go to <em>Tools > Settings</em> to change the visual theme (Light, Dark, Green...), language, and default loan
-        duration.</p>
 </body>
 
 </html>

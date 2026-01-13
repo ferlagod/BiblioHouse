@@ -4,59 +4,197 @@
     <meta charset="UTF-8">
     <title>Manual de Usuario BiblioHouse</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; padding: 20px; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        h2 { color: #2980b9; margin-top: 30px; }
-        h3 { color: #16a085; }
-        .shortcut { background: #f1f1f1; padding: 2px 6px; border-radius: 4px; border: 1px solid #ccc; font-family: monospace; font-weight: bold; }
-        ul { margin-bottom: 20px; }
-        li { margin-bottom: 5px; }
-        .note { background: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; margin: 15px 0; }
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --section-bg: #ffffff;
+            --border-color: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--section-bg);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: var(--accent-color);
+            margin-top: 40px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+        }
+        h3 {
+            color: var(--primary-color);
+            margin-top: 25px;
+        }
+        p, ul, ol {
+            margin-bottom: 15px;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .shortcut {
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-family: monospace;
+            font-weight: bold;
+            color: #555;
+        }
+        .note {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>Manual de Usuario - BiblioHouse</h1>
-    <p>Bienvenido a <strong>BiblioHouse</strong>, tu gestor personal de bibliotecas. Esta aplicación te permite organizar tu colección de libros, gestionar préstamos y realizar un seguimiento de tus lecturas.</p>
+    <div class="container">
+        <h1>Manual de Usuario - BiblioHouse Pro</h1>
+        <p>Bienvenido a <strong>BiblioHouse</strong>, tu solución integral para la gestión de bibliotecas personales. Esta guía detallada te ayudará a sacar el máximo partido a todas las funcionalidades, desde la catalogación de libros hasta la gestión de préstamos y socios.</p>
 
-    <h2>📚 Gestión de Libros</h2>
-    <h3>Añadir Libros</h3>
-    <p>Puedes añadir libros de dos formas:</p>
-    <ul>
-        <li><strong>Automática (OpenLibrary):</strong> Escribe el título o ISBN en la barra superior y pulsa <span class="shortcut">Enter</span> o la lupa. Si encuentras el libro, pulsa "Añadir".</li>
-        <li><strong>Manual:</strong> Rellena los campos (Título, Autor, ISBN...) en el panel "Añadir manualmente" y pulsa "Añadir a Biblioteca".</li>
-    </ul>
+        <h2>1. Primeros Pasos</h2>
+        <p>Al iniciar BiblioHouse, te encontrarás con el panel principal. La interfaz está diseñada para ser intuitiva y está dividida en pestañas para facilitar la navegación:</p>
+        <ul>
+            <li><strong>Catálogo (Tabla/Galería):</strong> Tu colección completa de libros.</li>
+            <li><strong>Préstamos:</strong> Gestión activa de libros prestados.</li>
+            <li><strong>Historial:</strong> Registro histórico de todos los movimientos.</li>
+        </ul>
+        <div class="note">
+            <strong>Nota:</strong> Puedes personalizar el idioma de la aplicación en cualquier momento desde <em>Herramientas > Configuración</em> o desde el menú <em>Idioma</em>.
+        </div>
 
-    <h3>Editar y Eliminar</h3>
-    <p>Haz clic derecho sobre cualquier libro de la tabla para ver las opciones:</p>
-    <ul>
-        <li><strong>Editar detalles:</strong> Modifica la información del libro.</li>
-        <li><strong>Cambiar portada:</strong> Actualiza la imagen de la cubierta.</li>
-        <li><strong>Eliminar libro:</strong> Borra el libro permanentemente de tu colección.</li>
-    </ul>
+        <h2>2. Gestión de Libros</h2>
+        <h3>Añadir Libros</h3>
+        <p>BiblioHouse ofrece tres métodos potentes para añadir libros a tu colección:</p>
+        
+        <h4>A. Búsqueda Automática Unificada</h4>
+        <p>La forma más rápida. BiblioHouse busca simultáneamente en <strong>OpenLibrary, Google Books e Inventaire</strong>.</p>
+        <ol>
+            <li>Sitúate en la pestaña "Catálogo".</li>
+            <li>En la barra superior (Búsqueda Online), escribe el título, autor o ISBN.</li>
+            <li>Pulsa <span class="shortcut">Enter</span> o haz clic en el icono de la lupa.</li>
+            <li>Aparecerá una ventana con los resultados encontrados. Selecciona el libro correcto y pulsa "Añadir".</li>
+        </ol>
 
-    <h2>🔄 Préstamos</h2>
-    <p>En la pestaña "Préstamos Activos" puedes prestar tus libros a amigos o familiares (Socios).</p>
-    <ol>
-        <li>Selecciona un <strong>Libro</strong> disponible.</li>
-        <li>Selecciona un <strong>Socio</strong> (o crea uno nuevo con el botón <span class="shortcut">+</span>).</li>
-        <li>Pulsa <strong>Realizar Préstamo</strong>.</li>
-    </ol>
-    <p>Cuando te devuelvan el libro, selecciónalo en la tabla inferior y pulsa <strong>Marcar como Devuelto</strong>.</p>
+        <h4>B. Escaneo de Código de Barras</h4>
+        <p>Ideal si tienes el libro físico en la mano. Utiliza la cámara de tu ordenador.</p>
+        <ol>
+            <li>Haz clic en el botón con el icono de <strong>Cámara/Código de Barras</strong>.</li>
+            <li>Muestra el código de barras (ISBN) del libro a la cámara.</li>
+            <li>El sistema detectará automáticamente el código, cerrará la ventana y rellenará los datos del libro buscándolo en internet.</li>
+        </ol>
 
-    <h2>⌨️ Atajos de Teclado</h2>
-    <p>Aumenta tu productividad con estos atajos:</p>
-    <ul>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Buscar libro (Foco en filtro de título).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Añadir nuevo libro manual (Foco en título).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Realizar préstamo (Foco en selección de libro).</li>
-        <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Salir de la aplicación.</li>
-    </ul>
+        <h4>C. Añadido Manual</h4>
+        <p>Para libros antiguos o raros que no aparecen en internet.</p>
+        <ol>
+            <li>Rellena los campos del panel lateral izquierdo: Título, Autor, Editorial, Género, etc.</li>
+            <li>Si el libro pertenece a una saga, indica el nombre de la <strong>Serie</strong> y el <strong>Orden</strong> (ej. "Harry Potter", 1).</li>
+            <li>Puedes arrastrar una imagen de portada directamente sobre el cuadro de imagen o pulsar "Seleccionar Portada".</li>
+            <li>Haz clic en <strong>Añadir a Biblioteca</strong>.</li>
+        </ol>
 
-    <div class="note">
-        <strong>Nota:</strong> En macOS, utiliza la tecla <span class="shortcut">Cmd ⌘</span> en lugar de Ctrl.
+        <h3>Editar y Organizar</h3>
+        <ul>
+            <li><strong>Editar:</strong> Haz doble clic sobre cualquier libro en la lista para abrir el editor completo. Puedes modificar todos los datos, cambiar la estantería o actualizar la portada.</li>
+            <li><strong>Organizar por Estanterías:</strong> Asigna libros a "Estanterías" personalizadas (ej. "Favoritos", "Ciencia Ficción") desde el menú de edición. Usa el panel lateral izquierdo para filtrar tu vista por estantería.</li>
+            <li><strong>Stock Múltiple:</strong> Si tienes varias copias de un mismo libro, BiblioHouse gestiona la cantidad. Al eliminar, te preguntará si quieres borrar una unidad o todo el registro.</li>
+        </ul>
+
+        <h2>3. Gestión de Socios</h2>
+        <p>Para prestar libros, primero necesitas registrar a las personas (Socios).</p>
+        <ol>
+            <li>Ve al menú <strong>Socios > Gestión de Socios</strong>.</li>
+            <li>Usa el formulario para dar de alta un nuevo socio (Nombre, DNI, Teléfono...).</li>
+            <li>Desde esta ventana también puedes editar datos de contacto o eliminar socios (siempre que no tengan libros pendientes de devolver).</li>
+        </ol>
+
+        <h2>4. Sistema de Préstamos</h2>
+        <h3>Realizar un Préstamo</h3>
+        <ol>
+            <li>Ve a la pestaña <strong>Préstamos</strong>.</li>
+            <li>En el panel "Nuevo Préstamo", selecciona el libro desplegable (solo verás los disponibles en stock).</li>
+            <li>Selecciona el socio que se lleva el libro.</li>
+            <li>Pulsa <strong>Realizar Préstamo</strong>.</li>
+        </ol>
+
+        <h3>Devoluciones y Vencimientos</h3>
+        <p>En la tabla inferior verás todos los préstamos activos.</p>
+        <ul>
+            <li><strong>Devolver:</strong> Selecciona la línea del préstamo y pulsa <strong>Marcar como Devuelto</strong>. El libro volverá a estar disponible en tu stock.</li>
+            <li><strong>Alertas de Retraso:</strong> Si un préstamo supera el tiempo límite configurado (por defecto 30 días), la fila se marcará en <span style="color:red; font-weight:bold;">rojo</span> y recibirás una alerta al abrir la aplicación.</li>
+        </ul>
+
+        <h2>5. Herramientas Avanzadas</h2>
+        <h3>Copias de Seguridad</h3>
+        <p>Protege tus datos. Ve a <em>Herramientas > Configuración</em>.</p>
+        <ul>
+            <li><strong>Exportar Backup (ZIP):</strong> Crea un archivo comprimido con todos tus datos y portadas. Ideal para mover tu biblioteca a otro ordenador.</li>
+            <li><strong>Importar/Exportar JSON:</strong> Desde el menú <em>Archivo</em>, puedes exportar solo los datos de los libros en formato JSON ligero o importar una base de datos externa.</li>
+        </ul>
+
+        <h3>Informes PDF</h3>
+        <p>Genera catálogos profesionales de tu biblioteca. Ve a <em>Archivo > Exportar a PDF</em>. Puedes filtrar por estantería o género antes de generar el documento.</p>
+
+        <h2>6. Atajos de Teclado</h2>
+        <p>Aumenta tu productividad con estos atajos rápidos:</p>
+        <ul>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Buscar en mi biblioteca (Foco en filtro local).</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Nuevo libro (Foco en formulario manual).</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Ir a pestaña de Préstamos.</li>
+            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Salir de la aplicación.</li>
+        </ul>
+        <div class="note">
+            En macOS, utiliza la tecla <span class="shortcut">Cmd ⌘</span> en lugar de Ctrl.
+        </div>
+
+        <div class="footer">
+            BiblioHouse Pro &copy; 2026 Fernando Lago Dávila - Licencia GNU GPL v3
+        </div>
     </div>
-
-    <h2>⚙️ Configuración</h2>
-    <p>Ve a <em>Herramientas > Configuración</em> para cambiar el tema visual (Claro, Oscuro, Verde...), el idioma y la duración predeterminada de los préstamos.</p>
 </body>
 </html>
