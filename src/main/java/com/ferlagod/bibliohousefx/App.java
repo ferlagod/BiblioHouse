@@ -82,8 +82,8 @@ public class App extends Application {
         String lang = prefs.get("language", "es");
         setLocale(lang);
 
-        // 1. Al arrancar, cargamos el LOGIN con el bundle
-        FXMLLoader loader = new FXMLLoader(App.class.getResource("login.fxml"));
+        // 1. Al arrancar, cargamos la pantalla de BIENVENIDA (Registro vs Invitado)
+        FXMLLoader loader = new FXMLLoader(App.class.getResource("welcome.fxml"));
         loader.setResources(bundle);
         Parent root = loader.load();
 
