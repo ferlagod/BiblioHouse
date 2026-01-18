@@ -38,8 +38,8 @@ import java.util.stream.Collectors;
 
 /**
  * Esto es el servicio para exportar libros a PDF. Crea informes en PDF que
- * quedan bastante profesionales, con estadísticas, agrupación por estanterías
- * y todo bien formateado. Útil para tener un backup en papel o para compartir.
+ * quedan bastante profesionales, con estadísticas, agrupación por estanterías y
+ * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -62,11 +62,11 @@ public class ServicioExportarPdf {
 
     /**
      * Exporta una lista de libros filtrados a un archivo PDF.
-     * 
-     * @param libros              Lista de libros a exportar.
+     *
+     * @param libros Lista de libros a exportar.
      * @param librosPorEstanteria Mapa de libros organizados por estantería.
-     * @param destino             Archivo de destino para el PDF.
-     * @param criteriosFiltro     Descripción de los filtros aplicados.
+     * @param destino Archivo de destino para el PDF.
+     * @param criteriosFiltro Descripción de los filtros aplicados.
      * @return true si la exportación fue exitosa, false en caso contrario.
      */
     public boolean exportarLibrosPDF(List<Libro> libros, Map<String, List<Libro>> librosPorEstanteria,
@@ -122,11 +122,11 @@ public class ServicioExportarPdf {
 
     /**
      * Agrega estadísticas generales de la biblioteca al PDF.
-     * 
+     *
      * @param contentStream Stream de contenido de la página.
-     * @param libros        Lista de libros.
-     * @param yPosition     Posición Y inicial.
-     * @param pageWidth     Ancho de la página.
+     * @param libros Lista de libros.
+     * @param yPosition Posición Y inicial.
+     * @param pageWidth Ancho de la página.
      * @return Nueva posición Y después de agregar las estadísticas.
      * @throws IOException Si hay error al escribir en el PDF.
      */
@@ -192,8 +192,8 @@ public class ServicioExportarPdf {
 
     /**
      * Agrega los libros organizados por estantería al documento PDF.
-     * 
-     * @param document            Documento PDF.
+     *
+     * @param document Documento PDF.
      * @param librosPorEstanteria Mapa de libros organizados por estantería.
      * @throws IOException Si hay error al escribir en el PDF.
      */
@@ -232,12 +232,12 @@ public class ServicioExportarPdf {
                         contentStream.close();
                         page = new PDPage(PDRectangle.A4);
                         document.addPage(page);
-                        PDPageContentStream newStream = new PDPageContentStream(document, page);
-                        yPosition = page.getMediaBox().getHeight() - MARGIN;
+                        try (PDPageContentStream newStream = new PDPageContentStream(document, page)) {
+                            yPosition = page.getMediaBox().getHeight() - MARGIN;
 
-                        // Continuar con el nuevo stream
-                        yPosition = agregarLibro(newStream, libro, yPosition, page.getMediaBox().getWidth());
-                        newStream.close();
+                            // Continuar con el nuevo stream
+                            yPosition = agregarLibro(newStream, libro, yPosition, page.getMediaBox().getWidth());
+                        }
 
                         // Crear nuevo stream para el siguiente libro
                         if (libros.indexOf(libro) < libros.size() - 1) {
@@ -256,11 +256,11 @@ public class ServicioExportarPdf {
 
     /**
      * Agrega la información de un libro al PDF.
-     * 
+     *
      * @param contentStream Stream de contenido de la página.
-     * @param libro         Libro a agregar.
-     * @param yPosition     Posición Y inicial.
-     * @param pageWidth     Ancho de la página.
+     * @param libro Libro a agregar.
+     * @param yPosition Posición Y inicial.
+     * @param pageWidth Ancho de la página.
      * @return Nueva posición Y después de agregar el libro.
      * @throws IOException Si hay error al escribir en el PDF.
      */
@@ -326,13 +326,13 @@ public class ServicioExportarPdf {
 
     /**
      * Agrega texto en una posición específica del PDF.
-     * 
+     *
      * @param contentStream Stream de contenido de la página.
-     * @param texto         Texto a agregar.
-     * @param x             Posición X.
-     * @param y             Posición Y.
-     * @param font          Fuente a utilizar.
-     * @param fontSize      Tamaño de la fuente.
+     * @param texto Texto a agregar.
+     * @param x Posición X.
+     * @param y Posición Y.
+     * @param font Fuente a utilizar.
+     * @param fontSize Tamaño de la fuente.
      * @return Nueva posición Y después del texto.
      * @throws IOException Si hay error al escribir en el PDF.
      */
@@ -350,14 +350,14 @@ public class ServicioExportarPdf {
 
     /**
      * Agrega texto multilínea en el PDF.
-     * 
+     *
      * @param contentStream Stream de contenido de la página.
-     * @param texto         Texto a agregar.
-     * @param x             Posición X.
-     * @param y             Posición Y inicial.
-     * @param font          Fuente a utilizar.
-     * @param fontSize      Tamaño de la fuente.
-     * @param maxWidth      Ancho máximo del texto.
+     * @param texto Texto a agregar.
+     * @param x Posición X.
+     * @param y Posición Y inicial.
+     * @param font Fuente a utilizar.
+     * @param fontSize Tamaño de la fuente.
+     * @param maxWidth Ancho máximo del texto.
      * @return Nueva posición Y después del texto.
      * @throws IOException Si hay error al escribir en el PDF.
      */
@@ -376,7 +376,7 @@ public class ServicioExportarPdf {
     /**
      * Limpia el texto para evitar problemas con caracteres especiales en PDF.
      * PDFBox Standard14Fonts no soporta todos los caracteres Unicode.
-     * 
+     *
      * @param texto Texto original.
      * @return Texto limpio compatible con PDF.
      */

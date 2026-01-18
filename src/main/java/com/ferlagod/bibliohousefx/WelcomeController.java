@@ -29,12 +29,9 @@ import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 
 /**
- * Controlador para la pantalla de bienvenida.
- * <p>
- * Esta clase gestiona la primera interacción del usuario con la aplicación,
- * ofreciendo la opción de iniciar sesión/registrarse o usar la aplicación
- * en modo invitado (sin registro).
- * </p>
+ * Controlador para la pantalla de bienvenida. Esta clase gestiona la primera
+ * interacción del usuario con la aplicación, ofreciendo la opción de iniciar
+ * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
  * @author Ferlagod
  * @version 1.0
@@ -42,23 +39,19 @@ import javafx.stage.Stage;
 public class WelcomeController {
 
     /**
-     * Inicializa el controlador.
-     * <p>
-     * Se llama automáticamente después de cargar el archivo FXML.
-     * Aquí se pueden realizar configuraciones iniciales si fueran necesarias.
-     * </p>
+     * Inicializa el controlador. Se llama automáticamente después de cargar el
+     * archivo FXML. Aquí se pueden realizar configuraciones iniciales si fueran
+     * necesarias.
      */
     @FXML
     public void initialize() {
-        // Nada especial que inicializar por ahora.
+
     }
 
     /**
-     * Maneja la acción del botón "Iniciar con Registro".
-     * <p>
-     * Carga y muestra la pantalla de inicio de sesión (Login/Registro).
-     * Reutiliza la ventana (Stage) actual.
-     * </p>
+     * Maneja la acción del botón "Iniciar con Registro". Carga y muestra la
+     * pantalla de inicio de sesión (Login/Registro). Reutiliza la ventana
+     * (Stage) actual.
      *
      * @param event El evento de acción provocado por el botón.
      */
@@ -80,18 +73,15 @@ public class WelcomeController {
             stage.getScene().setRoot(root);
 
         } catch (IOException e) {
-            e.printStackTrace();
             System.err.println("Error fatal al cargar login.fxml");
         }
     }
 
     /**
      * Maneja la acción del botón "Iniciar sin Registro" (Modo Invitado).
-     * <p>
-     * Muestra una advertencia de privacidad y seguridad antes de proceder.
-     * Si el usuario acepta, crea un perfil local de "Invitado" y entra a la
+     * Muestra una advertencia de privacidad y seguridad antes de proceder. Si
+     * el usuario acepta, crea un perfil local de "Invitado" y entra a la
      * aplicación.
-     * </p>
      *
      * @param event El evento de acción provocado por el botón.
      */
@@ -104,7 +94,6 @@ public class WelcomeController {
         alert.setTitle(bundle.getString("privacy.title"));
         alert.setHeaderText(bundle.getString("privacy.header"));
         alert.setContentText(bundle.getString("privacy.content"));
-
 
         // Esperar respuesta
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
@@ -126,7 +115,6 @@ public class WelcomeController {
                 App.loadMain("Invitado", guestPath);
 
             } catch (IOException e) {
-                e.printStackTrace();
                 System.err.println("Error al cargar la aplicación en modo invitado.");
             }
         }

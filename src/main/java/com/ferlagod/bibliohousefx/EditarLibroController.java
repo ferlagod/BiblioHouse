@@ -33,9 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controlador para la edición de libros.
- * Permite modificar datos como título, autor, portada o gestionar las
- * estanterías.
+ * Controlador para la edición de libros. Permite modificar datos como título,
+ * autor, portada o gestionar las estanterías.
  *
  * @author Ferlagod
  * @version 1.0
@@ -53,9 +52,9 @@ public class EditarLibroController {
     @FXML
     private TextField txtIsbn; // Campo de texto para el ISBN
     @FXML
-    private TextField txtSerie; // <-- NUEVO
+    private TextField txtSerie;
     @FXML
-    private TextField txtOrden; // <-- NUEVO
+    private TextField txtOrden;
     @FXML
     private Spinner<Integer> spinnerAnio; // Selector numérico para el año de publicación
     @FXML
@@ -83,9 +82,8 @@ public class EditarLibroController {
     private ObservableList<String> modeloEstanterias;
 
     /**
-     * Configuración inicial de la ventana.
-     * Prepara los desplegables de calificación y estado, y configura el selector de
-     * año.
+     * Configuración inicial de la ventana. Prepara los desplegables de
+     * calificación y estado, y configura el selector de año.
      */
     @FXML
     public void initialize() {
@@ -134,8 +132,9 @@ public class EditarLibroController {
         txtGenero.setText(libro.getGenero());
         txtIsbn.setText(libro.getIsbn());
 
-        if (libro.getSerie() != null)
+        if (libro.getSerie() != null) {
             txtSerie.setText(libro.getSerie());
+        }
         txtOrden.setText(String.valueOf(libro.getOrdenEnSerie()));
 
         // Año
@@ -217,7 +216,6 @@ public class EditarLibroController {
 
             } catch (Exception e) {
                 mostrarAlerta("Error", "No se pudo cargar la imagen seleccionada.");
-                e.printStackTrace();
             }
         }
     }
@@ -268,8 +266,8 @@ public class EditarLibroController {
     }
 
     /**
-     * Guarda los cambios si las validaciones son correctas.
-     * Actualiza el objeto libro con la nueva información y cierra la ventana.
+     * Guarda los cambios si las validaciones son correctas. Actualiza el objeto
+     * libro con la nueva información y cierra la ventana.
      *
      * @param event El clic del botón Guardar.
      */
@@ -301,8 +299,6 @@ public class EditarLibroController {
         libro.setOrdenEnSerie(orden);
 
         libro.setEstadoLectura(cmbEstadoLectura.getValue());
-        // libro.setLeido(chkLeido.isSelected()); // <-- ELIMINADO (Ya se maneja dentro
-        // de setEstadoLectura)
 
         // Calificación: obtenemos el índice seleccionado (0=Sin calificar, 1=1
         // estrella...)
@@ -342,7 +338,7 @@ public class EditarLibroController {
      * Indica si los cambios fueron guardados exitosamente.
      *
      * @return {@code true} si el usuario pulsó Guardar y la operación fue
-     *         exitosa, {@code false} en caso contrario.
+     * exitosa, {@code false} en caso contrario.
      */
     public boolean isGuardado() {
         return guardado;
@@ -351,7 +347,7 @@ public class EditarLibroController {
     /**
      * Muestra una alerta modal al usuario.
      *
-     * @param titulo  El título de la ventana de alerta.
+     * @param titulo El título de la ventana de alerta.
      * @param mensaje El contenido del mensaje a mostrar.
      */
     private void mostrarAlerta(String titulo, String mensaje) {

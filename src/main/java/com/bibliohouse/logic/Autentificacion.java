@@ -38,7 +38,7 @@ public class Autentificacion {
      *
      * @param password La contraseña que escribe el usuario.
      * @return Un código largo en Base64 que representa la contraseña, o null si
-     *         algo sale mal.
+     * algo sale mal.
      */
     public static String hashPassword(String password) {
         // Compruebo que la contraseña no esté vacía o sea null
@@ -54,7 +54,6 @@ public class Autentificacion {
         } catch (NoSuchAlgorithmException e) {
             // Si no encuentra el algoritmo, se imprime el error y devuelve null
             System.err.println("Error grave: Algoritmo de hash no encontrado: " + HASH_ALGORITHM);
-            e.printStackTrace();
             return null;
         }
     }
@@ -64,10 +63,10 @@ public class Autentificacion {
      * guardado.
      *
      * @param inputPassword La contraseña que escribe el usuario al iniciar
-     *                      sesión.
-     * @param hashGuardado  El hash que tenemos guardado en la base de datos.
+     * sesión.
+     * @param hashGuardado El hash que tenemos guardado en la base de datos.
      * @return true si coinciden, false si no coinciden o si algo va mal. Ojo:
-     *         si hashGuardado es null o vacío, devuelve false directamente.
+     * si hashGuardado es null o vacío, devuelve false directamente.
      */
     public static boolean checkPassword(String inputPassword, String hashGuardado) {
         // Se comprueba que ni la contraseña ni el hash estén vacíos

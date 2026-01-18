@@ -37,27 +37,39 @@ import javafx.stage.Stage;
  */
 public class ResultadosBusquedaController {
 
-    /** Tabla que muestra los libros encontrados. */
+    /**
+     * Tabla que muestra los libros encontrados.
+     */
     @FXML
     private TableView<Libro> tablaResultados;
 
-    /** Columna de título. */
+    /**
+     * Columna de título.
+     */
     @FXML
     private TableColumn<Libro, String> colTitulo;
 
-    /** Columna de autor. */
+    /**
+     * Columna de autor.
+     */
     @FXML
     private TableColumn<Libro, String> colAutor;
 
-    /** Columna de año de publicación. */
+    /**
+     * Columna de año de publicación.
+     */
     @FXML
     private TableColumn<Libro, String> colAnio;
 
-    /** Columna de editorial. */
+    /**
+     * Columna de editorial.
+     */
     @FXML
     private TableColumn<Libro, String> colEditorial;
 
-    /** Libro que el usuario ha seleccionado. */
+    /**
+     * Libro que el usuario ha seleccionado.
+     */
     private Libro libroSeleccionado = null;
 
     /**

@@ -35,8 +35,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Controlador para la ventana de exportación de informes PDF.
- * Permite filtrar libros por diversos criterios y exportarlos a PDF.
+ * Controlador para la ventana de exportación de informes PDF. Permite filtrar
+ * libros por diversos criterios y exportarlos a PDF.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -89,8 +89,8 @@ public class ExportarPDFController {
     private Map<String, SimpleBooleanProperty> seleccionGeneros;
 
     /**
-     * Inicializa el controlador.
-     * Configura los listeners para actualizar el contador de libros.
+     * Inicializa el controlador. Configura los listeners para actualizar el
+     * contador de libros.
      */
     @FXML
     public void initialize() {
@@ -112,10 +112,10 @@ public class ExportarPDFController {
 
     /**
      * Establece los datos necesarios para el controlador.
-     * 
-     * @param libros      Lista completa de libros.
+     *
+     * @param libros Lista completa de libros.
      * @param estanterias Lista de estanterías disponibles.
-     * @param generos     Lista de géneros disponibles.
+     * @param generos Lista de géneros disponibles.
      */
     public void setDatos(List<Libro> libros, List<String> estanterias, List<String> generos) {
         this.todosLosLibros = new ArrayList<>(libros);
@@ -226,7 +226,7 @@ public class ExportarPDFController {
 
     /**
      * Aplica los filtros seleccionados a la lista de libros.
-     * 
+     *
      * @return Lista de libros filtrados.
      */
     private List<Libro> aplicarFiltros() {
@@ -237,7 +237,7 @@ public class ExportarPDFController {
 
     /**
      * Verifica si un libro cumple con todos los filtros seleccionados.
-     * 
+     *
      * @param libro Libro a verificar.
      * @return true si cumple con todos los filtros, false en caso contrario.
      */
@@ -245,10 +245,10 @@ public class ExportarPDFController {
         // Filtro por búsqueda de título/ISBN
         String busqueda = txtBuscar.getText().trim().toLowerCase();
         if (!busqueda.isEmpty()) {
-            boolean coincideTitulo = libro.getTitulo() != null &&
-                    libro.getTitulo().toLowerCase().contains(busqueda);
-            boolean coincideIsbn = libro.getIsbn() != null &&
-                    libro.getIsbn().toLowerCase().contains(busqueda);
+            boolean coincideTitulo = libro.getTitulo() != null
+                    && libro.getTitulo().toLowerCase().contains(busqueda);
+            boolean coincideIsbn = libro.getIsbn() != null
+                    && libro.getIsbn().toLowerCase().contains(busqueda);
             if (!coincideTitulo && !coincideIsbn) {
                 return false;
             }
@@ -275,7 +275,7 @@ public class ExportarPDFController {
             } else {
                 boolean algunaCoincide = estanteriasLibro.stream()
                         .anyMatch(est -> seleccionEstanterias.getOrDefault(est,
-                                new SimpleBooleanProperty(false)).get());
+                        new SimpleBooleanProperty(false)).get());
                 if (!algunaCoincide) {
                     return false;
                 }
@@ -427,8 +427,8 @@ public class ExportarPDFController {
 
                 if (exito) {
                     mostrarAlerta("Exportación exitosa",
-                            "El informe PDF se ha generado correctamente en:\n" +
-                                    finalDestino.getAbsolutePath(),
+                            "El informe PDF se ha generado correctamente en:\n"
+                            + finalDestino.getAbsolutePath(),
                             Alert.AlertType.INFORMATION);
                     stage.close();
                 } else {
@@ -442,7 +442,7 @@ public class ExportarPDFController {
 
     /**
      * Genera una descripción textual de los filtros aplicados.
-     * 
+     *
      * @return Descripción de los filtros.
      */
     private String generarDescripcionFiltros() {
@@ -500,7 +500,7 @@ public class ExportarPDFController {
 
     /**
      * Agrupa los libros por estantería.
-     * 
+     *
      * @param libros Lista de libros a agrupar.
      * @return Mapa con libros agrupados por estantería.
      */
@@ -533,10 +533,10 @@ public class ExportarPDFController {
 
     /**
      * Muestra una alerta al usuario.
-     * 
-     * @param titulo  Título de la alerta.
+     *
+     * @param titulo Título de la alerta.
      * @param mensaje Mensaje de la alerta.
-     * @param tipo    Tipo de alerta.
+     * @param tipo Tipo de alerta.
      */
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);

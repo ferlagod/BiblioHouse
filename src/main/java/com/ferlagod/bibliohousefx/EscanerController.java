@@ -42,9 +42,9 @@ import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
 
 /**
- * Controlador para la ventana de escaneo de códigos de barras.
- * Utiliza OpenCV (vía OpenPnP) y ZXing para leer ISBNs.
- * VERSIÓN ACTUALIZADA PARA COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
+ * Controlador para la ventana de escaneo de códigos de barras. Utiliza OpenCV
+ * (vía OpenPnP) y ZXing para leer ISBNs. VERSIÓN ACTUALIZADA PARA
+ * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author Fernando Lago Dávila
  * @version 1.0
@@ -59,9 +59,11 @@ public class EscanerController {
     private EscanerListener listener;
 
     /**
-     * Interfaz para comunicar el resultado del escaneo al controlador principal.
+     * Interfaz para comunicar el resultado del escaneo al controlador
+     * principal.
      */
     public interface EscanerListener {
+
         void onIsbnScanned(String isbn);
     }
 
@@ -84,9 +86,7 @@ public class EscanerController {
                 try {
                     // Carga la librería nativa adecuada para el SO (soporta M1)
                     nu.pattern.OpenCV.loadLocally();
-                    // O si usamos org.openpnp.opencv.OpenCV:
-                    // En algunas versiones con shading funciona directo, pero por si acaso:
-                    // System.loadLibrary(org.opencv.core.Core.NATIVE_LIBRARY_NAME);
+
                 } catch (Throwable e) {
                     // Fallback o error logging
                     System.err.println("Error cargando OpenCV: " + e.getMessage());
@@ -206,18 +206,34 @@ public class EscanerController {
         return image;
     }
 
+    /**
+     * Valida si un texto podría ser un código ISBN.
+     *
+     * @param text Texto a validar. Puede ser {@code null}.
+     * @return {@code true} si el texto podría ser un ISBN (longitud 10 o 13),
+     * {@code false} en caso contrario.
+     */
     private boolean esPosibleISBN(String text) {
-        if (text == null)
+        if (text == null) {
             return false;
+        }
         String clean = text.replaceAll("-", "").trim();
         return clean.length() == 10 || clean.length() == 13;
     }
 
+    /**
+     * Manejador del evento "cancelar" en la interfaz gráfica.
+     *
+     * @param event Evento de acción generado por el botón "Cancelar".
+     */
     @FXML
     private void cancelar(ActionEvent event) {
         cerrarVentana();
     }
 
+    /**
+     * Cierra la ventana actual y libera los recursos de la cámara.
+     */
     private void cerrarVentana() {
         stopCamera.set(true);
         if (capture != null && capture.isOpened()) {
@@ -227,6 +243,9 @@ public class EscanerController {
         stage.close();
     }
 
+    /**
+     * Libera los recursos de la cámara y detiene la captura de video.
+     */
     public void shutdown() {
         stopCamera.set(true);
         if (capture != null) {

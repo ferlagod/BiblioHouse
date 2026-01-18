@@ -83,7 +83,7 @@ public class JsonManager {
         /**
          * Convierte un String de JSON a una fecha LocalDate.
          *
-         * @param json    El JSON con la fecha en formato String.
+         * @param json El JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de la serialización.
          * @return La fecha parseada desde el String.
@@ -97,7 +97,7 @@ public class JsonManager {
         /**
          * Convierte un JsonPrimitive (String) a un objeto LocalDate.
          *
-         * @param json    JSON con la fecha en formato String.
+         * @param json JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de deserialización.
          * @return Objeto LocalDate parseado desde el String.
@@ -114,7 +114,7 @@ public class JsonManager {
      * Constructor de JsonManager.Recibe la ruta de datos del usuario.
      *
      * @param rutaDatosUsuario La ruta completa a la carpeta de datos del
-     *                         usuario actual.
+     * usuario actual.
      */
     public JsonManager(String rutaDatosUsuario) {
         if (rutaDatosUsuario == null || rutaDatosUsuario.isEmpty()) {
@@ -130,8 +130,7 @@ public class JsonManager {
         this.estanteriasDatabasePath = rutaDatosUsuario + File.separator + "estanterias.json";
         this.preferencesFilePath = rutaDatosUsuario + File.separator + "preferences.json"; // <-- Inicialización
 
-        // Se configura el Gson para que use el adaptador de fechas y que el JSON quede
-        // "bien"
+        // Se configura el Gson para que use el adaptador de fechas 
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                 .setPrettyPrinting()
@@ -160,9 +159,9 @@ public class JsonManager {
 
     /**
      * Intenta ocultar el directorio para que el usuario no lo borre
-     * accidentalmente.
-     * En macOS usa 'chflags hidden', en Windows usa el atributo 'dos:hidden'.
-     * 
+     * accidentalmente. En macOS usa 'chflags hidden', en Windows usa el
+     * atributo 'dos:hidden'.
+     *
      * @param dir El directorio a ocultar.
      */
     private void ocultarDirectorio(File dir) {
@@ -175,7 +174,7 @@ public class JsonManager {
                 // En Windows usamos la API de NIO
                 java.nio.file.Files.setAttribute(dir.toPath(), "dos:hidden", true);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             // No es crítico si falla, solo mostramos logging
             LOGGER.log(Level.WARNING, "No se pudo ocultar la carpeta de datos: {0}", e.getMessage());
         }
@@ -200,10 +199,10 @@ public class JsonManager {
      * Método genérico para guardar cualquier lista de objetos en un archivo
      * JSON.
      *
-     * @param lista    La lista de objetos que queremos guardar.
-     * @param path     La ruta del archivo donde se guardará.
+     * @param lista La lista de objetos que queremos guardar.
+     * @param path La ruta del archivo donde se guardará.
      * @param tipoDato Un String que describe qué tipo de datos estamos
-     *                 guardando.
+     * guardando.
      */
     private <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
         // Asegurarse de que el directorio del usuario exista antes de intentar escribir
@@ -211,7 +210,7 @@ public class JsonManager {
 
         try (FileWriter writer = new FileWriter(path)) {
             gson.toJson(lista, writer);
-            LOGGER.log(Level.FINE, "Guardados {0} {1} en {2}", new Object[] { lista.size(), tipoDato, path });
+            LOGGER.log(Level.FINE, "Guardados {0} {1} en {2}", new Object[]{lista.size(), tipoDato, path});
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al guardar " + tipoDato + " en " + path, e);
 
@@ -221,18 +220,18 @@ public class JsonManager {
     /**
      * Método genérico para cargar datos desde un archivo JSON.
      *
-     * @param path      La ruta del archivo que queremos cargar.
+     * @param path La ruta del archivo que queremos cargar.
      * @param tipoLista El tipo de la lista que esperamos.
-     * @param tipoDato  Un String que describe qué tipo de datos estamos
-     *                  cargando.
+     * @param tipoDato Un String que describe qué tipo de datos estamos
+     * cargando.
      * @return La lista de objetos cargados desde el archivo. Si hay error,
-     *         devuelve una lista vacía.
+     * devuelve una lista vacía.
      */
     private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
         File file = new File(path);
         if (!file.exists()) {
             LOGGER.log(Level.INFO, "El archivo de {0} no existe para este usuario en {1}. Se devuelve lista vacía.",
-                    new Object[] { tipoDato, path });
+                    new Object[]{tipoDato, path});
             return new ArrayList<>();
         }
         try (FileReader reader = new FileReader(file)) {
@@ -240,10 +239,10 @@ public class JsonManager {
             if (lista == null) {
                 LOGGER.log(Level.WARNING,
                         "El archivo JSON {0} en {1} parece estar vacío o corrupto. Devolviendo lista vacía.",
-                        new Object[] { tipoDato, path });
+                        new Object[]{tipoDato, path});
                 return new ArrayList<>();
             }
-            LOGGER.log(Level.INFO, "Cargados {0} {1} desde {2}", new Object[] { lista.size(), tipoDato, path });
+            LOGGER.log(Level.INFO, "Cargados {0} {1} desde {2}", new Object[]{lista.size(), tipoDato, path});
             return lista;
         } catch (JsonParseException e) { // Captura específica para errores de formato JSON
             LOGGER.log(Level.SEVERE,
@@ -344,7 +343,7 @@ public class JsonManager {
      * Carga la lista de nombres de estanterías desde un archivo JSON.
      *
      * @return Una lista de Strings con las estanterías. Devuelve una lista
-     *         vacía si no se encuentra el archivo.
+     * vacía si no se encuentra el archivo.
      */
     public List<String> cargarEstanterias() {
         Type tipoLista = new TypeToken<ArrayList<String>>() {
@@ -401,7 +400,7 @@ public class JsonManager {
      * usuario (Exportar).
      *
      * @param archivo El archivo destino.
-     * @param libros  La lista de libros a guardar.
+     * @param libros La lista de libros a guardar.
      * @return true si se guardó correctamente, false si falló.
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {

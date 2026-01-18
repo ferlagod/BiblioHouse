@@ -146,22 +146,22 @@ public class EstadisticasController {
         // Contamos solo los que tienen fecha de finalización y el estado "Leído"
         long totalLibrosTerminados = libros.stream()
                 .filter(libro -> "Leído".equalsIgnoreCase(libro.getEstadoLectura())
-                        && libro.getFechaFinalizacion() != null)
+                && libro.getFechaFinalizacion() != null)
                 .count();
 
         // Contamos los terminados ESTE AÑO
         leidosEsteAnio = (int) libros.stream()
                 .filter(libro -> "Leído".equalsIgnoreCase(libro.getEstadoLectura())
-                        && libro.getFechaFinalizacion() != null)
+                && libro.getFechaFinalizacion() != null)
                 .filter(libro -> libro.getFechaFinalizacion().getYear() == anioActual)
                 .count();
 
-        // 1. CALCULAR TASA PROMEDIO: Total terminados / Meses transcurridos
+        // CALCULAR TASA PROMEDIO: Total terminados / Meses transcurridos
         double tasaCalculada = (totalLibrosTerminados > 0)
                 ? (double) totalLibrosTerminados / (double) mesActual
                 : 0.0;
 
-        // 2. ACTUALIZAR UI
+        // ACTUALIZAR UI
         if (lblLeidosAnio != null) {
             lblLeidosAnio.setText(String.valueOf(leidosEsteAnio));
         }
@@ -176,8 +176,9 @@ public class EstadisticasController {
      * @param libros Lista de libros para analizar.
      */
     private void generarGraficoAutores(List<Libro> libros) {
-        if (graficoAutores == null)
+        if (graficoAutores == null) {
             return;
+        }
 
         graficoAutores.getData().clear();
 
@@ -207,8 +208,9 @@ public class EstadisticasController {
      * @param libros Lista de libros para analizar.
      */
     private void generarGraficoEstadosPorGenero(List<Libro> libros) {
-        if (graficoEstadosPorGenero == null)
+        if (graficoEstadosPorGenero == null) {
             return;
+        }
 
         graficoEstadosPorGenero.getData().clear();
 
@@ -262,10 +264,12 @@ public class EstadisticasController {
         lblLeidosAnio.setText("0");
         lblTasaPromedio.setText("0.00");
         graficoGeneros.setData(FXCollections.observableArrayList());
-        if (graficoAutores != null)
+        if (graficoAutores != null) {
             graficoAutores.getData().clear();
-        if (graficoEstadosPorGenero != null)
+        }
+        if (graficoEstadosPorGenero != null) {
             graficoEstadosPorGenero.getData().clear();
+        }
     }
 
     /**

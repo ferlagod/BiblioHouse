@@ -31,7 +31,7 @@ public class Socio {
     private String apellidos;
     private String dni; // El DNI o documento de identidad
     private String domicilio; // Dónde vive
-    private int numeroSocio; // Un número único para identificarlo (como su carné)
+    private int numeroSocio; // Un número único para identificarlo 
 
     /**
      * Constructor por defecto de la clase Socio.
@@ -43,10 +43,10 @@ public class Socio {
      * Constructor para crear una nueva instancia de Socio con información
      * personal y un número de socio.
      *
-     * @param nombre      El nombre del socio.
-     * @param apellidos   Los apellidos del socio.
-     * @param dni         El DNI del socio.
-     * @param domicilio   El domicilio del socio.
+     * @param nombre El nombre del socio.
+     * @param apellidos Los apellidos del socio.
+     * @param dni El DNI del socio.
+     * @param domicilio El domicilio del socio.
      * @param numeroSocio El número de socio único.
      */
     public Socio(String nombre, String apellidos, String dni, String domicilio, int numeroSocio) {
@@ -69,7 +69,7 @@ public class Socio {
 
     /**
      * Devuelve el nombre completo del socio juntando nombre y apellidos.
-     * 
+     *
      * @return El nombre + un espacio + apellidos.
      */
     public String getNombreCompleto() {

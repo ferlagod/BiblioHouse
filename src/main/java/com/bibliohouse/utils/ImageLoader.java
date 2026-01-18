@@ -36,8 +36,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * Clase para cargar imágenes sin que se trabe la app.
- * Guarda las fotos en una carpeta para no descargarlas dos veces.
+ * Clase para cargar imágenes sin que se trabe la app. Guarda las fotos en una
+ * carpeta para no descargarlas dos veces.
  *
  * @author Fernando Lago
  * @version 1.0 (Versión simple)
@@ -46,18 +46,24 @@ public class ImageLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
 
-    /** Caché en memoria (RAM) para acceso ultrarrápido durante la sesión. */
+    /**
+     * Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
+     */
     private static final Map<String, Image> memoryCache = Collections.synchronizedMap(new HashMap<>());
 
-    /** Directorio donde se guardarán las imágenes descargadas. */
-    // private static final String CACHE_DIR = System.getProperty("user.home") +
-    // File.separator + "BiblioHouse" + File.separator + "cache"; // REMOVED
+    /**
+     * Directorio donde se guardarán las imágenes descargadas.
+     */
     private static String cacheDir = null;
 
-    /** Executor para descargas en segundo plano. */
+    /**
+     * Executor para descargas en segundo plano.
+     */
     private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
-    /** Ruta de la imagen por defecto */
+    /**
+     * Ruta de la imagen por defecto
+     */
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
 
     private static void loadDefault(ImageView target, double w, double h) {
@@ -88,14 +94,9 @@ public class ImageLoader {
         }
     }
 
-    // static {
-    // // Asegurar que el directorio de caché existe
-    // new File(CACHE_DIR).mkdirs();
-    // }
-
     /**
      * Configura el directorio de caché. Debe llamarse al iniciar sesión.
-     * 
+     *
      * @param path Ruta absoluta a la carpeta de caché.
      */
     public static void setCacheDir(String path) {
@@ -107,22 +108,20 @@ public class ImageLoader {
     }
 
     /**
-     * Esta función pone la imagen en el cuadro (ImageView).
-     * Si ya la tenemos en memoria, la usa. Si no, la busca.
+     * Esta función pone la imagen en el cuadro (ImageView). Si ya la tenemos en
+     * memoria, la usa. Si no, la busca.
      *
-     * @param url    La dirección de la foto o la ruta del archivo.
+     * @param url La dirección de la foto o la ruta del archivo.
      * @param target El cuadro donde va la foto.
-     * @param w      Ancho que queremos.
-     * @param h      Alto que queremos.
+     * @param w Ancho que queremos.
+     * @param h Alto que queremos.
      */
     public static void load(String urlOrPath, ImageView target, double w, double h) {
-        if (target == null)
+        if (target == null) {
             return;
+        }
 
-        // Limpiar imagen previa mientras carga la nueva (opcional, a veces mejor no
-        // hacerlo para evitar parpadeo)
-        // target.setImage(null);
-
+        // Limpiar imagen previa mientras carga la nueva
         if (urlOrPath == null || urlOrPath.isEmpty()) {
             loadDefault(target, w, h);
             return;
@@ -153,10 +152,8 @@ public class ImageLoader {
     }
 
     /**
-     * Si la imagen es de internet:
-     * 1. Mira si ya la bajamos antes.
-     * 2. Si está, la carga del disco.
-     * 3. Si no, la descarga y la guarda.
+     * Si la imagen es de internet: 1. Mira si ya la bajamos antes. 2. Si está,
+     * la carga del disco. 3. Si no, la descarga y la guarda.
      */
     private static void handleWebImage(String url, ImageView target, double w, double h, String memoryKey) {
         // Si no se ha configurado caché, no guardamos en disco (o usamos temp)
@@ -181,7 +178,8 @@ public class ImageLoader {
     }
 
     /**
-     * Descarga la imagen en un hilo separado, la guarda y luego la carga en el UI.
+     * Descarga la imagen en un hilo separado, la guarda y luego la carga en el
+     * UI.
      */
     private static void downloadAndLoad(String url, File destination, ImageView target, double w, double h,
             String memoryKey) {
@@ -262,8 +260,9 @@ public class ImageLoader {
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1)
+                if (hex.length() == 1) {
                     hexString.append('0');
+                }
                 hexString.append(hex);
             }
             // Añadir una extensión genérica o intentar adivinarla sería mejor,

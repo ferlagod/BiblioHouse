@@ -27,9 +27,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * El corazón de la bestia.
- * Aquí arranca todo: cargamos la configuración, elegimos idioma y mostramos
- * la primera pantalla (la de login, obvio).
+ * El corazón de la bestia. Aquí arranca todo: cargamos la configuración,
+ * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Ferlagod
  * @version 1.0
@@ -65,9 +64,7 @@ public class App extends Application {
     }
 
     /**
-     * ¡Acción!
-     * JavaFX llama a esto cuando está listo. Cargamos el login y cruzamos los
-     * dedos.
+     * Cargamos el login.
      *
      * @param stage La ventana principal (el escenario).
      * @throws IOException Si el FXML del login ha desaparecido misteriosamente.
@@ -100,8 +97,12 @@ public class App extends Application {
     }
 
     /**
-     * Esto abre la ventana grande, la buena.
-     * Se llama cuando el usuario ya ha demostrado que sabe su contraseña.
+     * Esto abre la ventana grande, la buena.Se llama cuando el usuario ya ha
+     * demostrado que sabe su contraseña.
+     *
+     * @param username Nombre de usuario
+     * @param path ruta de la carpeta
+     * @throws java.io.IOException
      */
     public static void loadMain(String username, String path) throws IOException {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("primary.fxml"));
@@ -123,8 +124,6 @@ public class App extends Application {
         Scene mainScene = new Scene(root);
         mainStage.setScene(mainScene);
 
-        // Eliminamos la maximización forzada. El controlador la aplicará si es
-        // necesario.
         // Icono también para esta ventana
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
@@ -135,8 +134,10 @@ public class App extends Application {
      * Recarga la interfaz principal para aplicar cambios de idioma sin cerrar
      * la ventana.
      *
+     * @param stage estado.
      * @param username El nombre de usuario actual.
-     * @param path     La ruta de la biblioteca actual.
+     * @param path La ruta de la biblioteca actual.
+     * @return controller
      * @throws IOException Si hay error cargando el FXML.
      */
     public static PrimaryController reloadUI(Stage stage, String username, String path) throws IOException {
@@ -162,6 +163,8 @@ public class App extends Application {
 
     /**
      * Se ejecuta cuando la aplicación se está cerrando gracefully.
+     *
+     * @throws java.lang.Exception
      */
     @Override
     public void stop() throws Exception {
@@ -170,7 +173,6 @@ public class App extends Application {
         com.bibliohouse.utils.ImageLoader.shutdown();
 
         // 2. Cerrar cualquier otra cosa si fuera necesario
-
         System.out.println("[App] Bye bye!");
         // Forzamos el cierre de la JVM por si quedan hilos "zombie" (como el de AWT o
         // Swing interop)

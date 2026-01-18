@@ -21,8 +21,12 @@ import com.bibliohouse.logic.JsonManager;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Consumer;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -72,16 +76,16 @@ public class ConfiguracionController {
      * preferencias actuales y configura los listeners.
      *
      * @param manager El gestor de datos JSON.
-     * @param main    El controlador principal de la aplicación.
+     * @param main El controlador principal de la aplicación.
      */
     public void initData(JsonManager manager, PrimaryController main) {
         this.jsonManager = manager;
         this.mainController = main;
 
-        // 1. Cargar la ruta de datos actual
+        // Cargar la ruta de datos actual
         txtRutaDatos.setText(mainController.getRutaUsuario());
 
-        // 4. Configurar el ComboBox de Idioma
+        // Configurar el ComboBox de Idioma
         comboIdioma.getItems().setAll("Español", "English", "Català", "Galego", "Euskara", "Português");
 
         // Seleccionar idioma actual
@@ -107,69 +111,59 @@ public class ConfiguracionController {
                 break;
         }
 
-        comboIdioma.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                String langCode = "es";
-                if (newVal.equals("English"))
-                    langCode = "en";
-                else if (newVal.equals("Català"))
-                    langCode = "ca";
-                else if (newVal.equals("Galego"))
-                    langCode = "gl";
-                else if (newVal.equals("Euskara"))
-                    langCode = "eu";
-                else if (newVal.equals("Português"))
-                    langCode = "pt";
-
-                // Guardar preferencia
-                java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-                prefs.put("language", langCode);
-
-                // Actualizar JSON también si es necesario
-                java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
-                prefsMap.put("language", langCode);
-                jsonManager.guardarPreferencias(prefsMap);
-
-                // Cambiar locale global
-                App.setLocale(langCode);
-
-                // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
-                Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
-                Stage mainStage = (Stage) settingsStage.getOwner();
-
-                try {
-                    // Recargar Main y obtener nuevo controlador
-                    PrimaryController newMainController = App.reloadUI(mainStage, mainController.getUsuarioActual(),
-                            mainController.getRutaUsuario());
-
-                    // Recargar esta misma ventana de Configuración para aplicar el idioma
-                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                            getClass().getResource("configuracion.fxml"));
-                    loader.setResources(java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
-                            App.getCurrentLocale()));
-                    javafx.scene.Parent newConfigRoot = loader.load();
-
-                    ConfiguracionController newConfigController = loader.getController();
-                    newConfigController.initData(jsonManager, newMainController);
-
-                    // Reemplazar contenido (manteniendo tamaño y posición)
-                    settingsStage.getScene().setRoot(newConfigRoot);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+        comboIdioma.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> obs, String oldVal, String newVal) {
+                if (newVal != null) {
+                    String langCode = "es";
+                    if (newVal.equals("English")) {
+                        langCode = "en";
+                    } else if (newVal.equals("Català")) {
+                        langCode = "ca";
+                    } else if (newVal.equals("Galego")) {
+                        langCode = "gl";
+                    } else if (newVal.equals("Euskara")) {
+                        langCode = "eu";
+                    } else if (newVal.equals("Português")) {
+                        langCode = "pt";
+                    }
+                    // Guardar preferencia
+                    java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+                    prefs.put("language", langCode);
+                    // Actualizar JSON también si es necesario
+                    java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
+                    prefsMap.put("language", langCode);
+                    jsonManager.guardarPreferencias(prefsMap);
+                    // Cambiar locale global
+                    App.setLocale(langCode);
+                    // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
+                    Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
+                    Stage mainStage = (Stage) settingsStage.getOwner();
+                    try {
+                        // Recargar Main y obtener nuevo controlador
+                        PrimaryController newMainController = App.reloadUI(mainStage, mainController.getUsuarioActual(),
+                                mainController.getRutaUsuario());
+                        // Recargar esta misma ventana de Configuración para aplicar el idioma
+                        javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
+                        loader.setResources(java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
+                                App.getCurrentLocale()));
+                        javafx.scene.Parent newConfigRoot = loader.load();
+                        ConfiguracionController newConfigController = loader.getController();
+                        newConfigController.initData(jsonManager, newMainController);
+                        // Reemplazar contenido (manteniendo tamaño y posición)
+                        settingsStage.getScene().setRoot(newConfigRoot);
+                    } catch (IOException e) {
+                    }
                 }
             }
         });
 
-        // 5. Configurar el Spinner de días de préstamo (como ya tenías)
+        // Configurar el Spinner de días de préstamo (como ya tenías)
         if (spinnerDiasPrestamo != null) {
             int currentDays = mainController.getDueDaysLimit();
             spinnerDiasPrestamo
                     .setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 365, currentDays));
         }
-
-        // Asegurar que la ventana de configuración tenga el tema aplicado al abrirse
-        // (Solo styles.css)
 
     }
 
@@ -222,7 +216,7 @@ public class ConfiguracionController {
 
     /**
      * Exporta una copia de seguridad (ZIP) de toda la carpeta de datos.
-     * 
+     *
      * @param event Evento del botón.
      */
     @FXML
@@ -248,7 +242,7 @@ public class ConfiguracionController {
 
                 java.nio.file.Files.walk(sourcePath)
                         .filter(path -> !java.nio.file.Files.isDirectory(path))
-                        .forEach(path -> {
+                        .forEach((Path path) -> {
                             java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry(
                                     sourcePath.relativize(path).toString());
                             try {
@@ -257,7 +251,6 @@ public class ConfiguracionController {
                                 zos.closeEntry();
                             } catch (IOException e) {
                                 System.err.println("Error zippeando: " + path);
-                                e.printStackTrace();
                             }
                         });
 
@@ -268,7 +261,6 @@ public class ConfiguracionController {
             } catch (IOException e) {
                 String msg = java.text.MessageFormat.format(resources.getString("config.backup.error"), e.getMessage());
                 mostrarAlerta("Error", msg);
-                e.printStackTrace();
             }
         }
     }
@@ -325,7 +317,7 @@ public class ConfiguracionController {
     /**
      * Muestra una alerta simple de información.
      *
-     * @param titulo    Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {

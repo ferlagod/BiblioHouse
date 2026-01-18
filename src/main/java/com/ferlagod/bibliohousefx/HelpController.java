@@ -26,9 +26,8 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 /**
- * Controlador de la ventana de Ayuda (Manual de Usuario).
- * Muestra un WebView con el contenido HTML correspondiente al idioma
- * seleccionado.
+ * Controlador de la ventana de Ayuda (Manual de Usuario). Muestra un WebView
+ * con el contenido HTML correspondiente al idioma seleccionado.
  *
  * @author Ferlagod
  * @version 1.0
@@ -47,7 +46,8 @@ public class HelpController implements Initializable {
 
     /**
      * Carga el archivo HTML correspondiente al idioma actual de la aplicación.
-     * Si no existe el archivo específico, carga el de español o inglés por defecto.
+     * Si no existe el archivo específico, carga el de español o inglés por
+     * defecto.
      */
     private void loadHelpContent() {
         Locale current = App.getCurrentLocale();

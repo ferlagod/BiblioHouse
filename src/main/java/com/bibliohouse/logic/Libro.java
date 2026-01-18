@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Esta clase es como una ficha para cada libro.
- * Aquí guardamos el título, autor y todo eso.
+ * Esta clase es como una ficha para cada libro. Aquí guardamos el título, autor
+ * y todo eso.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -65,6 +65,16 @@ public class Libro {
 
     /**
      * Constructor para crear el libro con todos los datos de golpe.
+     *
+     * @param titulo titulo del libro
+     * @param autor autor del libro
+     * @param editorial editorial al que pertenece el libro
+     * @param año año de publicación del libro
+     * @param genero género del libro
+     * @param isbn isbn del libro
+     * @param portadaURL portada del libro
+     * @param calificacion calificación dada al libro
+     * @param reseña reseña escrita por el usuario
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
             String portadaURL, int calificacion, String reseña) {
@@ -91,12 +101,12 @@ public class Libro {
      * Constructor más corto. Se utiliza cuando creamos el libro pero aún no lo
      * hemos puntuado ni reseñado. Pone las estrellas a 0 por defecto.
      *
-     * @param titulo     Nombre del libro.
-     * @param autor      Nombre del escritor.
-     * @param editorial  Nombre de la editorial.
-     * @param año        Año de publicación.
-     * @param genero     Género literario.
-     * @param isbn       Código ISBN.
+     * @param titulo Nombre del libro.
+     * @param autor Nombre del escritor.
+     * @param editorial Nombre de la editorial.
+     * @param año Año de publicación.
+     * @param genero Género literario.
+     * @param isbn Código ISBN.
      * @param portadaURL Link a la imagen.
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
@@ -111,21 +121,10 @@ public class Libro {
      *
      * @return El UUID como cadena de texto.
      */
-    /**
-     * Obtiene el ID único interno del libro.
-     *
-     * @return El UUID como cadena de texto.
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * Establece el ID único interno del libro. NOTA: Este setter solo debe ser
-     * usado por GSON al cargar datos, no debe cambiarse manualmente.
-     *
-     * @param id El ID a establecer.
-     */
     /**
      * Establece el ID único interno del libro. NOTA: Este setter solo debe ser
      * usado por GSON al cargar datos, no debe cambiarse manualmente.
@@ -404,18 +403,13 @@ public class Libro {
      *
      * @return El título del libro.
      */
-    /**
-     * Obtiene el nombre de la serie/saga a la que pertenece el libro.
-     * 
-     * @return El nombre de la serie o null si no pertenece a ninguna.
-     */
     public String getSerie() {
         return serie;
     }
 
     /**
      * Establece la serie a la que pertenece el libro.
-     * 
+     *
      * @param serie Nombre de la saga.
      */
     public void setSerie(String serie) {
@@ -424,7 +418,7 @@ public class Libro {
 
     /**
      * Obtiene el orden de lectura dentro de la serie.
-     * 
+     *
      * @return Número de orden (ej: 1.0, 2.5).
      */
     public double getOrdenEnSerie() {
@@ -433,7 +427,7 @@ public class Libro {
 
     /**
      * Establece el orden dentro de la serie.
-     * 
+     *
      * @param ordenEnSerie Número decimal de orden.
      */
     public void setOrdenEnSerie(double ordenEnSerie) {

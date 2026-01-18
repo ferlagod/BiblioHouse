@@ -37,23 +37,25 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Cliente para buscar en Inventaire.io.
- * Es otra página para buscar libros.
+ * Cliente para buscar en Inventaire.io. Es otra página para buscar libros.
  *
  * @author Fernando Lago
  * @version 1.0
  */
 public class InventaireCliente {
 
-    /** Logger para registrar eventos y errores. */
+    /**
+     * Logger para registrar eventos y errores.
+     */
     private static final Logger LOGGER = Logger.getLogger(InventaireCliente.class.getName());
 
-    /** URL base de la API de Inventaire.io. */
+    /**
+     * URL base de la API de Inventaire.io.
+     */
     private static final String API_BASE_URL = "https://inventaire.io/api/search";
 
     /**
-     * Busca libros en Inventaire.
-     * Llama a la URL y parsea el JSON.
+     * Busca libros en Inventaire. Llama a la URL y parsea el JSON.
      *
      * @param terminoDeBusqueda El texto.
      * @return Lista de libros.
@@ -90,7 +92,7 @@ public class InventaireCliente {
             if (response.statusCode() != 200) {
                 LOGGER.log(Level.WARNING,
                         "La API de Inventaire.io devolvió un código de estado no exitoso: {0}. Cuerpo: {1}",
-                        new Object[] { response.statusCode(), response.body() });
+                        new Object[]{response.statusCode(), response.body()});
                 return librosEncontrados;
             }
 

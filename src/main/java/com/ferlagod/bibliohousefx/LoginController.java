@@ -36,9 +36,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * Aquí controlamos quien entra y quien no.
- * Gestiona el login y el registro de nuevos usuarios. Si no tienes llave, no
- * pasas.
+ * Aquí controlamos quien entra y quien no. Gestiona el login y el registro de
+ * nuevos usuarios. Si no tienes llave, no pasas.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -75,10 +74,9 @@ public class LoginController {
     private static final String AUTH_FILE_NAME = "user.auth";
 
     /**
-     * Arrancamos motores.
-     * Nos aseguramos de que la carpeta de usuarios exista (si no, dónde guardamos
-     * cosas?)
-     * y mostramos la pantalla de login por defecto.
+     * Arrancamos motores. Nos aseguramos de que la carpeta de usuarios exista
+     * (si no, dónde guardamos cosas?) y mostramos la pantalla de login por
+     * defecto.
      */
     @FXML
     public void initialize() {
@@ -127,8 +125,8 @@ public class LoginController {
 
     // --- LÓGICA DE INICIO DE SESIÓN ---
     /**
-     * Intenta entrar. Si el usuario existe y la contraseña cuadra, para adentro.
-     * Si no, mostramos error y a intentarlo de nuevo.
+     * Intenta entrar. Si el usuario existe y la contraseña cuadra, para
+     * adentro. Si no, mostramos error y a intentarlo de nuevo.
      *
      * @param event Botón Entrar.
      */
@@ -169,9 +167,9 @@ public class LoginController {
 
     // --- LÓGICA DE REGISTRO ---
     /**
-     * Crea un usuario nuevo.
-     * Le hace su carpeta, guarda su contraseña (hasheada, por seguridad)
-     * y le regala unas cuantas estanterías por defecto para que no empiece vacío.
+     * Crea un usuario nuevo. Le hace su carpeta, guarda su contraseña
+     * (hasheada, por seguridad) y le regala unas cuantas estanterías por
+     * defecto para que no empiece vacío.
      *
      * @param event Botón Registrarse.
      */
@@ -275,7 +273,6 @@ public class LoginController {
 
         } catch (Exception e) {
             System.err.println("⚠️ Advertencia: No se pudieron crear las estanterías por defecto.");
-            e.printStackTrace();
         }
     }
 
@@ -283,7 +280,7 @@ public class LoginController {
      * Carga la aplicación principal una vez autenticado el usuario.
      *
      * @param username Nombre del usuario.
-     * @param path     Ruta a los datos del usuario.
+     * @param path Ruta a los datos del usuario.
      */
     private void entrarALaApp(String username, String path) {
         lblLoginError.setVisible(false);
@@ -296,7 +293,6 @@ public class LoginController {
             loginStage.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
             setError(lblLoginError, "Error crítico al cargar la aplicación.");
         }
     }
@@ -305,7 +301,7 @@ public class LoginController {
      * Muestra un mensaje de error en la etiqueta correspondiente.
      *
      * @param label Etiqueta donde mostrar el error.
-     * @param msg   Mensaje de error.
+     * @param msg Mensaje de error.
      */
     private void setError(Label label, String msg) {
         label.setText(msg);

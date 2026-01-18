@@ -26,9 +26,9 @@ import java.util.logging.SimpleFormatter;
 
 /**
  * Esto configura el sistema de logs de la aplicación. Básicamente, hace que
- * todos los mensajes importantes (errores, advertencias, info) se guarden en
- * un archivo, en vez de solo mostrarse por consola. Así es más fácil revisar
- * qué ha pasado si algo falla.
+ * todos los mensajes importantes (errores, advertencias, info) se guarden en un
+ * archivo, en vez de solo mostrarse por consola. Así es más fácil revisar qué
+ * ha pasado si algo falla.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -45,8 +45,8 @@ public class ConfiguracionLogs {
      * guarden en un archivo en disco. Se llama solo una vez cuando arranca la
      * app.
      *
-     * @throws SecurityException Si el sistema operativo no nos deja escribir
-     *                           en esa carpeta (raro, pero puede pasar).
+     * @throws SecurityException Si el sistema operativo no nos deja escribir en
+     * esa carpeta (raro, pero puede pasar).
      */
     public static void setup() {
         File appDir = new File(APP_DIRECTORY_PATH);
@@ -84,15 +84,14 @@ public class ConfiguracionLogs {
         } catch (IOException e) {
             // Si falla la configuración del archivo, muestra el error en la consola
             System.err.println("GRAVE: Error al configurar el FileHandler para logging: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
     /**
      * Intenta ocultar el directorio para que el usuario no lo borre
-     * accidentalmente.
-     * En macOS usa 'chflags hidden', en Windows usa el atributo 'dos:hidden'.
-     * 
+     * accidentalmente. En macOS usa 'chflags hidden', en Windows usa el
+     * atributo 'dos:hidden'.
+     *
      * @param dir El directorio a ocultar.
      */
     private static void ocultarDirectorio(File dir) {
@@ -105,7 +104,7 @@ public class ConfiguracionLogs {
                 // En Windows usamos la API de NIO
                 java.nio.file.Files.setAttribute(dir.toPath(), "dos:hidden", true);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             // No es crítico si falla, solo mostramos aviso
             System.err.println("Advertencia: No se pudo ocultar la carpeta de datos: " + e.getMessage());
         }

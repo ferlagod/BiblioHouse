@@ -35,8 +35,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Controlador para la gestión general de la lista de socios.
- * Muestra la tabla de socios y permite añadir, editar o eliminarlos.
+ * Controlador para la gestión general de la lista de socios. Muestra la tabla
+ * de socios y permite añadir, editar o eliminarlos.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -87,9 +87,9 @@ public class SociosManagerController {
     /**
      * Inicializa los datos del controlador con la lista de socios y referencias
      * necesarias.
-     * 
-     * @param socios     Lista de socios a mostrar.
-     * @param manager    Gestor de JSON para guardar cambios.
+     *
+     * @param socios Lista de socios a mostrar.
+     * @param manager Gestor de JSON para guardar cambios.
      * @param controller Referencia al controlador principal.
      */
     public void initData(List<Socio> socios, JsonManager manager, PrimaryController controller) {
@@ -104,7 +104,7 @@ public class SociosManagerController {
 
     /**
      * Abre la ventana de edición para el socio seleccionado.
-     * 
+     *
      * @param event El evento del botón Editar.
      */
     @FXML
@@ -147,9 +147,9 @@ public class SociosManagerController {
     }
 
     /**
-     * Elimina el socio seleccionado de la lista. Verifica que no tenga préstamos
-     * activos.
-     * 
+     * Elimina el socio seleccionado de la lista. Verifica que no tenga
+     * préstamos activos.
+     *
      * @param event El evento del botón Eliminar.
      */
     @FXML
@@ -164,7 +164,7 @@ public class SociosManagerController {
         // Usamos el método getListaPrestamos() del PrimaryController
         boolean hasActiveLoans = mainController.getListaPrestamos().stream()
                 .anyMatch(p -> p.getNumeroSocio() == socioSeleccionado.getNumeroSocio()
-                        && p.getFechaDevolucion() == null);
+                && p.getFechaDevolucion() == null);
 
         if (hasActiveLoans) {
             mostrarAlerta("Error de Eliminación",
@@ -188,7 +188,7 @@ public class SociosManagerController {
 
     /**
      * Cierra la ventana de gestión de socios.
-     * 
+     *
      * @param event El evento del botón Cerrar.
      */
     @FXML
@@ -199,8 +199,8 @@ public class SociosManagerController {
 
     /**
      * Muestra una alerta al usuario.
-     * 
-     * @param titulo    Título de la alerta.
+     *
+     * @param titulo Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {

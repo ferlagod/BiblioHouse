@@ -27,10 +27,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
- * Controlador para crear o editar socios.
- * Aquí metemos los datos de la gente a la que vamos a prestar libros (y
- * perseguir
- * si no los devuelven a tiempo).
+ * Controlador para crear o editar socios. Aquí metemos los datos de la gente a
+ * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
  * @author Fernando Lago
  * @version 1.0
@@ -58,7 +56,7 @@ public class GestionSociosController {
     /**
      * Recibe la lista actual de socios para calcular el siguiente ID
      * automáticamente (Modo Creación).
-     * 
+     *
      * @param listaExistente La lista de socios que ya existen en el sistema.
      */
     public void setListaSocios(List<Socio> listaExistente) {
@@ -84,7 +82,7 @@ public class GestionSociosController {
 
     /**
      * Carga los datos de un socio para ser editado (Modo Edición).
-     * 
+     *
      * @param socio El socio que queremos editar.
      */
     public void setSocioToEdit(Socio socio) {
@@ -105,7 +103,7 @@ public class GestionSociosController {
     // --- METODOS DE ACCION ---
     /**
      * Obtiene el socio que ha sido creado o modificado.
-     * 
+     *
      * @return El objeto Socio con los datos del formulario.
      */
     public Socio getSocioCreado() {
@@ -114,7 +112,7 @@ public class GestionSociosController {
 
     /**
      * Indica si la operación de guardar se ha realizado con éxito.
-     * 
+     *
      * @return true si se ha pulsado Guardar, false si se ha cancelado.
      */
     public boolean isGuardado() {
@@ -122,9 +120,9 @@ public class GestionSociosController {
     }
 
     /**
-     * Valida los datos y guarda la información del socio.
-     * Si es un nuevo socio, lo crea. Si es edición, actualiza los datos.
-     * 
+     * Valida los datos y guarda la información del socio. Si es un nuevo socio,
+     * lo crea. Si es edición, actualiza los datos.
+     *
      * @param event El evento de acción del botón.
      */
     @FXML
@@ -155,7 +153,7 @@ public class GestionSociosController {
 
     /**
      * Cancela la operación y cierra la ventana sin guardar cambios.
-     * 
+     *
      * @param event El evento de acción.
      */
     @FXML
@@ -164,11 +162,20 @@ public class GestionSociosController {
         cerrarVentana();
     }
 
+    /**
+     * Cierra la ventana actual de la aplicación.
+     */
     private void cerrarVentana() {
         Stage stage = (Stage) txtNombre.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Muestra una alerta de tipo advertencia al usuario.
+     *
+     * @param titulo Título de la alerta (ej: "Error" o "Advertencia").
+     * @param contenido Mensaje detallado que se mostrará en la alerta.
+     */
     private void mostrarAlerta(String titulo, String contenido) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(titulo);

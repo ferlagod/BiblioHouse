@@ -50,9 +50,9 @@ public class ConfigLoader {
     }
 
     /**
-     * Carga las propiedades del archivo de configuración.
-     * Intenta cargar desde la raíz del proyecto (para desarrollo) o desde el
-     * classpath (para producción).
+     * Carga las propiedades del archivo de configuración. Intenta cargar desde
+     * la raíz del proyecto (para desarrollo) o desde el classpath (para
+     * producción).
      */
     private static void loadProperties() {
         properties = new Properties();

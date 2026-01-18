@@ -35,11 +35,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Cliente para conectar con Google Books.
- * Si OpenLib no va, usamos esto.
+ * Cliente para conectar con Google Books. Si OpenLib no va, usamos esto.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -50,8 +50,7 @@ public class GoogleBooksCliente {
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
 
     /**
-     * Busca en Google.
-     * Devuelve una lista de libros.
+     * Busca en Google. Devuelve una lista de libros.
      *
      * @param terminoDeBusqueda Lo que queremos buscar.
      * @return Lista de libros que encontró.
@@ -107,8 +106,9 @@ public class GoogleBooksCliente {
             for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
 
-                if (!item.has("volumeInfo"))
+                if (!item.has("volumeInfo")) {
                     continue;
+                }
                 JSONObject volumeInfo = item.getJSONObject("volumeInfo");
 
                 // Título
@@ -177,7 +177,7 @@ public class GoogleBooksCliente {
             LOGGER.log(Level.WARNING, "Timeout en conexión con Google Books", e);
         } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Error en búsqueda de Google Books", e);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             LOGGER.log(Level.SEVERE, "Error inesperado en Google Books", e);
         }
 

@@ -18,8 +18,8 @@
 package com.ferlagod.bibliohousefx;
 
 /**
- * Clase de utilidad para obtener información del sistema.
- * Proporciona versiones de Java y JavaFX en uso.
+ * Clase de utilidad para obtener información del sistema. Proporciona versiones
+ * de Java y JavaFX en uso.
  *
  * @author Fernando Lago
  * @version 1.0

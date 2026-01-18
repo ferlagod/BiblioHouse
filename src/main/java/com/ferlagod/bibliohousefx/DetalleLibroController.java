@@ -33,8 +33,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Ventana para ver la info de un libro.
- * Sale la portada, resumen y las estrellitas.
+ * Ventana para ver la info de un libro. Sale la portada, resumen y las
+ * estrellitas.
  *
  * @author Fernando Lago
  * @version 1.0
@@ -67,8 +67,8 @@ public class DetalleLibroController {
     private Libro libroActual;
 
     /**
-     * Asigna el libro que se va a visualizar.
-     * Al recibirlo, rellena los datos de la ventana automáticamente.
+     * Asigna el libro que se va a visualizar. Al recibirlo, rellena los datos
+     * de la ventana automáticamente.
      *
      * @param libro El libro a mostrar.
      */
@@ -78,8 +78,7 @@ public class DetalleLibroController {
     }
 
     /**
-     * Pone los datos en los labels.
-     * También carga la imagen si tiene.
+     * Pone los datos en los labels. También carga la imagen si tiene.
      */
     private void cargarDatos() {
         if (libroActual == null) {
@@ -118,8 +117,7 @@ public class DetalleLibroController {
 
     /**
      * Convierte la puntuación numérica (0-5) en representación gráfica de
-     * estrellas.
-     * ★ = llena, ☆ = vacía.
+     * estrellas. ★ = llena, ☆ = vacía.
      *
      * @param valor Puntuación (0-5).
      * @return El string con los caracteres de estrellas.
@@ -137,8 +135,8 @@ public class DetalleLibroController {
     }
 
     /**
-     * Carga la imagen de portada.
-     * Usa ImageLoader para hacerlo en segundo plano y no congelar la ventana.
+     * Carga la imagen de portada. Usa ImageLoader para hacerlo en segundo plano
+     * y no congelar la ventana.
      *
      * @param ruta URL o ruta local.
      */
@@ -196,7 +194,6 @@ public class DetalleLibroController {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -205,7 +202,7 @@ public class DetalleLibroController {
     /**
      * Indica si el libro ha sufrido alguna modificación (edición) durante la
      * visualización.
-     * 
+     *
      * @return true si se guardaron cambios, false en caso contrario.
      */
     public boolean isModified() {

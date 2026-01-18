@@ -32,6 +32,7 @@ import java.util.List;
 
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -53,9 +54,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Este es el controlador principal.
- * Aquí manejo la tabla de libros, los préstamos y todo eso.
- * Es como el cerebro de la pantalla principal.
+ * Este es el controlador principal. Aquí manejo la tabla de libros, los
+ * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
  * @version 1.0
@@ -99,13 +99,13 @@ public class PrimaryController implements Initializable {
     @FXML
     private TableColumn<Libro, String> colAnio;
     @FXML
-    private TableColumn<Libro, String> colEstado; // <-- NUEVA COLUMNA
+    private TableColumn<Libro, String> colEstado;
     @FXML
     private TableColumn<Libro, String> colIsbn;
     @FXML
-    private TableColumn<Libro, String> colSerie; // <-- NUEVA COLUMNA SERIES
+    private TableColumn<Libro, String> colSerie;
     @FXML
-    private TableColumn<Libro, Double> colOrden; // <-- NUEVA COLUMNA ORDEN
+    private TableColumn<Libro, Double> colOrden;
     @FXML
     private TableColumn<Libro, Integer> colCantidad;
     @FXML
@@ -119,9 +119,9 @@ public class PrimaryController implements Initializable {
     @FXML
     private TextField txtEditorial;
     @FXML
-    private TextField txtSerie; // <-- NUEVO CAMPO
+    private TextField txtSerie;
     @FXML
-    private TextField txtOrden; // <-- NUEVO CAMPO
+    private TextField txtOrden;
     @FXML
     private TextField txtGenero;
     @FXML
@@ -137,7 +137,7 @@ public class PrimaryController implements Initializable {
     @FXML
     private TextField txtFiltroISBN;
     @FXML
-    private ComboBox<String> cmbFiltroEstado; // <-- NUEVO FILTRO
+    private ComboBox<String> cmbFiltroEstado;
     @FXML
     private TabPane tabPaneVistaLibros;
     @FXML
@@ -149,7 +149,7 @@ public class PrimaryController implements Initializable {
     @FXML
     private ScrollPane scrollPaneGaleria;
 
-    // PORTADA MANUAL (NUEVO)
+    // PORTADA MANUAL 
     @FXML
     private ImageView imgPortadaManual;
     @FXML
@@ -240,8 +240,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Esta función arranca todo cuando se abre la ventana.
-     * Configura las columnas de las tablas y los botones.
+     * Esta función arranca todo cuando se abre la ventana. Configura las
+     * columnas de las tablas y los botones.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -392,58 +392,7 @@ public class PrimaryController implements Initializable {
         com.bibliohouse.utils.ImageLoader.setCacheDir(coversPath);
 
         this.jsonManager = new JsonManager(userPath);
-        // Assuming configuracionManager is a field in the class
-        // and ConfiguracionLogs is a class that takes a path in its constructor.
-        // Also assuming 'rPreferencias()' was a typo and meant to be part of the
-        // preferences loading.
-        // If 'configuracionManager' is not a field, it needs to be declared.
-        // If 'ConfiguracionLogs' is not a class, this line will cause a compilation
-        // error.
-        // If 'rPreferencias()' is a method, it should be called separately.
-        // Based on the original code, the preferences loading is:
-        // this.preferencias = jsonManager.cargarPreferencias();
-        // The user's snippet seems to have truncated or incorrectly represented this.
-        // I will keep the original preferences loading and add the new line for
-        // configuracionManager.
-        // If 'configuracionManager' is not declared, this will cause a compile error.
-        // I'm making the minimal change to incorporate the user's explicit request.
-        // If 'configuracionManager' is a field, it should be
-        // 'this.configuracionManager'.
-        // Assuming it's a field and the user omitted 'this.'
-        // If 'ConfiguracionLogs' is not defined, this will fail.
-        // If 'path' was meant to be 'userPath', I'm correcting it.
-        // The 'rPreferencias()' part is ambiguous, so I'm omitting it and keeping the
-        // original preferences loading.
-        // If the user intended to replace 'this.preferencias =
-        // jsonManager.cargarPreferencias();'
-        // with 'rPreferencias();', that would be a breaking change without further
-        // context.
-        // I'm prioritizing adding the new ImageLoader and ConfiguracionLogs
-        // initialization.
-        // Correcting 'path' to 'userPath' for consistency and correctness.
-        // If 'configuracionManager' is not a field, this line will cause a compilation
-        // error.
-        // I'm assuming it's a field and the user wants to initialize it.
-        // The original code had 'this.jsonManager = new JsonManager(userPath);'
-        // The user's snippet had 'jsonManager = new JsonManager(path);'
-        // I'm keeping the original 'this.jsonManager = new JsonManager(userPath);'
-        // and adding the new 'configuracionManager' line.
-        // The 'rPreferencias()' part is still unclear, so I'm leaving the original
-        // preferences loading.
-        // If 'configuracionManager' is not a field, this will cause a compile error.
-        // I'm assuming it is a field.
-        // If 'ConfiguracionLogs' is not a class, this will cause a compile error.
-        // I'm assuming it is a class.
-        // I'm making the most faithful interpretation of the user's request while
-        // maintaining syntactical correctness
-        // based on the surrounding code.
-        // The user's snippet for jsonManager and rPreferencias() seems to be a partial
-        // or incorrect replacement.
-        // I will keep the existing jsonManager initialization and preferences loading,
-        // and add the new ImageLoader and ConfiguracionLogs parts.
-        // If 'configuracionManager' is not a field, this will cause a compile error.
-        // I'm assuming it is a field and needs to be initialized.
-        // I'm also assuming 'path' in this.jsonManager = new JsonManager(userPath);
+
         this.preferencias = jsonManager.cargarPreferencias();
         cargarDatos();
         aplicarPreferenciasGuardadas();
@@ -703,11 +652,6 @@ public class PrimaryController implements Initializable {
         sortedData = new SortedList<>(filteredData);
 
         // 3. Unir la SortedList con el comparador de la tabla, PERO personalizando
-        // No usamos bind directo para poder inyectar nuestra lógica si el comparador es
-        // null.
-        // sortedData.comparatorProperty().bind(tablaLibros.comparatorProperty()); //
-        // <-- ELIMINADO
-
         // Establecer comparador por defecto (Series)
         sortedData.setComparator(this::compareBySeries);
 
@@ -753,19 +697,20 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Compara dos libros basándose en su Serie y Orden.
-     * Si no tienen serie, se comparan alfabéticamente por título.
-     * Sagas van primero.
+     * Compara dos libros basándose en su Serie y Orden. Si no tienen serie, se
+     * comparan alfabéticamente por título. Sagas van primero.
      */
     private int compareBySeries(Libro l1, Libro l2) {
         String s1 = l1.getSerie();
         String s2 = l2.getSerie();
 
         // Normalizar nulos a vacíos para comparar
-        if (s1 == null)
+        if (s1 == null) {
             s1 = "";
-        if (s2 == null)
+        }
+        if (s2 == null) {
             s2 = "";
+        }
 
         // 1. Comparar Nombre de Serie
         int serieCompare = s1.compareToIgnoreCase(s2);
@@ -778,11 +723,12 @@ public class PrimaryController implements Initializable {
             // necesitamos lógica extra. Por ahora alfabético está bien:
             // " " (sin serie) vs "Cosmere". Cosmere irá DESPUÉS.
             // SI QUEREMOS AGRUPAR VISUALMENTE:
-            if (s1.isEmpty() && !s2.isEmpty())
+            if (s1.isEmpty() && !s2.isEmpty()) {
                 return 1; // Sin serie AL FINAL
-            if (!s1.isEmpty() && s2.isEmpty())
+            }
+            if (!s1.isEmpty() && s2.isEmpty()) {
                 return -1; // Con serie AL PRINCIPIO
-
+            }
             return serieCompare;
         }
 
@@ -796,10 +742,9 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Esta función filtra la tabla.
-     * Si escribes algo en los cuadros de búsqueda, aquí se decide qué libros se
-     * ven.
-     * Es un filtro acumulativo (TIENE que cumplir todo).
+     * Esta función filtra la tabla. Si escribes algo en los cuadros de
+     * búsqueda, aquí se decide qué libros se ven. Es un filtro acumulativo
+     * (TIENE que cumplir todo).
      */
     private void actualizarFiltros() {
         if (filteredData == null || listaEstanterias == null) {
@@ -893,11 +838,10 @@ public class PrimaryController implements Initializable {
      * BiblioHouse.
      *
      * @param event El evento de acción que desencadena la apertura de la
-     *              ventana.
+     * ventana.
      *
      * @throws IOException Si ocurre un error al cargar el archivo FXML
-     *                     "acercade.fxml". En caso de error, se muestra una alerta
-     *                     al usuario.
+     * "acercade.fxml". En caso de error, se muestra una alerta al usuario.
      */
     @FXML
     private void mostrarAcercaDe(ActionEvent event) {
@@ -1056,7 +1000,7 @@ public class PrimaryController implements Initializable {
                 isbn,
                 rutaPortadaTemporal);
         nuevoLibro.setCantidad(cantidad);
-        nuevoLibro.setPoseido(poseido); // Set the 'poseido' status
+        nuevoLibro.setPoseido(poseido);
 
         // Asignar Serie y Orden
         if (!serie.isEmpty()) {
@@ -1106,7 +1050,6 @@ public class PrimaryController implements Initializable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir la ventana de asignación de estanterías.");
         }
 
@@ -1165,89 +1108,94 @@ public class PrimaryController implements Initializable {
 
         // Ejecutar búsqueda en segundo plano con CompletableFuture para paralelismo
         // real
-        Thread searchThread = new Thread(() -> {
-            try {
-                System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
+        Thread searchThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
 
-                // 1. Definir las tareas de búsqueda (Futures)
-                java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en OpenLibrary...");
-                            return OpenLibraryCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
-                            return new ArrayList<>(); // Retornar lista vacía en caso de error
-                        });
+                    // 1. Definir las tareas de búsqueda (Futures)
+                    java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                            .supplyAsync(() -> {
+                                System.out.println("[DEBUG] Buscando en OpenLibrary...");
+                                return OpenLibraryCliente.buscarLibros(query);
+                            }).exceptionally(ex -> {
+                        System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
+                        return new ArrayList<>(); // Retornar lista vacía en caso de error
+                    });
 
-                java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en Google Books...");
-                            return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
-                            return new ArrayList<>();
-                        });
+                    java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                            .supplyAsync(() -> {
+                                System.out.println("[DEBUG] Buscando en Google Books...");
+                                return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
+                            }).exceptionally(ex -> {
+                        System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
+                        return new ArrayList<>();
+                    });
 
-                java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en Inventaire...");
-                            return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
-                            return new ArrayList<>();
-                        });
+                    java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
+                            .supplyAsync(() -> {
+                                System.out.println("[DEBUG] Buscando en Inventaire...");
+                                return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
+                            }).exceptionally(ex -> {
+                        System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
+                        return new ArrayList<>();
+                    });
 
-                // 2. Esperar a que TODAS terminen (join)
-                // Usamos allOf para esperar, pero luego extraemos resultados individualmente
-                java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
-                        .allOf(futureOpenLib, futureGoogle, futureInventaire);
+                    // 2. Esperar a que TODAS terminen (join)
+                    // Usamos allOf para esperar, pero luego extraemos resultados individualmente
+                    java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
+                            .allOf(futureOpenLib, futureGoogle, futureInventaire);
 
-                allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
+                    allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
 
-                // 3. Recolectar resultados
-                List<Libro> resultadosTotales = new ArrayList<>();
+                    // 3. Recolectar resultados
+                    List<Libro> resultadosTotales = new ArrayList<>();
 
-                // OpenLibrary
-                List<Libro> resOL = futureOpenLib.get(); // Ya no bloquea, ya terminó
-                if (resOL != null)
-                    resultadosTotales.addAll(resOL);
-
-                // Google
-                List<Libro> resGB = futureGoogle.get();
-                if (resGB != null)
-                    resultadosTotales.addAll(resGB);
-
-                // Inventaire
-                List<Libro> resIV = futureInventaire.get();
-                if (resIV != null)
-                    resultadosTotales.addAll(resIV);
-
-                System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
-                System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
-                        (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
-                        (resIV != null ? resIV.size() : 0)));
-
-                // 4. Actualizar UI
-                Platform.runLater(() -> {
-                    if (resultadosTotales.isEmpty()) {
-                        System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
-                        mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");
-                        lblEstado.setText("Búsqueda finalizada sin éxito.");
-                    } else {
-                        // --- ABRIR VENTANA DE RESULTADOS ---
-                        System.out.println("[DEBUG] Abriendo ventana con " + resultadosTotales.size() + " libros");
-                        abrirVentanaResultados(resultadosTotales);
-                        lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
+                    // OpenLibrary
+                    List<Libro> resOL = futureOpenLib.get();
+                    if (resOL != null) {
+                        resultadosTotales.addAll(resOL);
                     }
-                });
 
-            } catch (Exception e) {
-                System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    lblEstado.setText("Error en la búsqueda.");
-                    mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
-                });
+                    // Google
+                    List<Libro> resGB = futureGoogle.get();
+                    if (resGB != null) {
+                        resultadosTotales.addAll(resGB);
+                    }
+
+                    // Inventaire
+                    List<Libro> resIV = futureInventaire.get();
+                    if (resIV != null) {
+                        resultadosTotales.addAll(resIV);
+                    }
+
+                    System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
+                    System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
+                            (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
+                            (resIV != null ? resIV.size() : 0)));
+
+                    // 4. Actualizar UI
+                    Platform.runLater(() -> {
+                        if (resultadosTotales.isEmpty()) {
+                            System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
+                            mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");
+                            lblEstado.setText("Búsqueda finalizada sin éxito.");
+                        } else {
+                            // --- ABRIR VENTANA DE RESULTADOS ---
+                            System.out.println("[DEBUG] Abriendo ventana con " + resultadosTotales.size() + " libros");
+                            abrirVentanaResultados(resultadosTotales);
+                            lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
+                        }
+                    });
+
+                } catch (InterruptedException | ExecutionException e) {
+                    System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
+                    Platform.runLater(() -> {
+                        lblEstado.setText("Error en la búsqueda.");
+                        mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
+                    });
+                }
             }
         });
 
@@ -1302,11 +1250,9 @@ public class PrimaryController implements Initializable {
 
         } catch (IOException e) {
             System.err.println("[ERROR] IOException al abrir ventana de resultados: " + e.getMessage());
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir la ventana de resultados: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[ERROR] Excepción inesperada al abrir ventana de resultados: " + e.getMessage());
-            e.printStackTrace();
             mostrarAlerta("Error", "Error inesperado: " + e.getMessage());
         }
     }
@@ -1325,11 +1271,11 @@ public class PrimaryController implements Initializable {
         txtGenero.setText(libro.getGenero());
         txtIsbn.setText(libro.getIsbn());
         txtAnio.setText(libro.getAño());
-        if (libro.getSerie() != null)
+        if (libro.getSerie() != null) {
             txtSerie.setText(libro.getSerie());
+        }
         txtOrden.setText(String.valueOf(libro.getOrdenEnSerie()));
 
-        // Gestionar la imagen de portada
         // Gestionar la imagen de portada
         String urlPortada = libro.getPortadaURL();
         if (urlPortada != null && !urlPortada.isEmpty()) {
@@ -1482,7 +1428,6 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    // Método auxiliar para no repetir código de borrado
     /**
      * Elimina completamente un libro de la lista y del archivo JSON.
      *
@@ -1610,7 +1555,6 @@ public class PrimaryController implements Initializable {
      *
      * @param event El evento del menú Salir.
      */
-    // --- ESCÁNER ---
     @FXML
     private void abrirEscaner(ActionEvent event) {
         try {
@@ -1642,7 +1586,6 @@ public class PrimaryController implements Initializable {
 
         } catch (IOException e) {
             mostrarAlerta("Error", "No se pudo abrir el escáner: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -1692,13 +1635,12 @@ public class PrimaryController implements Initializable {
                         && original.getAutor().equalsIgnoreCase(duplicado.getAutor());
 
                 if (esMismoIsbn || esMismoTitulo) {
-                    // DUPLICADO ENCONTRADO
 
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                     alert.setTitle("Duplicado Encontrado");
                     alert.setHeaderText(
                             "Conflicto entre:\n1. " + original.getTitulo() + " (Stock: " + original.getCantidad()
-                                    + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
+                            + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
                     alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
 
                     ButtonType btnFusionar = new ButtonType("Fusionar y Eliminar duplicado");
@@ -1767,7 +1709,6 @@ public class PrimaryController implements Initializable {
             stage.showAndWait();
 
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir la configuración.");
         }
     }
@@ -1791,8 +1732,7 @@ public class PrimaryController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
             stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
             mostrarAlerta("Error de estadísticas", "No se pudo abrir la ventana de estadísticas.");
         }
     }
@@ -1824,7 +1764,6 @@ public class PrimaryController implements Initializable {
                 mostrarAlerta("Éxito", "Socio añadido.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error Crítico", "No se pudo abrir la ventana de Nuevo Socio.\n" + e.getMessage());
         }
     }
@@ -1851,7 +1790,6 @@ public class PrimaryController implements Initializable {
             stage.showAndWait();
 
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error Crítico", "No se pudo abrir la ventana de Gestión de Socios.\n" + e.getMessage());
         }
     }
@@ -1873,6 +1811,8 @@ public class PrimaryController implements Initializable {
     /**
      * Permite al SociosManagerController acceder a la lista de préstamos
      * activos para verificar si un socio puede ser eliminado.
+     *
+     * @return listado de prestamos completo
      */
     public ObservableList<Prestamo> getListaPrestamos() {
         return listaPrestamosCompleta;
@@ -1997,14 +1937,13 @@ public class PrimaryController implements Initializable {
 
             tablaLibros.refresh();
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
     /**
      * Muestra una alerta informativa al usuario.
      *
-     * @param titulo  Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param mensaje Contenido del mensaje.
      */
     private void mostrarAlerta(String titulo, String mensaje) {
@@ -2020,7 +1959,7 @@ public class PrimaryController implements Initializable {
      * Stage.
      *
      * @param stage The stage to set the scene on.
-     * @param root  The root node for the scene.
+     * @param root The root node for the scene.
      */
     private void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);

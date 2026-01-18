@@ -21,16 +21,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Esto representa un préstamo de libro a alguien. Aquí guardamos quién se
- * llevó el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo
- * devolvió). Es lo que nos permite llevar control de los libros prestados.
+ * Esto representa un préstamo de libro a alguien. Aquí guardamos quién se llevó
+ * el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo devolvió).
  *
  * @author Fernando Lago
  * @version 1.0
  */
 public class Prestamo {
 
-    // Usamos el ISBN para saber qué libro es (es como su DNI)
+    // Usamos el ISBN para saber qué libro es 
     private String isbnLibro;
     private String tituloLibro; // El título, para mostrarlo más fácil
     private int numeroSocio; // A quién se lo hemos prestado
@@ -45,13 +44,13 @@ public class Prestamo {
     }
 
     /**
-     * Crea un nuevo préstamo con todos los datos. Esto es para cuando ya
-     * tienes toda la información y quieres crear el préstamo de golpe.
+     * Crea un nuevo préstamo con todos los datos. Esto es para cuando ya tienes
+     * toda la información y quieres crear el préstamo de golpe.
      *
-     * @param isbnLibro     El ISBN del libro que se presta.
-     * @param tituloLibro   El título del libro.
-     * @param numeroSocio   El número de socio de quien se lleva el libro.
-     * @param nombreSocio   El nombre de la persona.
+     * @param isbnLibro El ISBN del libro que se presta.
+     * @param tituloLibro El título del libro.
+     * @param numeroSocio El número de socio de quien se lleva el libro.
+     * @param nombreSocio El nombre de la persona.
      * @param fechaPrestamo Cuándo se lo lleva.
      */
     public Prestamo(String isbnLibro, String tituloLibro, int numeroSocio, String nombreSocio,
@@ -65,11 +64,12 @@ public class Prestamo {
     }
 
     /**
-     * Constructor que crea un préstamo recibiendo directamente los objetos.
-     * Extrae los datos automáticamente y pone la fecha de hoy.
+     * Constructor que crea un préstamo recibiendo directamente los
+     * objetos.Extrae los datos automáticamente y pone la fecha de hoy.
      *
      * * @param libro El objeto Libro a prestar.
-     * 
+     *
+     * @param libro El objeto libro que se presta.
      * @param socio El objeto Socio que lo recibe.
      */
     public Prestamo(Libro libro, Socio socio) {
@@ -137,7 +137,7 @@ public class Prestamo {
      * Obtiene la fecha de préstamo formateada como una cadena.
      *
      * @return La fecha de préstamo formateada como "dd/MM/yyyy", o una cadena
-     *         vacía si la fecha es null.
+     * vacía si la fecha es null.
      */
     public String getFechaPrestamoFormateada() {
         if (fechaPrestamo == null) {
@@ -159,7 +159,7 @@ public class Prestamo {
      * Obtiene la fecha de devolución formateada como una cadena.
      *
      * @return La fecha de devolución formateada como "dd/MM/yyyy", o
-     *         "Pendiente" si la fecha es null.
+     * "Pendiente" si la fecha es null.
      */
     public String getFechaDevolucionFormateada() {
         if (fechaDevolucion == null) {
