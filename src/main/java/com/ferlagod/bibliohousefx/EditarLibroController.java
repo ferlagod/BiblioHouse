@@ -17,20 +17,27 @@
  */
 package com.ferlagod.bibliohousefx;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bibliohouse.logic.Libro;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-
+import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Controlador para la edición de libros. Permite modificar datos como título,
@@ -177,12 +184,8 @@ public class EditarLibroController {
      * @param ruta La ruta del archivo o URL de la imagen.
      */
     private void cargarImagen(String ruta) {
-        if (ruta == null || ruta.isEmpty()) {
-            imgPortada.setImage(null);
-            return;
-        }
-
         // Usamos ImageLoader optimizado (aprox 300x450 para edición)
+        // ImageLoader se encarga de cargar el default si ruta es null o vacía
         com.bibliohouse.utils.ImageLoader.load(ruta, imgPortada, 300, 450);
     }
 

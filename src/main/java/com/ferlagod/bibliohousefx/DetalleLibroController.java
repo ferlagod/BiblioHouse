@@ -17,10 +17,11 @@
  */
 package com.ferlagod.bibliohousefx;
 
-import com.bibliohouse.logic.Libro;
 import java.io.IOException;
-
 import java.util.List;
+
+import com.bibliohouse.logic.Libro;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -141,12 +142,8 @@ public class DetalleLibroController {
      * @param ruta URL o ruta local.
      */
     private void cargarImagenPortada(String ruta) {
-        if (ruta == null || ruta.isEmpty()) {
-            imgPortada.setImage(null);
-            return; // Se queda la imagen por defecto del FXML (si la hubiera) o null
-        }
-
         // Usar el cargador asíncrono centralizado con dimensiones de detalle (400x600)
+        // ImageLoader ya gestiona si rutas es null o vacía cargando el default.
         com.bibliohouse.utils.ImageLoader.load(ruta, imgPortada, 400, 600);
     }
 

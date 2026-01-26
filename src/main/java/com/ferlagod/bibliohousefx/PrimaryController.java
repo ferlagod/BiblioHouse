@@ -873,6 +873,21 @@ public class PrimaryController implements Initializable {
             return;
         }
         List<String> estanterias = jsonManager.cargarEstanterias();
+        
+        // --- INICIO MODIFICACIÓN: Estanterías por defecto ---
+        if (estanterias == null || estanterias.isEmpty()) {
+            estanterias = new ArrayList<>();
+            estanterias.add("Novela");
+            estanterias.add("Ciencia Ficción");
+            estanterias.add("Fantasía");
+            estanterias.add("Historia");
+            estanterias.add("Tecnología");
+            
+            // Guardamos las estanterías por defecto para que persistan
+            jsonManager.guardarEstanterias(estanterias);
+        }
+        // --- FIN MODIFICACIÓN ---
+
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add("Todos los libros");
         items.add("Lista de Deseos");
@@ -979,6 +994,7 @@ public class PrimaryController implements Initializable {
                     libroExistente.setCantidad(libroExistente.getCantidad() + cantidad);
                     tablaLibros.refresh();
                     guardarYNotificar("Stock actualizado: " + libroExistente.getTitulo());
+                    actualizarComboLibrosDisponibles(); // Actualizar combo de préstamos
                     limpiarCamposManuales();
                     return; // Terminamos aquí
                 } else if (result.get() == btnNuevo) {
@@ -1055,6 +1071,7 @@ public class PrimaryController implements Initializable {
 
         listaLibrosCompleta.add(nuevoLibro);
         guardarYNotificar("Libro añadido: " + titulo);
+        actualizarComboLibrosDisponibles(); // Actualizar combo de préstamos
         limpiarCamposManuales();
     }
 
@@ -1278,23 +1295,18 @@ public class PrimaryController implements Initializable {
 
         // Gestionar la imagen de portada
         String urlPortada = libro.getPortadaURL();
-        if (urlPortada != null && !urlPortada.isEmpty()) {
-            // Guardamos la URL como "ruta temporal" (la original de alta calidad)
-            rutaPortadaTemporal = urlPortada;
+        // Guardamos la URL como "ruta temporal" (la original de alta calidad)
+        rutaPortadaTemporal = urlPortada;
 
-            // Usamos ImageLoader en lugar de cargar directamente.
-            // Optimizamos cargando una versión pequeña (Thumbnail) para la vista previa
-            // Si es de OpenLibrary y es la versión Large, usamos Medium para el preview
-            String urlPreview = urlPortada;
-            if (urlPreview.contains("covers.openlibrary.org") && urlPreview.endsWith("-L.jpg")) {
-                urlPreview = urlPreview.replace("-L.jpg", "-M.jpg");
-            }
-
-            com.bibliohouse.utils.ImageLoader.load(urlPreview, imgPortadaManual, 140, 200);
-        } else {
-            imgPortadaManual.setImage(null);
-            rutaPortadaTemporal = "";
+        // Usamos ImageLoader en lugar de cargar directamente.
+        // Optimizamos cargando una versión pequeña (Thumbnail) para la vista previa
+        // Si es de OpenLibrary y es la versión Large, usamos Medium para el preview
+        String urlPreview = urlPortada;
+        if (urlPreview != null && urlPreview.contains("covers.openlibrary.org") && urlPreview.endsWith("-L.jpg")) {
+            urlPreview = urlPreview.replace("-L.jpg", "-M.jpg");
         }
+
+        com.bibliohouse.utils.ImageLoader.load(urlPreview, imgPortadaManual, 140, 200);
 
         // Poner foco en el botón de añadir para agilizar
         lblEstado.setText("Libro seleccionado. Revisa los datos y pulsa Añadir.");
@@ -1479,6 +1491,7 @@ public class PrimaryController implements Initializable {
                     if (res.get() != btnCancel) {
                         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
                         cargarListaEstanterias();
+                        actualizarComboLibrosDisponibles(); // Actualizar combo de préstamos
                     }
                 }
             }

@@ -19,7 +19,11 @@ package com.ferlagod.bibliohousefx;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -103,6 +107,26 @@ public class WelcomeController {
             File guestDir = new File(guestPath);
             if (!guestDir.exists()) {
                 guestDir.mkdirs();
+            }
+
+            // 2.5 Verificar si existe biblioteca.json, si no, crearla desde template
+            /**
+             * Aquí miro si el archivo de la biblioteca del invitado existe.
+             * Si no existe, copio uno que tengo guardado en el programa
+             * con libros de ejemplo para que la estantería no se vea triste y vacía.
+             */
+            File guestLibrary = new File(guestDir, "biblioteca.json");
+            if (!guestLibrary.exists()) {
+                try (InputStream is = getClass().getResourceAsStream("default_library.json")) {
+                    if (is != null) {
+                        Files.copy(is, guestLibrary.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        System.out.println("Biblioteca de invitado creada desde plantilla por defecto.");
+                    } else {
+                        System.err.println("No se encontró default_library.json en recursos.");
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error al copiar la biblioteca por defecto: " + e.getMessage());
+                }
             }
 
             // 3. Cargar la app principal como "Invitado"

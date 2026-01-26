@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -59,13 +60,18 @@ public class ImageLoader {
     /**
      * Executor para descargas en segundo plano.
      */
-    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(16);
 
     /**
      * Ruta de la imagen por defecto
      */
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
 
+    /**
+     * Esta función carga la imagen por defecto (esa gris con el logo)
+     * cuando un libro no tiene portada o cuando la url está mal.
+     * Intento cargarla de la memoria para que vaya rápido.
+     */
     private static void loadDefault(ImageView target, double w, double h) {
         try {
             // Intentar cargar desde recursos
