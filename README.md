@@ -11,6 +11,20 @@
 * **Exportación Profesional:** Generación de informes en **PDF** detallados.
 * **Multi-idioma:** Soporte para Español, Inglés, Català, Galego, Euskara y Português.
 
+## 📷 Capturas de pantalla
+| Inicio | Pantalla Principal|
+|:---:|:---:|
+| ![Imgur](https://imgur.com/epqwThR.png) | ![Imgur](https://imgur.com/Z4XDE7D.png) |
+
+| Visor de Libros | Edición |
+|:---:|:---:|
+| ![Imgur](https://imgur.com/4xCIIOT.png) | ![Imgur](https://imgur.com/lzqMfU5.png) |
+
+| Configuración | Manual de Usuario|
+|:---:|:---:|
+| ![Imgur](https://imgur.com/yMDZZog.png) | ![Imgur](https://imgur.com/0zcYolj.png)|
+
+
 ## 🛠️ Tecnologías Utilizadas
 
 * **Java 21** (Lógica central)
