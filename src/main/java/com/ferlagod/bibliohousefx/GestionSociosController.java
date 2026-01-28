@@ -31,7 +31,7 @@ import javafx.stage.Stage;
  * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class GestionSociosController {
 

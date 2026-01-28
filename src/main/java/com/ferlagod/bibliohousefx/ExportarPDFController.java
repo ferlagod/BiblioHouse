@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * libros por diversos criterios y exportarlos a PDF.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class ExportarPDFController {
 

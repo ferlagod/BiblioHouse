@@ -39,7 +39,7 @@ import javafx.stage.Stage;
  * de socios y permite añadir, editar o eliminarlos.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class SociosManagerController {
 

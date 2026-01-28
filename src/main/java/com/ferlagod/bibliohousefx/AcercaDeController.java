@@ -22,14 +22,16 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.stage.Stage;
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Controlador de la pantallita "Acerca de".
  * Aquí es donde hago un poco de autobombo y pongo mi contacto.
  * 
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class AcercaDeController {
 
@@ -55,7 +57,7 @@ public class AcercaDeController {
     private void abrirEmail() {
         try {
             Desktop.getDesktop().mail(new URI("mailto:info@bibliohouse.org"));
-        } catch (Exception e) {
+        } catch (IOException | URISyntaxException e) {
             System.out.println("No se pudo abrir el cliente de correo.");
         }
     }

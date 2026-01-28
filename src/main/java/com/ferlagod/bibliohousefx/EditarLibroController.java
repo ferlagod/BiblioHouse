@@ -20,9 +20,7 @@ package com.ferlagod.bibliohousefx;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.bibliohouse.logic.Libro;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -44,7 +42,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Ferlagod
- * @version 1.0
+ * @version 1.1
  */
 public class EditarLibroController {
 

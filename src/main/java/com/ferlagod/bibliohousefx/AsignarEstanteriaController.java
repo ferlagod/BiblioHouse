@@ -29,7 +29,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.util.Callback;
 import javafx.beans.value.ObservableValue;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,7 @@ import java.util.Optional;
  * en qué estanterías se guardará un libro.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class AsignarEstanteriaController {
 
@@ -58,12 +57,7 @@ public class AsignarEstanteriaController {
     @FXML
     public void initialize() {
         // Configuramos la lista para que use Checkboxes
-        listaEstanterias.setCellFactory(CheckBoxListCell.forListView(new Callback<String, ObservableValue<Boolean>>() {
-            @Override
-            public ObservableValue<Boolean> call(String item) {
-                return mapaSeleccion.get(item);
-            }
-        }));
+        listaEstanterias.setCellFactory(CheckBoxListCell.forListView(mapaSeleccion::get));
     }
 
     /**

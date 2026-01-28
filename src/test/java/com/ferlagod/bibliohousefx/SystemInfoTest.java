@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Unit tests for SystemInfo.
  * @author Fernando Lago Dávila
- * @version 1.0
+ * @version 1.1
  */
 public class SystemInfoTest {
 

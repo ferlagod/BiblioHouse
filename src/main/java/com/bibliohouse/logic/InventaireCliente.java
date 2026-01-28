@@ -40,7 +40,7 @@ import org.json.JSONObject;
  * Cliente para buscar en Inventaire.io. Es otra página para buscar libros.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class InventaireCliente {
 

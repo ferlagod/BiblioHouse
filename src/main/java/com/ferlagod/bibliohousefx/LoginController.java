@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class LoginController {
 
@@ -161,7 +161,6 @@ public class LoginController {
             }
         } catch (IOException e) {
             setError(lblLoginError, "Error al leer datos del usuario.");
-            e.printStackTrace();
         }
     }
 

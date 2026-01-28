@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
@@ -58,7 +57,7 @@ import javafx.stage.Stage;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
- * @version 1.0
+ * @version 1.1
  */
 public class PrimaryController implements Initializable {
 
@@ -240,8 +239,11 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Esta función arranca todo cuando se abre la ventana. Configura las
+     * Esta función arranca todo cuando se abre la ventana.Configura las
      * columnas de las tablas y los botones.
+     *
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -515,7 +517,6 @@ public class PrimaryController implements Initializable {
             stage.initModality(Modality.NONE); // Ventana no modal, permite seguir usando la app
             stage.show();
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar el Manual de Ayuda.");
         }
     }
@@ -576,7 +577,6 @@ public class PrimaryController implements Initializable {
 
         } catch (IOException e) {
             mostrarAlerta("Error", "No se pudo cambiar el idioma correctamente.");
-            e.printStackTrace();
         }
     }
 
@@ -859,7 +859,6 @@ public class PrimaryController implements Initializable {
             stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar la ventana 'Acerca de'.");
         }
     }
@@ -873,7 +872,7 @@ public class PrimaryController implements Initializable {
             return;
         }
         List<String> estanterias = jsonManager.cargarEstanterias();
-        
+
         // --- INICIO MODIFICACIÓN: Estanterías por defecto ---
         if (estanterias == null || estanterias.isEmpty()) {
             estanterias = new ArrayList<>();
@@ -882,7 +881,14 @@ public class PrimaryController implements Initializable {
             estanterias.add("Fantasía");
             estanterias.add("Historia");
             estanterias.add("Tecnología");
-            
+            estanterias.add("Aventura");
+            estanterias.add("Biografía");
+            estanterias.add("Romántica");
+            estanterias.add("Poesía");
+            estanterias.add("Teatro");
+            estanterias.add("Infantil");
+            estanterias.add("Ensayo");
+
             // Guardamos las estanterías por defecto para que persistan
             jsonManager.guardarEstanterias(estanterias);
         }
@@ -1125,94 +1131,91 @@ public class PrimaryController implements Initializable {
 
         // Ejecutar búsqueda en segundo plano con CompletableFuture para paralelismo
         // real
-        Thread searchThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
-
-                    // 1. Definir las tareas de búsqueda (Futures)
-                    java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                            .supplyAsync(() -> {
-                                System.out.println("[DEBUG] Buscando en OpenLibrary...");
-                                return OpenLibraryCliente.buscarLibros(query);
-                            }).exceptionally(ex -> {
-                        System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
-                        return new ArrayList<>(); // Retornar lista vacía en caso de error
-                    });
-
-                    java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                            .supplyAsync(() -> {
-                                System.out.println("[DEBUG] Buscando en Google Books...");
-                                return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
-                            }).exceptionally(ex -> {
-                        System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
-                        return new ArrayList<>();
-                    });
-
-                    java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                            .supplyAsync(() -> {
-                                System.out.println("[DEBUG] Buscando en Inventaire...");
-                                return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
-                            }).exceptionally(ex -> {
-                        System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
-                        return new ArrayList<>();
-                    });
-
-                    // 2. Esperar a que TODAS terminen (join)
-                    // Usamos allOf para esperar, pero luego extraemos resultados individualmente
-                    java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
-                            .allOf(futureOpenLib, futureGoogle, futureInventaire);
-
-                    allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
-
-                    // 3. Recolectar resultados
-                    List<Libro> resultadosTotales = new ArrayList<>();
-
-                    // OpenLibrary
-                    List<Libro> resOL = futureOpenLib.get();
-                    if (resOL != null) {
-                        resultadosTotales.addAll(resOL);
-                    }
-
-                    // Google
-                    List<Libro> resGB = futureGoogle.get();
-                    if (resGB != null) {
-                        resultadosTotales.addAll(resGB);
-                    }
-
-                    // Inventaire
-                    List<Libro> resIV = futureInventaire.get();
-                    if (resIV != null) {
-                        resultadosTotales.addAll(resIV);
-                    }
-
-                    System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
-                    System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
-                            (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
-                            (resIV != null ? resIV.size() : 0)));
-
-                    // 4. Actualizar UI
-                    Platform.runLater(() -> {
-                        if (resultadosTotales.isEmpty()) {
-                            System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
-                            mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");
-                            lblEstado.setText("Búsqueda finalizada sin éxito.");
-                        } else {
-                            // --- ABRIR VENTANA DE RESULTADOS ---
-                            System.out.println("[DEBUG] Abriendo ventana con " + resultadosTotales.size() + " libros");
-                            abrirVentanaResultados(resultadosTotales);
-                            lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
-                        }
-                    });
-
-                } catch (InterruptedException | ExecutionException e) {
-                    System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
-                    Platform.runLater(() -> {
-                        lblEstado.setText("Error en la búsqueda.");
-                        mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
-                    });
+        Thread searchThread = new Thread(() -> {
+            try {
+                System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
+                
+                // 1. Definir las tareas de búsqueda (Futures)
+                java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> {
+                            System.out.println("[DEBUG] Buscando en OpenLibrary...");
+                            return OpenLibraryCliente.buscarLibros(query);
+                        }).exceptionally(ex -> {
+                            System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
+                            return new ArrayList<>(); // Retornar lista vacía en caso de error
+                        });
+                
+                java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> {
+                            System.out.println("[DEBUG] Buscando en Google Books...");
+                            return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
+                        }).exceptionally(ex -> {
+                            System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
+                            return new ArrayList<>();
+                        });
+                
+                java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> {
+                            System.out.println("[DEBUG] Buscando en Inventaire...");
+                            return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
+                        }).exceptionally(ex -> {
+                            System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
+                            return new ArrayList<>();
+                        });
+                
+                // 2. Esperar a que TODAS terminen (join)
+                // Usamos allOf para esperar, pero luego extraemos resultados individualmente
+                java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
+                        .allOf(futureOpenLib, futureGoogle, futureInventaire);
+                
+                allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
+                
+                // 3. Recolectar resultados
+                List<Libro> resultadosTotales = new ArrayList<>();
+                
+                // OpenLibrary
+                List<Libro> resOL = futureOpenLib.get();
+                if (resOL != null) {
+                    resultadosTotales.addAll(resOL);
                 }
+                
+                // Google
+                List<Libro> resGB = futureGoogle.get();
+                if (resGB != null) {
+                    resultadosTotales.addAll(resGB);
+                }
+                
+                // Inventaire
+                List<Libro> resIV = futureInventaire.get();
+                if (resIV != null) {
+                    resultadosTotales.addAll(resIV);
+                }
+                
+                System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
+                System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
+                        (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
+                        (resIV != null ? resIV.size() : 0)));
+                
+                // 4. Actualizar UI
+                Platform.runLater(() -> {
+                    if (resultadosTotales.isEmpty()) {
+                        System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
+                        mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");
+                        lblEstado.setText("Búsqueda finalizada sin éxito.");
+                    } else {
+                        // --- ABRIR VENTANA DE RESULTADOS ---
+                        System.out.println("[DEBUG] Abriendo ventana con " + resultadosTotales.size() + " libros");
+                        abrirVentanaResultados(resultadosTotales);
+                        lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
+                    }
+                });
+                
+            } catch (InterruptedException | ExecutionException e) {
+                System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
+                Platform.runLater(() -> {
+                    lblEstado.setText("Error en la búsqueda.");
+                    mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
+                });
             }
         });
 
@@ -1557,7 +1560,6 @@ public class PrimaryController implements Initializable {
             stage.showAndWait();
 
         } catch (IOException e) {
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir la ventana de exportación PDF.\n" + e.getMessage());
         }
     }

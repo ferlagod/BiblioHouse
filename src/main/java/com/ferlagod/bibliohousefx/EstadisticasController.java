@@ -29,7 +29,6 @@ import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ import java.util.stream.Collectors;
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class EstadisticasController {
 

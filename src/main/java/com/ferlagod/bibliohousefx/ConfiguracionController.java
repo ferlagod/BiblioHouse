@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.Consumer;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -44,7 +42,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author Fernando Lago
- * @version 1.0
+ * @version 1.1
  */
 public class ConfiguracionController {
 
@@ -111,49 +109,54 @@ public class ConfiguracionController {
                 break;
         }
 
-        comboIdioma.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> obs, String oldVal, String newVal) {
-                if (newVal != null) {
-                    String langCode = "es";
-                    if (newVal.equals("English")) {
+        comboIdioma.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
+            if (newVal != null) {
+                String langCode = "es";
+                switch (newVal) {
+                    case "English":
                         langCode = "en";
-                    } else if (newVal.equals("Català")) {
+                        break;
+                    case "Català":
                         langCode = "ca";
-                    } else if (newVal.equals("Galego")) {
+                        break;
+                    case "Galego":
                         langCode = "gl";
-                    } else if (newVal.equals("Euskara")) {
+                        break;
+                    case "Euskara":
                         langCode = "eu";
-                    } else if (newVal.equals("Português")) {
+                        break;
+                    case "Português":
                         langCode = "pt";
-                    }
-                    // Guardar preferencia
-                    java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-                    prefs.put("language", langCode);
-                    // Actualizar JSON también si es necesario
-                    java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
-                    prefsMap.put("language", langCode);
-                    jsonManager.guardarPreferencias(prefsMap);
-                    // Cambiar locale global
-                    App.setLocale(langCode);
-                    // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
-                    Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
-                    Stage mainStage = (Stage) settingsStage.getOwner();
-                    try {
-                        // Recargar Main y obtener nuevo controlador
-                        PrimaryController newMainController = App.reloadUI(mainStage, mainController.getUsuarioActual(),
-                                mainController.getRutaUsuario());
-                        // Recargar esta misma ventana de Configuración para aplicar el idioma
-                        javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
-                        loader.setResources(java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
-                                App.getCurrentLocale()));
-                        javafx.scene.Parent newConfigRoot = loader.load();
-                        ConfiguracionController newConfigController = loader.getController();
-                        newConfigController.initData(jsonManager, newMainController);
-                        // Reemplazar contenido (manteniendo tamaño y posición)
-                        settingsStage.getScene().setRoot(newConfigRoot);
-                    } catch (IOException e) {
-                    }
+                        break;
+                    default:
+                        break;
+                }
+                // Guardar preferencia
+                java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+                prefs.put("language", langCode);
+                // Actualizar JSON también si es necesario
+                java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
+                prefsMap.put("language", langCode);
+                jsonManager.guardarPreferencias(prefsMap);
+                // Cambiar locale global
+                App.setLocale(langCode);
+                // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
+                Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
+                Stage mainStage = (Stage) settingsStage.getOwner();
+                try {
+                    // Recargar Main y obtener nuevo controlador
+                    PrimaryController newMainController = App.reloadUI(mainStage, mainController.getUsuarioActual(),
+                            mainController.getRutaUsuario());
+                    // Recargar esta misma ventana de Configuración para aplicar el idioma
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
+                    loader.setResources(java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
+                            App.getCurrentLocale()));
+                    javafx.scene.Parent newConfigRoot = loader.load();
+                    ConfiguracionController newConfigController = loader.getController();
+                    newConfigController.initData(jsonManager, newMainController);
+                    // Reemplazar contenido (manteniendo tamaño y posición)
+                    settingsStage.getScene().setRoot(newConfigRoot);
+                } catch (IOException e) {
                 }
             }
         });

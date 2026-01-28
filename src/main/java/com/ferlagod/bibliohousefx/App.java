@@ -31,7 +31,7 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Ferlagod
- * @version 1.0
+ * @version 1.1
  */
 public class App extends Application {
 
