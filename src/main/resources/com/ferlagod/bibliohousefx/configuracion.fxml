@@ -71,7 +71,7 @@
                                             <Button onAction="#abrirCarpetaDatos" text="%config.open.folder" />
                                         </children>
                                     </HBox>
-                                    <Button onAction="#exportarBackup" text="%config.backup.button" maxWidth="Infinity" />
+                                    <Button maxWidth="Infinity" onAction="#exportarBackup" text="%config.backup.button" />
                                 </VBox>
                     
                                 <Separator />
@@ -104,7 +104,7 @@
                                 </ImageView>
                       
                                 <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="BiblioHouse FX" />
-                                <Label text="Versión 1.0.0 (Estable)" />
+                                <Label text="Versión 1.1.0 (Estable)" />
                                 <Label text="%config.about.desc" textFill="#888" />
                       
                                 <Separator maxWidth="200.0" />
