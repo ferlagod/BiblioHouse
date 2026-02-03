@@ -82,14 +82,37 @@ public class SociosManagerController {
             });
             return row;
         });
+
+        // Context Menu
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem itemPrestar = new MenuItem("Prestar a este usuario");
+        itemPrestar.setOnAction(e -> {
+            Socio selected = tablaSocios.getSelectionModel().getSelectedItem();
+            if (selected != null && mainController != null) {
+                mainController.prepararPrestamoSocio(selected);
+                cerrarVentana(null);
+            }
+        });
+
+        MenuItem itemEditar = new MenuItem("Editar");
+        itemEditar.setOnAction(e -> editarSocio(null));
+
+        MenuItem itemEliminar = new MenuItem("Eliminar");
+        itemEliminar.setStyle("-fx-text-fill: red;");
+        itemEliminar.setOnAction(e -> eliminarSocio(null));
+
+        contextMenu.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, new SeparatorMenuItem(),
+                itemEliminar);
+        tablaSocios.setContextMenu(contextMenu);
     }
 
     /**
      * Inicializa los datos del controlador con la lista de socios y referencias
      * necesarias.
      *
-     * @param socios Lista de socios a mostrar.
-     * @param manager Gestor de JSON para guardar cambios.
+     * @param socios     Lista de socios a mostrar.
+     * @param manager    Gestor de JSON para guardar cambios.
      * @param controller Referencia al controlador principal.
      */
     public void initData(List<Socio> socios, JsonManager manager, PrimaryController controller) {
@@ -164,7 +187,7 @@ public class SociosManagerController {
         // Usamos el método getListaPrestamos() del PrimaryController
         boolean hasActiveLoans = mainController.getListaPrestamos().stream()
                 .anyMatch(p -> p.getNumeroSocio() == socioSeleccionado.getNumeroSocio()
-                && p.getFechaDevolucion() == null);
+                        && p.getFechaDevolucion() == null);
 
         if (hasActiveLoans) {
             mostrarAlerta("Error de Eliminación",
@@ -200,7 +223,7 @@ public class SociosManagerController {
     /**
      * Muestra una alerta al usuario.
      *
-     * @param titulo Título de la alerta.
+     * @param titulo    Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {

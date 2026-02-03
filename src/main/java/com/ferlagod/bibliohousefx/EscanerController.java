@@ -81,26 +81,39 @@ public class EscanerController {
             @Override
             protected Void call() throws Exception {
                 // 1. Cargar librerías nativas de OpenCV
+                // 1. OpenCV ya se carga en App.java
+                // nu.pattern.OpenCV.loadLocally();
+                System.out.println("[EscanerController] Iniciando tarea de cámara...");
+
                 try {
-                    // Carga la librería nativa adecuada para el SO (soporta M1)
-                    nu.pattern.OpenCV.loadLocally();
+                    // 2. Abrir cámara (índice 0 suele ser la default)
+                    System.out.println("[EscanerController] Intentando abrir VideoCapture(0)...");
+                    capture = new VideoCapture(0);
 
-                } catch (Throwable e) {
-                    // Fallback o error logging
-                    System.err.println("Error cargando OpenCV: " + e.getMessage());
-                }
-
-                // 2. Abrir cámara (índice 0 suele ser la default)
-                capture = new VideoCapture(0);
-
-                if (capture.isOpened()) {
-                    startScanning();
-                } else {
+                    if (capture.isOpened()) {
+                        System.out.println("[EscanerController] Cámara abierta correctamente.");
+                        startScanning();
+                    } else {
+                        System.err.println(
+                                "[EscanerController] capture.isOpened() devolvió false. No se detectó cámara.");
+                        Platform.runLater(() -> {
+                            Alert alert = new Alert(AlertType.ERROR);
+                            alert.setTitle("Error");
+                            alert.setHeaderText("No se detectó cámara");
+                            alert.setContentText(
+                                    "No se pudo iniciar la captura de vídeo. Verifica permisos y conexión.");
+                            alert.showAndWait();
+                            cerrarVentana();
+                        });
+                    }
+                } catch (Exception e) {
+                    System.err.println("[EscanerController] Excepción al abrir cámara: " + e.getMessage());
+                    e.printStackTrace();
                     Platform.runLater(() -> {
                         Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Error");
-                        alert.setHeaderText("No se detectó cámara");
-                        alert.setContentText("No se pudo iniciar la captura de vídeo. Verifica permisos y conexión.");
+                        alert.setTitle("Error Crítico");
+                        alert.setHeaderText("Fallo al iniciar cámara");
+                        alert.setContentText("Ocurrió un error inesperado: " + e.getMessage());
                         alert.showAndWait();
                         cerrarVentana();
                     });
@@ -152,7 +165,8 @@ public class EscanerController {
                                                 if (listener != null) {
                                                     listener.onIsbnScanned(text);
                                                 }
-                                                java.awt.Toolkit.getDefaultToolkit().beep();
+                                                // Eliminar beep para evitar conflicto AWT/Swing en macOS
+                                                // java.awt.Toolkit.getDefaultToolkit().beep();
                                                 cerrarVentana();
                                             });
                                             stopCamera.set(true);
@@ -209,7 +223,7 @@ public class EscanerController {
      *
      * @param text Texto a validar. Puede ser {@code null}.
      * @return {@code true} si el texto podría ser un ISBN (longitud 10 o 13),
-     * {@code false} en caso contrario.
+     *         {@code false} en caso contrario.
      */
     private boolean esPosibleISBN(String text) {
         if (text == null) {

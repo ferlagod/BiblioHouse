@@ -140,6 +140,8 @@ public class PrimaryController implements Initializable {
     @FXML
     private TabPane tabPaneVistaLibros;
     @FXML
+    private TabPane mainTabPane;
+    @FXML
     private Tab tabGaleria;
     @FXML
     private Tab tabTabla;
@@ -148,7 +150,7 @@ public class PrimaryController implements Initializable {
     @FXML
     private ScrollPane scrollPaneGaleria;
 
-    // PORTADA MANUAL 
+    // PORTADA MANUAL
     @FXML
     private ImageView imgPortadaManual;
     @FXML
@@ -247,115 +249,148 @@ public class PrimaryController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        this.resources = rb; // Guardamos el bundle
+        try {
+            this.resources = rb; // Guardamos el bundle
 
-        // Configurar columnas Libros
-        colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
-        colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
-        colEditorial.setCellValueFactory(new PropertyValueFactory<>("editorial"));
-        colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
-        colAnio.setCellValueFactory(new PropertyValueFactory<>("año"));
-        colEstado.setCellValueFactory(new PropertyValueFactory<>("estadoLectura"));
-        colSerie.setCellValueFactory(new PropertyValueFactory<>("serie")); // <-- VINCULACIÓN
-        colOrden.setCellValueFactory(new PropertyValueFactory<>("ordenEnSerie")); // <-- VINCULACIÓN
-        colIsbn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
-        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
+            // Configurar columnas Libros
+            colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+            colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
+            colEditorial.setCellValueFactory(new PropertyValueFactory<>("editorial"));
+            colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
+            colAnio.setCellValueFactory(new PropertyValueFactory<>("año"));
+            colEstado.setCellValueFactory(new PropertyValueFactory<>("estadoLectura"));
+            colSerie.setCellValueFactory(new PropertyValueFactory<>("serie")); // <-- VINCULACIÓN
+            colOrden.setCellValueFactory(new PropertyValueFactory<>("ordenEnSerie")); // <-- VINCULACIÓN
+            colIsbn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
+            colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
 
-        // Configurar columnas Prestamos
-        colPrestamoLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
-        colPrestamoSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
-        colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-        colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
+            // Context Menu para Tabla Libros
+            ContextMenu contextMenuLibros = new ContextMenu();
 
-        // Configurar columnas Historial
-        colHistorialLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
-        colHistorialSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
-        colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-        colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
-
-        // Spinner
-        if (spinnerCantidad != null) {
-            spinnerCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
-        }
-
-        // Configurar selección inicial de idioma
-        updateLanguageMenuSelection();
-
-        // Configurar Atajos de Teclado
-        setupShortcuts();
-
-        // Doble click para detalles
-        tablaLibros.setRowFactory(tv -> {
-            TableRow<Libro> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    mostrarDetalleLibro(row.getItem());
+            MenuItem itemPrestar = new MenuItem("Prestar este libro");
+            itemPrestar.setOnAction(e -> {
+                Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    prepararPrestamoLibro(selected);
                 }
             });
-            return row;
-        });
 
-        // Listener de Estanterías (Filtro) - CONECTADO AL FILTRO DINÁMICO
-        if (listaEstanterias != null) {
-            listaEstanterias.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal != null) {
+            MenuItem itemEditar = new MenuItem(resources.getString("ctx.edit"));
+            itemEditar.setOnAction(e -> editarLibroSeleccionado(null)); // Reusing existing method
+
+            MenuItem itemPortada = new MenuItem(resources.getString("ctx.cover"));
+            itemPortada.setOnAction(e -> cambiarPortadaDesdePrincipal(null));
+
+            MenuItem itemEliminar = new MenuItem(resources.getString("ctx.delete"));
+            itemEliminar.setStyle("-fx-text-fill: red;");
+            itemEliminar.setOnAction(e -> eliminarLibro(null));
+
+            contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
+                    new SeparatorMenuItem(), itemEliminar);
+            tablaLibros.setContextMenu(contextMenuLibros);
+
+            // Configurar columnas Prestamos
+            colPrestamoLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
+            colPrestamoSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
+            colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
+            colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
+
+            // Configurar columnas Historial
+            colHistorialLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
+            colHistorialSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
+            colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
+            colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
+
+            // Spinner
+            if (spinnerCantidad != null) {
+                spinnerCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
+            }
+
+            // Configurar selección inicial de idioma
+            updateLanguageMenuSelection();
+
+            // Configurar Atajos de Teclado
+            setupShortcuts();
+
+            // Doble click para detalles
+            tablaLibros.setRowFactory(tv -> {
+                TableRow<Libro> row = new TableRow<>();
+                row.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                        mostrarDetalleLibro(row.getItem());
+                    }
+                });
+                return row;
+            });
+
+            // Listener de Estanterías (Filtro) - CONECTADO AL FILTRO DINÁMICO
+            if (listaEstanterias != null) {
+                listaEstanterias.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        actualizarFiltros();
+                    }
+                });
+            }
+
+            // Listener para búsqueda incremental por Título (Dinámica)
+            if (txtBusquedaLocal != null) {
+                txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> {
+                    actualizarFiltros(); // Filtra automáticamente al escribir
+                });
+            }
+
+            // Listener para filtro por Autor
+            if (txtFiltroAutor != null) {
+                txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> {
                     actualizarFiltros();
-                }
-            });
-        }
+                });
+            }
 
-        // Listener para búsqueda incremental por Título (Dinámica)
-        if (txtBusquedaLocal != null) {
-            txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> {
-                actualizarFiltros(); // Filtra automáticamente al escribir
-            });
-        }
+            // Listener para filtro por ISBN
+            if (txtFiltroISBN != null) {
+                txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> {
+                    actualizarFiltros();
+                });
+            }
 
-        // Listener para filtro por Autor
-        if (txtFiltroAutor != null) {
-            txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> {
-                actualizarFiltros();
-            });
-        }
+            // Listener para filtro de ESTADO
+            if (cmbFiltroEstado != null) {
+                cmbFiltroEstado.setItems(FXCollections.observableArrayList(
+                        "Todos", "Leído", "Leyendo", "Pendiente"));
+                cmbFiltroEstado.setValue("Todos");
+                cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
+            }
 
-        // Listener para filtro por ISBN
-        if (txtFiltroISBN != null) {
-            txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> {
-                actualizarFiltros();
-            });
-        }
-
-        // Listener para filtro de ESTADO
-        if (cmbFiltroEstado != null) {
-            cmbFiltroEstado.setItems(FXCollections.observableArrayList(
-                    "Todos", "Leído", "Leyendo", "Pendiente"));
-            cmbFiltroEstado.setValue("Todos");
-            cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
-        }
-
-        // Row Factory para marcar préstamos vencidos
-        if (tablaPrestamos != null) {
-            tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
-                @Override
-                protected void updateItem(Prestamo item, boolean empty) {
-                    super.updateItem(item, empty);
-
-                    // Siempre limpiamos la clase antes de decidir si aplicarla
-                    getStyleClass().remove("overdue-loan");
-
-                    if (item != null && !empty) {
-                        // Solo préstamos activos (fechaDevolucion es null)
-                        if (item.getFechaDevolucion() == null && item.getFechaPrestamo() != null) {
-
-                            // Límite configurable
-                            LocalDate dueDate = item.getFechaPrestamo().plusDays(dueDaysLimit);
-
-                            if (dueDate.isBefore(LocalDate.now())) {
-                                getStyleClass().add("overdue-loan"); // Aplicar la clase CSS
+            // Row Factory para marcar préstamos vencidos
+            if (tablaPrestamos != null) {
+                tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
+                    @Override
+                    protected void updateItem(Prestamo item, boolean empty) {
+                        super.updateItem(item, empty);
+                        getStyleClass().remove("overdue-loan");
+                        if (item != null && !empty) {
+                            if (item.getFechaDevolucion() == null && item.getFechaPrestamo() != null) {
+                                LocalDate dueDate = item.getFechaPrestamo().plusDays(dueDaysLimit);
+                                if (dueDate.isBefore(LocalDate.now())) {
+                                    getStyleClass().add("overdue-loan");
+                                }
                             }
                         }
                     }
-                }
+                });
+            }
+
+        } catch (
+
+        Exception e) {
+            System.err.println("[PrimaryController] Error CRÍTICO en initialize: " + e.getMessage());
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error de Inicialización");
+                alert.setHeaderText("Fallo al iniciar la pantalla principal");
+                alert.setContentText("Ocurrió un error inesperado al configurar la vista: " + e.getMessage());
+                alert.showAndWait();
             });
         }
     }
@@ -694,6 +729,118 @@ public class PrimaryController implements Initializable {
         // Aplicar filtros iniciales para que la tabla se muestre correctamente al
         // cargar
         actualizarFiltros();
+
+        // --- CONFIGURAR FILTRADO EN COMBOS ---
+        // Configurar filtrado para Libros
+        setupFilteringComboBox(comboLibrosPrestamo, Libro::getTitulo);
+
+        // Configurar filtrado para Socios
+        setupFilteringComboBox(comboSocios, Socio::getNombreCompleto);
+    }
+
+    /**
+     * Configura el ComboBox para que se pueda filtrar escribiendo texto.
+     * He modificado este método para solucionar el error de que no salían los
+     * libros nuevos.
+     * La idea es que cada vez que escribes, buscamos en la lista actualizada en vez
+     * de usar la antigua.
+     *
+     * @param <T>         El tipo de objeto del combo.
+     * @param comboBox    El combo que vamos a configurar.
+     * @param displayFunc La función para saber qué texto mostrar de cada objeto.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> void setupFilteringComboBox(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
+        if (comboBox == null)
+            return;
+
+        // Hacemos que se pueda escribir en el combo
+        comboBox.setEditable(true);
+
+        // Guardamos una copia de los items originales por si acaso
+        ObservableList<T> originalItems = FXCollections.observableArrayList(comboBox.getItems());
+
+        // Este listener salta si cambia la lista de items desde fuera
+        comboBox.itemsProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal != originalItems) {
+                // De momento no hace falta hacer nada especial aquí
+            }
+        });
+
+        // Aquí es donde controlamos lo que pasa cuando el usuario escribe
+        // He arreglado esto para que se refresque con los datos nuevos
+        comboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
+
+            // IMPORTANTE: Elegimos qué lista usar como fuente para filtrar.
+            // Para los libros usamos la lista 'listaLibrosCompleta' directamente,
+            // porque si usamos 'originalItems' no salen los libros que acabamos de añadir.
+            ObservableList<T> sourceList;
+            if (comboBox == comboLibrosPrestamo) {
+                // Solo queremos libros que tengan stock (cantidad > 0)
+                sourceList = FXCollections.observableArrayList();
+                for (Object o : listaLibrosCompleta) {
+                    Libro l = (Libro) o;
+                    if (l.getCantidad() > 0)
+                        sourceList.add((T) l);
+                }
+            } else if (comboBox == comboSocios) {
+                // Para socios usamos la lista de socios actual
+                sourceList = (ObservableList<T>) listaSocios;
+            } else {
+                // Para otros combos usamos la lista original guardada
+                sourceList = originalItems;
+            }
+
+            if (!comboBox.isShowing()) {
+                // Si el combo está cerrado, a veces da problemas filtrar, así que mejor no
+                // hacemos nada
+            }
+
+            // Si el usuario borra el texto, mostramos todos los elementos (actualizados)
+            if (newText == null || newText.isEmpty()) {
+                comboBox.setItems(sourceList);
+                return;
+            }
+
+            // Si el texto coincide con lo que ya hemos seleccionado, no filtramos de nuevo
+            T selected = comboBox.getSelectionModel().getSelectedItem();
+            if (selected != null && displayFunc.apply(selected).equals(newText)) {
+                return;
+            }
+
+            // Filtramos la lista buscando coincidencias (ignorando mayúsculas/minúsculas)
+            FilteredList<T> filtered = new FilteredList<>(sourceList, item -> {
+                String itemText = displayFunc.apply(item).toLowerCase();
+                return itemText.contains(newText.toLowerCase());
+            });
+
+            // Actualizamos los items del combo con los resultados filtrados
+            comboBox.setItems(filtered);
+
+            // Si hay resultados y el combo no está desplegado, lo abrimos para que se vea
+            if (!filtered.isEmpty() && !comboBox.isShowing()) {
+                Platform.runLater(() -> comboBox.show());
+            }
+        });
+
+        // StringConverter para mostrar el nombre correctamente
+        comboBox.setConverter(new javafx.util.StringConverter<T>() {
+            @Override
+            public String toString(T object) {
+                if (object == null)
+                    return null;
+                return displayFunc.apply(object);
+            }
+
+            @Override
+            public T fromString(String string) {
+                // Seleccionar el item que coincida con el string
+                return comboBox.getItems().stream()
+                        .filter(item -> displayFunc.apply(item).equals(string))
+                        .findFirst()
+                        .orElse(null);
+            }
+        });
     }
 
     /**
@@ -806,16 +953,72 @@ public class PrimaryController implements Initializable {
 
             // --- FILTRO 5: ISBN ---
             if (!filtroISBN.isEmpty()) {
-                if (libro.getIsbn() == null || !libro.getIsbn().toLowerCase().contains(filtroISBN)) {
+                if (libro.getIsbn() == null || !libro.getIsbn().replace("-", "").contains(filtroISBN)) {
                     return false;
                 }
             }
 
-            // Si pasó todos los filtros, mostrar el libro
             return true;
         });
 
-        lblEstado.setText("Mostrando " + filteredData.size() + " de " + listaLibrosCompleta.size() + " libros.");
+        // 5. Envolver la FilteredList en una SortedList.
+        // SortedList<Libro> sortedData = new SortedList<>(filteredData); // YA LO
+        // TENEMOS DECLARADO ARRIBA
+
+        // 6. Vincular el comparador de SortedList al de la TableView.
+        // sortedData.comparatorProperty().bind(tablaLibros.comparatorProperty()); // LO
+        // HACEMOS MANUAL
+
+        // 7. Agregamos items a la tabla.
+        // tablaLibros.setItems(sortedData); // YA ESTÁ HECHO EN initData
+        if (lblEstado != null && filteredData != null && listaLibrosCompleta != null) {
+            lblEstado.setText("Mostrando " + filteredData.size() + " de " + listaLibrosCompleta.size() + " libros.");
+        }
+    }
+
+    /**
+     * Prepara la pestaña de préstamos con el libro seleccionado.
+     * 
+     * @param libro El libro a prestar.
+     */
+    public void prepararPrestamoLibro(Libro libro) {
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().select(1); // Seleccionar pestaña Préstamos
+        }
+
+        if (comboLibrosPrestamo != null) {
+            // Buscamos el libro en el combo para seleccionarlo correctamente
+            for (Libro l : comboLibrosPrestamo.getItems()) {
+                // Comparamos por ID o Título/Autor si no hay ID único, asumiendo objetos
+                // iguales
+                if (l.equals(libro)) {
+                    comboLibrosPrestamo.getSelectionModel().select(l);
+                    break;
+                }
+            }
+            comboLibrosPrestamo.requestFocus();
+        }
+    }
+
+    /**
+     * Prepara la pestaña de préstamos con el socio seleccionado.
+     * 
+     * @param socio El socio al que prestar.
+     */
+    public void prepararPrestamoSocio(Socio socio) {
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().select(1); // Seleccionar pestaña Préstamos
+        }
+
+        if (comboSocios != null) {
+            for (Socio s : comboSocios.getItems()) {
+                if (s.equals(socio)) {
+                    comboSocios.getSelectionModel().select(s);
+                    break;
+                }
+            }
+            comboSocios.requestFocus();
+        }
     }
 
     // Método auxiliar para refrescar el desplegable de libros
@@ -838,10 +1041,11 @@ public class PrimaryController implements Initializable {
      * BiblioHouse.
      *
      * @param event El evento de acción que desencadena la apertura de la
-     * ventana.
+     *              ventana.
      *
      * @throws IOException Si ocurre un error al cargar el archivo FXML
-     * "acercade.fxml". En caso de error, se muestra una alerta al usuario.
+     *                     "acercade.fxml". En caso de error, se muestra una alerta
+     *                     al usuario.
      */
     @FXML
     private void mostrarAcercaDe(ActionEvent event) {
@@ -1134,7 +1338,7 @@ public class PrimaryController implements Initializable {
         Thread searchThread = new Thread(() -> {
             try {
                 System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
-                
+
                 // 1. Definir las tareas de búsqueda (Futures)
                 java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
@@ -1144,7 +1348,7 @@ public class PrimaryController implements Initializable {
                             System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
                             return new ArrayList<>(); // Retornar lista vacía en caso de error
                         });
-                
+
                 java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Google Books...");
@@ -1153,7 +1357,7 @@ public class PrimaryController implements Initializable {
                             System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
                             return new ArrayList<>();
                         });
-                
+
                 java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Inventaire...");
@@ -1162,40 +1366,40 @@ public class PrimaryController implements Initializable {
                             System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
                             return new ArrayList<>();
                         });
-                
+
                 // 2. Esperar a que TODAS terminen (join)
                 // Usamos allOf para esperar, pero luego extraemos resultados individualmente
                 java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
                         .allOf(futureOpenLib, futureGoogle, futureInventaire);
-                
+
                 allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
-                
+
                 // 3. Recolectar resultados
                 List<Libro> resultadosTotales = new ArrayList<>();
-                
+
                 // OpenLibrary
                 List<Libro> resOL = futureOpenLib.get();
                 if (resOL != null) {
                     resultadosTotales.addAll(resOL);
                 }
-                
+
                 // Google
                 List<Libro> resGB = futureGoogle.get();
                 if (resGB != null) {
                     resultadosTotales.addAll(resGB);
                 }
-                
+
                 // Inventaire
                 List<Libro> resIV = futureInventaire.get();
                 if (resIV != null) {
                     resultadosTotales.addAll(resIV);
                 }
-                
+
                 System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
                 System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
                         (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
                         (resIV != null ? resIV.size() : 0)));
-                
+
                 // 4. Actualizar UI
                 Platform.runLater(() -> {
                     if (resultadosTotales.isEmpty()) {
@@ -1209,7 +1413,7 @@ public class PrimaryController implements Initializable {
                         lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
                     }
                 });
-                
+
             } catch (InterruptedException | ExecutionException e) {
                 System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
                 Platform.runLater(() -> {
@@ -1572,9 +1776,19 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void abrirEscaner(ActionEvent event) {
+        // DIAGNOSTIC: Confirm button was clicked
+        Alert diagnostico = new Alert(Alert.AlertType.INFORMATION);
+        diagnostico.setTitle("Diagnóstico");
+        diagnostico.setHeaderText("Botón de cámara pulsado");
+        diagnostico.setContentText("El método abrirEscaner fue llamado correctamente.");
+        diagnostico.showAndWait();
+
+        System.out.println("[PrimaryController] Solicitud para abrir escáner recibida.");
         try {
+            System.out.println("[PrimaryController] Cargando escaner.fxml...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("escaner.fxml"));
             Parent root = loader.load();
+            System.out.println("[PrimaryController] FXML cargado.");
 
             EscanerController escanerController = loader.getController();
             escanerController.setListener(isbn -> {
@@ -1593,14 +1807,24 @@ public class PrimaryController implements Initializable {
             stage.initModality(Modality.APPLICATION_MODAL);
 
             // Iniciar cámara al mostrar
-            stage.setOnShown(e -> escanerController.init());
+            stage.setOnShown(e -> {
+                System.out.println("[PrimaryController] Ventana mostrada. Invocando escanerController.init()...");
+                escanerController.init();
+            });
             // Asegurar cierre de cámara al cerrar ventana
             stage.setOnCloseRequest(e -> escanerController.shutdown());
 
             stage.show();
+            System.out.println("[PrimaryController] Ventana de escáner visible.");
 
         } catch (IOException e) {
+            System.err.println("[PrimaryController] Error IO al abrir escáner: " + e.getMessage());
+            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir el escáner: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("[PrimaryController] Error general al abrir escáner: " + e.getMessage());
+            e.printStackTrace();
+            mostrarAlerta("Error", "Error inesperado al abrir escáner: " + e.getMessage());
         }
     }
 
@@ -1655,7 +1879,7 @@ public class PrimaryController implements Initializable {
                     alert.setTitle("Duplicado Encontrado");
                     alert.setHeaderText(
                             "Conflicto entre:\n1. " + original.getTitulo() + " (Stock: " + original.getCantidad()
-                            + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
+                                    + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
                     alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
 
                     ButtonType btnFusionar = new ButtonType("Fusionar y Eliminar duplicado");
@@ -1958,7 +2182,7 @@ public class PrimaryController implements Initializable {
     /**
      * Muestra una alerta informativa al usuario.
      *
-     * @param titulo Título de la alerta.
+     * @param titulo  Título de la alerta.
      * @param mensaje Contenido del mensaje.
      */
     private void mostrarAlerta(String titulo, String mensaje) {
@@ -1974,7 +2198,7 @@ public class PrimaryController implements Initializable {
      * Stage.
      *
      * @param stage The stage to set the scene on.
-     * @param root The root node for the scene.
+     * @param root  The root node for the scene.
      */
     private void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);

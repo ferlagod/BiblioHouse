@@ -40,6 +40,13 @@ public class App extends Application {
     private static Scene scene;
 
     public static void main(String[] args) {
+        // Cargar librerías nativas de OpenCV AL INICIO para evitar conflictos
+        try {
+            nu.pattern.OpenCV.loadLocally();
+            System.out.println("[App] OpenCV cargado correctamente al inicio.");
+        } catch (Throwable e) {
+            System.err.println("[App] Error cargando OpenCV: " + e.getMessage());
+        }
         launch(args);
     }
 
@@ -101,7 +108,7 @@ public class App extends Application {
      * demostrado que sabe su contraseña.
      *
      * @param username Nombre de usuario
-     * @param path ruta de la carpeta
+     * @param path     ruta de la carpeta
      * @throws java.io.IOException
      */
     public static void loadMain(String username, String path) throws IOException {
@@ -134,9 +141,9 @@ public class App extends Application {
      * Recarga la interfaz principal para aplicar cambios de idioma sin cerrar
      * la ventana.
      *
-     * @param stage estado.
+     * @param stage    estado.
      * @param username El nombre de usuario actual.
-     * @param path La ruta de la biblioteca actual.
+     * @param path     La ruta de la biblioteca actual.
      * @return controller
      * @throws IOException Si hay error cargando el FXML.
      */

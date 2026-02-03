@@ -14,26 +14,26 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>21</version> 
-            <classifier>mac-aarch64</classifier>
+            <classifier>win</classifier>
         </dependency>
             
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>21</version>
-            <classifier>mac-aarch64</classifier>
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
             <version>21</version>
-            <classifier>mac-aarch64</classifier>
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
             <version>21</version>
-            <classifier>mac-aarch64</classifier>
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

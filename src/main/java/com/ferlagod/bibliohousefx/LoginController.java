@@ -279,7 +279,7 @@ public class LoginController {
      * Carga la aplicación principal una vez autenticado el usuario.
      *
      * @param username Nombre del usuario.
-     * @param path Ruta a los datos del usuario.
+     * @param path     Ruta a los datos del usuario.
      */
     private void entrarALaApp(String username, String path) {
         lblLoginError.setVisible(false);
@@ -291,8 +291,15 @@ public class LoginController {
             Stage loginStage = (Stage) cardLogin.getScene().getWindow();
             loginStage.close();
 
-        } catch (IOException e) {
-            setError(lblLoginError, "Error crítico al cargar la aplicación.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Mostrar alerta real en lugar de solo texto
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Crítico");
+            alert.setHeaderText("No se pudo iniciar la aplicación");
+            alert.setContentText("Detalles del error: " + e.getMessage());
+            alert.showAndWait();
+            setError(lblLoginError, "Error crítico: " + e.getMessage());
         }
     }
 
@@ -300,7 +307,7 @@ public class LoginController {
      * Muestra un mensaje de error en la etiqueta correspondiente.
      *
      * @param label Etiqueta donde mostrar el error.
-     * @param msg Mensaje de error.
+     * @param msg   Mensaje de error.
      */
     private void setError(Label label, String msg) {
         label.setText(msg);
