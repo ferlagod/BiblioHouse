@@ -43,7 +43,7 @@ import org.json.JSONObject;
  * devuelve los resultados como objetos Libro.
  *
  * @author Fernando Lago
- * @version 1.1
+ * @version 1.2
  */
 public class OpenLibraryCliente {
 

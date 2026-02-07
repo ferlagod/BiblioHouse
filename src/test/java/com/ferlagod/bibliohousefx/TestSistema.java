@@ -27,7 +27,7 @@ import org.testfx.framework.junit5.Start;
 /**
  * Clase TestSistema.
  * @author Fernando Lago Dávila
- * @version 1.1
+ * @version 1.2
  */
 @ExtendWith(ApplicationExtension.class)
 @Tag("system")

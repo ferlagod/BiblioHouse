@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Clase TestIntegracionOpenLibrary.
  * @author Fernando Lago Dávila
- * @version 1.1
+ * @version 1.2
  */
 class TestIntegracionOpenLibrary {
 

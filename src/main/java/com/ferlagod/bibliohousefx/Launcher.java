@@ -24,7 +24,7 @@ import javafx.application.Application;
  * llama al main de la clase App.
  *
  * @author Fernando Lago
- * @version 1.1
+ * @version 1.2
  */
 public class Launcher {
 

@@ -41,7 +41,7 @@ import javafx.scene.image.ImageView;
  * carpeta para no descargarlas dos veces.
  *
  * @author Fernando Lago
- * @version 1.1
+ * @version 1.2
  */
 public class ImageLoader {
 

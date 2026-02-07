@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Clase TestSeguridad.
  * @author Fernando Lago Dávila
- * @version 1.1
+ * @version 1.2
  */
 class TestSeguridad {
 

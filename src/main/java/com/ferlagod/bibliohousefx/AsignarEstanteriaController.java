@@ -40,7 +40,7 @@ import java.util.Optional;
  * en qué estanterías se guardará un libro.
  *
  * @author Fernando Lago
- * @version 1.1
+ * @version 1.2
  */
 public class AsignarEstanteriaController {
 
