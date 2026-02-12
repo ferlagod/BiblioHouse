@@ -83,7 +83,7 @@ public class JsonManager {
         /**
          * Convierte un String de JSON a una fecha LocalDate.
          *
-         * @param json El JSON con la fecha en formato String.
+         * @param json    El JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de la serialización.
          * @return La fecha parseada desde el String.
@@ -97,7 +97,7 @@ public class JsonManager {
         /**
          * Convierte un JsonPrimitive (String) a un objeto LocalDate.
          *
-         * @param json JSON con la fecha en formato String.
+         * @param json    JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de deserialización.
          * @return Objeto LocalDate parseado desde el String.
@@ -114,7 +114,7 @@ public class JsonManager {
      * Constructor de JsonManager.Recibe la ruta de datos del usuario.
      *
      * @param rutaDatosUsuario La ruta completa a la carpeta de datos del
-     * usuario actual.
+     *                         usuario actual.
      */
     public JsonManager(String rutaDatosUsuario) {
         if (rutaDatosUsuario == null || rutaDatosUsuario.isEmpty()) {
@@ -130,7 +130,7 @@ public class JsonManager {
         this.estanteriasDatabasePath = rutaDatosUsuario + File.separator + "estanterias.json";
         this.preferencesFilePath = rutaDatosUsuario + File.separator + "preferences.json"; // <-- Inicialización
 
-        // Se configura el Gson para que use el adaptador de fechas 
+        // Se configura el Gson para que use el adaptador de fechas
         this.gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
                 .setPrettyPrinting()
@@ -199,63 +199,92 @@ public class JsonManager {
      * Método genérico para guardar cualquier lista de objetos en un archivo
      * JSON.
      *
-     * @param lista La lista de objetos que queremos guardar.
-     * @param path La ruta del archivo donde se guardará.
+     * @param lista    La lista de objetos que queremos guardar.
+     * @param path     La ruta del archivo donde se guardará.
      * @param tipoDato Un String que describe qué tipo de datos estamos
-     * guardando.
+     *                 guardando.
      */
     private <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
         // Asegurarse de que el directorio del usuario exista antes de intentar escribir
         crearDirectorioUsuarioSiNoExiste();
 
+        File archivoActual = new File(path);
+        File archivoBackup = new File(path + ".bak");
+
+        // 1. Crear backup si existe el archivo actual
+        if (archivoActual.exists()) {
+            try {
+                java.nio.file.Files.copy(archivoActual.toPath(), archivoBackup.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "No se pudo crear el backup para " + path, e);
+            }
+        }
+
         try (FileWriter writer = new FileWriter(path)) {
             gson.toJson(lista, writer);
-            LOGGER.log(Level.FINE, "Guardados {0} {1} en {2}", new Object[]{lista.size(), tipoDato, path});
+            LOGGER.log(Level.FINE, "Guardados {0} {1} en {2}", new Object[] { lista.size(), tipoDato, path });
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al guardar " + tipoDato + " en " + path, e);
-
+            // Intentar restaurar backup si falló la escritura y el archivo quedó
+            // corrupto/vacío
+            if (archivoBackup.exists()) {
+                try {
+                    java.nio.file.Files.copy(archivoBackup.toPath(), archivoActual.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    LOGGER.log(Level.INFO, "Restaurado backup tras fallo de escritura en " + path);
+                } catch (IOException restoreEx) {
+                    LOGGER.log(Level.SEVERE, "FALLO CRÍTICO: No se pudo restaurar el backup tras error de escritura.",
+                            restoreEx);
+                }
+            }
         }
     }
 
     /**
      * Método genérico para cargar datos desde un archivo JSON.
      *
-     * @param path La ruta del archivo que queremos cargar.
+     * @param path      La ruta del archivo que queremos cargar.
      * @param tipoLista El tipo de la lista que esperamos.
-     * @param tipoDato Un String que describe qué tipo de datos estamos
-     * cargando.
+     * @param tipoDato  Un String que describe qué tipo de datos estamos
+     *                  cargando.
      * @return La lista de objetos cargados desde el archivo. Si hay error,
-     * devuelve una lista vacía.
+     *         devuelve una lista vacía.
      */
     private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
         File file = new File(path);
-        if (!file.exists()) {
-            LOGGER.log(Level.INFO, "El archivo de {0} no existe para este usuario en {1}. Se devuelve lista vacía.",
-                    new Object[]{tipoDato, path});
-            return new ArrayList<>();
-        }
-        try (FileReader reader = new FileReader(file)) {
-            List<T> lista = gson.fromJson(reader, tipoLista);
-            if (lista == null) {
-                LOGGER.log(Level.WARNING,
-                        "El archivo JSON {0} en {1} parece estar vacío o corrupto. Devolviendo lista vacía.",
-                        new Object[]{tipoDato, path});
-                return new ArrayList<>();
+        File backupFile = new File(path + ".bak");
+
+        // Intentar cargar el archivo principal
+        if (file.exists()) {
+            try (FileReader reader = new FileReader(file)) {
+                List<T> lista = gson.fromJson(reader, tipoLista);
+                if (lista != null) {
+                    LOGGER.log(Level.INFO, "Cargados {0} {1} desde {2}", new Object[] { lista.size(), tipoDato, path });
+                    return lista;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error al cargar " + path + ". Intentando cargar backup...", e);
             }
-            LOGGER.log(Level.INFO, "Cargados {0} {1} desde {2}", new Object[]{lista.size(), tipoDato, path});
-            return lista;
-        } catch (JsonParseException e) { // Captura específica para errores de formato JSON
-            LOGGER.log(Level.SEVERE,
-                    "Error de formato al cargar " + tipoDato + " desde " + path + ". El archivo podría estar corrupto.",
-                    e);
-            return new ArrayList<>(); // Devuelve lista vacía para evitar fallos mayores
-        } catch (IOException e) { // Otros errores de lectura
-            LOGGER.log(Level.SEVERE, "Error de E/S al cargar " + tipoDato + " desde " + path, e);
-            return new ArrayList<>();
-        } catch (Exception e) { // Captura genérica por si acaso
-            LOGGER.log(Level.SEVERE, "Error inesperado al cargar " + tipoDato + " desde " + path, e);
-            return new ArrayList<>();
         }
+
+        // Si llegamos aquí, o no existe el principal o falló. Intentamos backup.
+        if (backupFile.exists()) {
+            try (FileReader reader = new FileReader(backupFile)) {
+                List<T> lista = gson.fromJson(reader, tipoLista);
+                if (lista != null) {
+                    LOGGER.log(Level.WARNING, "RECUPERADO: Cargados {0} {1} desde BACKUP {2}",
+                            new Object[] { lista.size(), tipoDato, backupFile.getPath() });
+                    return lista;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error al cargar backup " + backupFile.getPath(), e);
+            }
+        }
+
+        LOGGER.log(Level.INFO,
+                "No se encontraron datos válidos para {0} (ni original ni backup). Se devuelve lista vacía.", tipoDato);
+        return new ArrayList<>();
     }
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
@@ -343,7 +372,7 @@ public class JsonManager {
      * Carga la lista de nombres de estanterías desde un archivo JSON.
      *
      * @return Una lista de Strings con las estanterías. Devuelve una lista
-     * vacía si no se encuentra el archivo.
+     *         vacía si no se encuentra el archivo.
      */
     public List<String> cargarEstanterias() {
         Type tipoLista = new TypeToken<ArrayList<String>>() {
@@ -400,7 +429,7 @@ public class JsonManager {
      * usuario (Exportar).
      *
      * @param archivo El archivo destino.
-     * @param libros La lista de libros a guardar.
+     * @param libros  La lista de libros a guardar.
      * @return true si se guardó correctamente, false si falló.
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {

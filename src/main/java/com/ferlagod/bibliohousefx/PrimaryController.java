@@ -289,15 +289,60 @@ public class PrimaryController implements Initializable {
                     new SeparatorMenuItem(), itemEliminar);
             tablaLibros.setContextMenu(contextMenuLibros);
 
-            // Configurar columnas Prestamos
-            colPrestamoLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
-            colPrestamoSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
+            // Configurar columnas Prestamos (v. 1.3 - Resolución dinámica por ID)
+            colPrestamoLibro.setCellValueFactory(cellData -> {
+                Prestamo p = cellData.getValue();
+                // 1. Intentar buscar por ID de libro (UUID)
+                if (p.getLibroId() != null) {
+                    return FXCollections.observableArrayList(listaLibrosCompleta).stream()
+                            .filter(l -> l.getId().equals(p.getLibroId()))
+                            .findFirst()
+                            .map(Libro::getTitulo)
+                            .map(javafx.beans.property.SimpleStringProperty::new)
+                            .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro() + " (Borrado)"));
+                }
+                // 2. Fallback: usar el título guardado (legacy)
+                return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
+            });
+
+            colPrestamoSocio.setCellValueFactory(cellData -> {
+                Prestamo p = cellData.getValue();
+                // Buscar socio actual por ID
+                return FXCollections.observableArrayList(listaSocios).stream()
+                        .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
+                        .findFirst()
+                        .map(Socio::getNombreCompleto)
+                        .map(javafx.beans.property.SimpleStringProperty::new)
+                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio() + " (Borrado)"));
+            });
+
             colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
             colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
 
-            // Configurar columnas Historial
-            colHistorialLibro.setCellValueFactory(new PropertyValueFactory<>("tituloLibro"));
-            colHistorialSocio.setCellValueFactory(new PropertyValueFactory<>("nombreSocio"));
+            // Configurar columnas Historial (v. 1.3 - Resolución dinámica por ID)
+            colHistorialLibro.setCellValueFactory(cellData -> {
+                Prestamo p = cellData.getValue();
+                if (p.getLibroId() != null) {
+                    return FXCollections.observableArrayList(listaLibrosCompleta).stream()
+                            .filter(l -> l.getId().equals(p.getLibroId()))
+                            .findFirst()
+                            .map(Libro::getTitulo)
+                            .map(javafx.beans.property.SimpleStringProperty::new)
+                            .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro()));
+                }
+                return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
+            });
+
+            colHistorialSocio.setCellValueFactory(cellData -> {
+                Prestamo p = cellData.getValue();
+                return FXCollections.observableArrayList(listaSocios).stream()
+                        .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
+                        .findFirst()
+                        .map(Socio::getNombreCompleto)
+                        .map(javafx.beans.property.SimpleStringProperty::new)
+                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio()));
+            });
+
             colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
             colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
 
@@ -1776,12 +1821,7 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void abrirEscaner(ActionEvent event) {
-        // DIAGNOSTIC: Confirm button was clicked
-        Alert diagnostico = new Alert(Alert.AlertType.INFORMATION);
-        diagnostico.setTitle("Diagnóstico");
-        diagnostico.setHeaderText("Botón de cámara pulsado");
-        diagnostico.setContentText("El método abrirEscaner fue llamado correctamente.");
-        diagnostico.showAndWait();
+        // DIAGNOSTIC REMOVED
 
         System.out.println("[PrimaryController] Solicitud para abrir escáner recibida.");
         try {
@@ -1791,14 +1831,31 @@ public class PrimaryController implements Initializable {
             System.out.println("[PrimaryController] FXML cargado.");
 
             EscanerController escanerController = loader.getController();
-            escanerController.setListener(isbn -> {
-                // Cuando se detecta un ISBN:
-                txtIsbn.setText(isbn);
-                // Si estamos en la pestaña principal, buscar en OpenLibrary automáticamente
-                Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setText(isbn);
-                    buscarLibroOpenLibrary(null);
-                });
+            escanerController.setListener(isbns -> {
+                // Cuando se detecta un lote de ISBNs:
+                if (isbns != null && !isbns.isEmpty()) {
+                    // Tomamos el último para rellenar el campo (simulando comportamiento anterior)
+                    // O si es ráfaga, podríamos procesarlos todos.
+                    // Por ahora, procesamos el último para mantener la funcionalidad de búsqueda
+                    // inmediata
+                    String ultimoIsbn = isbns.get(isbns.size() - 1);
+
+                    txtIsbn.setText(ultimoIsbn);
+
+                    Platform.runLater(() -> {
+                        if (isbns.size() > 1) {
+                            Alert info = new Alert(Alert.AlertType.INFORMATION);
+                            info.setTitle("Modo Ráfaga Completado");
+                            info.setHeaderText("Se han escaneado " + isbns.size() + " libros.");
+                            info.setContentText(
+                                    "Códigos: " + isbns.toString() + "\n\n(Mostrando el último en la búsqueda)");
+                            info.showAndWait();
+                        }
+
+                        txtBusquedaOpenLibrary.setText(ultimoIsbn);
+                        buscarLibroOpenLibrary(null);
+                    });
+                }
             });
 
             Stage stage = new Stage();

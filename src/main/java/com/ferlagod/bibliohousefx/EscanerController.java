@@ -23,21 +23,29 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
 
 /**
  * Controlador para la ventana de escaneo de códigos de barras. Utiliza OpenCV
@@ -52,17 +60,20 @@ public class EscanerController {
     @FXML
     private ImageView imgWebcam;
 
+    @FXML
+    private ListView<String> listaCodigos;
+
     private VideoCapture capture;
     private AtomicBoolean stopCamera = new AtomicBoolean(false);
     private EscanerListener listener;
+    private ObservableList<String> codigosDetectados;
 
     /**
      * Interfaz para comunicar el resultado del escaneo al controlador
      * principal.
      */
     public interface EscanerListener {
-
-        void onIsbnScanned(String isbn);
+        void onIsbnsScanned(List<String> isbns);
     }
 
     public void setListener(EscanerListener listener) {
@@ -73,6 +84,10 @@ public class EscanerController {
      * Inicializa la cámara y comienza el bucle de captura.
      */
     public void init() {
+        codigosDetectados = FXCollections.observableArrayList();
+        if (listaCodigos != null) {
+            listaCodigos.setItems(codigosDetectados);
+        }
         startWebcam();
     }
 
@@ -86,9 +101,20 @@ public class EscanerController {
                 System.out.println("[EscanerController] Iniciando tarea de cámara...");
 
                 try {
+                    // Log build info for debugging
+                    System.out.println("[EscanerController] OpenCV Build Info: " + Core.getBuildInformation());
+
                     // 2. Abrir cámara (índice 0 suele ser la default)
                     System.out.println("[EscanerController] Intentando abrir VideoCapture(0)...");
-                    capture = new VideoCapture(0);
+
+                    String os = System.getProperty("os.name").toLowerCase();
+                    if (os.contains("mac")) {
+                        System.out.println("[EscanerController] Detectado macOS. Usando CAP_AVFOUNDATION...");
+                        capture = new VideoCapture(0, Videoio.CAP_AVFOUNDATION);
+                    } else {
+                        System.out.println("[EscanerController] Sistema estándar. Usando CAP_ANY (0)...");
+                        capture = new VideoCapture(0);
+                    }
 
                     if (capture.isOpened()) {
                         System.out.println("[EscanerController] Cámara abierta correctamente.");
@@ -161,15 +187,16 @@ public class EscanerController {
 
                                         // Si parece un ISBN (10 o 13 dígitos)
                                         if (esPosibleISBN(text)) {
-                                            Platform.runLater(() -> {
-                                                if (listener != null) {
-                                                    listener.onIsbnScanned(text);
-                                                }
-                                                // Eliminar beep para evitar conflicto AWT/Swing en macOS
-                                                // java.awt.Toolkit.getDefaultToolkit().beep();
-                                                cerrarVentana();
-                                            });
-                                            stopCamera.set(true);
+                                            if (!codigosDetectados.contains(text)) {
+                                                Toolkit.getDefaultToolkit().beep();
+                                                Platform.runLater(() -> {
+                                                    codigosDetectados.add(text);
+                                                    listaCodigos.scrollTo(codigosDetectados.size() - 1);
+                                                });
+
+                                                // Pausa para evitar lecturas múltiples seguidas
+                                                Thread.sleep(2000);
+                                            }
                                         }
                                     }
                                 } catch (NotFoundException e) {
@@ -231,6 +258,14 @@ public class EscanerController {
         }
         String clean = text.replaceAll("-", "").trim();
         return clean.length() == 10 || clean.length() == 13;
+    }
+
+    @FXML
+    private void procesarLote(ActionEvent event) {
+        if (listener != null) {
+            listener.onIsbnsScanned(new ArrayList<>(codigosDetectados));
+        }
+        cerrarVentana();
     }
 
     /**

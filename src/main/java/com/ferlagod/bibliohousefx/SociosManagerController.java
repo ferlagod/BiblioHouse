@@ -19,6 +19,8 @@ package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.Socio;
+import com.bibliohouse.utils.CarnetGenerator;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser;
 
 /**
  * Controlador para la gestión general de la lista de socios. Muestra la tabla
@@ -206,6 +209,43 @@ public class SociosManagerController {
             jsonManager.guardarSocios(listaSocios);
             mainController.recargarDatosPrestamos(); // Notifica al principal
             mostrarAlerta("Eliminación Completa", "El socio ha sido eliminado correctamente.");
+        }
+    }
+
+    /**
+     * Genera un PDF con los carnets de todos los socios.
+     * 
+     * @param event El evento del botón.
+     */
+    @FXML
+    private void imprimirCarnets(ActionEvent event) {
+        if (listaSocios == null || listaSocios.isEmpty()) {
+            mostrarAlerta("Sin datos", "No hay socios para generar carnets.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Carnets en PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
+        fileChooser.setInitialFileName("carnets_socios.pdf");
+
+        File file = fileChooser.showSaveDialog(tablaSocios.getScene().getWindow());
+
+        if (file != null) {
+            CarnetGenerator generator = new CarnetGenerator();
+            try {
+                generator.generarCarnetsPDF(listaSocios, file);
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Éxito");
+                alert.setHeaderText("Carnets generados correctamente");
+                alert.setContentText("El archivo se ha guardado en: " + file.getAbsolutePath());
+                alert.showAndWait();
+
+            } catch (Exception e) {
+                mostrarAlerta("Error", "Ocurrió un error al generar el PDF: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 

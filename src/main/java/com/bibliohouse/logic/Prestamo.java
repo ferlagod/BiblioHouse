@@ -29,7 +29,10 @@ import java.time.format.DateTimeFormatter;
  */
 public class Prestamo {
 
-    // Usamos el ISBN para saber qué libro es 
+    // Usamos el ID interno (UUID) para identificar inequívocamente el libro
+    private String libroId;
+    // Mantenemos ISBN y Título como caché/fallback para mostrar datos si el libro
+    // se borra
     private String isbnLibro;
     private String tituloLibro; // El título, para mostrarlo más fácil
     private int numeroSocio; // A quién se lo hemos prestado
@@ -47,14 +50,15 @@ public class Prestamo {
      * Crea un nuevo préstamo con todos los datos. Esto es para cuando ya tienes
      * toda la información y quieres crear el préstamo de golpe.
      *
-     * @param isbnLibro El ISBN del libro que se presta.
-     * @param tituloLibro El título del libro.
-     * @param numeroSocio El número de socio de quien se lleva el libro.
-     * @param nombreSocio El nombre de la persona.
+     * @param isbnLibro     El ISBN del libro que se presta.
+     * @param tituloLibro   El título del libro.
+     * @param numeroSocio   El número de socio de quien se lleva el libro.
+     * @param nombreSocio   El nombre de la persona.
      * @param fechaPrestamo Cuándo se lo lleva.
      */
     public Prestamo(String isbnLibro, String tituloLibro, int numeroSocio, String nombreSocio,
             LocalDate fechaPrestamo) {
+        this.libroId = null; // En constructores legacy o manuales sin objeto Libro, esto puede ser null
         this.isbnLibro = isbnLibro;
         this.tituloLibro = tituloLibro;
         this.numeroSocio = numeroSocio;
@@ -74,6 +78,7 @@ public class Prestamo {
      */
     public Prestamo(Libro libro, Socio socio) {
         // Extraemos datos del Libro
+        this.libroId = libro.getId();
         this.isbnLibro = libro.getIsbn();
         this.tituloLibro = libro.getTitulo();
 
@@ -88,6 +93,15 @@ public class Prestamo {
     }
 
     // --- Getters y Setters ---
+
+    public String getLibroId() {
+        return libroId;
+    }
+
+    public void setLibroId(String libroId) {
+        this.libroId = libroId;
+    }
+
     /**
      * Obtiene el ISBN del libro prestado.
      *
@@ -137,7 +151,7 @@ public class Prestamo {
      * Obtiene la fecha de préstamo formateada como una cadena.
      *
      * @return La fecha de préstamo formateada como "dd/MM/yyyy", o una cadena
-     * vacía si la fecha es null.
+     *         vacía si la fecha es null.
      */
     public String getFechaPrestamoFormateada() {
         if (fechaPrestamo == null) {
@@ -159,7 +173,7 @@ public class Prestamo {
      * Obtiene la fecha de devolución formateada como una cadena.
      *
      * @return La fecha de devolución formateada como "dd/MM/yyyy", o
-     * "Pendiente" si la fecha es null.
+     *         "Pendiente" si la fecha es null.
      */
     public String getFechaDevolucionFormateada() {
         if (fechaDevolucion == null) {

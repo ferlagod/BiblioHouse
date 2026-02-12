@@ -32,6 +32,7 @@
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <children>
                 <Button onAction="#editarSocio" text="Editar Seleccionado" />
+                <Button onAction="#imprimirCarnets" text="Imprimir Carnets (PDF)" />
                 <Button onAction="#eliminarSocio" styleClass="danger-button" text="Eliminar Socio" />
                 <Separator orientation="VERTICAL" />
                 <Button cancelButton="true" onAction="#cerrarVentana" text="Cerrar" />

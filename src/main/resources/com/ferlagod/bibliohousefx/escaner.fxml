@@ -3,18 +3,26 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 
 <VBox alignment="CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EscanerController" style="-fx-padding: 20;">
     <children>
-        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Escáner de Código de Barras" />
-        <Label text="Apunta el código de barras a la cámara" />
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Escáner en Modo Ráfaga" />
+        <Label text="Escanea múltiples libros. Pulsa 'Procesar Lote' al finalizar." />
         
-        <ImageView fx:id="imgWebcam" fitHeight="240.0" fitWidth="320.0" pickOnBounds="true" preserveRatio="true" style="-fx-border-color: #ccc; -fx-border-width: 2px;" />
+        <HBox alignment="CENTER" spacing="20.0">
+             <ImageView fx:id="imgWebcam" fitHeight="240.0" fitWidth="320.0" pickOnBounds="true" preserveRatio="true" style="-fx-border-color: #ccc; -fx-border-width: 2px;" />
+             <VBox spacing="5.0">
+                 <Label text="Códigos detectados:" style="-fx-font-weight: bold;"/>
+                 <ListView fx:id="listaCodigos" prefHeight="240.0" prefWidth="180.0" />
+             </VBox>
+        </HBox>
         
-        <HBox alignment="CENTER" spacing="10.0">
+        <HBox alignment="CENTER" spacing="15.0">
+             <Button onAction="#procesarLote" text="Procesar Lote" defaultButton="true" style="-fx-base: #4CAF50; -fx-font-weight: bold;" />
              <Button onAction="#cancelar" text="Cancelar" cancelButton="true" />
         </HBox>
     </children>
