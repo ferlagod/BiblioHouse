@@ -36,8 +36,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Controlador para la ventana de asignación de estanterías. Permite seleccionar
- * en qué estanterías se guardará un libro.
+ * Este es el controlador para la ventanita que sale cuando añades un libro y
+ * tienes que decirle en qué estantería va. Básicamente, te saca una lista de
+ * las estanterías que ya tienes y marcas en cuáles quieres meter el libro.
+ * También puedes crear estanterías nuevas desde aquí si se te ocurre una sobre
+ * la marcha.
  *
  * @author Fernando Lago
  * @version 1.2
@@ -52,7 +55,9 @@ public class AsignarEstanteriaController {
     private boolean confirmado = false;
 
     /**
-     * Inicializa el controlador. Configura la lista para usar CheckBoxes.
+     * Esto se ejecuta cuando se abre la ventana. Lo que hace es "engañar" a la
+     * lista para que en vez de texto normal, muestre cajitas de selección
+     * (CheckBoxes). Así puedes marcar varias estanterías a la vez.
      */
     @FXML
     public void initialize() {
@@ -61,10 +66,12 @@ public class AsignarEstanteriaController {
     }
 
     /**
-     * Carga las estanterías en la lista.
+     * Con esto cargamos la lista de estanterías. Le pasamos todas las que
+     * existen y las que el libro ya tiene marcadas, para que salgan con el
+     * check puesto.
      *
-     * @param todas Las estanterías disponibles en el sistema.
-     * @param actuales Las estanterías donde YA está el libro (para marcarlas).
+     * @param todas Una lista con los nombres de todas las estanterías que hay.
+     * @param actuales Una lista con las estanterías donde el libro ya está.
      */
     public void setEstanterias(List<String> todas, List<String> actuales) {
         ObservableList<String> items = FXCollections.observableArrayList();
@@ -80,9 +87,11 @@ public class AsignarEstanteriaController {
     }
 
     /**
-     * Devuelve la lista final de estanterías seleccionadas.
+     * Cuando la otra ventana necesita saber qué estanterías se han marcado,
+     * llama a este método. Le devuelve una lista con los nombres de las que
+     * hemos dejado seleccionadas.
      *
-     * @return Lista de nombres de las estanterías marcadas.
+     * @return Una lista con las estanterías elegidas.
      */
     public List<String> getResultado() {
         List<String> seleccionadas = new ArrayList<>();

@@ -76,6 +76,12 @@ public class EscanerController {
         void onIsbnsScanned(List<String> isbns);
     }
 
+    /**
+     * Establece el listener para comunicar el resultado del escaneo al
+     * controlador principal.
+     *
+     * @param listener
+     */
     public void setListener(EscanerListener listener) {
         this.listener = listener;
     }
@@ -91,6 +97,10 @@ public class EscanerController {
         startWebcam();
     }
 
+    /**
+     * Inicia la captura de la webcam en un hilo aparte para no bloquear la
+     * interfaz.
+     */
     private void startWebcam() {
         Task<Void> webCamTask = new Task<Void>() {
             @Override
@@ -153,6 +163,10 @@ public class EscanerController {
         thread.start();
     }
 
+    /**
+     * Inicia el bucle de escaneo en un hilo de fondo. Captura frames, los
+     * muestra en la UI y busca códigos de barras.
+     */
     private void startScanning() {
         stopCamera.set(false);
         Task<Void> task = new Task<Void>() {
@@ -218,7 +232,11 @@ public class EscanerController {
     }
 
     /**
-     * Convierte una Mat de OpenCV a BufferedImage.
+     * Convierte una Mat de OpenCV a BufferedImage para poder usarla con ZXing y
+     * JavaFX.
+     *
+     * @param original La Mat de OpenCV a convertir.
+     * @return La imagen convertida a BufferedImage.
      */
     private BufferedImage matToBufferedImage(Mat original) {
         // Asegurarse de tener 3 canales (BGR) o 1 (Grayscale)
@@ -260,6 +278,11 @@ public class EscanerController {
         return clean.length() == 10 || clean.length() == 13;
     }
 
+    /**
+     * Procesa el lote de códigos escaneados y los envía al listener.
+     *
+     * @param event El evento del botón.
+     */
     @FXML
     private void procesarLote(ActionEvent event) {
         if (listener != null) {

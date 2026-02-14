@@ -1026,6 +1026,11 @@ public class PrimaryController implements Initializable {
      * 
      * @param libro El libro a prestar.
      */
+    /**
+     * Prepara la pestaña de préstamos con el libro seleccionado.
+     * 
+     * @param libro El libro a prestar.
+     */
     public void prepararPrestamoLibro(Libro libro) {
         if (mainTabPane != null) {
             mainTabPane.getSelectionModel().select(1); // Seleccionar pestaña Préstamos
@@ -1045,6 +1050,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Prepara la pestaña de préstamos con el socio seleccionado.
+     * 
+     * @param socio El socio al que prestar.
+     */
     /**
      * Prepara la pestaña de préstamos con el socio seleccionado.
      * 
@@ -2094,6 +2104,10 @@ public class PrimaryController implements Initializable {
      * Método público para forzar la recarga de datos que afectan a la pestaña
      * Préstamos (Socios y Combo de Libros) desde controladores secundarios.
      */
+    /**
+     * Método público para forzar la recarga de datos que afectan a la pestaña
+     * Préstamos (Socios y Combo de Libros) desde controladores secundarios.
+     */
     public void recargarDatosPrestamos() {
         List<Socio> socios = jsonManager.cargarSocios();
         listaSocios.clear();
@@ -2104,6 +2118,12 @@ public class PrimaryController implements Initializable {
         tablaPrestamos.refresh(); // Refrescamos la tabla de préstamos
     }
 
+    /**
+     * Permite al SociosManagerController acceder a la lista de préstamos
+     * activos para verificar si un socio puede ser eliminado.
+     *
+     * @return listado de prestamos completo
+     */
     /**
      * Permite al SociosManagerController acceder a la lista de préstamos
      * activos para verificar si un socio puede ser eliminado.

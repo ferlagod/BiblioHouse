@@ -101,12 +101,14 @@ public class SociosManagerController {
         MenuItem itemEditar = new MenuItem("Editar");
         itemEditar.setOnAction(e -> editarSocio(null));
 
+        MenuItem itemImprimir = new MenuItem("Imprimir Carnet (PDF)");
+        itemImprimir.setOnAction(e -> imprimirCarnets(null));
+
         MenuItem itemEliminar = new MenuItem("Eliminar");
         itemEliminar.setStyle("-fx-text-fill: red;");
         itemEliminar.setOnAction(e -> eliminarSocio(null));
 
-        contextMenu.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, new SeparatorMenuItem(),
-                itemEliminar);
+        contextMenu.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, new SeparatorMenuItem(), itemImprimir, new SeparatorMenuItem(), itemEliminar);
         tablaSocios.setContextMenu(contextMenu);
     }
 
@@ -114,8 +116,8 @@ public class SociosManagerController {
      * Inicializa los datos del controlador con la lista de socios y referencias
      * necesarias.
      *
-     * @param socios     Lista de socios a mostrar.
-     * @param manager    Gestor de JSON para guardar cambios.
+     * @param socios Lista de socios a mostrar.
+     * @param manager Gestor de JSON para guardar cambios.
      * @param controller Referencia al controlador principal.
      */
     public void initData(List<Socio> socios, JsonManager manager, PrimaryController controller) {
@@ -190,7 +192,7 @@ public class SociosManagerController {
         // Usamos el método getListaPrestamos() del PrimaryController
         boolean hasActiveLoans = mainController.getListaPrestamos().stream()
                 .anyMatch(p -> p.getNumeroSocio() == socioSeleccionado.getNumeroSocio()
-                        && p.getFechaDevolucion() == null);
+                && p.getFechaDevolucion() == null);
 
         if (hasActiveLoans) {
             mostrarAlerta("Error de Eliminación",
@@ -213,33 +215,44 @@ public class SociosManagerController {
     }
 
     /**
-     * Genera un PDF con los carnets de todos los socios.
-     * 
-     * @param event El evento del botón.
+     * Genera un PDF con el carnet del socio seleccionado. Si no hay ninguno
+     * seleccionado, avisa al usuario.
+     *
+     * * @param event El evento del botón.
      */
     @FXML
     private void imprimirCarnets(ActionEvent event) {
-        if (listaSocios == null || listaSocios.isEmpty()) {
-            mostrarAlerta("Sin datos", "No hay socios para generar carnets.");
+        // 1. Obtener el socio seleccionado en la tabla
+        Socio socioSeleccionado = tablaSocios.getSelectionModel().getSelectedItem();
+
+        // 2. Comprobar si hay selección
+        if (socioSeleccionado == null) {
+            mostrarAlerta("Selección Requerida", "Por favor, selecciona un socio de la lista para imprimir su carnet.");
             return;
         }
 
+        // 3. Preparar el guardado del archivo
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Carnets en PDF");
+        fileChooser.setTitle("Guardar Carnet en PDF");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
-        fileChooser.setInitialFileName("carnets_socios.pdf");
+        // Sugerir un nombre de archivo personalizado con el nombre del socio
+        fileChooser.setInitialFileName("Carnet_" + socioSeleccionado.getNombre().replace(" ", "_") + ".pdf");
 
         File file = fileChooser.showSaveDialog(tablaSocios.getScene().getWindow());
 
         if (file != null) {
             CarnetGenerator generator = new CarnetGenerator();
             try {
-                generator.generarCarnetsPDF(listaSocios, file);
+                // 4. Crear una lista que contenga SOLO al socio seleccionado
+                List<Socio> listaUnSocio = java.util.Collections.singletonList(socioSeleccionado);
+
+                // Generar el PDF pasándole esa lista de uno solo
+                generator.generarCarnetsPDF(listaUnSocio, file);
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Éxito");
-                alert.setHeaderText("Carnets generados correctamente");
-                alert.setContentText("El archivo se ha guardado en: " + file.getAbsolutePath());
+                alert.setHeaderText("Carnet generado correctamente");
+                alert.setContentText("El carnet de " + socioSeleccionado.getNombreCompleto() + " se ha guardado en:\n" + file.getAbsolutePath());
                 alert.showAndWait();
 
             } catch (Exception e) {
@@ -263,7 +276,7 @@ public class SociosManagerController {
     /**
      * Muestra una alerta al usuario.
      *
-     * @param titulo    Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {
