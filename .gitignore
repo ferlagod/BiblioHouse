@@ -37,7 +37,7 @@ Thumbs.db
 
 # Datos de usuario (para que no subas tu propia base de datos de pruebas)
 # OJO: Mantén la estructura de carpetas, pero ignora los json si tienen datos reales
-/BiblioHouse/
+BiblioHouse/
 *.json
 !src/main/resources/*.json 
 # (El ! significa "este sí", por si tienes jsons de configuración base)
