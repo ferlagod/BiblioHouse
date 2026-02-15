@@ -110,6 +110,41 @@ public class EditarLibroController {
         // Inicializar lista de estanterías
         modeloEstanterias = FXCollections.observableArrayList();
         listaEstanterias.setItems(modeloEstanterias);
+
+        // Configuración Drag & Drop para la portada 
+        imgPortada.setOnDragOver(event -> {
+            // Aceptamos solo si lo que arrastran es un archivo (o varios)
+            if (event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY);
+            }
+            event.consume();
+        });
+
+        imgPortada.setOnDragDropped(event -> {
+            javafx.scene.input.Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                // Cogemos solo el primer archivo, por si sueltan varios de golpe
+                File file = db.getFiles().get(0);
+
+                // Verificamos de forma sencilla si es una imagen por la extensión
+                String nombre = file.getName().toLowerCase();
+                if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png") || nombre.endsWith(".gif")) {
+                    try {
+                        rutaPortadaActual = file.getAbsolutePath();
+                        com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
+                        success = true;
+                    } catch (Exception e) {
+                        mostrarAlerta("Error", "No se pudo cargar la imagen soltada.");
+                    }
+                } else {
+                    mostrarAlerta("Formato incorrecto", "Solo se aceptan archivos de imagen (.jpg, .png, .gif).");
+                }
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+        // FIN Drag & Drop 
     }
 
     /**

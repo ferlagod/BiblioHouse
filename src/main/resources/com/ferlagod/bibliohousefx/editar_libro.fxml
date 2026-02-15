@@ -37,8 +37,7 @@
                                                 <ImageView fx:id="imgPortada" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" />
                                             </children>
                                         </VBox>
-                                        <Button onAction="#cambiarPortada" styleClass="text-button" text="Cambiar portada..." />
-                              
+                                        <Button onAction="#cambiarPortada" styleClass="text-button" text="Cambiar portada (o arrastra aquí)" />                              
                                         <Separator />
                               
                                         <VBox alignment="CENTER_LEFT" spacing="5.0">
