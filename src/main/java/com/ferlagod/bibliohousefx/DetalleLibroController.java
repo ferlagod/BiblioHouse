@@ -167,6 +167,12 @@ public class DetalleLibroController {
     private void editarLibro(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
+            
+            // 1. PRIMERO cargamos el idioma y se lo pasamos al loader
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", App.getCurrentLocale());
+            loader.setResources(bundle);
+            
+            // 2. LUEGO cargamos la vista (¡Este orden es obligatorio!)
             Parent root = loader.load();
 
             EditarLibroController controller = loader.getController();
@@ -190,7 +196,11 @@ public class DetalleLibroController {
                 this.wasModified = true;
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            // Ponemos Exception en lugar de IOException para atrapar cualquier error 
+            // y que nos lo imprima por consola para poder leerlo.
+            System.err.println("--- ERROR AL ABRIR LA VENTANA DE EDICIÓN ---");
+            e.printStackTrace();
         }
     }
 
