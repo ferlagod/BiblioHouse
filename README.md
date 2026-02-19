@@ -1,4 +1,4 @@
-# 📚 BiblioHouse
+# ![BiblioHouse Logo](https://imgur.com/ibLRiqI.png) BiblioHouse
 
 **BiblioHouse** es un gestor de biblioteca personal moderno y eficiente desarrollado en Java. Diseñado para amantes de la lectura que desean llevar un control detallado de su colección, préstamos y estadísticas de lectura, ***todo en local y totalmente privado***.
 
