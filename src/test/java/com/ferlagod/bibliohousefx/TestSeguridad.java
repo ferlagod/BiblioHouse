@@ -25,34 +25,35 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Clase TestSeguridad.
+ * Pruebas de seguridad para validar el manejo de rutas en JsonManager. Verifica
+ * que se rechacen entradas inválidas y documenta el comportamiento actual
+ * frente a intentos de path traversal.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 class TestSeguridad {
 
     @TempDir
     File tempDir;
 
+    /**
+     * Prueba la validación básica de rutas en el constructor de JsonManager.
+     * Actualmente, solo verifica que se lancen excepciones para rutas nulas o
+     * vacías. Nota: No bloquea explícitamente intentos de path traversal (ej:
+     * "../../").
+     */
     @Test
     @Tag("security")
     void testPathTraversalInConstructor() {
-        // Attempt to initialize JsonManager with a path traversal string
-        // We expect JsonManager to either accept it if it resolves to a valid path,
-        // OR reject it if we implement strict security.
-        // Currently, JsonManager just does `new File(path)`.
+        // El código actual no bloquea path traversal, pero debería validar entradas nulas/vacías
+        assertThrows(IllegalArgumentException.class,
+                () -> new JsonManager(null),
+                "Debería lanzar excepción si la ruta es nula");
 
-        // Let's create a scenario where we try to break out of the intended directory.
-        // String maliciousPath = tempDir.getAbsolutePath() + "/../outside_world";
+        assertThrows(IllegalArgumentException.class,
+                () -> new JsonManager(""),
+                "Debería lanzar excepción si la ruta está vacía");
 
-        // Since the code doesn't explicitly block traversal, this test documents
-        // BEHAVIOR.
-        // Ideally, we might want to ensure it creates the directory or throws.
-
-        // Constructing it shouldn't fail if the FS permissions allow it.
-        // But let's check input validation for null/empty.
-
-        assertThrows(IllegalArgumentException.class, () -> new JsonManager(null), "Should throw on null path");
-        assertThrows(IllegalArgumentException.class, () -> new JsonManager(""), "Should throw on empty path");
     }
 }

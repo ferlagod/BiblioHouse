@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -41,36 +40,25 @@ import javafx.scene.image.ImageView;
  * carpeta para no descargarlas dos veces.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class ImageLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
 
-    /**
-     * Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
-     */
+    // Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
     private static final Map<String, Image> memoryCache = Collections.synchronizedMap(new HashMap<>());
-
-    /**
-     * Directorio donde se guardarán las imágenes descargadas.
-     */
+    // Directorio donde se guardarán las imágenes descargadas.
     private static String cacheDir = null;
-
-    /**
-     * Executor para descargas en segundo plano.
-     */
+    // Executor para descargas en segundo plano.
     private static final ExecutorService executor = Executors.newFixedThreadPool(16);
-
-    /**
-     * Ruta de la imagen por defecto
-     */
+    // Ruta de la imagen por defecto
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
 
     /**
-     * Esta función carga la imagen por defecto (esa gris con el logo)
-     * cuando un libro no tiene portada o cuando la url está mal.
-     * Intento cargarla de la memoria para que vaya rápido.
+     * Esta función carga la imagen por defecto (esa gris con el logo) cuando un
+     * libro no tiene portada o cuando la url está mal. Intento cargarla de la
+     * memoria para que vaya rápido.
      */
     private static void loadDefault(ImageView target, double w, double h) {
         try {
@@ -190,7 +178,6 @@ public class ImageLoader {
     private static void downloadAndLoad(String url, File destination, ImageView target, double w, double h,
             String memoryKey) {
         // Usamos un placeholder o spinner si se desea. Por ahora nada.
-
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -229,8 +216,6 @@ public class ImageLoader {
         }
 
         // Construir imagen
-        // Nota: JavaFX carga asíncronamente si backgroundLoading=true.
-        // Si w y h son > 0, JavaFX hace el resize nativo eficiente.
         String uri = file.toURI().toString();
 
         double loadW = (w > 0) ? w : 0; // 0 significa tamaño original en constructor de Image
@@ -252,6 +237,14 @@ public class ImageLoader {
         target.setImage(image);
     }
 
+    /**
+     * Comprueba si una cadena de texto es una URL válida. Solo se considera
+     * válida si la URL comienza con "http://" o "https://".
+     *
+     * @param url Cadena de texto a validar como URL.
+     * @return true si la URL no es nula y comienza con "http://" o "https://".
+     * false en caso contrario, incluyendo si la URL es nula.
+     */
     private static boolean isValidUrl(String url) {
         return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
@@ -271,8 +264,7 @@ public class ImageLoader {
                 }
                 hexString.append(hex);
             }
-            // Añadir una extensión genérica o intentar adivinarla sería mejor,
-            // pero JavaFX suele detectar el formato por contenido.
+
             // Ponemos .png por defecto para que el SO lo reconozca como imagen si se
             // explora.
             return hexString.toString() + ".png";

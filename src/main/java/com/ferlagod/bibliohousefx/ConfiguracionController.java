@@ -42,7 +42,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class ConfiguracionController {
 
@@ -56,16 +56,10 @@ public class ConfiguracionController {
     private TextField txtRutaDatos;
     @FXML
     private ComboBox<String> comboIdioma;
-
-    /**
-     * Selector numérico para configurar los días límite de préstamo.
-     */
     @FXML
     private Spinner<Integer> spinnerDiasPrestamo;
-
     @FXML
     private java.util.ResourceBundle resources;
-
     private JsonManager jsonManager;
     private PrimaryController mainController;
 

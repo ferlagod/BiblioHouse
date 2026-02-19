@@ -24,43 +24,38 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Clase TestIntegracionOpenLibrary.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 class TestIntegracionOpenLibrary {
 
+    /**
+     * Prueba de integración para buscar un libro conocido en OpenLibrary.
+     * Realiza una búsqueda real a la API y verifica que devuelva resultados
+     * válidos. Requiere conexión a internet. Si falla, puede deberse a
+     * problemas de red o API.
+     */
     @Test
     @Tag("integration")
     void testBuscarLibroConocido() {
-        // Only run if there is internet connection (assumed for integration text
-        // context)
-        // We can check connection roughly, or just let it fail if no network.
-        // For robustness, we could check specific system properties, but let's assume
-        // environment is capable.
-
+        // Solo se ejecuta si hay conexión a internet (se asume en contexto de integración)
         String query = "The Hobbit";
         List<Libro> resultados = OpenLibraryCliente.buscarLibros(query);
 
-        // OpenLibrary should definitely return something for "The Hobbit"
+        // OpenLibrary debería devolver resultados para "The Hobbit"
         assertNotNull(resultados, "La lista de resultados no debería ser nula");
 
-        // If the API is down or network fails, the client returns empty list (and logs
-        // error).
-        // So an empty list isn't necessarily a code bug, but an environment failure.
-        // However, for an Integration Test, we expect it to work.
-        // Warning: This test makes a real HTTP request.
-
+        // Si la API falla o no hay red, el cliente devuelve una lista vacía (y registra el error)
         if (resultados.isEmpty()) {
-            // Check if it was due to network
-            // Since we can't easily introspect the client logs here without complex setup,
-            // we'll fail with a hint.
-            fail("No se encontraron resultados para '" + query + "'. Verifica la conexión a internet.");
+            fail("No se encontraron resultados para '" + query + "'. Verifica la conexión a internet o el estado de la API.");
         }
 
-        // Verify that the results contain relevant data
-        boolean foundHash = resultados.stream()
+        // Verifica que los resultados contengan datos relevantes
+        boolean encontrado = resultados.stream()
                 .anyMatch(libro -> libro.getTitulo().toLowerCase().contains("hobbit"));
 
-        assertTrue(foundHash, "Debería haber al menos un libro con 'Hobbit' en el título");
+        assertTrue(encontrado, "Debería haber al menos un libro con 'Hobbit' en el título");
     }
+
 }

@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,7 +37,7 @@ import javafx.stage.Stage;
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
  * @author Ferlagod
- * @version 1.2
+ * @version 1.3
  */
 public class WelcomeController {
 
@@ -110,11 +109,6 @@ public class WelcomeController {
             }
 
             // 2.5 Verificar si existe biblioteca.json, si no, crearla desde template
-            /**
-             * Aquí miro si el archivo de la biblioteca del invitado existe.
-             * Si no existe, copio uno que tengo guardado en el programa
-             * con libros de ejemplo para que la estantería no se vea triste y vacía.
-             */
             File guestLibrary = new File(guestDir, "biblioteca.json");
             if (!guestLibrary.exists()) {
                 try (InputStream is = getClass().getResourceAsStream("default_library.json")) {

@@ -43,27 +43,18 @@ import org.json.JSONObject;
  * devuelve los resultados como objetos Libro.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class OpenLibraryCliente {
 
-    /**
-     * Logger para registrar eventos y errores.
-     */
+    //Logger para registrar eventos y errores.
     private static final Logger LOGGER = Logger.getLogger(OpenLibraryCliente.class.getName());
-
-    /**
-     * URL base de la API de OpenLibrary.
-     */
+    // URL base de la API de OpenLibrary.
     private static final String API_BASE_URL = "https://openlibrary.org/search.json";
-
-    /**
-     * Campos que solicitamos a la API para no traer datos innecesarios.
-     */
+    // Campos que solicitamos a la API para no traer datos innecesarios.
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i";
 
     /**
-     * /**
      * Busca libros en OpenLibrary. Si no encuentra nada, devuelve una lista
      * vacía.
      *

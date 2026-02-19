@@ -31,7 +31,7 @@ import javafx.stage.Stage;
  * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class GestionSociosController {
 
@@ -45,10 +45,8 @@ public class GestionSociosController {
     private TextField txtDni;
     @FXML
     private TextField txtDomicilio;
-
     @FXML
     private Label lblTitulo; // Etiqueta para el título de la ventana (Crear/Editar)
-
     private Socio socioEnEdicion = null; // Objeto que estamos creando o editando
     private boolean guardado = false;
 

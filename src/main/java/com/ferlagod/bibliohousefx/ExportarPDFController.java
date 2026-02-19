@@ -29,7 +29,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,51 +38,38 @@ import java.util.stream.Collectors;
  * libros por diversos criterios y exportarlos a PDF.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class ExportarPDFController {
 
     @FXML
     private TextField txtBuscar;
-
     @FXML
     private TextField txtAutor;
-
     @FXML
     private ListView<String> listaEstanterias;
-
     @FXML
     private ListView<String> listaGeneros;
-
     @FXML
     private CheckBox chkTodasEstanterias;
-
     @FXML
     private CheckBox chkTodosGeneros;
-
     @FXML
     private TextField txtAnioDesde;
-
     @FXML
     private TextField txtAnioHasta;
-
     @FXML
     private ComboBox<String> cmbEstadoLectura;
-
     @FXML
     private Label lblContadorLibros;
-
     @FXML
     private ProgressIndicator progressIndicator;
-
     @FXML
     private Button btnExportar;
-
     // Datos
     private List<Libro> todosLosLibros;
     private List<String> todasEstanterias;
     private List<String> todosGeneros;
-
     // Mapas para manejar selección de checkboxes
     private Map<String, SimpleBooleanProperty> seleccionEstanterias;
     private Map<String, SimpleBooleanProperty> seleccionGeneros;

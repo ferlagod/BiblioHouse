@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class LoginController {
 
@@ -49,7 +49,6 @@ public class LoginController {
     private VBox cardLogin;
     @FXML
     private VBox cardRegister;
-
     // Login
     @FXML
     private TextField txtLoginUser;
@@ -57,7 +56,6 @@ public class LoginController {
     private PasswordField txtLoginPass;
     @FXML
     private Label lblLoginError;
-
     // Registro
     @FXML
     private TextField txtRegUser;
@@ -67,7 +65,6 @@ public class LoginController {
     private PasswordField txtRegPassConfirm;
     @FXML
     private Label lblRegError;
-
     // Rutas
     private static final String USERS_BASE_PATH = System.getProperty("user.home") + File.separator + "BiblioHouse"
             + File.separator + "users";
@@ -279,7 +276,7 @@ public class LoginController {
      * Carga la aplicación principal una vez autenticado el usuario.
      *
      * @param username Nombre del usuario.
-     * @param path     Ruta a los datos del usuario.
+     * @param path Ruta a los datos del usuario.
      */
     private void entrarALaApp(String username, String path) {
         lblLoginError.setVisible(false);
@@ -291,8 +288,7 @@ public class LoginController {
             Stage loginStage = (Stage) cardLogin.getScene().getWindow();
             loginStage.close();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
             // Mostrar alerta real en lugar de solo texto
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error Crítico");
@@ -307,7 +303,7 @@ public class LoginController {
      * Muestra un mensaje de error en la etiqueta correspondiente.
      *
      * @param label Etiqueta donde mostrar el error.
-     * @param msg   Mensaje de error.
+     * @param msg Mensaje de error.
      */
     private void setError(Label label, String msg) {
         label.setText(msg);

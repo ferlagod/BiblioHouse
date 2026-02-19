@@ -28,8 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Clase TestIntegracionJsonManager.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 class TestIntegracionJsonManager {
 
@@ -39,44 +40,60 @@ class TestIntegracionJsonManager {
     private JsonManager jsonManager;
     private File userDir;
 
+    /**
+     * Configuración inicial para las pruebas. Crea un directorio temporal para
+     * almacenar los datos del usuario, simulando la integración con el sistema
+     * de archivos sin modificar el directorio home real del usuario. Inicializa
+     * el gestor JSON con la ruta del directorio temporal.
+     */
     @BeforeEach
     void setUp() {
-        // Use a temporary directory for the user's data to simulate integration with
-        // the file system
-        // without affecting the actual user home directory.
+        // Usa un directorio temporal para los datos del usuario y simular la integración con
+        // el sistema de archivos sin afectar al directorio home real del usuario.
         userDir = new File(tempDir, "user_data");
         jsonManager = new JsonManager(userDir.getAbsolutePath());
     }
 
+    /**
+     * Prueba el guardado y carga de libros en formato JSON. Crea un libro de
+     * prueba, lo guarda mediante el gestor JSON, luego lo carga y verifica que
+     * los datos se hayan persistido correctamente.
+     */
     @Test
     void testGuardarYCargarLibros() {
-        // Create a test book
+        // Crea un libro de prueba
         Libro libro = new Libro("Titulo Test", "Autor Test", "Editorial Test", "2023", "Ficción", "1234567890", "");
 
-        // Save the book
+        // Guarda el libro
         jsonManager.guardarLibros(Collections.singletonList(libro));
 
-        // Load the books back
+        // Carga los libros de vuelta
         List<Libro> librosCargados = jsonManager.cargarLibros();
 
-        // Verify persistence
+        // Verifica la persistencia de los datos
         assertNotNull(librosCargados);
         assertEquals(1, librosCargados.size());
 
-        Libro loadedLibro = librosCargados.get(0);
-        assertEquals("Titulo Test", loadedLibro.getTitulo());
-        assertEquals("Autor Test", loadedLibro.getAutor());
+        Libro libroCargado = librosCargados.get(0);
+        assertEquals("Titulo Test", libroCargado.getTitulo());
+        assertEquals("Autor Test", libroCargado.getAutor());
     }
 
+    /**
+     * Prueba el guardado y carga de preferencias de usuario. Almacena un
+     * conjunto de preferencias (ej. tema de interfaz) y verifica que se
+     * recuperen correctamente.
+     */
     @Test
     void testGuardarYCargarPreferencias() {
-        // Save some preferences
+        // Guarda preferencias de prueba
         jsonManager.guardarPreferencias(Collections.singletonMap("tema", "oscuro"));
 
-        // Load them back
-        var prefs = jsonManager.cargarPreferencias();
+        // Carga las preferencias guardadas
+        var preferencias = jsonManager.cargarPreferencias();
 
-        // Verify
-        assertEquals("oscuro", prefs.get("tema"));
+        // Verifica que el valor se haya persistido
+        assertEquals("oscuro", preferencias.get("tema"));
     }
+
 }

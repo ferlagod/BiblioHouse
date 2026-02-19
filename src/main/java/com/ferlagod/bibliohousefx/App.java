@@ -31,7 +31,7 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Ferlagod
- * @version 1.2
+ * @version 1.3
  */
 public class App extends Application {
 
@@ -66,6 +66,11 @@ public class App extends Application {
         bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", currentLocale);
     }
 
+    /**
+     * Obtiene el locale actual configurado en la aplicación.
+     *
+     * @return Objeto {@link java.util.Locale} que representa el locale actual.
+     */
     public static java.util.Locale getCurrentLocale() {
         return currentLocale;
     }
@@ -86,7 +91,7 @@ public class App extends Application {
         String lang = prefs.get("language", "es");
         setLocale(lang);
 
-        // 1. Al arrancar, cargamos la pantalla de BIENVENIDA (Registro vs Invitado)
+        // Al arrancar, cargamos la pantalla de BIENVENIDA (Registro vs Invitado)
         FXMLLoader loader = new FXMLLoader(App.class.getResource("welcome.fxml"));
         loader.setResources(bundle);
         Parent root = loader.load();
@@ -108,7 +113,7 @@ public class App extends Application {
      * demostrado que sabe su contraseña.
      *
      * @param username Nombre de usuario
-     * @param path     ruta de la carpeta
+     * @param path ruta de la carpeta
      * @throws java.io.IOException
      */
     public static void loadMain(String username, String path) throws IOException {
@@ -141,9 +146,9 @@ public class App extends Application {
      * Recarga la interfaz principal para aplicar cambios de idioma sin cerrar
      * la ventana.
      *
-     * @param stage    estado.
+     * @param stage estado.
      * @param username El nombre de usuario actual.
-     * @param path     La ruta de la biblioteca actual.
+     * @param path La ruta de la biblioteca actual.
      * @return controller
      * @throws IOException Si hay error cargando el FXML.
      */

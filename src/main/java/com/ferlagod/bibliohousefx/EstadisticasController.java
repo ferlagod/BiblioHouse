@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class EstadisticasController {
 
@@ -79,8 +79,7 @@ public class EstadisticasController {
 
         // 1. Total y Leídos
         int total = libros.size();
-        // Usamos el campo booleano 'leido' para el total, ya que es la métrica
-        // principal
+        // Usamos el campo booleano 'leido' para el total
         long leidos = libros.stream().filter(Libro::isLeido).count();
 
         lblTotal.setText(String.valueOf(total));

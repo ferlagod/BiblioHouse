@@ -17,11 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
-import java.io.IOException;
 import java.util.List;
-
 import com.bibliohouse.logic.Libro;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,7 +35,7 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class DetalleLibroController {
 
@@ -62,9 +59,7 @@ public class DetalleLibroController {
     private Label lblEstrellas;
     @FXML
     private TextArea txtResena;
-
     private List<String> listaGlobalEstanterias;
-
     private Libro libroActual;
 
     /**
@@ -167,11 +162,11 @@ public class DetalleLibroController {
     private void editarLibro(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
-            
+
             // 1. PRIMERO cargamos el idioma y se lo pasamos al loader
             java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", App.getCurrentLocale());
             loader.setResources(bundle);
-            
+
             // 2. LUEGO cargamos la vista (¡Este orden es obligatorio!)
             Parent root = loader.load();
 

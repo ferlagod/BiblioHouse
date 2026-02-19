@@ -53,16 +53,14 @@ import org.opencv.videoio.Videoio;
  * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 public class EscanerController {
 
     @FXML
     private ImageView imgWebcam;
-
     @FXML
     private ListView<String> listaCodigos;
-
     private VideoCapture capture;
     private AtomicBoolean stopCamera = new AtomicBoolean(false);
     private EscanerListener listener;
@@ -73,6 +71,7 @@ public class EscanerController {
      * principal.
      */
     public interface EscanerListener {
+
         void onIsbnsScanned(List<String> isbns);
     }
 
@@ -106,8 +105,6 @@ public class EscanerController {
             @Override
             protected Void call() throws Exception {
                 // 1. Cargar librerías nativas de OpenCV
-                // 1. OpenCV ya se carga en App.java
-                // nu.pattern.OpenCV.loadLocally();
                 System.out.println("[EscanerController] Iniciando tarea de cámara...");
 
                 try {
@@ -144,7 +141,6 @@ public class EscanerController {
                     }
                 } catch (Exception e) {
                     System.err.println("[EscanerController] Excepción al abrir cámara: " + e.getMessage());
-                    e.printStackTrace();
                     Platform.runLater(() -> {
                         Alert alert = new Alert(AlertType.ERROR);
                         alert.setTitle("Error Crítico");
@@ -268,7 +264,7 @@ public class EscanerController {
      *
      * @param text Texto a validar. Puede ser {@code null}.
      * @return {@code true} si el texto podría ser un ISBN (longitud 10 o 13),
-     *         {@code false} en caso contrario.
+     * {@code false} en caso contrario.
      */
     private boolean esPosibleISBN(String text) {
         if (text == null) {

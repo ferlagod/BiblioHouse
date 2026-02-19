@@ -27,8 +27,6 @@ import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.stage.Stage;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.util.Callback;
-import javafx.beans.value.ObservableValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +41,7 @@ import java.util.Optional;
  * la marcha.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class AsignarEstanteriaController {
 

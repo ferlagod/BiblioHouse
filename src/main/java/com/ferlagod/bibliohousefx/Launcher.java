@@ -24,10 +24,17 @@ import javafx.application.Application;
  * llama al main de la clase App.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class Launcher {
 
+    /**
+     * Punto de entrada principal de la aplicación. Inicia la aplicación JavaFX
+     * llamando al método launch de la clase {@link Application}, pasando la
+     * clase principal {@link App} y los argumentos de línea de comandos.
+     *
+     * @param args Argumentos de línea de comandos.
+     */
     public static void main(String[] args) {
         Application.launch(App.class, args);
     }

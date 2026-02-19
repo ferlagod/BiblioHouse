@@ -29,9 +29,12 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Clase TestVelocidad.
+ * Pruebas de rendimiento para operaciones masivas de guardado y carga de
+ * libros. Mide el tiempo requerido para manejar grandes volúmenes de datos en
+ * JsonManager.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 class TestVelocidad {
 
@@ -47,17 +50,20 @@ class TestVelocidad {
         jsonManager = new JsonManager(userDir.getAbsolutePath());
     }
 
+    /**
+     * Prueba de rendimiento: guarda y carga 10,000 libros. Establece umbrales
+     * máximos aceptables para operaciones en milisegundos.
+     */
     @Test
     @Tag("performance")
     void benchmarkGuardarCargarMuchosLibros() {
-        // Generate 10,000 books
         int cantidad = 10000;
         List<Libro> libros = new ArrayList<>(cantidad);
         for (int i = 0; i < cantidad; i++) {
             libros.add(new Libro("Titulo " + i, "Autor " + i, "Editorial " + i, "2023", "Gen", "123", ""));
         }
 
-        // Measure write time
+        // Mide tiempo de escritura
         long startWrite = System.currentTimeMillis();
         jsonManager.guardarLibros(libros);
         long endWrite = System.currentTimeMillis();
@@ -75,11 +81,7 @@ class TestVelocidad {
 
         assertEquals(cantidad, cargados.size());
 
-        // Assert reasonable performance thresholds (adjust as needed for target
-        // hardware)
-        // e.g., Writing 10k items shouldn't take more than 2 seconds (2000ms) on modern
-        // SSD
-        // Reading is usually faster.
+        // Mide tiempo de lectura
         assertTrue(writeDuration < 5000, "Writing 10k books took too long (" + writeDuration + "ms)");
         assertTrue(readDuration < 3000, "Reading 10k books took too long (" + readDuration + "ms)");
     }

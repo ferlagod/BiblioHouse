@@ -42,7 +42,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Ferlagod
- * @version 1.2
+ * @version 1.3
  */
 public class EditarLibroController {
 
@@ -72,15 +72,12 @@ public class EditarLibroController {
     private TextArea txtResena; // Campo de texto multilínea para la reseña (si aplica)
     @FXML
     private CheckBox chkPoseido; // Checkbox para indicar si se posee el libro o no
-
-    // Estanterías
     @FXML
-    private TextField txtNuevaEstanteria;
+    private TextField txtNuevaEstanteria; // Estanterías
     @FXML
     private ListView<String> listaEstanterias;
     @FXML
     private ComboBox<String> cmbNuevaEstanteria;
-
     private Libro libro;
     private String rutaPortadaActual;
     private boolean guardado = false;
@@ -92,10 +89,8 @@ public class EditarLibroController {
      */
     @FXML
     public void initialize() {
-        // Inicializar ComboBox de estado de lectura
+        // Inicializar ComboBox de estado de lectura y de calificación
         cmbEstadoLectura.getItems().addAll("Pendiente", "Leyendo", "Leído");
-
-        // Inicializar ComboBox de calificación
         cmbCalificacion.getItems().addAll(
                 "Sin calificar",
                 "★ (Malo)",
@@ -365,6 +360,10 @@ public class EditarLibroController {
         cerrar();
     }
 
+    /**
+     * Cierra la ventana actual de la aplicación. Obtiene la referencia a la
+     * ventana a través del campo txtTitulo y la cierra.
+     */
     private void cerrar() {
         Stage stage = (Stage) txtTitulo.getScene().getWindow();
         stage.close();

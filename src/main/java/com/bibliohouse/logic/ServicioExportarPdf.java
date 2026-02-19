@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class ServicioExportarPdf {
 

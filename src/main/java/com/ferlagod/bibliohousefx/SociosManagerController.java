@@ -42,7 +42,7 @@ import javafx.stage.FileChooser;
  * de socios y permite añadir, editar o eliminarlos.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class SociosManagerController {
 
@@ -58,7 +58,6 @@ public class SociosManagerController {
     private TableColumn<Socio, String> colDni;
     @FXML
     private TableColumn<Socio, String> colDomicilio;
-
     private ObservableList<Socio> listaSocios;
     private JsonManager jsonManager;
     private PrimaryController mainController; // Referencia al controlador principal para refrescar

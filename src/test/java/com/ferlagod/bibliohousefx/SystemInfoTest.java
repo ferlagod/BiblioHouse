@@ -21,23 +21,31 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Unit tests for SystemInfo.
+ * Pruebas unitarias para la clase SystemInfo. Verifica la obtención de
+ * información del sistema sin efectos secundarios.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 public class SystemInfoTest {
 
+    /**
+     * Prueba que la versión de Java se obtiene correctamente.
+     */
     @Test
     void testJavaVersion() {
         String javaVersion = SystemInfo.javaVersion();
-        assertNotNull(javaVersion, "Java version should not be null");
-        assertFalse(javaVersion.isEmpty(), "Java version should not be empty");
+        assertNotNull(javaVersion, "La versión de Java no debería ser nula");
+        assertFalse(javaVersion.isEmpty(), "La versión de Java no debería estar vacía");
     }
 
+    /**
+     * Prueba que la obtención de la versión de JavaFX no lanza excepciones. El
+     * valor puede ser nulo o vacío, pero el método debe ejecutarse sin errores.
+     */
     @Test
     void testJavaFxVersion() {
-        // JavaFX version might be null strings logic...
-        // We just want to ensure calling it doesn't throw an exception.
-        assertDoesNotThrow(() -> SystemInfo.javafxVersion());
+        assertDoesNotThrow(() -> SystemInfo.javafxVersion(),
+                "La llamada a javafxVersion() no debería lanzar excepciones");
     }
 }

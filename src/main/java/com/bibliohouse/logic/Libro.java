@@ -27,7 +27,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class Libro {
 
@@ -46,12 +46,15 @@ public class Libro {
     private int cantidad;
     private boolean leido;
     private String estadoLectura = "Pendiente";
-    private LocalDate fechaFinalizacion; // Fecha en que se marca como "Leído" (para la tasa)
-    private boolean poseido = true; // Si es falso, es un libro deseado (wishlist)
+    // Fecha en que se marca como "Leído" (para la tasa)
+    private LocalDate fechaFinalizacion;
+    // Si es falso, es un libro deseado (wishlist)
+    private boolean poseido = true;
 
     // CAMPOS PARA SERIES/SAGAS
     private String serie;
-    private double ordenEnSerie; // double para permitir 1.5, 0.5, etc.
+    // double para permitir 1.5, 0.5, etc.
+    private double ordenEnSerie;
 
     /**
      * Constructor vacío.
@@ -111,7 +114,8 @@ public class Libro {
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
             String portadaURL) {
-        this(titulo, autor, editorial, año, genero, isbn, portadaURL, 0, ""); // Por defecto, 0 estrellas y sin reseña
+        // Por defecto, 0 estrellas y sin reseña
+        this(titulo, autor, editorial, año, genero, isbn, portadaURL, 0, "");
         this.estanterias = new ArrayList<>();
     }
 
@@ -436,6 +440,7 @@ public class Libro {
 
     @Override
     public String toString() {
-        return this.titulo; // Devuelve solo el título para mostrarlo en el JComboBox
+        // Devuelve solo el título para mostrarlo en el JComboBox
+        return this.titulo; 
     }
 }

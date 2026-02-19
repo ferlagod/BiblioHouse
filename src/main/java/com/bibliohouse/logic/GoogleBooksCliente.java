@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,7 +41,7 @@ import org.json.JSONObject;
  * Cliente para conectar con Google Books. Si OpenLib no va, usamos esto.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class GoogleBooksCliente {
 

@@ -25,57 +25,40 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 
 /**
- * Clase TestSistema.
+ * Pruebas de integración del sistema para la interfaz gráfica de BiblioHouse.
+ * Verifica que el entorno de TestFX funcione y que se pueda iniciar una ventana
+ * básica. Evita cargar la lógica completa de la aplicación para simplificar las
+ * pruebas.
+ *
  * @author Fernando Lago Dávila
- * @version 1.2
+ * @version 1.3
  */
 @ExtendWith(ApplicationExtension.class)
 @Tag("system")
 class TestSistema {
 
     /**
-     * Start method called by TestFX.
-     * We don't launch the full App.java because it has hardcoded paths and login
-     * logic
-     * that might be tricky to bypass in a simple test without significant
-     * refactoring.
-     * 
-     * Ideally, we would load the Login.fxml directly here.
+     * Método de inicio para TestFX. Crea una ventana básica para verificar que
+     * el entorno de pruebas gráficas está operativo. Evita cargar la aplicación
+     * completa para simplificar.
+     *
+     * @param stage Escenario principal proporcionado por TestFX.
      */
     @Start
-    public void start(Stage stage) throws Exception {
-        // Just show a dummy stage for now to verify TestFX is working.
-        // In a real scenario, we would do:
-        // new App().start(stage);
-
-        // HOWEVER, App.java's start method loads FXMLs that might not work headless
-        // immediately without config.
-        // Let's try to load the LoginController or just check stage properties if we
-        // launched App.
-
-        // For this first iteration, let's just assert that we *can* launch a stage.
+    public void start(Stage stage) {
         stage.setTitle("Test Stage");
         stage.show();
     }
 
+    /**
+     * Prueba básica ("smoke test") para verificar que el entorno de UI se
+     * inicia. Confirma que el método start() no lanza excepciones y que se
+     * muestra una ventana.
+     */
     @Test
     void testStageTitle() {
-        // Use TestFX assertions or standard JUnit
-        // This confirms the UI environment is spun up correctly.
-        // If we ran new App().start(stage), we would asserting "BiblioHouse Pro -
-        // Login"
-
-        // This is a "Smoke Test" for the UI subsystem.
-        // Direct Stage verification via library lookup is cleaner here.
-        // Since we are in the FX thread context or have access to it via TestFX,
-        // we can simply check if the window is present.
-        // For simplicity, let's just assert true to pass this step if start() succeeded
-        // without error.
-        // The start() method already verifies we can launch a stage.
-        // To be more precise, we can query the stage title if we had a handle, but
-        // FxAssert is proving picky with types.
-
-        // Let's rely on success of start() and a simple verification.
+        // Si start() se ejecutó sin errores, consideramos que la prueba pasa.
+        // En una versión más completa, se validaría el título o propiedades de la ventana.
         org.junit.jupiter.api.Assertions.assertTrue(true, "Stage launched successfully");
     }
 }

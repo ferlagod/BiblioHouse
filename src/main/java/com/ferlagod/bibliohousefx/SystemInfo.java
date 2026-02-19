@@ -22,7 +22,7 @@ package com.ferlagod.bibliohousefx;
  * de Java y JavaFX en uso.
  *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class SystemInfo {
 

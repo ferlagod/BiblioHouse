@@ -27,11 +27,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Controlador de la pantallita "Acerca de".
- * Aquí es donde hago un poco de autobombo y pongo mi contacto.
- * 
+ * Controlador de la pantallita "Acerca de". Aquí es donde hago un poco de
+ * autobombo y pongo mi contacto.
+ *
  * @author Fernando Lago
- * @version 1.2
+ * @version 1.3
  */
 public class AcercaDeController {
 
@@ -49,9 +49,8 @@ public class AcercaDeController {
     }
 
     /**
-     * Intenta abrir tu programa de correo para que me escribas.
-     * Si no tienes uno configurado, pues mala suerte, no hace nada (o da error en
-     * consola).
+     * Intenta abrir tu programa de correo para que me escribas. Si no tienes
+     * uno configurado, pues mala suerte, no hace nada (o da error en consola).
      */
     @FXML
     private void abrirEmail() {
