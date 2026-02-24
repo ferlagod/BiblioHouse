@@ -290,4 +290,57 @@ public class ImageLoader {
             executor.shutdownNow();
         }
     }
+
+    /**
+     * Descarga (o copia) la portada a la carpeta local 'portadas' del usuario
+     * para que sea 100% offline e independiente de internet.
+     *
+     * * @param urlOrPath URL de internet o ruta de un archivo local.
+     * @param idLibro ID del libro (para nombrar el archivo de forma única).
+     * @param carpetaUsuario Ruta absoluta de la carpeta base del usuario.
+     * @return La nueva ruta local del archivo, o la original si falla.
+     */
+    public static String hacerPortadaLocalOffline(String urlOrPath, String idLibro, String carpetaUsuario) {
+        // Si no hay portada o es la por defecto, no hacemos nada
+        if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH)) {
+            return urlOrPath;
+        }
+
+        // Creamos la subcarpeta 'portadas' dentro de la del usuario
+        File dirPortadas = new File(carpetaUsuario, "portadas");
+        if (!dirPortadas.exists()) {
+            dirPortadas.mkdirs();
+        }
+
+        // Determinamos la extensión (por defecto .jpg)
+        String extension = ".jpg";
+        if (urlOrPath.toLowerCase().endsWith(".png")) {
+            extension = ".png";
+        }
+
+        // El archivo final se llamará como el ID del libro (ej: 123e4567-e89b...jpg)
+        File archivoDestino = new File(dirPortadas, idLibro + extension);
+
+        try {
+            if (isValidUrl(urlOrPath)) {
+                // Es de internet: la descargamos
+                try (InputStream in = new URL(urlOrPath).openStream()) {
+                    Files.copy(in, archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            } else {
+                // Es un archivo local (ej. Drag & Drop): lo copiamos
+                File archivoOrigen = new File(urlOrPath);
+                // Solo lo copiamos si existe y no es ya el archivo de destino
+                if (archivoOrigen.exists() && !archivoOrigen.getAbsolutePath().equals(archivoDestino.getAbsolutePath())) {
+                    Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+            // Devolvemos la ruta local absoluta
+            return archivoDestino.getAbsolutePath();
+
+        } catch (Exception e) {
+            LOGGER.severe("Error al hacer la portada offline: " + e.getMessage());
+            return urlOrPath; // Si falla por lo que sea, devolvemos lo que había para no romper nada
+        }
+    }
 }

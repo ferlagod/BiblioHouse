@@ -82,6 +82,7 @@ public class EditarLibroController {
     private String rutaPortadaActual;
     private boolean guardado = false;
     private ObservableList<String> modeloEstanterias;
+    private String rutaUsuario;
 
     /**
      * Configuración inicial de la ventana. Prepara los desplegables de
@@ -150,6 +151,10 @@ public class EditarLibroController {
     public void setLibro(Libro libro) {
         this.libro = libro;
         cargarDatos();
+    }
+
+    public void setRutaUsuario(String rutaUsuario) {
+        this.rutaUsuario = rutaUsuario;
     }
 
     /**
@@ -338,6 +343,14 @@ public class EditarLibroController {
 
         // Guardar estanterías
         libro.setEstanterias(new ArrayList<>(modeloEstanterias));
+
+        if (this.rutaUsuario != null && !this.rutaUsuario.isEmpty()) {
+            rutaPortadaActual = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
+                    rutaPortadaActual,
+                    libro.getId(),
+                    this.rutaUsuario
+            );
+        }
 
         // Guardar portada
         libro.setPortadaURL(rutaPortadaActual);

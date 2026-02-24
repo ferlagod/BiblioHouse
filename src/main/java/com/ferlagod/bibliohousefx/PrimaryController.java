@@ -1268,6 +1268,17 @@ public class PrimaryController implements Initializable {
             nuevoLibro.setOrdenEnSerie(orden);
         }
 
+        // ======================================================================
+        // ✨ NUEVO: SECUESTRAR LA PORTADA PARA GUARDARLA EN LOCAL (MODO OFFLINE)
+        // ======================================================================
+        String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
+                nuevoLibro.getPortadaURL(),
+                nuevoLibro.getId(),
+                this.rutaUsuario 
+        );
+        nuevoLibro.setPortadaURL(rutaLocal);
+        // ======================================================================
+
         // --- SELECCIÓN DE ESTANTERÍA ---
         // Cargamos las estanterías existentes
         List<String> allShelves = jsonManager.cargarEstanterias();
@@ -2078,7 +2089,6 @@ public class PrimaryController implements Initializable {
             mostrarAlerta("Error Crítico", "No se pudo abrir la ventana de Gestión de Socios.\n" + e.getMessage());
         }
     }
-
 
     /**
      * Método público para forzar la recarga de datos que afectan a la pestaña
