@@ -1274,7 +1274,7 @@ public class PrimaryController implements Initializable {
         String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
                 nuevoLibro.getPortadaURL(),
                 nuevoLibro.getId(),
-                this.rutaUsuario 
+                this.rutaUsuario
         );
         nuevoLibro.setPortadaURL(rutaLocal);
         // ======================================================================
@@ -1297,7 +1297,7 @@ public class PrimaryController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Asignar Estantería");
-            stage.setScene(new Scene(root));
+            setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
             stage.showAndWait();
@@ -1579,11 +1579,16 @@ public class PrimaryController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
+
+            // ✨ AÑADE ESTA LÍNEA AQUÍ (y asegúrate de que esté ANTES del loader.load())
+            loader.setResources(this.resources);
+
             Parent root = loader.load();
 
             EditarLibroController controller = loader.getController();
             controller.setLibro(libroSeleccionado);
             controller.setEstanteriasDisponibles(jsonManager.cargarEstanterias());
+            controller.setRutaUsuario(this.rutaUsuario); // (Asegúrate de tener también esta línea que pusimos antes)
 
             Stage stage = new Stage();
             stage.setTitle("Editar: " + libroSeleccionado.getTitulo());
@@ -1821,7 +1826,6 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void abrirEscaner(ActionEvent event) {
-        // DIAGNOSTIC REMOVED
 
         System.out.println("[PrimaryController] Solicitud para abrir escáner recibida.");
         try {
@@ -1860,7 +1864,7 @@ public class PrimaryController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Escáner de Código de Barras");
-            stage.setScene(new Scene(root));
+            setScene(stage, root);
             stage.initModality(Modality.APPLICATION_MODAL);
 
             // Iniciar cámara al mostrar
@@ -1992,11 +1996,7 @@ public class PrimaryController implements Initializable {
             Stage stage = new Stage();
             stage.setTitle("Configuración");
 
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-
-            // Aseguramos que se cargue el estilo base
-            scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+            setScene(stage, root);
 
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
@@ -2267,5 +2267,8 @@ public class PrimaryController implements Initializable {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         stage.setScene(scene);
+
+        // ✨ NUEVO: La solución mágica para que Ubuntu no encoja las ventanas
+        stage.sizeToScene();
     }
 }

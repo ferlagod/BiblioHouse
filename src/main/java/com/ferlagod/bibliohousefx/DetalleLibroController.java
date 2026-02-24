@@ -180,6 +180,10 @@ public class DetalleLibroController {
             Stage stage = new Stage();
             stage.setTitle("Editar: " + libroActual.getTitulo());
             stage.setScene(new Scene(root));
+
+            // ✨ NUEVO: Para que la ventana de edición no salga enana en Linux
+            stage.sizeToScene();
+
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(lblTitulo.getScene().getWindow());
 

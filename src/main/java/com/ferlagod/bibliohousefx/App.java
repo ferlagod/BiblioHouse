@@ -139,6 +139,9 @@ public class App extends Application {
         // Icono también para esta ventana
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
+        // ✨ NUEVO: Forzar a que la ventana ocupe toda la pantalla al arrancar
+        mainStage.setMaximized(true);
+
         mainStage.show();
     }
 
