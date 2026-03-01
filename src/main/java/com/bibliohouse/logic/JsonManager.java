@@ -74,6 +74,23 @@ public class JsonManager {
     private final Gson gson;
 
     /**
+     * Tarea opcional que se ejecuta tras cada escritura en disco.
+     * Se usa para sincronizar automáticamente con NextCloud.
+     */
+    private Runnable autoSyncTask;
+
+    /**
+     * Establece la tarea de sincronización automática que se ejecutará
+     * en un hilo de fondo tras cada guardado de datos.
+     * Pasar {@code null} desactiva la sincronización automática.
+     *
+     * @param task La tarea a ejecutar, o null para desactivar.
+     */
+    public void setAutoSyncTask(Runnable task) {
+        this.autoSyncTask = task;
+    }
+
+    /**
      * Clase interna es para que Gson sepa cómo manejar las fechas (LocalDate).
      */
     private static class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
@@ -239,6 +256,14 @@ public class JsonManager {
                             restoreEx);
                 }
             }
+        }
+
+        // Lanzar sincronización automática en hilo daemon de fondo (si está
+        // configurada)
+        if (autoSyncTask != null) {
+            Thread syncThread = new Thread(autoSyncTask, "nextcloud-autosync");
+            syncThread.setDaemon(true);
+            syncThread.start();
         }
     }
 

@@ -18,6 +18,7 @@
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.JsonManager;
+import com.bibliohouse.logic.NextCloudSyncService;
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.logic.Prestamo;
 import com.bibliohouse.logic.Socio;
@@ -465,7 +466,29 @@ public class PrimaryController implements Initializable {
 
         this.jsonManager = new JsonManager(userPath);
 
+        // Configurar auto-sync con NextCloud si hay credenciales guardadas
         this.preferencias = jsonManager.cargarPreferencias();
+        String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
+        String ncUser = preferencias.getOrDefault("nextcloud.user", "");
+        String ncPass = preferencias.getOrDefault("nextcloud.password", "");
+        if (!ncUrl.isBlank() && !ncUser.isBlank() && !ncPass.isBlank()) {
+            try {
+                NextCloudSyncService syncService = new NextCloudSyncService(ncUrl, ncUser, ncPass);
+                final String localDir = userPath;
+                jsonManager.setAutoSyncTask(() -> {
+                    try {
+                        syncService.subirBaseDatos(localDir);
+                    } catch (Exception ex) {
+                        java.util.logging.Logger.getLogger(PrimaryController.class.getName())
+                                .log(java.util.logging.Level.WARNING, "Auto-sync NextCloud fallido: {0}",
+                                        ex.getMessage());
+                    }
+                });
+            } catch (IllegalArgumentException ex) {
+                // Credenciales mal formadas — no activamos auto-sync
+            }
+        }
+
         cargarDatos();
         aplicarPreferenciasGuardadas();
 

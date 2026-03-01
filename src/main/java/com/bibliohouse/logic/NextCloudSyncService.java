@@ -150,14 +150,17 @@ public class NextCloudSyncService {
             sardine.list(rootUrl);
             LOGGER.log(Level.INFO, "Test de conexión NextCloud exitoso para: {0}", serverUrl);
             return null; // null indica éxito
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Test de conexión NextCloud fallido: {0}", e.getMessage());
-            return e.getMessage();
+        } catch (Exception e) {
+            // Capturamos Exception (no solo IOException) para recoger errores de
+            // autenticación,
+            // URL mal formada, certificado SSL inválido, etc.
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            LOGGER.log(Level.WARNING, "Test de conexión NextCloud fallido: {0}", msg);
+            return msg;
         } finally {
             try {
                 sardine.shutdown();
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, "Error cerrando cliente Sardine", ex);
+            } catch (Exception ignored) {
             }
         }
     }
@@ -180,10 +183,23 @@ public class NextCloudSyncService {
         try {
             String remoteFolderUrl = buildRemoteFolderUrl();
 
-            // Crear la carpeta remota si no existe
-            if (!sardine.exists(remoteFolderUrl)) {
-                LOGGER.log(Level.INFO, "Creando carpeta remota en NextCloud: {0}", remoteFolderUrl);
+            // Intentar crear la carpeta siempre (MKCOL).
+            // Si ya existe, NextCloud devuelve 405 (Method Not Allowed) que Sardine lanza
+            // como
+            // SardineException con código 405 — lo ignoramos. Cualquier otro error sí lo
+            // propagamos.
+            try {
                 sardine.createDirectory(remoteFolderUrl);
+                LOGGER.log(Level.INFO, "Carpeta creada en NextCloud: {0}", remoteFolderUrl);
+            } catch (Exception e) {
+                String msg = e.getMessage() != null ? e.getMessage() : "";
+                // 405 = ya existe, 301 = redirect handled — ambos son innocuos
+                if (msg.contains("405") || msg.contains("301") || msg.contains("Method Not Allowed")) {
+                    LOGGER.log(Level.FINE, "Carpeta ya existía en NextCloud (ignorado): {0}", remoteFolderUrl);
+                } else {
+                    LOGGER.log(Level.WARNING, "Error al crear carpeta remota: {0}", msg);
+                    // No abortamos: intentamos subir de todas formas
+                }
             }
 
             // Subir cada archivo de la BD
@@ -200,7 +216,10 @@ public class NextCloudSyncService {
                 }
             }
         } finally {
-            sardine.shutdown();
+            try {
+                sardine.shutdown();
+            } catch (Exception ignored) {
+            }
         }
     }
 

@@ -221,11 +221,33 @@ public class ConfiguracionController {
 
         // Guardar credenciales NextCloud en preferencias
         if (txtNextcloudUrl != null) {
-            Map<String, String> prefs = jsonManager.cargarPreferencias();
-            prefs.put("nextcloud.url", txtNextcloudUrl.getText().trim());
-            prefs.put("nextcloud.user", txtNextcloudUser.getText().trim());
-            prefs.put("nextcloud.password", txtNextcloudPass.getText());
-            jsonManager.guardarPreferencias(prefs);
+            Map<String, String> ncPrefs = jsonManager.cargarPreferencias();
+            String url = txtNextcloudUrl.getText().trim();
+            String user = txtNextcloudUser.getText().trim();
+            String pass = txtNextcloudPass.getText();
+            ncPrefs.put("nextcloud.url", url);
+            ncPrefs.put("nextcloud.user", user);
+            ncPrefs.put("nextcloud.password", pass);
+            jsonManager.guardarPreferencias(ncPrefs);
+
+            // Activar / desactivar auto-sync inmediatamente (sin reiniciar)
+            if (!url.isBlank() && !user.isBlank() && !pass.isBlank()) {
+                try {
+                    NextCloudSyncService syncService = new NextCloudSyncService(url, user, pass);
+                    final String localDir = jsonManager.getRutaDatosUsuario();
+                    jsonManager.setAutoSyncTask(() -> {
+                        try {
+                            syncService.subirBaseDatos(localDir);
+                        } catch (Exception ex) {
+                            // Error silencioso en auto-sync (no interrumpir flujo de trabajo)
+                        }
+                    });
+                } catch (IllegalArgumentException ignored) {
+                    jsonManager.setAutoSyncTask(null);
+                }
+            } else {
+                jsonManager.setAutoSyncTask(null); // Desactivar si falta algún campo
+            }
         }
 
         // Cerrar al guardar
