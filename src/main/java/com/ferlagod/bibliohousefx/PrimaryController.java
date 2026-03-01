@@ -779,10 +779,10 @@ public class PrimaryController implements Initializable {
      * libros nuevos. La idea es que cada vez que escribes, buscamos en la lista
      * actualizada en vez de usar la antigua.
      *
-     * @param <T> El tipo de objeto del combo.
-     * @param comboBox El combo que vamos a configurar.
+     * @param <T>         El tipo de objeto del combo.
+     * @param comboBox    El combo que vamos a configurar.
      * @param displayFunc La función para saber qué texto mostrar de cada
-     * objeto.
+     *                    objeto.
      */
     @SuppressWarnings("unchecked")
     private <T> void setupFilteringComboBox(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
@@ -1077,9 +1077,10 @@ public class PrimaryController implements Initializable {
      * BiblioHouse.
      *
      * @param event El evento de acción que desencadena la apertura de la
-     * ventana.
+     *              ventana.
      * @throws IOException Si ocurre un error al cargar el archivo FXML
-     * "acercade.fxml". En caso de error, se muestra una alerta al usuario.
+     *                     "acercade.fxml". En caso de error, se muestra una alerta
+     *                     al usuario.
      */
     @FXML
     private void mostrarAcercaDe(ActionEvent event) {
@@ -1274,8 +1275,7 @@ public class PrimaryController implements Initializable {
         String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
                 nuevoLibro.getPortadaURL(),
                 nuevoLibro.getId(),
-                this.rutaUsuario
-        );
+                this.rutaUsuario);
         nuevoLibro.setPortadaURL(rutaLocal);
         // ======================================================================
 
@@ -1390,27 +1390,27 @@ public class PrimaryController implements Initializable {
                             System.out.println("[DEBUG] Buscando en OpenLibrary...");
                             return OpenLibraryCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
-                    return new ArrayList<>(); // Retornar lista vacía en caso de error
-                });
+                            System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
+                            return new ArrayList<>(); // Retornar lista vacía en caso de error
+                        });
 
                 java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Google Books...");
                             return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
-                    return new ArrayList<>();
-                });
+                            System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
+                            return new ArrayList<>();
+                        });
 
                 java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Inventaire...");
                             return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
-                    return new ArrayList<>();
-                });
+                            System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
+                            return new ArrayList<>();
+                        });
 
                 // 2. Esperar a que TODAS terminen (join)
                 // Usamos allOf para esperar, pero luego extraemos resultados individualmente
@@ -1499,7 +1499,7 @@ public class PrimaryController implements Initializable {
             System.out.println("[DEBUG] Resultados configurados en el controller");
 
             Stage stage = new Stage();
-            stage.setTitle("Resultados OpenLibrary");
+            stage.setTitle("Resultados de búsqueda");
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
@@ -1940,7 +1940,7 @@ public class PrimaryController implements Initializable {
                     alert.setTitle("Duplicado Encontrado");
                     alert.setHeaderText(
                             "Conflicto entre:\n1. " + original.getTitulo() + " (Stock: " + original.getCantidad()
-                            + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
+                                    + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
                     alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
 
                     ButtonType btnFusionar = new ButtonType("Fusionar y Eliminar duplicado");
@@ -2245,7 +2245,7 @@ public class PrimaryController implements Initializable {
     /**
      * Muestra una alerta informativa al usuario.
      *
-     * @param titulo Título de la alerta.
+     * @param titulo  Título de la alerta.
      * @param mensaje Contenido del mensaje.
      */
     private void mostrarAlerta(String titulo, String mensaje) {
@@ -2261,7 +2261,7 @@ public class PrimaryController implements Initializable {
      * Stage.
      *
      * @param stage The stage to set the scene on.
-     * @param root The root node for the scene.
+     * @param root  The root node for the scene.
      */
     private void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);
