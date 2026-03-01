@@ -20,7 +20,6 @@ package com.bibliohouse.logic;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,11 +78,15 @@ public class NextCloudSyncService {
      */
     private String davBaseUrl;
 
+    /** Nombre de usuario de NextCloud codificado para uso en URLs de path. */
+    private final String usernameEncoded;
+
     /**
      * Construye un nuevo servicio de sincronización con NextCloud.
      *
-     * @param serverUrl URL base del servidor NextCloud
-     *                  (sin barra al final, ej. {@code https://cloud.example.com}).
+     * @param serverUrl URL del servidor NextCloud. Puede ser la URL base
+     *                  ({@code https://cloud.example.com}) o la URL WebDAV
+     *                  completa — en ambos casos se extrae solo la raíz.
      * @param username  Nombre de usuario de NextCloud.
      * @param password  Contraseña o app password de NextCloud.
      * @throws IllegalArgumentException si alguno de los parámetros es nulo o vacío.
@@ -98,9 +101,52 @@ public class NextCloudSyncService {
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("La contraseña de NextCloud no puede ser nula o vacía.");
         }
-        this.serverUrl = serverUrl.endsWith("/") ? serverUrl.substring(0, serverUrl.length() - 1) : serverUrl;
-        this.username = username;
+
+        // Normalizar la URL: extraer solo esquema + host + puerto, ignorando
+        // cualquier ruta WebDAV que el usuario haya pegado por error.
+        this.serverUrl = extractBaseUrl(serverUrl.trim());
+        this.username = username.trim();
+        // Codificar username para paths de URL (@ → %40, espacios → %20, etc.)
+        this.usernameEncoded = encodeUrlSegment(this.username);
         this.password = password;
+    }
+
+    /**
+     * Extrae la URL base (esquema + host + puerto) descartando cualquier path.
+     * Por ejemplo, {@code https://cloud.example.com/remote.php/dav/files/user/}
+     * se convierte en {@code https://cloud.example.com}.
+     */
+    private static String extractBaseUrl(String url) {
+        try {
+            java.net.URI uri = new java.net.URI(url);
+            int port = uri.getPort();
+            String base = uri.getScheme() + "://" + uri.getHost();
+            if (port != -1) {
+                base += ":" + port;
+            }
+            return base;
+        } catch (java.net.URISyntaxException e) {
+            // Si la URL no es válida, eliminar al menos la barra final y rutas conocidas
+            String s = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+            int idx = s.indexOf("/remote.php");
+            if (idx == -1)
+                idx = s.indexOf("/nextcloud");
+            return idx > 0 ? s.substring(0, idx) : s;
+        }
+    }
+
+    /**
+     * Codifica un segmento de path de URL (RFC 3986).
+     * Convierte caracteres como {@code @} en {@code %40}.
+     */
+    private static String encodeUrlSegment(String segment) {
+        try {
+            // URLEncoder usa codificación de formulario (+) — reemplazamos por %20
+            return java.net.URLEncoder.encode(segment, java.nio.charset.StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+        } catch (Exception e) {
+            return segment;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -121,7 +167,7 @@ public class NextCloudSyncService {
         }
 
         for (String candidate : DAV_CANDIDATES) {
-            String url = serverUrl + candidate.replace("{user}", username);
+            String url = serverUrl + candidate.replace("{user}", usernameEncoded);
             try {
                 sardine.list(url);
                 davBaseUrl = url;
@@ -136,7 +182,7 @@ public class NextCloudSyncService {
         throw new IOException(
                 "No se pudo conectar a NextCloud. Comprueba la URL y el usuario.\n"
                         + "Rutas probadas:\n"
-                        + "  · " + serverUrl + DAV_CANDIDATES[0].replace("{user}", username) + "\n"
+                        + "  · " + serverUrl + DAV_CANDIDATES[0].replace("{user}", usernameEncoded) + "\n"
                         + "  · " + serverUrl + DAV_CANDIDATES[1]);
     }
 
@@ -220,9 +266,16 @@ public class NextCloudSyncService {
                     continue;
                 }
                 String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                try (InputStream in = new FileInputStream(localFile)) {
-                    sardine.put(remoteFileUrl, in, "application/json");
+                try {
+                    // Usamos byte[] para evitar que Sardine re-codifique los '%'
+                    // del URL al construir internamente el java.net.URI.
+                    byte[] data = Files.readAllBytes(localFile.toPath());
+                    sardine.put(remoteFileUrl, data, "application/json");
                     LOGGER.log(Level.INFO, "Subido a NextCloud: {0}", fileName);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error al subir {0}: {1}",
+                            new Object[] { fileName, e.getMessage() });
+                    throw new IOException("Error al subir " + fileName + ": " + e.getMessage(), e);
                 }
             }
         } finally {

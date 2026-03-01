@@ -239,7 +239,9 @@ public class ConfiguracionController {
                         try {
                             syncService.subirBaseDatos(localDir);
                         } catch (Exception ex) {
-                            // Error silencioso en auto-sync (no interrumpir flujo de trabajo)
+                            java.util.logging.Logger.getLogger("BiblioHouse.AutoSync")
+                                    .log(java.util.logging.Level.WARNING,
+                                            "Auto-sync NextCloud fallido: " + ex.getMessage(), ex);
                         }
                     });
                 } catch (IllegalArgumentException ignored) {
