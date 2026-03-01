@@ -18,13 +18,17 @@
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.JsonManager;
+import com.bibliohouse.logic.NextCloudSyncService;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -32,6 +36,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -58,6 +64,17 @@ public class ConfiguracionController {
     private ComboBox<String> comboIdioma;
     @FXML
     private Spinner<Integer> spinnerDiasPrestamo;
+
+    // NextCloud Sync fields
+    @FXML
+    private TextField txtNextcloudUrl;
+    @FXML
+    private TextField txtNextcloudUser;
+    @FXML
+    private PasswordField txtNextcloudPass;
+    @FXML
+    private Label lblNextcloudStatus;
+
     @FXML
     private java.util.ResourceBundle resources;
     private JsonManager jsonManager;
@@ -68,7 +85,7 @@ public class ConfiguracionController {
      * preferencias actuales y configura los listeners.
      *
      * @param manager El gestor de datos JSON.
-     * @param main El controlador principal de la aplicación.
+     * @param main    El controlador principal de la aplicación.
      */
     public void initData(JsonManager manager, PrimaryController main) {
         this.jsonManager = manager;
@@ -76,6 +93,18 @@ public class ConfiguracionController {
 
         // Cargar la ruta de datos actual
         txtRutaDatos.setText(mainController.getRutaUsuario());
+
+        // Cargar credenciales NextCloud desde preferencias
+        Map<String, String> savedPrefs = jsonManager.cargarPreferencias();
+        if (txtNextcloudUrl != null) {
+            txtNextcloudUrl.setText(savedPrefs.getOrDefault("nextcloud.url", ""));
+        }
+        if (txtNextcloudUser != null) {
+            txtNextcloudUser.setText(savedPrefs.getOrDefault("nextcloud.user", ""));
+        }
+        if (txtNextcloudPass != null) {
+            txtNextcloudPass.setText(savedPrefs.getOrDefault("nextcloud.password", ""));
+        }
 
         // Configurar el ComboBox de Idioma
         comboIdioma.getItems().setAll("Español", "English", "Català", "Galego", "Euskara", "Português");
@@ -103,57 +132,61 @@ public class ConfiguracionController {
                 break;
         }
 
-        comboIdioma.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
-            if (newVal != null) {
-                String langCode = "es";
-                switch (newVal) {
-                    case "English":
-                        langCode = "en";
-                        break;
-                    case "Català":
-                        langCode = "ca";
-                        break;
-                    case "Galego":
-                        langCode = "gl";
-                        break;
-                    case "Euskara":
-                        langCode = "eu";
-                        break;
-                    case "Português":
-                        langCode = "pt";
-                        break;
-                    default:
-                        break;
-                }
-                // Guardar preferencia
-                java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-                prefs.put("language", langCode);
-                // Actualizar JSON también si es necesario
-                java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
-                prefsMap.put("language", langCode);
-                jsonManager.guardarPreferencias(prefsMap);
-                // Cambiar locale global
-                App.setLocale(langCode);
-                // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
-                Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
-                Stage mainStage = (Stage) settingsStage.getOwner();
-                try {
-                    // Recargar Main y obtener nuevo controlador
-                    PrimaryController newMainController = App.reloadUI(mainStage, mainController.getUsuarioActual(),
-                            mainController.getRutaUsuario());
-                    // Recargar esta misma ventana de Configuración para aplicar el idioma
-                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
-                    loader.setResources(java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
-                            App.getCurrentLocale()));
-                    javafx.scene.Parent newConfigRoot = loader.load();
-                    ConfiguracionController newConfigController = loader.getController();
-                    newConfigController.initData(jsonManager, newMainController);
-                    // Reemplazar contenido (manteniendo tamaño y posición)
-                    settingsStage.getScene().setRoot(newConfigRoot);
-                } catch (IOException e) {
-                }
-            }
-        });
+        comboIdioma.getSelectionModel().selectedItemProperty()
+                .addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
+                    if (newVal != null) {
+                        String langCode = "es";
+                        switch (newVal) {
+                            case "English":
+                                langCode = "en";
+                                break;
+                            case "Català":
+                                langCode = "ca";
+                                break;
+                            case "Galego":
+                                langCode = "gl";
+                                break;
+                            case "Euskara":
+                                langCode = "eu";
+                                break;
+                            case "Português":
+                                langCode = "pt";
+                                break;
+                            default:
+                                break;
+                        }
+                        // Guardar preferencia
+                        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+                        prefs.put("language", langCode);
+                        // Actualizar JSON también si es necesario
+                        java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
+                        prefsMap.put("language", langCode);
+                        jsonManager.guardarPreferencias(prefsMap);
+                        // Cambiar locale global
+                        App.setLocale(langCode);
+                        // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
+                        Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
+                        Stage mainStage = (Stage) settingsStage.getOwner();
+                        try {
+                            // Recargar Main y obtener nuevo controlador
+                            PrimaryController newMainController = App.reloadUI(mainStage,
+                                    mainController.getUsuarioActual(),
+                                    mainController.getRutaUsuario());
+                            // Recargar esta misma ventana de Configuración para aplicar el idioma
+                            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                                    ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
+                            loader.setResources(
+                                    java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
+                                            App.getCurrentLocale()));
+                            javafx.scene.Parent newConfigRoot = loader.load();
+                            ConfiguracionController newConfigController = loader.getController();
+                            newConfigController.initData(jsonManager, newMainController);
+                            // Reemplazar contenido (manteniendo tamaño y posición)
+                            settingsStage.getScene().setRoot(newConfigRoot);
+                        } catch (IOException e) {
+                        }
+                    }
+                });
 
         // Configurar el Spinner de días de préstamo (como ya tenías)
         if (spinnerDiasPrestamo != null) {
@@ -186,8 +219,193 @@ public class ConfiguracionController {
             mainController.setDueDaysLimit(spinnerDiasPrestamo.getValue());
         }
 
+        // Guardar credenciales NextCloud en preferencias
+        if (txtNextcloudUrl != null) {
+            Map<String, String> prefs = jsonManager.cargarPreferencias();
+            prefs.put("nextcloud.url", txtNextcloudUrl.getText().trim());
+            prefs.put("nextcloud.user", txtNextcloudUser.getText().trim());
+            prefs.put("nextcloud.password", txtNextcloudPass.getText());
+            jsonManager.guardarPreferencias(prefs);
+        }
+
         // Cerrar al guardar
         cancelar(event);
+    }
+
+    /**
+     * Prueba la conexión con el servidor NextCloud configurado.
+     * La operación se ejecuta en un hilo de fondo para no bloquear la UI.
+     *
+     * @param event El evento del botón.
+     */
+    @FXML
+    private void probarConexionNextcloud(ActionEvent event) {
+        if (!validarCamposNextcloud()) {
+            return;
+        }
+        NextCloudSyncService service = crearServicioNextcloud();
+        if (service == null) {
+            return;
+        }
+
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setText("...");
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                return service.testConexionConMensaje();
+            }
+        };
+        task.setOnSucceeded(e -> {
+            String error = task.getValue();
+            if (error == null) {
+                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+                lblNextcloudStatus.setText(resources.getString("config.sync.status.ok"));
+            } else {
+                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+                lblNextcloudStatus
+                        .setText(MessageFormat.format(resources.getString("config.sync.status.error"), error));
+            }
+        });
+        task.setOnFailed(e -> {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.status.error"),
+                    task.getException().getMessage()));
+        });
+        new Thread(task, "nextcloud-test").start();
+    }
+
+    /**
+     * Sube los archivos JSON de la base de datos al servidor NextCloud.
+     * La operación se ejecuta en un hilo de fondo.
+     *
+     * @param event El evento del botón.
+     */
+    @FXML
+    private void subirNextcloud(ActionEvent event) {
+        if (!validarCamposNextcloud()) {
+            return;
+        }
+        NextCloudSyncService service = crearServicioNextcloud();
+        if (service == null) {
+            return;
+        }
+        String localDir = jsonManager.getRutaDatosUsuario();
+
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setText("...");
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                service.subirBaseDatos(localDir);
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+            lblNextcloudStatus.setText(resources.getString("config.sync.upload.success"));
+        });
+        task.setOnFailed(e -> {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.upload.error"),
+                    task.getException().getMessage()));
+        });
+        new Thread(task, "nextcloud-upload").start();
+    }
+
+    /**
+     * Descarga los archivos JSON desde NextCloud y sobreescribe la base de datos
+     * local.
+     * Muestra un diálogo de confirmación antes de proceder.
+     * La operación se ejecuta en un hilo de fondo.
+     *
+     * @param event El evento del botón.
+     */
+    @FXML
+    private void descargarNextcloud(ActionEvent event) {
+        if (!validarCamposNextcloud()) {
+            return;
+        }
+
+        // Confirmación antes de sobreescribir
+        Alert confirm = new Alert(Alert.AlertType.WARNING);
+        confirm.setTitle("NextCloud");
+        confirm.setHeaderText(null);
+        confirm.setContentText(resources.getString("config.sync.download.confirm"));
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        NextCloudSyncService service = crearServicioNextcloud();
+        if (service == null) {
+            return;
+        }
+        String localDir = jsonManager.getRutaDatosUsuario();
+
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setText("...");
+
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws IOException {
+                service.descargarBaseDatos(localDir);
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+            lblNextcloudStatus.setText(resources.getString("config.sync.download.success"));
+            // Recargar datos en el controlador principal
+            mainController.initData(mainController.getUsuarioActual(), mainController.getRutaUsuario());
+        });
+        task.setOnFailed(e -> {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.download.error"),
+                    task.getException().getMessage()));
+        });
+        new Thread(task, "nextcloud-download").start();
+    }
+
+    /**
+     * Valida que los campos de NextCloud no estén vacíos y muestra un mensaje
+     * de error si faltan datos.
+     *
+     * @return {@code true} si todos los campos tienen valor, {@code false} si
+     *         alguno falta.
+     */
+    private boolean validarCamposNextcloud() {
+        if (txtNextcloudUrl.getText().isBlank() || txtNextcloudUser.getText().isBlank()
+                || txtNextcloudPass.getText().isBlank()) {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setText(MessageFormat.format(
+                    resources.getString("config.sync.status.error"), "Rellena URL, usuario y contraseña."));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Crea un {@link NextCloudSyncService} con los valores actuales de los campos
+     * UI,
+     * o muestra un error y devuelve {@code null} si los parámetros son inválidos.
+     *
+     * @return El servicio configurado, o {@code null} si los campos son inválidos.
+     */
+    private NextCloudSyncService crearServicioNextcloud() {
+        try {
+            return new NextCloudSyncService(
+                    txtNextcloudUrl.getText().trim(),
+                    txtNextcloudUser.getText().trim(),
+                    txtNextcloudPass.getText());
+        } catch (IllegalArgumentException ex) {
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setText(MessageFormat.format(
+                    resources.getString("config.sync.status.error"), ex.getMessage()));
+            return null;
+        }
     }
 
     /**
@@ -314,7 +532,7 @@ public class ConfiguracionController {
     /**
      * Muestra una alerta simple de información.
      *
-     * @param titulo Título de la alerta.
+     * @param titulo    Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {

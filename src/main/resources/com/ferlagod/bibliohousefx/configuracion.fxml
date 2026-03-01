@@ -93,6 +93,41 @@
                     </content>
                 </Tab>
           
+                <Tab text="%config.tab.sync">
+                    <content>
+                        <VBox spacing="20.0" style="-fx-padding: 20;">
+                            <children>
+                                <VBox spacing="8.0">
+                                    <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="%config.sync.nextcloud.title" />
+                                    <Label style="-fx-font-size: 11px; -fx-text-fill: #888;" text="%config.sync.desc" wrapText="true" />
+                                </VBox>
+                                <Separator />
+                                <VBox spacing="8.0">
+                                    <Label text="%config.sync.url" />
+                                    <TextField fx:id="txtNextcloudUrl" promptText="https://tu-nextcloud.ejemplo.com" />
+                                    <Label text="%config.sync.user" />
+                                    <TextField fx:id="txtNextcloudUser" promptText="%config.sync.user.placeholder" />
+                                    <Label text="%config.sync.pass" />
+                                    <PasswordField fx:id="txtNextcloudPass" promptText="%config.sync.pass.placeholder" />
+                                </VBox>
+                                <Separator />
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <Button maxWidth="Infinity" onAction="#probarConexionNextcloud" text="%config.sync.test" HBox.hgrow="ALWAYS" />
+                                    </children>
+                                </HBox>
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <Button maxWidth="Infinity" onAction="#subirNextcloud" styleClass="google-button" text="%config.sync.upload" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="Infinity" onAction="#descargarNextcloud" text="%config.sync.download" HBox.hgrow="ALWAYS" />
+                                    </children>
+                                </HBox>
+                                <Label fx:id="lblNextcloudStatus" style="-fx-font-size: 12px;" text="" wrapText="true" />
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+
                 <Tab text="%config.tab.about">
                     <content>
                         <VBox alignment="CENTER" spacing="10.0">

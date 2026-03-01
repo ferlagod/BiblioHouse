@@ -5,3 +5,8 @@
 # Google Books API Key
 # Obtén tu API key en: https://console.cloud.google.com/apis/credentials
 google.books.api.key=TU_API_KEY_AQUI
+
+# NextCloud Sync (opcional - se configura por usuario en preferencias)
+# nextcloud.url=https://tu-nextcloud.ejemplo.com
+# nextcloud.user=tu_usuario
+# nextcloud.password=contraseña_de_aplicación
