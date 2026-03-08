@@ -33,7 +33,7 @@ import javafx.stage.Stage;
  * Permite al usuario seleccionar un libro de los resultados.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class ResultadosBusquedaController {
 

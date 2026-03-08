@@ -53,7 +53,7 @@ import org.opencv.videoio.Videoio;
  * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author Fernando Lago Dávila
- * @version 1.3
+ * @version 1.4
  */
 public class EscanerController {
 
@@ -210,7 +210,7 @@ public class EscanerController {
                                         }
                                     }
                                 } catch (NotFoundException e) {
-                                    // No code found
+
                                 }
                             }
                         }

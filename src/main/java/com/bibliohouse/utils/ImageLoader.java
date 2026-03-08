@@ -18,6 +18,7 @@
 package com.bibliohouse.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +41,7 @@ import javafx.scene.image.ImageView;
  * carpeta para no descargarlas dos veces.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class ImageLoader {
 
@@ -328,7 +329,7 @@ public class ImageLoader {
                     Files.copy(in, archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             } else {
-                // Es un archivo local (ej. Drag & Drop): lo copiamos
+                // Es un archivo local, lo copiamos
                 File archivoOrigen = new File(urlOrPath);
                 // Solo lo copiamos si existe y no es ya el archivo de destino
                 if (archivoOrigen.exists() && !archivoOrigen.getAbsolutePath().equals(archivoDestino.getAbsolutePath())) {
@@ -338,7 +339,7 @@ public class ImageLoader {
             // Devolvemos la ruta local absoluta
             return archivoDestino.getAbsolutePath();
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.severe("Error al hacer la portada offline: " + e.getMessage());
             return urlOrPath; // Si falla por lo que sea, devolvemos lo que había para no romper nada
         }

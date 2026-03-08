@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class LoginController {
 

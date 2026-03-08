@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="573.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ConfiguracionController">
+<VBox prefHeight="573.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ConfiguracionController">
     <children>
         <Label styleClass="heading-text" text="%config.title" />
         <Separator />
@@ -140,7 +140,7 @@
                                 </ImageView>
                       
                                 <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="BiblioHouse FX" />
-                                <Label text="Versión 1.3.0 (Estable)" />
+                                <Label text="Versión 1.4.0 (Estable)" />
                                 <Label text="%config.about.desc" textFill="#888" />
                       
                                 <Separator maxWidth="200.0" />

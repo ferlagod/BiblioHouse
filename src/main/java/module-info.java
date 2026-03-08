@@ -44,7 +44,6 @@ module com.ferlagod.bibliohousefx {
     requires com.github.sardine;
 
     // 4. Configuración de permisos (EXPORTS y OPENS)
-    // Permite a JavaFX pintar tu ventana principal (si no, no se ve nada)
     opens com.ferlagod.bibliohousefx to javafx.fxml;
 
     exports com.ferlagod.bibliohousefx;

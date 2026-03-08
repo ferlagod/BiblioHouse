@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * frente a intentos de path traversal.
  *
  * @author Fernando Lago Dávila
- * @version 1.3
+ * @version 1.4
  */
 class TestSeguridad {
 

@@ -26,7 +26,7 @@ import java.util.Base64;
  * Esta clase tiene métodos para manejar contraseñas de forma segura.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class Autentificacion {
 
@@ -65,8 +65,7 @@ public class Autentificacion {
      * @param inputPassword La contraseña que escribe el usuario al iniciar
      * sesión.
      * @param hashGuardado El hash que tenemos guardado en la base de datos.
-     * @return true si coinciden, false si no coinciden o si algo va mal. Ojo:
-     * si hashGuardado es null o vacío, devuelve false directamente.
+     * @return true si coinciden, false si no coinciden o si algo va mal.
      */
     public static boolean checkPassword(String inputPassword, String hashGuardado) {
         // Se comprueba que ni la contraseña ni el hash estén vacíos

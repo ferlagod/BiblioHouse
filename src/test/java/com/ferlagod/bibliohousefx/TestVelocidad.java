@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * JsonManager.
  *
  * @author Fernando Lago Dávila
- * @version 1.3
+ * @version 1.4
  */
 class TestVelocidad {
 
@@ -71,7 +71,6 @@ class TestVelocidad {
 
         System.out.println("Time to write " + cantidad + " books: " + writeDuration + "ms");
 
-        // Measure read time
         long startRead = System.currentTimeMillis();
         List<Libro> cargados = jsonManager.cargarLibros();
         long endRead = System.currentTimeMillis();

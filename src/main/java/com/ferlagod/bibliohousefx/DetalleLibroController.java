@@ -19,6 +19,7 @@ package com.ferlagod.bibliohousefx;
 
 import java.util.List;
 import com.bibliohouse.logic.Libro;
+import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,7 +36,7 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class DetalleLibroController {
 
@@ -181,7 +182,7 @@ public class DetalleLibroController {
             stage.setTitle("Editar: " + libroActual.getTitulo());
             stage.setScene(new Scene(root));
 
-            // ✨ NUEVO: Para que la ventana de edición no salga enana en Linux
+            // Para que la ventana de edición no salga enana en Linux
             stage.sizeToScene();
 
             stage.initModality(Modality.WINDOW_MODAL);
@@ -195,11 +196,8 @@ public class DetalleLibroController {
                 this.wasModified = true;
             }
 
-        } catch (Exception e) {
-            // Ponemos Exception en lugar de IOException para atrapar cualquier error 
-            // y que nos lo imprima por consola para poder leerlo.
+        } catch (IOException e) {
             System.err.println("--- ERROR AL ABRIR LA VENTANA DE EDICIÓN ---");
-            e.printStackTrace();
         }
     }
 

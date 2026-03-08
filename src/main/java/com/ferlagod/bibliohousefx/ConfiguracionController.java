@@ -48,7 +48,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class ConfiguracionController {
 
@@ -85,7 +85,7 @@ public class ConfiguracionController {
      * preferencias actuales y configura los listeners.
      *
      * @param manager El gestor de datos JSON.
-     * @param main    El controlador principal de la aplicación.
+     * @param main El controlador principal de la aplicación.
      */
     public void initData(JsonManager manager, PrimaryController main) {
         this.jsonManager = manager;
@@ -257,8 +257,8 @@ public class ConfiguracionController {
     }
 
     /**
-     * Prueba la conexión con el servidor NextCloud configurado.
-     * La operación se ejecuta en un hilo de fondo para no bloquear la UI.
+     * Prueba la conexión con el servidor NextCloud configurado. La operación se
+     * ejecuta en un hilo de fondo para no bloquear la UI.
      *
      * @param event El evento del botón.
      */
@@ -273,7 +273,7 @@ public class ConfiguracionController {
         }
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("...");
+        lblNextcloudStatus.setText("Probando conexión, por favor espera..."); // Queda mejor que "..."
 
         Task<String> task = new Task<>() {
             @Override
@@ -281,28 +281,48 @@ public class ConfiguracionController {
                 return service.testConexionConMensaje();
             }
         };
+
         task.setOnSucceeded(e -> {
             String error = task.getValue();
             if (error == null) {
+                // Todo OK
                 lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
                 lblNextcloudStatus.setText(resources.getString("config.sync.status.ok"));
+
+                // Mostrar alerta de éxito
+                mostrarAlerta("Conexión Exitosa", "Se ha conectado correctamente con tu servidor NextCloud.");
             } else {
+                // Hay un error de autenticación, URL, etc.
                 lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
-                lblNextcloudStatus
-                        .setText(MessageFormat.format(resources.getString("config.sync.status.error"), error));
+                lblNextcloudStatus.setText("Error en la conexión.");
+
+                // Mostrar alerta de ERROR
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error de conexión");
+                alert.setHeaderText("No se pudo conectar a NextCloud");
+                alert.setContentText(error);
+                alert.showAndWait();
             }
         });
+
         task.setOnFailed(e -> {
+            // Error crítico del hilo o del programa
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
-            lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.status.error"),
-                    task.getException().getMessage()));
+            lblNextcloudStatus.setText("Fallo crítico en la prueba.");
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Fallo de conexión");
+            alert.setHeaderText("Ocurrió un error inesperado al probar la conexión");
+            alert.setContentText(task.getException().getMessage());
+            alert.showAndWait();
         });
+
         new Thread(task, "nextcloud-test").start();
     }
 
     /**
-     * Sube los archivos JSON de la base de datos al servidor NextCloud.
-     * La operación se ejecuta en un hilo de fondo.
+     * Sube los archivos JSON de la base de datos al servidor NextCloud. La
+     * operación se ejecuta en un hilo de fondo.
      *
      * @param event El evento del botón.
      */
@@ -318,7 +338,7 @@ public class ConfiguracionController {
         String localDir = jsonManager.getRutaDatosUsuario();
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("...");
+        lblNextcloudStatus.setText("Subiendo datos, por favor espera...");
 
         Task<Void> task = new Task<>() {
             @Override
@@ -327,23 +347,35 @@ public class ConfiguracionController {
                 return null;
             }
         };
+
         task.setOnSucceeded(e -> {
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
             lblNextcloudStatus.setText(resources.getString("config.sync.upload.success"));
+
+            // Mostrar alerta de ÉXITO
+            mostrarAlerta("Subida Exitosa", "Tu biblioteca se ha guardado correctamente en NextCloud.");
         });
+
         task.setOnFailed(e -> {
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
             lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.upload.error"),
                     task.getException().getMessage()));
+
+            // Mostrar alerta de ERROR
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error al subir");
+            alert.setHeaderText("No se pudo subir la base de datos a NextCloud");
+            alert.setContentText(task.getException().getMessage());
+            alert.showAndWait();
         });
+
         new Thread(task, "nextcloud-upload").start();
     }
 
     /**
-     * Descarga los archivos JSON desde NextCloud y sobreescribe la base de datos
-     * local.
-     * Muestra un diálogo de confirmación antes de proceder.
-     * La operación se ejecuta en un hilo de fondo.
+     * Descarga los archivos JSON desde NextCloud y sobreescribe la base de
+     * datos local. Muestra un diálogo de confirmación antes de proceder. La
+     * operación se ejecuta en un hilo de fondo.
      *
      * @param event El evento del botón.
      */
@@ -370,7 +402,7 @@ public class ConfiguracionController {
         String localDir = jsonManager.getRutaDatosUsuario();
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("...");
+        lblNextcloudStatus.setText("Descargando datos, por favor espera...");
 
         Task<Void> task = new Task<>() {
             @Override
@@ -379,17 +411,31 @@ public class ConfiguracionController {
                 return null;
             }
         };
+
         task.setOnSucceeded(e -> {
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
             lblNextcloudStatus.setText(resources.getString("config.sync.download.success"));
+
             // Recargar datos en el controlador principal
             mainController.initData(mainController.getUsuarioActual(), mainController.getRutaUsuario());
+
+            // Mostrar alerta de ÉXITO
+            mostrarAlerta("Descarga Exitosa", "La biblioteca local se ha actualizado con los datos de NextCloud.");
         });
+
         task.setOnFailed(e -> {
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
             lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.download.error"),
                     task.getException().getMessage()));
+
+            // Mostrar alerta de ERROR
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error al descargar");
+            alert.setHeaderText("No se pudo descargar la base de datos de NextCloud");
+            alert.setContentText(task.getException().getMessage());
+            alert.showAndWait();
         });
+
         new Thread(task, "nextcloud-download").start();
     }
 
@@ -398,7 +444,7 @@ public class ConfiguracionController {
      * de error si faltan datos.
      *
      * @return {@code true} si todos los campos tienen valor, {@code false} si
-     *         alguno falta.
+     * alguno falta.
      */
     private boolean validarCamposNextcloud() {
         if (txtNextcloudUrl.getText().isBlank() || txtNextcloudUser.getText().isBlank()
@@ -412,11 +458,12 @@ public class ConfiguracionController {
     }
 
     /**
-     * Crea un {@link NextCloudSyncService} con los valores actuales de los campos
-     * UI,
-     * o muestra un error y devuelve {@code null} si los parámetros son inválidos.
+     * Crea un {@link NextCloudSyncService} con los valores actuales de los
+     * campos UI, o muestra un error y devuelve {@code null} si los parámetros
+     * son inválidos.
      *
-     * @return El servicio configurado, o {@code null} si los campos son inválidos.
+     * @return El servicio configurado, o {@code null} si los campos son
+     * inválidos.
      */
     private NextCloudSyncService crearServicioNextcloud() {
         try {
@@ -556,7 +603,7 @@ public class ConfiguracionController {
     /**
      * Muestra una alerta simple de información.
      *
-     * @param titulo    Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param contenido Mensaje de la alerta.
      */
     private void mostrarAlerta(String titulo, String contenido) {

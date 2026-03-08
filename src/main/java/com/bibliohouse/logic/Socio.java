@@ -23,7 +23,7 @@ package com.bibliohouse.logic;
  * apellidos, DNI, etc.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class Socio {
 
@@ -159,8 +159,10 @@ public class Socio {
 
     /**
      * Devuelve una representación en texto del socio con el formato "Nº -
-     * Nombre Apellidos". Este método es utilizado por los JComboBox para
-     * mostrar los socios.
+     * Nombre Apellidos".Este método es utilizado por los JComboBox para mostrar
+     * los socios.
+     *
+     * @return el numero de socio con nombre y apellidos
      */
     @Override
     public String toString() {

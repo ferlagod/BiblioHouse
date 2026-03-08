@@ -27,7 +27,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class Libro {
 
@@ -438,9 +438,17 @@ public class Libro {
         this.ordenEnSerie = ordenEnSerie;
     }
 
+    /**
+     * Devuelve una representación en cadena de este objeto, mostrando
+     * únicamente el título. Este método está sobrescrito para adaptar la
+     * visualización en componentes como JComboBox, donde solo se requiere
+     * mostrar el título del objeto en lugar de la representación completa.
+     *
+     * @return el título del objeto como cadena de texto.
+     */
     @Override
     public String toString() {
         // Devuelve solo el título para mostrarlo en el JComboBox
-        return this.titulo; 
+        return this.titulo;
     }
 }

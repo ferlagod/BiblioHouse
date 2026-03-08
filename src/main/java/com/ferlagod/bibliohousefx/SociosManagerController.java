@@ -42,7 +42,7 @@ import javafx.stage.FileChooser;
  * de socios y permite añadir, editar o eliminarlos.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class SociosManagerController {
 
@@ -254,9 +254,8 @@ public class SociosManagerController {
                 alert.setContentText("El carnet de " + socioSeleccionado.getNombreCompleto() + " se ha guardado en:\n" + file.getAbsolutePath());
                 alert.showAndWait();
 
-            } catch (Exception e) {
+            } catch (IOException e) {
                 mostrarAlerta("Error", "Ocurrió un error al generar el PDF: " + e.getMessage());
-                e.printStackTrace();
             }
         }
     }

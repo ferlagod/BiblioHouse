@@ -27,7 +27,7 @@ import javafx.stage.Stage;
  * el análisis de libros duplicados.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
  */
 public class DuplicadosController {
 

@@ -37,7 +37,7 @@ import javafx.stage.Stage;
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
  * @author Ferlagod
- * @version 1.3
+ * @version 1.4
  */
 public class WelcomeController {
 
@@ -59,7 +59,7 @@ public class WelcomeController {
      * @param event El evento de acción provocado por el botón.
      */
     @FXML
-    private void handleWithRegistration(ActionEvent event) {
+    private void iniciarConRegistro(ActionEvent event) {
         try {
             // Obtenemos el bundle de idioma actual desde App
             ResourceBundle bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
@@ -89,7 +89,7 @@ public class WelcomeController {
      * @param event El evento de acción provocado por el botón.
      */
     @FXML
-    private void handleWithoutRegistration(ActionEvent event) {
+    private void iniciarSinRegistro(ActionEvent event) {
         ResourceBundle bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", App.getCurrentLocale());
 
         // 1. Mostrar aviso de privacidad

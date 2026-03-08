@@ -58,7 +58,7 @@ import javafx.stage.Stage;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
- * @version 1.3
+ * @version 1.4
  */
 public class PrimaryController implements Initializable {
 
@@ -234,11 +234,20 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Esta función arranca todo cuando se abre la ventana.Configura las
-     * columnas de las tablas y los botones.
+     * Inicializa y configura todos los componentes de la interfaz al abrir la
+     * ventana. Este método se encarga de vincular las columnas de las tablas
+     * con sus respectivos modelos de datos, configurar el menú contextual para
+     * la tabla de libros, establecer listeners para filtros dinámicos,
+     * inicializar el spinner de cantidad y los atajos de teclado, resaltar
+     * préstamos vencidos en la tabla de préstamos activos, y manejar errores
+     * críticos durante la inicialización.
      *
-     * @param url
-     * @param rb
+     *
+     * @param url Ubicación del archivo FXML (no utilizado directamente,
+     * requerido por {@link Initializable}).
+     * @param rb ResourceBundle para internacionalización (i18n).
+     * @throws RuntimeException Si ocurre un error crítico durante la
+     * inicialización, se muestra un diálogo de error al usuario.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -282,7 +291,7 @@ public class PrimaryController implements Initializable {
                     new SeparatorMenuItem(), itemEliminar);
             tablaLibros.setContextMenu(contextMenuLibros);
 
-            // Configurar columnas Prestamos (v. 1.3 - Resolución dinámica por ID)
+            // Configurar columnas Prestamos 
             colPrestamoLibro.setCellValueFactory(cellData -> {
                 Prestamo p = cellData.getValue();
                 // 1. Intentar buscar por ID de libro (UUID)
@@ -312,7 +321,7 @@ public class PrimaryController implements Initializable {
             colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
             colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
 
-            // Configurar columnas Historial (v. 1.3 - Resolución dinámica por ID)
+            // Configurar columnas Historial 
             colHistorialLibro.setCellValueFactory(cellData -> {
                 Prestamo p = cellData.getValue();
                 if (p.getLibroId() != null) {
@@ -420,7 +429,6 @@ public class PrimaryController implements Initializable {
 
         } catch (Exception e) {
             System.err.println("[PrimaryController] Error CRÍTICO en initialize: " + e.getMessage());
-            e.printStackTrace();
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error de Inicialización");
@@ -558,7 +566,6 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    // Método para aplicar el tema guardado
     /**
      * Actualiza la selección del menú de idiomas basándose en el locale actual
      * de la aplicación. Marca el RadioMenuItem correspondiente como
@@ -597,7 +604,6 @@ public class PrimaryController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            // help.title=Manual de Usuario
             String title = resources.containsKey("help.title") ? resources.getString("help.title")
                     : "Manual de Usuario";
             stage.setTitle(title);
@@ -802,10 +808,10 @@ public class PrimaryController implements Initializable {
      * libros nuevos. La idea es que cada vez que escribes, buscamos en la lista
      * actualizada en vez de usar la antigua.
      *
-     * @param <T>         El tipo de objeto del combo.
-     * @param comboBox    El combo que vamos a configurar.
+     * @param <T> El tipo de objeto del combo.
+     * @param comboBox El combo que vamos a configurar.
      * @param displayFunc La función para saber qué texto mostrar de cada
-     *                    objeto.
+     * objeto.
      */
     @SuppressWarnings("unchecked")
     private <T> void setupFilteringComboBox(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
@@ -1022,14 +1028,6 @@ public class PrimaryController implements Initializable {
             return true;
         });
 
-        // 5. Envolver la FilteredList en una SortedList.
-        // SortedList<Libro> sortedData = new SortedList<>(filteredData); // YA LO
-        // TENEMOS DECLARADO ARRIBA
-        // 6. Vincular el comparador de SortedList al de la TableView.
-        // sortedData.comparatorProperty().bind(tablaLibros.comparatorProperty()); // LO
-        // HACEMOS MANUAL
-        // 7. Agregamos items a la tabla.
-        // tablaLibros.setItems(sortedData); // YA ESTÁ HECHO EN initData
         if (lblEstado != null && filteredData != null && listaLibrosCompleta != null) {
             lblEstado.setText("Mostrando " + filteredData.size() + " de " + listaLibrosCompleta.size() + " libros.");
         }
@@ -1100,10 +1098,9 @@ public class PrimaryController implements Initializable {
      * BiblioHouse.
      *
      * @param event El evento de acción que desencadena la apertura de la
-     *              ventana.
+     * ventana.
      * @throws IOException Si ocurre un error al cargar el archivo FXML
-     *                     "acercade.fxml". En caso de error, se muestra una alerta
-     *                     al usuario.
+     * "acercade.fxml". En caso de error, se muestra una alerta al usuario.
      */
     @FXML
     private void mostrarAcercaDe(ActionEvent event) {
@@ -1135,7 +1132,7 @@ public class PrimaryController implements Initializable {
         }
         List<String> estanterias = jsonManager.cargarEstanterias();
 
-        // --- INICIO MODIFICACIÓN: Estanterías por defecto ---
+        // Estanterías por defecto
         if (estanterias == null || estanterias.isEmpty()) {
             estanterias = new ArrayList<>();
             estanterias.add("Novela");
@@ -1154,7 +1151,6 @@ public class PrimaryController implements Initializable {
             // Guardamos las estanterías por defecto para que persistan
             jsonManager.guardarEstanterias(estanterias);
         }
-        // --- FIN MODIFICACIÓN ---
 
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add("Todos los libros");
@@ -1166,7 +1162,6 @@ public class PrimaryController implements Initializable {
         listaEstanterias.getSelectionModel().select(0);
     }
 
-    // --- MÉTODO PARA SELECCIONAR IMAGEN MANUALMENTE ---
     /**
      * Permite seleccionar manualmente una imagen de portada desde el sistema de
      * archivos.
@@ -1293,7 +1288,7 @@ public class PrimaryController implements Initializable {
         }
 
         // ======================================================================
-        // ✨ NUEVO: SECUESTRAR LA PORTADA PARA GUARDARLA EN LOCAL (MODO OFFLINE)
+        // NUEVO: SECUESTRAR LA PORTADA PARA GUARDARLA EN LOCAL (MODO OFFLINE)
         // ======================================================================
         String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
                 nuevoLibro.getPortadaURL(),
@@ -1413,27 +1408,27 @@ public class PrimaryController implements Initializable {
                             System.out.println("[DEBUG] Buscando en OpenLibrary...");
                             return OpenLibraryCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
-                            return new ArrayList<>(); // Retornar lista vacía en caso de error
-                        });
+                    System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
+                    return new ArrayList<>(); // Retornar lista vacía en caso de error
+                });
 
                 java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Google Books...");
                             return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
-                            return new ArrayList<>();
-                        });
+                    System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
+                    return new ArrayList<>();
+                });
 
                 java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
                         .supplyAsync(() -> {
                             System.out.println("[DEBUG] Buscando en Inventaire...");
                             return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
                         }).exceptionally(ex -> {
-                            System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
-                            return new ArrayList<>();
-                        });
+                    System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
+                    return new ArrayList<>();
+                });
 
                 // 2. Esperar a que TODAS terminen (join)
                 // Usamos allOf para esperar, pero luego extraemos resultados individualmente
@@ -1603,7 +1598,6 @@ public class PrimaryController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
 
-            // ✨ AÑADE ESTA LÍNEA AQUÍ (y asegúrate de que esté ANTES del loader.load())
             loader.setResources(this.resources);
 
             Parent root = loader.load();
@@ -1628,7 +1622,6 @@ public class PrimaryController implements Initializable {
                 lblEstado.setText("Libro editado correctamente.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -1903,11 +1896,9 @@ public class PrimaryController implements Initializable {
 
         } catch (IOException e) {
             System.err.println("[PrimaryController] Error IO al abrir escáner: " + e.getMessage());
-            e.printStackTrace();
             mostrarAlerta("Error", "No se pudo abrir el escáner: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("[PrimaryController] Error general al abrir escáner: " + e.getMessage());
-            e.printStackTrace();
             mostrarAlerta("Error", "Error inesperado al abrir escáner: " + e.getMessage());
         }
     }
@@ -1963,7 +1954,7 @@ public class PrimaryController implements Initializable {
                     alert.setTitle("Duplicado Encontrado");
                     alert.setHeaderText(
                             "Conflicto entre:\n1. " + original.getTitulo() + " (Stock: " + original.getCantidad()
-                                    + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
+                            + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
                     alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
 
                     ButtonType btnFusionar = new ButtonType("Fusionar y Eliminar duplicado");
@@ -2268,7 +2259,7 @@ public class PrimaryController implements Initializable {
     /**
      * Muestra una alerta informativa al usuario.
      *
-     * @param titulo  Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param mensaje Contenido del mensaje.
      */
     private void mostrarAlerta(String titulo, String mensaje) {
@@ -2284,14 +2275,14 @@ public class PrimaryController implements Initializable {
      * Stage.
      *
      * @param stage The stage to set the scene on.
-     * @param root  The root node for the scene.
+     * @param root The root node for the scene.
      */
     private void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         stage.setScene(scene);
 
-        // ✨ NUEVO: La solución mágica para que Ubuntu no encoja las ventanas
+        // La solución  para que Ubuntu no encoja las ventanas
         stage.sizeToScene();
     }
 }

@@ -42,7 +42,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Ferlagod
- * @version 1.3
+ * @version 1.4
  */
 public class EditarLibroController {
 

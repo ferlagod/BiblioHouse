@@ -42,7 +42,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * barras para facilitar el préstamo.
  *
  * @author Fernando Lago
- * @version 1.3
+ * @version 1.4
+ *
  */
 public class CarnetGenerator {
 
@@ -64,8 +65,7 @@ public class CarnetGenerator {
     /**
      * Genera un archivo PDF con los carnets de los socios de la biblioteca.
      * Cada carnet incluye el nombre del socio, su número de socio y un código
-     * de barras. Si falla la generación del código de barras, se muestra un
-     * texto alternativo en el carnet.
+     * de barras.
      *
      * @param socios Lista de objetos {@link Socio} cuyos carnets se generarán.
      * @param archivoSalida Archivo de destino donde se guardará el PDF

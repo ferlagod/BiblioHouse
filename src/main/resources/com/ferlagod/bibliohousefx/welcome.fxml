@@ -7,7 +7,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="450.0" prefWidth="320.0" spacing="20.0" styleClass="login-card" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.WelcomeController">
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="320.0" spacing="20.0" styleClass="login-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.WelcomeController">
     <children>
         <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
             <image>
@@ -19,8 +19,8 @@
         <Label styleClass="subheading-text" text="%welcome.subtitle" wrapText="true" textAlignment="CENTER" />
         
         <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 20 0 0 0;">
-            <Button mnemonicParsing="false" onAction="#handleWithRegistration" prefWidth="250.0" styleClass="google-button" text="%welcome.btn.register" />
-            <Button mnemonicParsing="false" onAction="#handleWithoutRegistration" prefWidth="250.0" styleClass="text-button" style="-fx-border-color: -color-border; -fx-border-radius: 3px;" text="%welcome.btn.guest" />
+            <Button mnemonicParsing="false" onAction="#iniciarConRegistro" prefWidth="250.0" styleClass="google-button" text="%welcome.btn.register" />
+            <Button mnemonicParsing="false" onAction="#iniciarSinRegistro" prefWidth="250.0" styleClass="text-button" style="-fx-border-color: -color-border; -fx-border-radius: 3px;" text="%welcome.btn.guest" />         
         </VBox>
     </children>
     <padding>
