@@ -10,6 +10,7 @@
 * **Estadísticas Visuales:** Gráficos de lectura por género, autores y estado.
 * **Exportación Profesional:** Generación de informes en **PDF** detallados.
 * **Multi-idioma:** Soporte para Español, Inglés, Català, Galego, Euskara y Português.
+* **Sincronización con Nextcloud**.
 
 ## 📷 Capturas de pantalla
 | Inicio | Pantalla Principal|
