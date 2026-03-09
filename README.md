@@ -5,7 +5,7 @@
 ## 🚀 Características
 
 * **Gestión de Libros:** CRUD completo (Crear, Leer, Actualizar, Borrar) con portadas.
-* **Buscador Online:** Integración con **OpenLibrary API** (y Google Books en desarrollo) para importar datos automáticamente.
+* **Buscador Online:** Integración con **OpenLibrary API, Google Books e Inventaire** para importar datos automáticamente.
 * **Gestión de Préstamos:** Control de a quién prestas tus libros y fechas de devolución.
 * **Estadísticas Visuales:** Gráficos de lectura por género, autores y estado.
 * **Exportación Profesional:** Generación de informes en **PDF** detallados.
