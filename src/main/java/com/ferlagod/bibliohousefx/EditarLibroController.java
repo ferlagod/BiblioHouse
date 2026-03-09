@@ -140,7 +140,22 @@ public class EditarLibroController {
             event.setDropCompleted(success);
             event.consume();
         });
+        // Cuando el archivo entra en la zona de la imagen, la ponemos medio transparente
+        imgPortada.setOnDragEntered(event -> {
+            if (event.getDragboard().hasFiles()) {
+                imgPortada.setOpacity(0.5);
+            }
+        });
+
+        // Cuando el archivo sale de la zona (o se suelta), le devolvemos su color normal
+        imgPortada.setOnDragExited(event -> {
+            imgPortada.setOpacity(1.0);
+        });
         // FIN Drag & Drop 
+
+        // Obligar al spinner a convertir a número lo que se escriba, ignorando letras
+        javafx.util.converter.IntegerStringConverter converter = new javafx.util.converter.IntegerStringConverter();
+        spinnerAnio.getValueFactory().setConverter(converter);
     }
 
     /**

@@ -1388,6 +1388,7 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void buscarLibroOpenLibrary(ActionEvent event) {
+        txtBusquedaOpenLibrary.setDisable(true);
         String query = txtBusquedaOpenLibrary.getText().trim();
         if (query.isEmpty()) {
             return;
@@ -1465,6 +1466,7 @@ public class PrimaryController implements Initializable {
 
                 // 4. Actualizar UI
                 Platform.runLater(() -> {
+                    txtBusquedaOpenLibrary.setDisable(false);
                     if (resultadosTotales.isEmpty()) {
                         System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
                         mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");

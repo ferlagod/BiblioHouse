@@ -32,7 +32,7 @@
                 <children>
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: #5f6368;" text="%login.user" />
-                        <TextField fx:id="txtLoginUser" promptText="%login.user.placeholder" styleClass="google-text-field" />
+                        <TextField fx:id="txtLoginUser" onAction="#actionLogin" promptText="%login.user.placeholder" styleClass="google-text-field" />
                     </VBox>
                
                     <VBox spacing="5.0">
