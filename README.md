@@ -4,13 +4,15 @@
 
 ## 🚀 Características
 
-* **Gestión de Libros:** CRUD completo (Crear, Leer, Actualizar, Borrar) con portadas.
-* **Buscador Online:** Integración con **OpenLibrary API, Google Books e Inventaire** para importar datos automáticamente.
-* **Gestión de Préstamos:** Control de a quién prestas tus libros y fechas de devolución.
-* **Estadísticas Visuales:** Gráficos de lectura por género, autores y estado.
-* **Exportación Profesional:** Generación de informes en **PDF** detallados.
-* **Multi-idioma:** Soporte para Español, Inglés, Català, Galego, Euskara y Português.
-* **Sincronización con Nextcloud**.
+* **📚 Gestión de Libros:** CRUD completo con soporte para series, orden de lectura y portadas locales.
+* **☁️ Sincronización Nextcloud:** Sube, descarga y sincroniza automáticamente tu biblioteca con tu propia nube privada (WebDAV).
+* **🖼️ Modo Offline:** Las portadas se descargan y almacenan localmente para garantizar la privacidad y disponibilidad total sin internet.
+* **🔍 Buscador Inteligente:** Integración con **OpenLibrary API** para importar datos automáticamente mediante título o ISBN.
+* **📸 Escáner en Ráfaga:** Procesa múltiples libros seguidos usando la cámara de tu equipo.
+* **🖱️ Usabilidad Avanzada:** Soporte para arrastrar y soltar (Drag & Drop) portadas y navegación rápida por teclado.
+* **📇 Gestión de Socios y Préstamos:** Control detallado de tu colección prestada con generación de carnets en PDF.
+* **🌍 Multi-idioma:** Soporte completo para Español, Inglés, Català, Galego, Euskara y Português.
+* **🐧 Multiplataforma:** Optimizada para un funcionamiento perfecto en Windows, macOS y Linux (Ubuntu).
 
 ## 📷 Capturas de pantalla
 | Inicio | Pantalla Principal|

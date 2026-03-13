@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="750.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EstadisticasController">
+<VBox minHeight="600.0" minWidth="750.0" prefHeight="600.0" prefWidth="750.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EstadisticasController">
     <children>
    
         <HBox alignment="CENTER_LEFT" style="-fx-border-color: transparent transparent #dadce0 transparent; -fx-padding: 20;">
