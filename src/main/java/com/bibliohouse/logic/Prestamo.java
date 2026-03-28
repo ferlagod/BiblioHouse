@@ -29,6 +29,8 @@ import java.time.format.DateTimeFormatter;
  */
 public class Prestamo {
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     // Usamos el ID interno (UUID) para identificar inequívocamente el libro
     private String libroId;
     // Mantenemos ISBN y Título como caché para mostrar datos si el libro se borra
@@ -170,7 +172,7 @@ public class Prestamo {
         if (fechaPrestamo == null) {
             return "";
         }
-        return fechaPrestamo.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return fechaPrestamo.format(DATE_FORMATTER);
     }
 
     /**
@@ -192,7 +194,7 @@ public class Prestamo {
         if (fechaDevolucion == null) {
             return "Pendiente";
         }
-        return fechaDevolucion.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return fechaDevolucion.format(DATE_FORMATTER);
     }
 
     /**

@@ -353,8 +353,6 @@ public class Libro {
      * @param leido true para marcar como leído.
      */
     public void setLeido(boolean leido) {
-        System.out.println(">>> DEBUG: Libro '" + this.titulo + "' - setLeido llamado con: " + leido
-                + " (Valor anterior: " + this.leido + ")");
         this.leido = leido;
         // Sincronizar con el estado de lectura (Backward compatibility)
         if (leido) {

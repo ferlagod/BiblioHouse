@@ -445,7 +445,6 @@ public class JsonManager {
         }.getType();
 
         try (Reader reader = new FileReader(archivo)) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             List<Libro> librosImportados = gson.fromJson(reader, tipoLista);
 
             if (librosImportados == null) {
@@ -454,7 +453,7 @@ public class JsonManager {
             return librosImportados;
 
         } catch (IOException | JsonSyntaxException e) {
-            System.err.println("Error al importar libros: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error al importar libros desde archivo: " + archivo.getName(), e);
             return null; // Retornamos null para indicar error
         }
     }
@@ -469,11 +468,10 @@ public class JsonManager {
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {
         try (Writer writer = new FileWriter(archivo)) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             gson.toJson(libros, writer);
             return true;
         } catch (IOException e) {
-            System.err.println("Error al exportar libros: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error al exportar libros al archivo: " + archivo.getName(), e);
             return false;
         }
     }

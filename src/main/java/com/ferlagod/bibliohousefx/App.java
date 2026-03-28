@@ -35,6 +35,7 @@ import java.io.IOException;
  */
 public class App extends Application {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(App.class.getName());
     private static java.util.Locale currentLocale = new java.util.Locale("es");
     private static java.util.ResourceBundle bundle;
     private static Scene scene;
@@ -43,9 +44,9 @@ public class App extends Application {
         // Cargar librerías nativas de OpenCV AL INICIO para evitar conflictos
         try {
             nu.pattern.OpenCV.loadLocally();
-            System.out.println("[App] OpenCV cargado correctamente al inicio.");
+            LOGGER.info("[App] OpenCV cargado correctamente al inicio.");
         } catch (Throwable e) {
-            System.err.println("[App] Error cargando OpenCV: " + e.getMessage());
+            LOGGER.warning("[App] Error cargando OpenCV: " + e.getMessage());
         }
         launch(args);
     }
@@ -60,7 +61,7 @@ public class App extends Application {
         // Limpiamos la caché para asegurar que no se use una versión antigua
         java.util.ResourceBundle.clearCache();
 
-        System.out.println("[App] Cambiando idioma a: " + lang);
+        LOGGER.info("[App] Cambiando idioma a: " + lang);
 
         // Al cambiar locale, recargamos el bundle
         bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", currentLocale);
@@ -183,14 +184,9 @@ public class App extends Application {
      */
     @Override
     public void stop() throws Exception {
-        System.out.println("[App] Deteniendo aplicación...");
-        // 1. Detener el pool de hilos de imágenes
+        LOGGER.info("[App] Deteniendo aplicación...");
         com.bibliohouse.utils.ImageLoader.shutdown();
-
-        // 2. Cerrar cualquier otra cosa si fuera necesario
-        System.out.println("[App] Bye bye!");
-        // Forzamos el cierre de la JVM por si quedan hilos "zombie" (como el de AWT o
-        // Swing interop)
+        LOGGER.info("[App] Bye bye!");
         System.exit(0);
     }
 }

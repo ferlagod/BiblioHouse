@@ -84,6 +84,15 @@ public class PrimaryController implements Initializable {
      */
     private int dueDaysLimit = 30;
 
+    // --- CONSTANTES DE VISTA ---
+    private static final String VISTA_TODOS = "Todos los libros";
+    private static final String VISTA_DESEOS = "Lista de Deseos";
+    private static final String CSS_PRESTAMO_VENCIDO = "overdue-loan";
+    private static final List<String> ESTANTERIAS_DEFAULT = List.of(
+            "Novela", "Ciencia Ficción", "Fantasía", "Historia", "Tecnología",
+            "Aventura", "Biografía", "Romántica", "Poesía", "Teatro", "Infantil", "Ensayo"
+    );
+
     // --- COMPONENTES FXML ---
     @FXML
     private TableView<Libro> tablaLibros;
@@ -242,190 +251,20 @@ public class PrimaryController implements Initializable {
      * préstamos vencidos en la tabla de préstamos activos, y manejar errores
      * críticos durante la inicialización.
      *
-     *
      * @param url Ubicación del archivo FXML (no utilizado directamente,
      * requerido por {@link Initializable}).
      * @param rb ResourceBundle para internacionalización (i18n).
-     * @throws RuntimeException Si ocurre un error crítico durante la
-     * inicialización, se muestra un diálogo de error al usuario.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         try {
-            this.resources = rb; // Guardamos el bundle
+            this.resources = rb;
 
-            // Configurar columnas Libros
-            colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
-            colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
-            colEditorial.setCellValueFactory(new PropertyValueFactory<>("editorial"));
-            colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
-            colAnio.setCellValueFactory(new PropertyValueFactory<>("año"));
-            colEstado.setCellValueFactory(new PropertyValueFactory<>("estadoLectura"));
-            colSerie.setCellValueFactory(new PropertyValueFactory<>("serie")); // <-- VINCULACIÓN
-            colOrden.setCellValueFactory(new PropertyValueFactory<>("ordenEnSerie")); // <-- VINCULACIÓN
-            colIsbn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
-            colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
-
-            // Context Menu para Tabla Libros
-            ContextMenu contextMenuLibros = new ContextMenu();
-
-            MenuItem itemPrestar = new MenuItem("Prestar este libro");
-            itemPrestar.setOnAction(e -> {
-                Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
-                if (selected != null) {
-                    prepararPrestamoLibro(selected);
-                }
-            });
-
-            MenuItem itemEditar = new MenuItem(resources.getString("ctx.edit"));
-            itemEditar.setOnAction(e -> editarLibroSeleccionado(null)); // Reusing existing method
-
-            MenuItem itemPortada = new MenuItem(resources.getString("ctx.cover"));
-            itemPortada.setOnAction(e -> cambiarPortadaDesdePrincipal(null));
-
-            MenuItem itemEliminar = new MenuItem(resources.getString("ctx.delete"));
-            itemEliminar.setStyle("-fx-text-fill: red;");
-            itemEliminar.setOnAction(e -> eliminarLibro(null));
-
-            contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
-                    new SeparatorMenuItem(), itemEliminar);
-            tablaLibros.setContextMenu(contextMenuLibros);
-
-            // Configurar columnas Prestamos 
-            colPrestamoLibro.setCellValueFactory(cellData -> {
-                Prestamo p = cellData.getValue();
-                // 1. Intentar buscar por ID de libro (UUID)
-                if (p.getLibroId() != null) {
-                    return FXCollections.observableArrayList(listaLibrosCompleta).stream()
-                            .filter(l -> l.getId().equals(p.getLibroId()))
-                            .findFirst()
-                            .map(Libro::getTitulo)
-                            .map(javafx.beans.property.SimpleStringProperty::new)
-                            .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro() + " (Borrado)"));
-                }
-                // 2. Fallback: usar el título guardado (legacy)
-                return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
-            });
-
-            colPrestamoSocio.setCellValueFactory(cellData -> {
-                Prestamo p = cellData.getValue();
-                // Buscar socio actual por ID
-                return FXCollections.observableArrayList(listaSocios).stream()
-                        .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
-                        .findFirst()
-                        .map(Socio::getNombreCompleto)
-                        .map(javafx.beans.property.SimpleStringProperty::new)
-                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio() + " (Borrado)"));
-            });
-
-            colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-            colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
-
-            // Configurar columnas Historial 
-            colHistorialLibro.setCellValueFactory(cellData -> {
-                Prestamo p = cellData.getValue();
-                if (p.getLibroId() != null) {
-                    return FXCollections.observableArrayList(listaLibrosCompleta).stream()
-                            .filter(l -> l.getId().equals(p.getLibroId()))
-                            .findFirst()
-                            .map(Libro::getTitulo)
-                            .map(javafx.beans.property.SimpleStringProperty::new)
-                            .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro()));
-                }
-                return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
-            });
-
-            colHistorialSocio.setCellValueFactory(cellData -> {
-                Prestamo p = cellData.getValue();
-                return FXCollections.observableArrayList(listaSocios).stream()
-                        .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
-                        .findFirst()
-                        .map(Socio::getNombreCompleto)
-                        .map(javafx.beans.property.SimpleStringProperty::new)
-                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio()));
-            });
-
-            colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-            colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
-
-            // Spinner
-            if (spinnerCantidad != null) {
-                spinnerCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
-            }
-
-            // Configurar selección inicial de idioma
-            updateLanguageMenuSelection();
-
-            // Configurar Atajos de Teclado
-            setupShortcuts();
-
-            // Doble click para detalles
-            tablaLibros.setRowFactory(tv -> {
-                TableRow<Libro> row = new TableRow<>();
-                row.setOnMouseClicked(event -> {
-                    if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                        mostrarDetalleLibro(row.getItem());
-                    }
-                });
-                return row;
-            });
-
-            // Listener de Estanterías (Filtro) - CONECTADO AL FILTRO DINÁMICO
-            if (listaEstanterias != null) {
-                listaEstanterias.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal != null) {
-                        actualizarFiltros();
-                    }
-                });
-            }
-
-            // Listener para búsqueda incremental por Título (Dinámica)
-            if (txtBusquedaLocal != null) {
-                txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> {
-                    actualizarFiltros(); // Filtra automáticamente al escribir
-                });
-            }
-
-            // Listener para filtro por Autor
-            if (txtFiltroAutor != null) {
-                txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> {
-                    actualizarFiltros();
-                });
-            }
-
-            // Listener para filtro por ISBN
-            if (txtFiltroISBN != null) {
-                txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> {
-                    actualizarFiltros();
-                });
-            }
-
-            // Listener para filtro de ESTADO
-            if (cmbFiltroEstado != null) {
-                cmbFiltroEstado.setItems(FXCollections.observableArrayList(
-                        "Todos", "Leído", "Leyendo", "Pendiente"));
-                cmbFiltroEstado.setValue("Todos");
-                cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
-            }
-
-            // Row Factory para marcar préstamos vencidos
-            if (tablaPrestamos != null) {
-                tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
-                    @Override
-                    protected void updateItem(Prestamo item, boolean empty) {
-                        super.updateItem(item, empty);
-                        getStyleClass().remove("overdue-loan");
-                        if (item != null && !empty) {
-                            if (item.getFechaDevolucion() == null && item.getFechaPrestamo() != null) {
-                                LocalDate dueDate = item.getFechaPrestamo().plusDays(dueDaysLimit);
-                                if (dueDate.isBefore(LocalDate.now())) {
-                                    getStyleClass().add("overdue-loan");
-                                }
-                            }
-                        }
-                    }
-                });
-            }
+            configurarColumnasLibros();
+            configurarColumnasPrestamos();
+            configurarContextMenu();
+            configurarFiltros();
+            configurarAtajosYEventos();
 
         } catch (Exception e) {
             System.err.println("[PrimaryController] Error CRÍTICO en initialize: " + e.getMessage());
@@ -437,6 +276,174 @@ public class PrimaryController implements Initializable {
                 alert.showAndWait();
             });
         }
+    }
+
+    /** Configura las columnas de la tabla de libros. */
+    private void configurarColumnasLibros() {
+        colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
+        colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
+        colEditorial.setCellValueFactory(new PropertyValueFactory<>("editorial"));
+        colGenero.setCellValueFactory(new PropertyValueFactory<>("genero"));
+        colAnio.setCellValueFactory(new PropertyValueFactory<>("año"));
+        colEstado.setCellValueFactory(new PropertyValueFactory<>("estadoLectura"));
+        colSerie.setCellValueFactory(new PropertyValueFactory<>("serie"));
+        colOrden.setCellValueFactory(new PropertyValueFactory<>("ordenEnSerie"));
+        colIsbn.setCellValueFactory(new PropertyValueFactory<>("isbn"));
+        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
+    }
+
+    /** Configura las columnas de las tablas de préstamos e historial. */
+    private void configurarColumnasPrestamos() {
+        colPrestamoLibro.setCellValueFactory(cellData -> {
+            Prestamo p = cellData.getValue();
+            if (p.getLibroId() != null) {
+                return FXCollections.observableArrayList(listaLibrosCompleta).stream()
+                        .filter(l -> l.getId().equals(p.getLibroId()))
+                        .findFirst()
+                        .map(Libro::getTitulo)
+                        .map(javafx.beans.property.SimpleStringProperty::new)
+                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro() + " (Borrado)"));
+            }
+            return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
+        });
+
+        colPrestamoSocio.setCellValueFactory(cellData -> {
+            Prestamo p = cellData.getValue();
+            return FXCollections.observableArrayList(listaSocios).stream()
+                    .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
+                    .findFirst()
+                    .map(Socio::getNombreCompleto)
+                    .map(javafx.beans.property.SimpleStringProperty::new)
+                    .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio() + " (Borrado)"));
+        });
+
+        colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
+        colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
+
+        colHistorialLibro.setCellValueFactory(cellData -> {
+            Prestamo p = cellData.getValue();
+            if (p.getLibroId() != null) {
+                return FXCollections.observableArrayList(listaLibrosCompleta).stream()
+                        .filter(l -> l.getId().equals(p.getLibroId()))
+                        .findFirst()
+                        .map(Libro::getTitulo)
+                        .map(javafx.beans.property.SimpleStringProperty::new)
+                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro()));
+            }
+            return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
+        });
+
+        colHistorialSocio.setCellValueFactory(cellData -> {
+            Prestamo p = cellData.getValue();
+            return FXCollections.observableArrayList(listaSocios).stream()
+                    .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
+                    .findFirst()
+                    .map(Socio::getNombreCompleto)
+                    .map(javafx.beans.property.SimpleStringProperty::new)
+                    .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio()));
+        });
+
+        colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
+        colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
+    }
+
+    /** Configura el menú contextual de la tabla de libros. */
+    private void configurarContextMenu() {
+        ContextMenu contextMenuLibros = new ContextMenu();
+
+        MenuItem itemPrestar = new MenuItem("Prestar este libro");
+        itemPrestar.setOnAction(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                prepararPrestamoLibro(selected);
+            }
+        });
+
+        MenuItem itemEditar = new MenuItem(resources.getString("ctx.edit"));
+        itemEditar.setOnAction(e -> editarLibroSeleccionado(null));
+
+        MenuItem itemPortada = new MenuItem(resources.getString("ctx.cover"));
+        itemPortada.setOnAction(e -> cambiarPortadaDesdePrincipal(null));
+
+        MenuItem itemEliminar = new MenuItem(resources.getString("ctx.delete"));
+        itemEliminar.setStyle("-fx-text-fill: red;");
+        itemEliminar.setOnAction(e -> eliminarLibro(null));
+
+        contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
+                new SeparatorMenuItem(), itemEliminar);
+        tablaLibros.setContextMenu(contextMenuLibros);
+    }
+
+    /** Configura el spinner de cantidad, filtros, row factories y atajos. */
+    private void configurarFiltros() {
+        if (spinnerCantidad != null) {
+            spinnerCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
+        }
+
+        updateLanguageMenuSelection();
+
+        // Doble click para detalles
+        tablaLibros.setRowFactory(tv -> {
+            TableRow<Libro> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    mostrarDetalleLibro(row.getItem());
+                }
+            });
+            return row;
+        });
+
+        // Listener de Estanterías (Filtro)
+        if (listaEstanterias != null) {
+            listaEstanterias.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null) {
+                    actualizarFiltros();
+                }
+            });
+        }
+
+        // Búsqueda incremental por Título
+        if (txtBusquedaLocal != null) {
+            txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+        }
+
+        if (txtFiltroAutor != null) {
+            txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+        }
+
+        if (txtFiltroISBN != null) {
+            txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+        }
+
+        if (cmbFiltroEstado != null) {
+            cmbFiltroEstado.setItems(FXCollections.observableArrayList("Todos", "Leído", "Leyendo", "Pendiente"));
+            cmbFiltroEstado.setValue("Todos");
+            cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
+        }
+
+        // Row Factory para marcar préstamos vencidos
+        if (tablaPrestamos != null) {
+            tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
+                @Override
+                protected void updateItem(Prestamo item, boolean empty) {
+                    super.updateItem(item, empty);
+                    getStyleClass().remove(CSS_PRESTAMO_VENCIDO);
+                    if (item != null && !empty) {
+                        if (item.getFechaDevolucion() == null && item.getFechaPrestamo() != null) {
+                            LocalDate dueDate = item.getFechaPrestamo().plusDays(dueDaysLimit);
+                            if (dueDate.isBefore(LocalDate.now())) {
+                                getStyleClass().add(CSS_PRESTAMO_VENCIDO);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /** Configura atajos de teclado globales. */
+    private void configurarAtajosYEventos() {
+        setupShortcuts();
     }
 
     /**
@@ -976,20 +983,16 @@ public class PrimaryController implements Initializable {
 
             // --- FILTRO 1: Estantería y Propiedad ---
             if (categoriaSeleccionada != null) {
-                if (categoriaSeleccionada.equals("Lista de Deseos")) {
-                    // En la lista de deseos solo mostramos los NO poseídos
+                if (categoriaSeleccionada.equals(VISTA_DESEOS)) {
                     if (libro.isPoseido()) {
                         return false;
                     }
                 } else {
-                    // En cualquier otra vista (incluyendo "Todos los libros") solo mostramos los
-                    // poseídos
                     if (!libro.isPoseido()) {
                         return false;
                     }
 
-                    // Si es una estantería específica, comprobar pertenencia
-                    if (!categoriaSeleccionada.equals("Todos los libros")) {
+                    if (!categoriaSeleccionada.equals(VISTA_TODOS)) {
                         if (libro.getEstanterias() == null || !libro.getEstanterias().contains(categoriaSeleccionada)) {
                             return false;
                         }
@@ -1084,12 +1087,9 @@ public class PrimaryController implements Initializable {
      * libros que tengan stock disponible (cantidad > 0).
      */
     private void actualizarComboLibrosDisponibles() {
-        ObservableList<Libro> librosConStock = FXCollections.observableArrayList();
-        for (Libro l : listaLibrosCompleta) {
-            if (l.getCantidad() > 0) {
-                librosConStock.add(l);
-            }
-        }
+        ObservableList<Libro> librosConStock = listaLibrosCompleta.stream()
+                .filter(l -> l.getCantidad() > 0)
+                .collect(java.util.stream.Collectors.toCollection(FXCollections::observableArrayList));
         comboLibrosPrestamo.setItems(librosConStock);
     }
 
@@ -1132,32 +1132,15 @@ public class PrimaryController implements Initializable {
         }
         List<String> estanterias = jsonManager.cargarEstanterias();
 
-        // Estanterías por defecto
         if (estanterias == null || estanterias.isEmpty()) {
-            estanterias = new ArrayList<>();
-            estanterias.add("Novela");
-            estanterias.add("Ciencia Ficción");
-            estanterias.add("Fantasía");
-            estanterias.add("Historia");
-            estanterias.add("Tecnología");
-            estanterias.add("Aventura");
-            estanterias.add("Biografía");
-            estanterias.add("Romántica");
-            estanterias.add("Poesía");
-            estanterias.add("Teatro");
-            estanterias.add("Infantil");
-            estanterias.add("Ensayo");
-
-            // Guardamos las estanterías por defecto para que persistan
+            estanterias = new ArrayList<>(ESTANTERIAS_DEFAULT);
             jsonManager.guardarEstanterias(estanterias);
         }
 
         ObservableList<String> items = FXCollections.observableArrayList();
-        items.add("Todos los libros");
-        items.add("Lista de Deseos");
-        if (estanterias != null) {
-            items.addAll(estanterias);
-        }
+        items.add(VISTA_TODOS);
+        items.add(VISTA_DESEOS);
+        items.addAll(estanterias);
         listaEstanterias.setItems(items);
         listaEstanterias.getSelectionModel().select(0);
     }
@@ -1624,6 +1607,7 @@ public class PrimaryController implements Initializable {
                 lblEstado.setText("Libro editado correctamente.");
             }
         } catch (IOException e) {
+            System.err.println("[PrimaryController] Error al abrir ventana de edición: " + e.getMessage());
         }
     }
 
@@ -2126,12 +2110,6 @@ public class PrimaryController implements Initializable {
      *
      * @return listado de prestamos completo
      */
-    /**
-     * Permite al SociosManagerController acceder a la lista de préstamos
-     * activos para verificar si un socio puede ser eliminado.
-     *
-     * @return listado de prestamos completo
-     */
     public ObservableList<Prestamo> getListaPrestamos() {
         return listaPrestamosCompleta;
     }
@@ -2202,10 +2180,12 @@ public class PrimaryController implements Initializable {
         p.setFechaDevolucion(LocalDate.now());
 
         // 3. DEVOLVER STOCK AL LIBRO
+        // Buscamos primero por ID (fiable incluso si el título fue editado),
+        // con fallback por título para compatibilidad con datos legado sin ID.
         for (Libro l : listaLibrosCompleta) {
-            // Buscamos el libro por título (idealmente sería por ISBN, pero usamos lo que
-            // tenemos)
-            if (l.getTitulo().equals(p.getTituloLibro())) {
+            boolean coincidePorId = p.getLibroId() != null && p.getLibroId().equals(l.getId());
+            boolean coincidePorTitulo = !coincidePorId && l.getTitulo().equals(p.getTituloLibro());
+            if (coincidePorId || coincidePorTitulo) {
                 l.setCantidad(l.getCantidad() + 1);
                 break;
             }
@@ -2255,6 +2235,7 @@ public class PrimaryController implements Initializable {
 
             tablaLibros.refresh();
         } catch (IOException e) {
+            System.err.println("[PrimaryController] Error al abrir detalle del libro: " + e.getMessage());
         }
     }
 
