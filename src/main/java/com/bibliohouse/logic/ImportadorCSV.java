@@ -15,7 +15,6 @@
  * Usted debería haber recibido una copia de la Licencia Pública General de GNU
  * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
-
 package com.bibliohouse.logic;
 
 import java.io.BufferedReader;
@@ -27,8 +26,11 @@ import java.util.List;
 public class ImportadorCSV {
 
     /**
-     * Lee un archivo CSV y lo convierte en una lista de objetos Libro. Soporta
-     * CSVs de Goodreads, Bookwyrm y formatos genéricos.
+     * Importa un archivo CSV y lo convierte en una lista de objetos Libro.
+     * Funciona con CSVs de Goodreads, Bookwyrm y otros formatos genéricos.
+     *
+     * @param archivo El archivo CSV a importar.
+     * @return Lista de Libros importados, o null si hay un error.
      */
     public static List<Libro> importar(File archivo) {
         List<Libro> librosImportados = new ArrayList<>();
@@ -148,7 +150,12 @@ public class ImportadorCSV {
     }
 
     /**
-     * Extrae el campo del array de forma segura, evitando OutOfBounds.
+     * Devuelve el valor de un campo del array, evitando errores si el índice no
+     * existe.
+     *
+     * @param campos El array de donde extraer el campo.
+     * @param index La posición del campo que se quiere obtener.
+     * @return El valor del campo, o una cadena vacía si el índice no es válido.
      */
     private static String obtenerCampo(String[] campos, int index) {
         if (index >= 0 && index < campos.length) {
@@ -158,8 +165,11 @@ public class ImportadorCSV {
     }
 
     /**
-     * Limpia el texto eliminando espacios extra y comillas dobles que rodean el
-     * campo.
+     * Limpia un texto quitando espacios sobrantes y comillas dobles al inicio y
+     * final.
+     *
+     * @param texto El texto a limpiar.
+     * @return El texto limpio, o cadena vacía si el texto es null.
      */
     private static String limpiar(String texto) {
         if (texto == null) {

@@ -819,6 +819,15 @@ public class PrimaryController implements Initializable {
         setupFilteringComboBox(comboSocios, Socio::getNombreCompleto);
     }
 
+    /**
+     * Abre un diálogo para seleccionar un archivo CSV y, si es válido, importa
+     * los libros a la biblioteca.
+     *
+     * Muestra un mensaje de confirmación antes de añadir los libros y evita
+     * duplicados comparando por ISBN, título o autor.
+     *
+     * @param event El evento que desencadena la acción.
+     */
     @FXML
     private void importarDesdeCSV(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
