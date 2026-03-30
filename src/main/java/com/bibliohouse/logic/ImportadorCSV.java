@@ -23,6 +23,14 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Importador de CSV de Bookwyrm y Goodreads.
+ *
+ * Funciona con CSVs de Goodreads, Bookwyrm y otros formatos genéricos.
+ *
+ * @author Fernando Lago
+ * @version 1.5
+ */
 public class ImportadorCSV {
 
     /**

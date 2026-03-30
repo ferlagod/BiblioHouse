@@ -2057,6 +2057,33 @@ public class PrimaryController implements Initializable {
     }
 
     /**
+     * Abre el Gestor de Sagas en una ventana modal. Pasa toda la biblioteca al
+     * controlador para que agrupe los libros por serie y detecte huecos.
+     *
+     * @param event El evento del menú Herramientas.
+     */
+    @FXML
+    private void abrirGestorSagas(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("sagas.fxml"));
+            loader.setResources(this.resources);
+            Parent root = loader.load();
+
+            SagasController controller = loader.getController();
+            controller.initData(new ArrayList<>(listaLibrosCompleta));
+
+            Stage stage = new Stage();
+            stage.setTitle("Gestor de Sagas y Colecciones");
+            setScene(stage, root);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tablaLibros.getScene().getWindow());
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo abrir el Gestor de Sagas.\n" + e.getMessage());
+        }
+    }
+
+    /**
      * Abre la ventana de configuración de la aplicación.
      *
      * @param event El evento del botón Configuración.

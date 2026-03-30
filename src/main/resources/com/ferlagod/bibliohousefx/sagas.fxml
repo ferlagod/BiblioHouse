@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+
+<SplitPane dividerPositions="0.25" prefHeight="620.0" prefWidth="960.0"
+           xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.ferlagod.bibliohousefx.SagasController">
+    <items>
+
+        <!-- Panel izquierdo: lista de sagas -->
+        <VBox spacing="10.0" style="-fx-background-color: #1e1e2e;">
+            <padding>
+                <Insets bottom="12.0" left="12.0" right="12.0" top="16.0" />
+            </padding>
+            <Label style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #cdd6f4; -fx-padding: 0 0 6 0;"
+                   text="%sagas.list.title" />
+            <ListView fx:id="listaSagas"
+                      style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                      VBox.vgrow="ALWAYS" />
+        </VBox>
+
+        <!-- Panel derecho: portadas de la saga seleccionada -->
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background-color: transparent; -fx-background: #181825;">
+            <content>
+                <VBox spacing="20.0" style="-fx-background-color: #181825;">
+                    <padding>
+                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+                    </padding>
+                    <Label fx:id="lblTituloSaga"
+                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #cdd6f4;"
+                           text="%sagas.select.prompt" />
+                    <Label fx:id="lblResumenSaga"
+                           style="-fx-font-size: 12px; -fx-text-fill: #a6adc8;" />
+                    <FlowPane fx:id="panelLibros" hgap="20.0" vgap="20.0" />
+                </VBox>
+            </content>
+        </ScrollPane>
+
+    </items>
+</SplitPane>

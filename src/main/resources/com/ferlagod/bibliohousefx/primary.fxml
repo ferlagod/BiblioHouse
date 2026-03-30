@@ -48,6 +48,7 @@
                 <Menu fx:id="menuHerramientas" text="%menu.tools">
                     <items>
                         <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
+                        <MenuItem onAction="#abrirGestorSagas" text="%menu.series.manager" />
                         <MenuItem onAction="#abrirConfiguracion" text="%menu.config" />
                         <Menu text="%menu.language">
                             <items>
