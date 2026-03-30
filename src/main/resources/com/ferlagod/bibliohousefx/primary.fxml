@@ -38,6 +38,7 @@
                 <Menu fx:id="menuArchivo" text="%menu.file">
                     <items>
                         <MenuItem onAction="#importarBaseDatos" text="%menu.import" />
+                        <MenuItem onAction="#importarDesdeCSV" text="%menu.import.csv" />
                         <MenuItem onAction="#exportarBaseDatos" text="%menu.export" />
                         <MenuItem onAction="#exportarPDF" text="%menu.export.pdf" />
                         <SeparatorMenuItem />

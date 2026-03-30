@@ -278,7 +278,9 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    /** Configura las columnas de la tabla de libros. */
+    /**
+     * Configura las columnas de la tabla de libros.
+     */
     private void configurarColumnasLibros() {
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
@@ -292,7 +294,9 @@ public class PrimaryController implements Initializable {
         colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
     }
 
-    /** Configura las columnas de las tablas de préstamos e historial. */
+    /**
+     * Configura las columnas de las tablas de préstamos e historial.
+     */
     private void configurarColumnasPrestamos() {
         colPrestamoLibro.setCellValueFactory(cellData -> {
             Prestamo p = cellData.getValue();
@@ -347,7 +351,9 @@ public class PrimaryController implements Initializable {
         colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
     }
 
-    /** Configura el menú contextual de la tabla de libros. */
+    /**
+     * Configura el menú contextual de la tabla de libros.
+     */
     private void configurarContextMenu() {
         ContextMenu contextMenuLibros = new ContextMenu();
 
@@ -374,7 +380,9 @@ public class PrimaryController implements Initializable {
         tablaLibros.setContextMenu(contextMenuLibros);
     }
 
-    /** Configura el spinner de cantidad, filtros, row factories y atajos. */
+    /**
+     * Configura el spinner de cantidad, filtros, row factories y atajos.
+     */
     private void configurarFiltros() {
         if (spinnerCantidad != null) {
             spinnerCantidad.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 100, 1));
@@ -441,7 +449,9 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    /** Configura atajos de teclado globales. */
+    /**
+     * Configura atajos de teclado globales.
+     */
     private void configurarAtajosYEventos() {
         setupShortcuts();
     }
@@ -807,6 +817,67 @@ public class PrimaryController implements Initializable {
 
         // Configurar filtrado para Socios
         setupFilteringComboBox(comboSocios, Socio::getNombreCompleto);
+    }
+
+    @FXML
+    private void importarDesdeCSV(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Importar biblioteca desde CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
+
+        File archivoSeleccionado = fileChooser.showOpenDialog(tablaLibros.getScene().getWindow());
+
+        if (archivoSeleccionado != null) {
+            // Llamamos a nuestra nueva clase para procesar el archivo
+            List<Libro> librosImportados = com.bibliohouse.logic.ImportadorCSV.importar(archivoSeleccionado);
+
+            if (librosImportados == null) {
+                mostrarAlerta("Error de importación", "No se pudo leer el archivo CSV. Asegúrate de que tenga formato correcto (debe incluir cabeceras como Título y Autor).");
+                return;
+            }
+
+            if (librosImportados.isEmpty()) {
+                mostrarAlerta("Sin datos", "El archivo CSV parece estar vacío o no contiene libros válidos.");
+                return;
+            }
+
+            // Confirmar antes de añadir
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Importación completada");
+            alert.setHeaderText("Se han encontrado " + librosImportados.size() + " libros en el archivo.");
+            alert.setContentText("¿Deseas añadirlos a tu biblioteca actual?\n(Se omitirán los que ya existan con el mismo ISBN).");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+
+                int añadidos = 0;
+                for (Libro nuevo : librosImportados) {
+                    // Verificación simple de duplicados por ISBN
+                    boolean existe = false;
+                    if (nuevo.getIsbn() != null && !nuevo.getIsbn().isEmpty()) {
+                        existe = listaLibrosCompleta.stream().anyMatch(l -> nuevo.getIsbn().equals(l.getIsbn()));
+                    } else {
+                        // Si no tiene ISBN, comprobamos por título y autor
+                        existe = listaLibrosCompleta.stream().anyMatch(l
+                                -> l.getTitulo().equalsIgnoreCase(nuevo.getTitulo()) && l.getAutor().equalsIgnoreCase(nuevo.getAutor())
+                        );
+                    }
+
+                    if (!existe) {
+                        listaLibrosCompleta.add(nuevo);
+                        añadidos++;
+                    }
+                }
+
+                // Guardar y refrescar interfaz
+                guardarYNotificar("Se han añadido " + añadidos + " libros desde el CSV.");
+                actualizarComboLibrosDisponibles();
+
+                if (añadidos < librosImportados.size()) {
+                    mostrarAlerta("Información", añadidos + " libros añadidos. Se han omitido " + (librosImportados.size() - añadidos) + " porque ya existían en tu biblioteca.");
+                }
+            }
+        }
     }
 
     /**
