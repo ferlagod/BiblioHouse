@@ -48,7 +48,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class ConfiguracionController {
 

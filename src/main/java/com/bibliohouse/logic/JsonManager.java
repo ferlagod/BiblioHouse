@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  *
  */
 public class JsonManager {
@@ -70,6 +70,7 @@ public class JsonManager {
     private final String prestamosDatabasePath;
     private final String sociosDatabasePath;
     private final String estanteriasDatabasePath;
+    private final String deseosDatabasePath;
 
     private final Gson gson;
 
@@ -147,6 +148,7 @@ public class JsonManager {
         this.sociosDatabasePath = rutaDatosUsuario + File.separator + "socios.json";
         this.estanteriasDatabasePath = rutaDatosUsuario + File.separator + "estanterias.json";
         this.preferencesFilePath = rutaDatosUsuario + File.separator + "preferences.json"; // <-- Inicialización
+        this.deseosDatabasePath = rutaDatosUsuario + File.separator + "deseos.json";
 
         // Se configura el Gson para que use el adaptador de fechas
         this.gson = new GsonBuilder()
@@ -527,5 +529,24 @@ public class JsonManager {
             defaultPrefs.put("maximized", "false");
             return defaultPrefs;
         }
+    }
+
+    /**
+     * Guarda la lista de deseos en el archivo de base de datos.
+     * @param deseos lista de libros que se guardarán en deseos
+     */
+    public void guardarDeseos(List<Libro> deseos) {
+        guardarDatos(deseos, deseosDatabasePath, "lista de deseos");
+    }
+
+    /**
+     * Carga la lista de deseos desde el archivo de base de datos.
+     *
+     * @return Lista de libros en la lista de deseos.
+     */
+    public List<Libro> cargarDeseos() {
+        Type tipoLista = new TypeToken<ArrayList<Libro>>() {
+        }.getType();
+        return cargarDatos(deseosDatabasePath, tipoLista, "lista de deseos");
     }
 }

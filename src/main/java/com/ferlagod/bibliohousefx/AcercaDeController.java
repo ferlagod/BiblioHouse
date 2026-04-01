@@ -31,7 +31,7 @@ import java.net.URISyntaxException;
  * autobombo y pongo mi contacto.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class AcercaDeController {
 

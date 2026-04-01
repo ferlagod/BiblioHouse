@@ -33,7 +33,7 @@ import javafx.stage.Stage;
  * Permite al usuario seleccionar un libro de los resultados.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class ResultadosBusquedaController {
 
@@ -54,6 +54,8 @@ public class ResultadosBusquedaController {
     private TableColumn<Libro, String> colEditorial;
     // Libro que el usuario ha seleccionado.
     private Libro libroSeleccionado = null;
+    // Variable para saber el destino
+    private boolean paraDeseos = false; 
 
     /**
      * Inicializa el controlador. Configura las columnas y añade doble clic para
@@ -128,5 +130,29 @@ public class ResultadosBusquedaController {
     private void cerrarVentana() {
         Stage stage = (Stage) tablaResultados.getScene().getWindow();
         stage.close();
+    }
+
+    /**
+     * Indica si el libro está marcado para la lista de deseos.
+     *
+     * @return true si es para deseos, false en caso contrario.
+     */
+    public boolean isParaDeseos() {
+        return paraDeseos;
+    }
+
+    /**
+     * Marca el libro seleccionado para añadirlo a la lista de deseos y cierra
+     * la ventana.
+     *
+     * @param event El evento que desencadena la acción.
+     */
+    @FXML
+    private void seleccionarParaDeseos(ActionEvent event) {
+        libroSeleccionado = tablaResultados.getSelectionModel().getSelectedItem();
+        if (libroSeleccionado != null) {
+            paraDeseos = true; // Va a la lista de deseos
+            cerrarVentana();
+        }
     }
 }

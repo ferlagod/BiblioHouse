@@ -54,7 +54,7 @@ public class SagasController {
     @FXML private Label lblResumenSaga;
     @FXML private FlowPane panelLibros;
 
-    /** Mapa: nombre de serie → lista de libros pertenecientes. */
+    //Mapa: nombre de serie → lista de libros pertenecientes.
     private Map<String, List<Libro>> sagasMap;
 
     // -----------------------------------------------------------------------

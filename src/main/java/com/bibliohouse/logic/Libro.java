@@ -27,7 +27,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class Libro {
 

@@ -29,7 +29,7 @@
             </font>
         </Label>
         
-        <Label text="Versión 1.4" textFill="#5f6368">
+        <Label text="Versión 1.5" textFill="#5f6368">
             <font>
                 <Font size="14.0" />
             </font>

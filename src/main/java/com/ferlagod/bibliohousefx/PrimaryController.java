@@ -58,7 +58,7 @@ import javafx.stage.Stage;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
- * @version 1.4
+ * @version 1.5
  */
 public class PrimaryController implements Initializable {
 
@@ -211,6 +211,9 @@ public class PrimaryController implements Initializable {
     private RadioMenuItem menuEu;
     @FXML
     private RadioMenuItem menuPt;
+    @FXML
+    private javafx.scene.layout.FlowPane panelDeseos;
+    private List<Libro> listaDeseos;
 
     @FXML
     private void cambiarAEspanol() {
@@ -490,6 +493,9 @@ public class PrimaryController implements Initializable {
         com.bibliohouse.utils.ImageLoader.setCacheDir(coversPath);
 
         this.jsonManager = new JsonManager(userPath);
+
+        this.listaDeseos = jsonManager.cargarDeseos();
+        actualizarPanelDeseos();
 
         // Configurar auto-sync con NextCloud si hay credenciales guardadas
         this.preferencias = jsonManager.cargarPreferencias();
@@ -920,7 +926,6 @@ public class PrimaryController implements Initializable {
         });
 
         // Aquí es donde controlamos lo que pasa cuando el usuario escribe
-        // He arreglado esto para que se refresque con los datos nuevos
         comboBox.getEditor().textProperty().addListener((obs, oldText, newText) -> {
 
             // IMPORTANTE: Elegimos qué lista usar como fuente para filtrar.
@@ -1444,119 +1449,6 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Busca libros en internet. Lanza hilos para buscar en OpenLi, Google e
-     * Inventaire a la vez.
-     *
-     * @param event El botón pulsado.
-     */
-    @FXML
-    private void buscarLibroOpenLibrary(ActionEvent event) {
-        txtBusquedaOpenLibrary.setDisable(true);
-        String query = txtBusquedaOpenLibrary.getText().trim();
-        if (query.isEmpty()) {
-            return;
-        }
-
-        System.out.println("[DEBUG] Iniciando búsqueda MULTI-PROVEEDOR para: " + query);
-        lblEstado.setText("Buscando en OpenLibrary, Google Books e Inventaire...");
-
-        // Ejecutar búsqueda en segundo plano con CompletableFuture para paralelismo
-        // real
-        Thread searchThread = new Thread(() -> {
-            try {
-                System.out.println("[DEBUG] Hilo de orquestación de búsqueda iniciado");
-
-                // 1. Definir las tareas de búsqueda (Futures)
-                java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en OpenLibrary...");
-                            return OpenLibraryCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en OpenLibrary: " + ex.getMessage());
-                    return new ArrayList<>(); // Retornar lista vacía en caso de error
-                });
-
-                java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en Google Books...");
-                            return com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en Google Books: " + ex.getMessage());
-                    return new ArrayList<>();
-                });
-
-                java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> {
-                            System.out.println("[DEBUG] Buscando en Inventaire...");
-                            return com.bibliohouse.logic.InventaireCliente.buscarLibros(query);
-                        }).exceptionally(ex -> {
-                    System.err.println("[ERROR] Error en Inventaire: " + ex.getMessage());
-                    return new ArrayList<>();
-                });
-
-                // 2. Esperar a que TODAS terminen (join)
-                // Usamos allOf para esperar, pero luego extraemos resultados individualmente
-                java.util.concurrent.CompletableFuture<Void> allFutures = java.util.concurrent.CompletableFuture
-                        .allOf(futureOpenLib, futureGoogle, futureInventaire);
-
-                allFutures.join(); // Bloquea este hilo (searchThread) hasta que todos terminen
-
-                // 3. Recolectar resultados
-                List<Libro> resultadosTotales = new ArrayList<>();
-
-                // OpenLibrary
-                List<Libro> resOL = futureOpenLib.get();
-                if (resOL != null) {
-                    resultadosTotales.addAll(resOL);
-                }
-
-                // Google
-                List<Libro> resGB = futureGoogle.get();
-                if (resGB != null) {
-                    resultadosTotales.addAll(resGB);
-                }
-
-                // Inventaire
-                List<Libro> resIV = futureInventaire.get();
-                if (resIV != null) {
-                    resultadosTotales.addAll(resIV);
-                }
-
-                System.out.println("[DEBUG] Búsqueda completada. Total resultados: " + resultadosTotales.size());
-                System.out.println(String.format("[DEBUG] Desglose: OL=%d, GB=%d, IV=%d",
-                        (resOL != null ? resOL.size() : 0), (resGB != null ? resGB.size() : 0),
-                        (resIV != null ? resIV.size() : 0)));
-
-                // 4. Actualizar UI
-                Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setDisable(false);
-                    if (resultadosTotales.isEmpty()) {
-                        System.out.println("[DEBUG] No se encontraron resultados en ningún proveedor");
-                        mostrarAlerta("Sin resultados", "No se encontró nada en ninguna de las librerías conectadas.");
-                        lblEstado.setText("Búsqueda finalizada sin éxito.");
-                    } else {
-                        // --- ABRIR VENTANA DE RESULTADOS ---
-                        System.out.println("[DEBUG] Abriendo ventana con " + resultadosTotales.size() + " libros");
-                        abrirVentanaResultados(resultadosTotales);
-                        lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosTotales.size());
-                    }
-                });
-
-            } catch (InterruptedException | ExecutionException e) {
-                System.err.println("[ERROR] Excepción general en hilo de búsqueda: " + e.getMessage());
-                Platform.runLater(() -> {
-                    lblEstado.setText("Error en la búsqueda.");
-                    mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
-                });
-            }
-        });
-
-        searchThread.setDaemon(true);
-        searchThread.setName("UniSearch-Orchestrator");
-        searchThread.start();
-    }
-
-    /**
      * Abre una ventana modal con los resultados de la búsqueda en OpenLibrary.
      *
      * @param resultados Lista de libros encontrados.
@@ -1594,10 +1486,21 @@ public class PrimaryController implements Initializable {
             // Recoger el libro seleccionado al cerrar
             Libro elegido = controller.getLibroSeleccionado();
             if (elegido != null) {
-                System.out.println("[DEBUG] Libro seleccionado: " + elegido.getTitulo());
-                rellenarFormularioManual(elegido);
-            } else {
-                System.out.println("[DEBUG] No se seleccionó ningún libro");
+                if (controller.isParaDeseos()) {
+                    // SE PULSÓ "AÑADIR A DESEOS"
+                    elegido.setPoseido(false);
+                    String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
+                            elegido.getPortadaURL(), elegido.getId(), this.rutaUsuario);
+                    elegido.setPortadaURL(rutaLocal);
+
+                    listaDeseos.add(elegido);
+                    jsonManager.guardarDeseos(listaDeseos);
+                    actualizarPanelDeseos();
+                    lblEstado.setText("Añadido a tu Lista de Deseos: " + elegido.getTitulo());
+                } else {
+                    // SE PULSÓ "IMPORTAR A BIBLIOTECA"
+                    rellenarFormularioManual(elegido);
+                }
             }
 
         } catch (IOException e) {
@@ -2374,5 +2277,193 @@ public class PrimaryController implements Initializable {
 
         // La solución  para que Ubuntu no encoja las ventanas
         stage.sizeToScene();
+    }
+
+    // ==========================================
+    // SECCIÓN: LISTA DE DESEOS (WISHLIST)
+    // ==========================================
+    /**
+     * Actualiza el panel de deseos mostrando una tarjeta por cada libro en la
+     * lista.
+     */
+    private void actualizarPanelDeseos() {
+        panelDeseos.getChildren().clear();
+        for (Libro libro : listaDeseos) {
+            panelDeseos.getChildren().add(crearTarjetaDeseo(libro));
+        }
+    }
+
+    /**
+     * Crea una tarjeta visual para un libro en la lista de deseos.
+     *
+     * @param libro El libro para el que crear la tarjeta.
+     * @return Un VBox con la imagen, título y botones de acción.
+     */
+    private javafx.scene.layout.VBox crearTarjetaDeseo(Libro libro) {
+        javafx.scene.layout.VBox tarjeta = new javafx.scene.layout.VBox(8);
+        tarjeta.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        tarjeta.setPrefWidth(140);
+        // Estilo de tarjeta bonita con sombra
+        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+
+        javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
+        com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
+
+        Label lblTitulo = new Label(libro.getTitulo());
+        lblTitulo.setWrapText(true);
+        lblTitulo.setMaxWidth(130);
+        lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
+
+        // Botón verde de "Conseguido"
+        Button btnMover = new Button(resources.getString("wishlist.move"));
+        btnMover.setStyle("-fx-font-size: 10px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+        btnMover.setMaxWidth(Double.MAX_VALUE);
+        btnMover.setOnAction(e -> moverDeseoABiblioteca(libro));
+
+        // Botón rojo de borrar
+        Button btnBorrar = new Button(resources.getString("wishlist.delete"));
+        btnBorrar.setStyle("-fx-font-size: 10px; -fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-cursor: hand;");
+        btnBorrar.setOnAction(e -> {
+            listaDeseos.remove(libro);
+            jsonManager.guardarDeseos(listaDeseos);
+            actualizarPanelDeseos();
+        });
+
+        tarjeta.getChildren().addAll(img, lblTitulo, btnMover, btnBorrar);
+        return tarjeta;
+    }
+
+    /**
+     * Mueve un libro de la lista de deseos a la biblioteca principal.
+     */
+    private void moverDeseoABiblioteca(Libro libro) {
+        // 1. Quitar de deseos
+        listaDeseos.remove(libro);
+        jsonManager.guardarDeseos(listaDeseos);
+
+        // 2. Añadir a la biblioteca principal
+        libro.setPoseido(true);
+        libro.setCantidad(1);
+        listaLibrosCompleta.add(libro);
+        jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
+
+        // 3. Refrescar vistas
+        tablaLibros.refresh();
+        actualizarPanelDeseos();
+        actualizarComboLibrosDisponibles();
+        lblEstado.setText(resources.getString("wishlist.moved.status"));
+    }
+
+    /**
+     * Busca un libro en varios proveedores (OpenLibrary, Google Books,
+     * Inventaire) de forma asíncrona.
+     *
+     * @param query El texto a buscar (título, autor o ISBN).
+     */
+    // Método unificado para lanzar la búsqueda RÁPIDA (con Timeouts)
+    private void ejecutarBusquedaGlobal(String query) {
+        System.out.println("[DEBUG] Iniciando búsqueda MULTI-PROVEEDOR rápida para: " + query);
+        lblEstado.setText("Buscando a toda máquina (máx 3 segundos)...");
+
+        Thread searchThread = new Thread(() -> {
+            try {
+                // Si tardan más de 3 segundos, devuelven una lista vacía y no bloquean a los demás.
+
+                java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> OpenLibraryCliente.buscarLibros(query))
+                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                        .exceptionally(ex -> new ArrayList<>());
+
+                java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
+                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                        .exceptionally(ex -> new ArrayList<>());
+
+                java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
+                        .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
+                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                        .exceptionally(ex -> new ArrayList<>());
+
+                // Esperamos a los tres, pero como todos tienen un límite de 3s, la espera MÁXIMA total será de 3s.
+                java.util.concurrent.CompletableFuture.allOf(futureOpenLib, futureGoogle, futureInventaire).join();
+
+                List<Libro> resultadosTotales = new ArrayList<>();
+                if (futureOpenLib.get() != null) {
+                    resultadosTotales.addAll(futureOpenLib.get());
+                }
+                if (futureGoogle.get() != null) {
+                    resultadosTotales.addAll(futureGoogle.get());
+                }
+                if (futureInventaire.get() != null) {
+                    resultadosTotales.addAll(futureInventaire.get());
+                }
+
+                Platform.runLater(() -> {
+                    txtBusquedaOpenLibrary.setDisable(false);
+                    if (resultadosTotales.isEmpty()) {
+                        mostrarAlerta("Sin resultados", "No se encontró nada (o los servidores tardaron demasiado en responder).");
+                        lblEstado.setText("Búsqueda finalizada sin éxito.");
+                    } else {
+                        // Opcional: Eliminar duplicados si Google y OpenLibrary traen el mismo ISBN exacto
+                        List<Libro> resultadosLimpios = resultadosTotales.stream()
+                                .filter(l -> l.getIsbn() != null && !l.getIsbn().isEmpty())
+                                .collect(java.util.stream.Collectors.collectingAndThen(
+                                        java.util.stream.Collectors.toCollection(() -> new java.util.TreeSet<>(java.util.Comparator.comparing(Libro::getIsbn))),
+                                        ArrayList::new));
+
+                        // Si después de limpiar duplicados por ISBN nos quedamos sin nada (ej: libros sin ISBN), mostramos los totales
+                        if (resultadosLimpios.isEmpty()) {
+                            resultadosLimpios = resultadosTotales;
+                        }
+
+                        abrirVentanaResultados(resultadosLimpios);
+                        lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosLimpios.size());
+                    }
+                });
+
+            } catch (InterruptedException | ExecutionException e) {
+                Platform.runLater(() -> {
+                    txtBusquedaOpenLibrary.setDisable(false);
+                    lblEstado.setText("Error en la búsqueda.");
+                    mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
+                });
+            }
+        });
+
+        searchThread.setDaemon(true);
+        searchThread.start();
+    }
+
+    /**
+     * Busca un libro usando el texto del campo de búsqueda. Desactiva el campo
+     * mientras busca.
+     */
+    @FXML
+    private void buscarLibroOpenLibrary(ActionEvent event) {
+        txtBusquedaOpenLibrary.setDisable(true);
+        String query = txtBusquedaOpenLibrary.getText().trim();
+        if (query.isEmpty()) {
+            txtBusquedaOpenLibrary.setDisable(false);
+            return;
+        }
+        ejecutarBusquedaGlobal(query);
+    }
+
+    /**
+     * Pide al usuario qué libro buscar y lo añade a la lista de deseos.
+     */
+    @FXML
+    private void buscarLibroParaDeseos(ActionEvent event) {
+        // En la pestaña de deseos pedimos al usuario qué quiere buscar mediante un diálogo
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
+        dialog.setTitle("Buscar Libro");
+        dialog.setHeaderText("Añadir a Lista de Deseos");
+        dialog.setContentText("Introduce el título, autor o ISBN:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent() && !result.get().trim().isEmpty()) {
+            ejecutarBusquedaGlobal(result.get().trim());
+        }
     }
 }

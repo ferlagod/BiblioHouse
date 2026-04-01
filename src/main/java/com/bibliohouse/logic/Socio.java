@@ -23,7 +23,7 @@ package com.bibliohouse.logic;
  * apellidos, DNI, etc.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class Socio {
 

@@ -63,22 +63,48 @@ public class ImportadorCSV {
                 String c = cabeceras[i].replace("\"", "").trim().toLowerCase();
 
                 // Mapeo múltiple (Genérico + Goodreads + Bookwyrm)
-                if (c.equals("title") || c.equals("título") || c.equals("titulo")) {
-                    idxTitulo = i;
-                } else if (c.equals("author") || c.equals("autor") || c.equals("author_text")) {
-                    idxAutor = i;
-                } else if (c.equals("isbn13") || c.equals("isbn") || c.equals("isbn_13")) {
-                    idxIsbn = i;
-                } else if (c.equals("isbn10") || c.equals("isbn_10")) {
-                    idxIsbn10 = i;
-                } else if (c.equals("original publication year") || c.equals("year published") || c.equals("año") || c.equals("year")) {
-                    idxAnio = i;
-                } else if (c.equals("publisher") || c.equals("editorial")) {
-                    idxEditorial = i;
-                } else if (c.equals("my rating") || c.equals("rating") || c.equals("calificacion")) {
-                    idxRating = i;
-                } else if (c.equals("exclusive shelf") || c.equals("shelf") || c.equals("estado")) {
-                    idxShelf = i;
+                switch (c) {
+                    case "title":
+                    case "título":
+                    case "titulo":
+                        idxTitulo = i;
+                        break;
+                    case "author":
+                    case "autor":
+                    case "author_text":
+                        idxAutor = i;
+                        break;
+                    case "isbn13":
+                    case "isbn":
+                    case "isbn_13":
+                        idxIsbn = i;
+                        break;
+                    case "isbn10":
+                    case "isbn_10":
+                        idxIsbn10 = i;
+                        break;
+                    case "original publication year":
+                    case "year published":
+                    case "año":
+                    case "year":
+                        idxAnio = i;
+                        break;
+                    case "publisher":
+                    case "editorial":
+                        idxEditorial = i;
+                        break;
+                    case "my rating":
+                    case "rating":
+                    case "calificacion":
+                        idxRating = i;
+                        break;
+                    case "exclusive shelf":
+                    case "shelf":
+                    case "estado":
+                        idxShelf = i;
+                        break;
+                    default:
+                        break;
                 }
             }
 

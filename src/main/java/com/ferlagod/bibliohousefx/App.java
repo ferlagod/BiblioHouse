@@ -31,12 +31,12 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Ferlagod
- * @version 1.4
+ * @version 1.5
  */
 public class App extends Application {
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(App.class.getName());
-    private static java.util.Locale currentLocale = new java.util.Locale("es");
+    private static java.util.Locale currentLocale = java.util.Locale.forLanguageTag("es");
     private static java.util.ResourceBundle bundle;
     private static Scene scene;
 
@@ -57,7 +57,7 @@ public class App extends Application {
      * @param lang código de idioma (es, en, ca, gl, eu, pt)
      */
     public static void setLocale(String lang) {
-        currentLocale = new java.util.Locale(lang);
+        currentLocale = java.util.Locale.forLanguageTag(lang);
         // Limpiamos la caché para asegurar que no se use una versión antigua
         java.util.ResourceBundle.clearCache();
 

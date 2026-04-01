@@ -25,7 +25,8 @@
       <HBox alignment="CENTER_RIGHT" spacing="10.0">
          <children>
             <Button cancelButton="true" onAction="#cancelar" text="Cancelar" />
-            <Button defaultButton="true" onAction="#seleccionar" styleClass="google-button" text="Seleccionar Libro" />
+            <Button onAction="#seleccionarParaDeseos" styleClass="text-button" style="-fx-border-color: -color-border; -fx-border-radius: 3px;" text="Añadir a Deseos" />
+            <Button defaultButton="true" onAction="#seleccionar" styleClass="google-button" text="Importar a Biblioteca" />
          </children>
       </HBox>
    </children>

@@ -11,7 +11,9 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
@@ -330,6 +332,29 @@
                                         <TableColumn fx:id="colHistorialFechaDevolucion" prefWidth="120.0" text="%col.history.date_return" />
                                     </columns>
                                 </TableView>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="%tab.wishlist">
+                    <content>
+                        <VBox spacing="20.0" styleClass="content-area">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                        <Label styleClass="heading-text" text="%wishlist.title" maxWidth="Infinity" HBox.hgrow="ALWAYS" />
+                                        <Button onAction="#buscarLibroParaDeseos" styleClass="google-button" text="%wishlist.add.search" />
+                                    </children>
+                                </HBox>
+                                <Separator />
+                                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                                    <content>
+                                        <FlowPane fx:id="panelDeseos" hgap="25.0" vgap="25.0" />
+                                    </content>
+                                </ScrollPane>
                             </children>
                         </VBox>
                     </content>

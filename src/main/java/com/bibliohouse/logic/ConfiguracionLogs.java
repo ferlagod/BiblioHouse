@@ -31,7 +31,7 @@ import java.util.logging.SimpleFormatter;
  * ha pasado si algo falla.
  *
  * @author Fernando Lago
- * @version 1.4
+ * @version 1.5
  */
 public class ConfiguracionLogs {
 
