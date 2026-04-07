@@ -57,7 +57,7 @@ public class ImportadorCSV {
             // Analizar cabeceras para saber dónde está cada cosa
             String[] cabeceras = linea.split(regexSplit);
             int idxTitulo = -1, idxAutor = -1, idxIsbn = -1, idxIsbn10 = -1, idxAnio = -1, idxEditorial = -1;
-            int idxRating = -1, idxShelf = -1;
+            int idxRating = -1, idxShelf = -1, idxResena = -1, idxEstanterias = -1;
 
             for (int i = 0; i < cabeceras.length; i++) {
                 String c = cabeceras[i].replace("\"", "").trim().toLowerCase();
@@ -102,6 +102,17 @@ public class ImportadorCSV {
                     case "shelf":
                     case "estado":
                         idxShelf = i;
+                        break;
+                    case "my review":
+                    case "review":
+                    case "reseña":
+                    case "resena":
+                        idxResena = i;
+                        break;
+                    case "bookshelves":
+                    case "tags":
+                    case "etiquetas":
+                        idxEstanterias = i;
                         break;
                     default:
                         break;
@@ -160,7 +171,6 @@ public class ImportadorCSV {
                     String ratingStr = limpiar(obtenerCampo(campos, idxRating));
                     if (!ratingStr.isEmpty() && !ratingStr.equals("0") && !ratingStr.equals("0.00")) {
                         try {
-                            // Bookwyrm devuelve "5.00", así que lo pasamos a double y luego redondeamos a int
                             double califDouble = Double.parseDouble(ratingStr);
                             int califInt = (int) Math.round(califDouble);
                             if (califInt >= 0 && califInt <= 5) {
@@ -168,6 +178,30 @@ public class ImportadorCSV {
                             }
                         } catch (NumberFormatException e) {
                             // Ignoramos si viene basura en esa columna
+                        }
+                    }
+                }
+
+                // 3. Reseña
+                if (idxResena != -1) {
+                    String resenaStr = limpiar(obtenerCampo(campos, idxResena));
+                    if (!resenaStr.isEmpty()) {
+                        nuevoLibro.setReseña(resenaStr);
+                    }
+                }
+
+                // 4. Estanterías / Etiquetas
+                if (idxEstanterias != -1) {
+                    String estanteriasRaw = limpiar(obtenerCampo(campos, idxEstanterias));
+                    if (!estanteriasRaw.isEmpty()) {
+                        List<String> listaEstanterias = new ArrayList<>();
+                        for (String est : estanteriasRaw.split(",")) {
+                            if (!est.trim().isEmpty()) {
+                                listaEstanterias.add(est.trim());
+                            }
+                        }
+                        if (!listaEstanterias.isEmpty()) {
+                            nuevoLibro.setEstanterias(listaEstanterias);
                         }
                     }
                 }
