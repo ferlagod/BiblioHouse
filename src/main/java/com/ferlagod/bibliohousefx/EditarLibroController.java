@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import com.bibliohouse.logic.Libro;
+import java.util.concurrent.ExecutionException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -83,6 +84,8 @@ public class EditarLibroController {
     private boolean guardado = false;
     private ObservableList<String> modeloEstanterias;
     private String rutaUsuario;
+    @FXML
+    private javafx.scene.control.Button btnBuscarPortada;
 
     /**
      * Configuración inicial de la ventana. Prepara los desplegables de
@@ -420,4 +423,117 @@ public class EditarLibroController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void buscarPortadaOnline(javafx.event.ActionEvent event) {
+        String isbn = txtIsbn.getText().trim();
+        String titulo = txtTitulo.getText().trim();
+
+        if (isbn.isEmpty() && titulo.isEmpty()) {
+            mostrarAlerta("Atención", "Necesitas tener escrito al menos el Título o el ISBN para poder buscar la portada.");
+            return;
+        }
+
+        btnBuscarPortada.setDisable(true);
+
+        Thread searchThread = new Thread(() -> {
+            try {
+                String urlFinal = "";
+
+                // 1. Primer intento: Buscar por ISBN (la edición exacta)
+                if (!isbn.isEmpty()) {
+                    urlFinal = buscarImagenEnApis(isbn);
+                }
+
+                // 2. Segundo intento (Plan B): Si el ISBN no dio resultados (o estaba vacío), buscamos por Título
+                if (urlFinal.isEmpty() && !titulo.isEmpty()) {
+                    urlFinal = buscarImagenEnApis(titulo);
+                }
+
+                final String portadaDefinitiva = urlFinal;
+
+                javafx.application.Platform.runLater(() -> {
+                    btnBuscarPortada.setDisable(false);
+                    if (!portadaDefinitiva.isEmpty()) {
+                        String idLibro = (libro != null && libro.getId() != null) ? libro.getId() : java.util.UUID.randomUUID().toString();
+                        String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(portadaDefinitiva, idLibro, this.rutaUsuario);
+
+                        rutaPortadaActual = rutaLocal;
+                        com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
+                    } else {
+                        mostrarAlerta("Sin resultados", "Ninguna de las tres bases de datos (Google, OpenLibrary, Inventaire) tiene una portada registrada para esta búsqueda. Tendrás que descargarla y añadirla manualmente.");
+                    }
+                });
+
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    btnBuscarPortada.setDisable(false);
+                    mostrarAlerta("Error", "Error al conectar con los servidores.");
+                });
+            }
+        });
+
+        searchThread.setDaemon(true);
+        searchThread.start();
+    }
+
+    /**
+     * Método auxiliar que lanza a los 3 sabuesos a la vez y devuelve la primera
+     * portada útil.
+     */
+    private String buscarImagenEnApis(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return "";
+        }
+        try {
+            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureInventaire = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib, futureInventaire).join();
+
+            // Prioridad 1: Google Books
+            if (futureGoogle.get() != null) {
+                for (com.bibliohouse.logic.Libro lib : futureGoogle.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
+                        return img;
+                    }
+                }
+            }
+            // Prioridad 2: OpenLibrary
+            if (futureOpenLib.get() != null) {
+                for (com.bibliohouse.logic.Libro lib : futureOpenLib.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover") && !img.contains("-S.jpg")) {
+                        return img.replace("-M.jpg", "-L.jpg");
+                    }
+                }
+            }
+            // Prioridad 3: Inventaire
+            if (futureInventaire.get() != null) {
+                for (com.bibliohouse.logic.Libro lib : futureInventaire.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
+                        return img;
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            // Si falla algo, devolvemos vacío y que intente el siguiente plan
+        }
+        return "";
+    }
+    
 }

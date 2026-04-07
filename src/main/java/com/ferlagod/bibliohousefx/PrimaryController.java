@@ -2466,4 +2466,129 @@ public class PrimaryController implements Initializable {
             ejecutarBusquedaGlobal(result.get().trim());
         }
     }
+
+    @FXML
+    private void buscarPortadasFaltantes(javafx.event.ActionEvent event) {
+        // Filtramos los libros que tienen la portada por defecto o nula
+        java.util.List<Libro> librosSinPortada = listaLibrosCompleta.stream()
+                .filter(l -> l.getPortadaURL() == null || l.getPortadaURL().isEmpty() || l.getPortadaURL().contains("default_cover"))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (librosSinPortada.isEmpty()) {
+            mostrarAlerta("Información", "No hay ningún libro sin portada en tu biblioteca.");
+            return;
+        }
+
+        // Crear diálogo que bloquea la interfaz
+        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        dialogo.setTitle("Búsqueda masiva de portadas");
+        dialogo.setHeaderText("Buscando portadas online (" + librosSinPortada.size() + " libros)...");
+        dialogo.setContentText("Por favor, espera. Esto puede tardar varios minutos dependiendo de tu conexión. No cierres el programa.");
+
+        // Quitamos el botón de OK para que no lo puedan cerrar hasta que termine
+        dialogo.getDialogPane().getButtonTypes().clear();
+
+        // Creamos una barra de carga indeterminada
+        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar();
+        progressBar.setPrefWidth(250);
+        dialogo.getDialogPane().setContent(progressBar);
+
+        dialogo.show();
+
+        // Lanzar la búsqueda en segundo plano para no congelar la pantalla visualmente
+        Thread hilo = new Thread(() -> {
+            int actualizadas = 0;
+
+            for (Libro libro : librosSinPortada) {
+                // Prioridad: ISBN, si no hay, Título
+                String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
+                String urlEncontrada = buscarImagenEnApisMasivo(query);
+
+                // Si por ISBN falla, probamos con el Título
+                if (urlEncontrada.isEmpty() && libro.getIsbn() != null && !libro.getIsbn().isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isEmpty()) {
+                    urlEncontrada = buscarImagenEnApisMasivo(libro.getTitulo());
+                }
+
+                if (!urlEncontrada.isEmpty()) {
+                    String idLibro = libro.getId() != null ? libro.getId() : java.util.UUID.randomUUID().toString();
+                    String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(urlEncontrada, idLibro, this.rutaUsuario);
+                    libro.setPortadaURL(rutaLocal);
+                    actualizadas++;
+                }
+            }
+
+            final int totalActualizadas = actualizadas;
+
+            // Volver al hilo principal para actualizar la interfaz
+            javafx.application.Platform.runLater(() -> {
+                // Guardar cambios en el archivo JSON
+                jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarPanelDeseos(); // Por si hay deseos sin portada
+
+                // Permitir cerrar la ventana
+                dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
+                dialogo.close();
+
+                mostrarAlerta("Proceso terminado", "Búsqueda finalizada. Se han descargado " + totalActualizadas + " portadas nuevas.");
+            });
+        });
+        hilo.setDaemon(true);
+        hilo.start();
+    }
+
+    /**
+     * Motor de búsqueda silencioso. Rastrea las 3 APIs.
+     */
+    private String buscarImagenEnApisMasivo(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return "";
+        }
+        try {
+            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib, futureInventaire).join();
+
+            if (futureGoogle.get() != null) {
+                for (Libro lib : futureGoogle.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
+                        return img;
+                    }
+                }
+            }
+            if (futureOpenLib.get() != null) {
+                for (Libro lib : futureOpenLib.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover") && !img.contains("-S.jpg")) {
+                        return img.replace("-M.jpg", "-L.jpg");
+                    }
+                }
+            }
+            if (futureInventaire.get() != null) {
+                for (Libro lib : futureInventaire.get()) {
+                    String img = lib.getPortadaURL();
+                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
+                        return img;
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            // Falla en silencio y sigue con el siguiente libro
+        }
+        return "";
+    }
 }

@@ -37,8 +37,8 @@
                                                 <ImageView fx:id="imgPortada" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" />
                                             </children>
                                         </VBox>
-                                        <Button onAction="#cambiarPortada" styleClass="text-button" text="%book.cover.change" />                                    
-                                        <Separator />
+                                        <Button onAction="#cambiarPortada" styleClass="text-button" text="%book.cover.change" /> 
+                                        <Button fx:id="btnBuscarPortada" onAction="#buscarPortadaOnline" styleClass="google-button" text="%edit.search.cover" />
                               
                                         <VBox alignment="CENTER_LEFT" spacing="5.0">
                                             <children>
