@@ -52,6 +52,7 @@
                         <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
                         <MenuItem onAction="#abrirGestorSagas" text="%menu.series.manager" />
                         <MenuItem onAction="#buscarPortadasFaltantes" text="%menu.tools.fetch_covers" />
+                        <MenuItem onAction="#buscarSagasFaltantes" text="%menu.tools.fetch_sagas" />
                         <MenuItem onAction="#abrirConfiguracion" text="%menu.config" />
                         <Menu text="%menu.language">
                             <items>

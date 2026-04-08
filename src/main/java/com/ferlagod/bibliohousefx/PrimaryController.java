@@ -2467,9 +2467,15 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Busca y descarga portadas para los libros que no tienen imagen asignada.
+     * Muestra un diálogo de confirmación y una barra de progreso durante la
+     * búsqueda.
+     *
+     * @param event El evento que desencadena la acción.
+     */
     @FXML
     private void buscarPortadasFaltantes(javafx.event.ActionEvent event) {
-        // Filtramos los libros que tienen la portada por defecto o nula
         java.util.List<Libro> librosSinPortada = listaLibrosCompleta.stream()
                 .filter(l -> l.getPortadaURL() == null || l.getPortadaURL().isEmpty() || l.getPortadaURL().contains("default_cover"))
                 .collect(java.util.stream.Collectors.toList());
@@ -2479,32 +2485,34 @@ public class PrimaryController implements Initializable {
             return;
         }
 
-        // Crear diálogo que bloquea la interfaz
-        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        dialogo.setTitle("Búsqueda masiva de portadas");
-        dialogo.setHeaderText("Buscando portadas online (" + librosSinPortada.size() + " libros)...");
-        dialogo.setContentText("Por favor, espera. Esto puede tardar varios minutos dependiendo de tu conexión. No cierres el programa.");
+        // Cuadro de advertencia antes de empezar 
+        javafx.scene.control.Alert confirmacion = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Búsqueda masiva");
+        confirmacion.setHeaderText("Se van a procesar " + librosSinPortada.size() + " libros.");
+        confirmacion.setContentText("Este proceso conecta con servidores externos y puede tardar varios minutos.\n\n¿Deseas continuar?");
 
-        // Quitamos el botón de OK para que no lo puedan cerrar hasta que termine
+        java.util.Optional<javafx.scene.control.ButtonType> resultado = confirmacion.showAndWait();
+        if (!resultado.isPresent() || resultado.get() != javafx.scene.control.ButtonType.OK) {
+            return; // El usuario pulsó cancelar
+        }
+
+        // Crear diálogo de carga
+        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        dialogo.setTitle("Descargando portadas...");
+        dialogo.setHeaderText("Procesando, no cierres el programa.");
         dialogo.getDialogPane().getButtonTypes().clear();
 
-        // Creamos una barra de carga indeterminada
-        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar();
+        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(-1);
         progressBar.setPrefWidth(250);
         dialogo.getDialogPane().setContent(progressBar);
-
         dialogo.show();
 
-        // Lanzar la búsqueda en segundo plano para no congelar la pantalla visualmente
         Thread hilo = new Thread(() -> {
             int actualizadas = 0;
-
             for (Libro libro : librosSinPortada) {
-                // Prioridad: ISBN, si no hay, Título
                 String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
                 String urlEncontrada = buscarImagenEnApisMasivo(query);
 
-                // Si por ISBN falla, probamos con el Título
                 if (urlEncontrada.isEmpty() && libro.getIsbn() != null && !libro.getIsbn().isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isEmpty()) {
                     urlEncontrada = buscarImagenEnApisMasivo(libro.getTitulo());
                 }
@@ -2518,19 +2526,13 @@ public class PrimaryController implements Initializable {
             }
 
             final int totalActualizadas = actualizadas;
-
-            // Volver al hilo principal para actualizar la interfaz
             javafx.application.Platform.runLater(() -> {
-                // Guardar cambios en el archivo JSON
                 jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
                 tablaLibros.refresh();
-                actualizarPanelDeseos(); // Por si hay deseos sin portada
-
-                // Permitir cerrar la ventana
+                actualizarPanelDeseos();
                 dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
                 dialogo.close();
-
-                mostrarAlerta("Proceso terminado", "Búsqueda finalizada. Se han descargado " + totalActualizadas + " portadas nuevas.");
+                mostrarAlerta("Terminado", "Se han descargado " + totalActualizadas + " portadas.");
             });
         });
         hilo.setDaemon(true);
@@ -2590,5 +2592,116 @@ public class PrimaryController implements Initializable {
             // Falla en silencio y sigue con el siguiente libro
         }
         return "";
+    }
+
+    /**
+     * Busca y asigna sagas a los libros que no tienen serie asignada. Muestra
+     * un diálogo de confirmación y una barra de progreso durante la búsqueda.
+     *
+     * @param event El evento que desencadena la acción.
+     */
+    @FXML
+    private void buscarSagasFaltantes(javafx.event.ActionEvent event) {
+        java.util.List<Libro> librosSinSaga = listaLibrosCompleta.stream()
+                .filter(l -> l.getSerie() == null || l.getSerie().trim().isEmpty())
+                .collect(java.util.stream.Collectors.toList());
+
+        if (librosSinSaga.isEmpty()) {
+            mostrarAlerta("Información", "Todos tus libros ya tienen una saga asignada.");
+            return;
+        }
+
+        javafx.scene.control.Alert confirmacion = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Búsqueda de Sagas Online");
+        confirmacion.setHeaderText("Analizando " + librosSinSaga.size() + " libros sin saga.");
+        confirmacion.setContentText("El programa interrogará a las bases de datos para extraer la serie de los títulos. Puede tardar unos minutos.\n\n¿Iniciar proceso?");
+
+        if (confirmacion.showAndWait().orElse(javafx.scene.control.ButtonType.CANCEL) != javafx.scene.control.ButtonType.OK) {
+            return;
+        }
+
+        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        dialogo.setTitle("Buscando sagas...");
+        dialogo.setHeaderText("Por favor, espera.");
+        dialogo.getDialogPane().getButtonTypes().clear();
+        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(-1);
+        progressBar.setPrefWidth(250);
+        dialogo.getDialogPane().setContent(progressBar);
+        dialogo.show();
+
+        Thread hilo = new Thread(() -> {
+            int actualizados = 0;
+            for (Libro libro : librosSinSaga) {
+                String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
+                Libro apiLibro = buscarSagaEnApisSilencioso(query);
+
+                // Fallback al título si por ISBN no hay nada
+                if (apiLibro == null && libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
+                    apiLibro = buscarSagaEnApisSilencioso(libro.getTitulo());
+                }
+
+                if (apiLibro != null && apiLibro.getSerie() != null && !apiLibro.getSerie().isEmpty()) {
+                    libro.setSerie(apiLibro.getSerie());
+                    libro.setOrdenEnSerie(apiLibro.getOrdenEnSerie());
+                    actualizados++;
+                }
+            }
+
+            final int totalAct = actualizados;
+            javafx.application.Platform.runLater(() -> {
+                jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
+                dialogo.close();
+                mostrarAlerta("Terminado", "Se han deducido " + totalAct + " sagas nuevas.");
+            });
+        });
+        hilo.setDaemon(true);
+        hilo.start();
+    }
+
+    /**
+     * Busca información de saga para un libro en Google Books y OpenLibrary.
+     *
+     * @param query El ISBN o título del libro a buscar.
+     * @return El primer libro encontrado con información de saga, o null si no
+     * se encuentra.
+     */
+    private Libro buscarSagaEnApisSilencioso(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
+                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
+                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
+                    .exceptionally(ex -> new java.util.ArrayList<>());
+
+            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib).join();
+
+            // Como los clientes ya ejecutan ProcesadorSagas.extraerSagaDeTitulo internamente,
+            // solo devolvemos el primer libro que venga con el campo de serie lleno.
+            if (futureGoogle.get() != null) {
+                for (Libro l : futureGoogle.get()) {
+                    if (l.getSerie() != null && !l.getSerie().isEmpty()) {
+                        return l;
+                    }
+                }
+            }
+            if (futureOpenLib.get() != null) {
+                for (Libro l : futureOpenLib.get()) {
+                    if (l.getSerie() != null && !l.getSerie().isEmpty()) {
+                        return l;
+                    }
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+        }
+        return null;
     }
 }
