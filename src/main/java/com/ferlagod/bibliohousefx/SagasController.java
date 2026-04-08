@@ -36,23 +36,26 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-
 /**
  * Controlador del Gestor de Sagas y Colecciones.
- * 
- * Agrupa los libros por serie, los muestra con sus portadas ordenados por
- * tomo, y detecta automáticamente los huecos en la colección (tomos que faltan)
- * para resaltarlos en rojo.
+ *
+ * Agrupa los libros por serie, los muestra con sus portadas ordenados por tomo,
+ * y detecta automáticamente los huecos en la colección (tomos que faltan) para
+ * resaltarlos en rojo.
  *
  * @author Fernando Lago
  * @version 1.5
  */
 public class SagasController {
 
-    @FXML private ListView<String> listaSagas;
-    @FXML private Label lblTituloSaga;
-    @FXML private Label lblResumenSaga;
-    @FXML private FlowPane panelLibros;
+    @FXML
+    private ListView<String> listaSagas;
+    @FXML
+    private Label lblTituloSaga;
+    @FXML
+    private Label lblResumenSaga;
+    @FXML
+    private FlowPane panelLibros;
 
     //Mapa: nombre de serie → lista de libros pertenecientes.
     private Map<String, List<Libro>> sagasMap;
@@ -60,24 +63,34 @@ public class SagasController {
     // -----------------------------------------------------------------------
     //  Inicialización pública
     // -----------------------------------------------------------------------
-
     /**
      * Recibe la biblioteca completa, filtra los libros que pertenecen a una
-     * serie y construye el listado lateral ordenado alfabéticamente.
+     * serie y construye el listado lateral ordenado alfabéticamente de forma
+     * robusta.
      *
      * @param todosLosLibros Lista completa de libros del usuario.
      */
     public void initData(List<Libro> todosLosLibros) {
-        // Agrupar por serie (ignorar libros sin serie)
-        sagasMap = todosLosLibros.stream()
+        // 1. Agrupar los libros usando el nombre NORMALIZADO (fusión "antitorpes")
+        // Así "Harry Potter", "harry potter" y "Harry Pótter" caen en el mismo saco.
+        Map<String, List<Libro>> agrupadoNormalizado = todosLosLibros.stream()
                 .filter(l -> l.getSerie() != null && !l.getSerie().trim().isEmpty())
-                .collect(Collectors.groupingBy(Libro::getSerie));
+                .collect(Collectors.groupingBy(l -> com.bibliohouse.utils.ProcesadorSagas.normalizar(l.getSerie())));
+
+        // 2. Reconstruir el mapa para la interfaz visual. 
+        // Usamos el nombre original (con sus mayúsculas y tildes) del primer libro del grupo.
+        sagasMap = agrupadoNormalizado.values().stream()
+                .collect(Collectors.toMap(
+                        lista -> lista.get(0).getSerie(), // Nombre "bonito" para mostrar
+                        lista -> lista
+                ));
 
         // Llenar la lista lateral en orden alfabético
         List<String> nombres = sagasMap.keySet().stream()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
 
+        listaSagas.getItems().clear(); // Limpiamos por si se recarga la vista
         listaSagas.getItems().addAll(nombres);
 
         // Estilizar las celdas de la lista lateral
@@ -100,7 +113,6 @@ public class SagasController {
     // -----------------------------------------------------------------------
     //  Lógica de visualización
     // -----------------------------------------------------------------------
-
     /**
      * Renderiza el panel de portadas para la saga indicada, detectando huecos.
      *
@@ -160,7 +172,6 @@ public class SagasController {
     // -----------------------------------------------------------------------
     //  Construcción de tarjetas
     // -----------------------------------------------------------------------
-
     /**
      * Crea la tarjeta visual para un libro que sí está en la colección.
      */
@@ -252,10 +263,9 @@ public class SagasController {
     // -----------------------------------------------------------------------
     //  Utilidades
     // -----------------------------------------------------------------------
-
     /**
-     * Formatea el número de tomo: si es entero lo muestra sin decimales,
-     * si es decimal (p.ej. 1.5) lo muestra tal cual.
+     * Formatea el número de tomo: si es entero lo muestra sin decimales, si es
+     * decimal (p.ej. 1.5) lo muestra tal cual.
      */
     private String formatarTomo(double orden) {
         if (orden == Math.floor(orden)) {
@@ -267,7 +277,6 @@ public class SagasController {
     // -----------------------------------------------------------------------
     //  Celda personalizada para la lista lateral
     // -----------------------------------------------------------------------
-
     /**
      * Celda de la lista lateral que muestra el nombre de la saga y cuántos
      * tomos tiene.

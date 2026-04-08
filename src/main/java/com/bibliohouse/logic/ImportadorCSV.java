@@ -206,6 +206,7 @@ public class ImportadorCSV {
                     }
                 }
 
+                com.bibliohouse.utils.ProcesadorSagas.extraerSagaDeTitulo(nuevoLibro);
                 librosImportados.add(nuevoLibro);
             }
 

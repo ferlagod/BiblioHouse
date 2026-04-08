@@ -167,7 +167,14 @@ public class GoogleBooksCliente {
                     }
                 }
 
-                librosEncontrados.add(new Libro(titulo, autor, editorial, anio, genero, isbn, portadaUrl));
+                // Crear objeto Libro
+                Libro nuevoLibro = new Libro(titulo, autor, editorial, anio, genero, isbn, portadaUrl);
+
+                // Pasamos el limpiador automático de sagas
+                com.bibliohouse.utils.ProcesadorSagas.extraerSagaDeTitulo(nuevoLibro);
+
+                // Añadirlo a la lista
+                librosEncontrados.add(nuevoLibro);
             }
 
         } catch (ConnectException | UnknownHostException e) {
