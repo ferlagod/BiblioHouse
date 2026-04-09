@@ -51,7 +51,7 @@ public class ProcesadorSagas {
         }
 
         // Regex para cazar: CualquierCosa (CualquierCosa #Numero) o (CualquierCosa, #Numero)
-        Pattern patron = Pattern.compile("^(.*?)\\s*\\((.*?)[,\\s]*#(\\d+(?:\\.\\d+)?)\\)$");
+        Pattern patron = Pattern.compile("^(.*?)\\s*\\((.*?)[,\\s]*(?:#|vol\\.?|libro|book|tomo)?\\s*(\\d+(?:\\.\\d+)?)\\)$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = patron.matcher(libro.getTitulo());
 
         if (matcher.find()) {

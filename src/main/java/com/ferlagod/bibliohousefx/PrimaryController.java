@@ -214,6 +214,8 @@ public class PrimaryController implements Initializable {
     @FXML
     private javafx.scene.layout.FlowPane panelDeseos;
     private List<Libro> listaDeseos;
+    @FXML
+    private SagasController pestañaSagasController;
 
     @FXML
     private void cambiarAEspanol() {
@@ -509,7 +511,7 @@ public class PrimaryController implements Initializable {
                 jsonManager.setAutoSyncTask(() -> {
                     try {
                         syncService.subirBaseDatos(localDir);
-                    } catch (Exception ex) {
+                    } catch (IOException ex) {
                         java.util.logging.Logger.getLogger(PrimaryController.class.getName())
                                 .log(java.util.logging.Level.WARNING, "Auto-sync NextCloud fallido: {0}",
                                         ex.getMessage());
@@ -817,6 +819,9 @@ public class PrimaryController implements Initializable {
         // cargar
         actualizarFiltros();
 
+        if (pestañaSagasController != null) {
+            pestañaSagasController.initData(listaLibrosCompleta);
+        }
         // --- CONFIGURAR FILTRADO EN COMBOS ---
         // Configurar filtrado para Libros
         setupFilteringComboBox(comboLibrosPrestamo, Libro::getTitulo);
@@ -1425,6 +1430,9 @@ public class PrimaryController implements Initializable {
     private void guardarYNotificar(String mensaje) {
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
         lblEstado.setText(mensaje);
+        if (pestañaSagasController != null) {
+            pestañaSagasController.initData(listaLibrosCompleta);
+        }
     }
 
     /**
@@ -1587,6 +1595,9 @@ public class PrimaryController implements Initializable {
                 tablaLibros.refresh();
                 jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
                 cargarListaEstanterias();
+                if (pestañaSagasController != null) {
+                    pestañaSagasController.initData(listaLibrosCompleta);
+                }
                 lblEstado.setText("Libro editado correctamente.");
             }
         } catch (IOException e) {
@@ -1694,6 +1705,10 @@ public class PrimaryController implements Initializable {
         }
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
         lblEstado.setText("Libro eliminado definitivamente: " + libro.getTitulo());
+
+        if (pestañaSagasController != null) {
+            pestañaSagasController.initData(listaLibrosCompleta);
+        }
     }
 
     // --- MENÚ ARCHIVO ---
@@ -1956,33 +1971,6 @@ public class PrimaryController implements Initializable {
             mostrarAlerta("Limpieza completada", "Se han fusionado " + contadorFusionados + " libros duplicados.");
         } else {
             mostrarAlerta("Duplicados", "No se encontraron duplicados o no se realizaron cambios.");
-        }
-    }
-
-    /**
-     * Abre el Gestor de Sagas en una ventana modal. Pasa toda la biblioteca al
-     * controlador para que agrupe los libros por serie y detecte huecos.
-     *
-     * @param event El evento del menú Herramientas.
-     */
-    @FXML
-    private void abrirGestorSagas(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("sagas.fxml"));
-            loader.setResources(this.resources);
-            Parent root = loader.load();
-
-            SagasController controller = loader.getController();
-            controller.initData(new ArrayList<>(listaLibrosCompleta));
-
-            Stage stage = new Stage();
-            stage.setTitle("Gestor de Sagas y Colecciones");
-            setScene(stage, root);
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(tablaLibros.getScene().getWindow());
-            stage.show();
-        } catch (IOException e) {
-            mostrarAlerta("Error", "No se pudo abrir el Gestor de Sagas.\n" + e.getMessage());
         }
     }
 
@@ -2632,12 +2620,17 @@ public class PrimaryController implements Initializable {
         Thread hilo = new Thread(() -> {
             int actualizados = 0;
             for (Libro libro : librosSinSaga) {
-                String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
+                // 1. Priorizamos buscar por Título + Autor (da mejores resultados para sagas que el ISBN puro)
+                String query = libro.getTitulo();
+                if (libro.getAutor() != null && !libro.getAutor().isEmpty() && !libro.getAutor().equals("Desconocido")) {
+                    query += " " + libro.getAutor();
+                }
+
                 Libro apiLibro = buscarSagaEnApisSilencioso(query);
 
-                // Fallback al título si por ISBN no hay nada
+                // Fallback al ISBN solo si por título falló estrepitosamente
                 if (apiLibro == null && libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
-                    apiLibro = buscarSagaEnApisSilencioso(libro.getTitulo());
+                    apiLibro = buscarSagaEnApisSilencioso(libro.getIsbn());
                 }
 
                 if (apiLibro != null && apiLibro.getSerie() != null && !apiLibro.getSerie().isEmpty()) {
@@ -2645,12 +2638,22 @@ public class PrimaryController implements Initializable {
                     libro.setOrdenEnSerie(apiLibro.getOrdenEnSerie());
                     actualizados++;
                 }
+
+                // 2. Freno anti-baneo: esperar 800ms antes de interrogar por el siguiente libro
+                try {
+                    Thread.sleep(800);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
 
             final int totalAct = actualizados;
             javafx.application.Platform.runLater(() -> {
                 jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
                 tablaLibros.refresh();
+                if (pestañaSagasController != null) {
+                    pestañaSagasController.initData(listaLibrosCompleta);
+                }
                 dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
                 dialogo.close();
                 mostrarAlerta("Terminado", "Se han deducido " + totalAct + " sagas nuevas.");

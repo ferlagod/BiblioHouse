@@ -5,44 +5,41 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 
-<SplitPane dividerPositions="0.25" prefHeight="620.0" prefWidth="960.0"
-           xmlns="http://javafx.com/javafx/21"
-           xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.ferlagod.bibliohousefx.SagasController">
-    <items>
+<BorderPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SagasController" stylesheets="@styles.css" style="-fx-background-color: transparent;">
+    <center>
+        <SplitPane dividerPositions="0.25" styleClass="main-split-pane" style="-fx-background-color: transparent; -fx-padding: 0;">
+            
+            <VBox styleClass="sidebar-box" spacing="10">
+                <padding>
+                    <Insets top="15" right="10" bottom="15" left="10"/>
+                </padding>
+                
+                <Label text="Mis Colecciones" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
+                <ListView fx:id="listaSagas" VBox.vgrow="ALWAYS" styleClass="custom-list-view" style="-fx-background-color: transparent;" />
+            </VBox>
 
-        <!-- Panel izquierdo: lista de sagas -->
-        <VBox spacing="10.0" style="-fx-background-color: #1e1e2e;">
-            <padding>
-                <Insets bottom="12.0" left="12.0" right="12.0" top="16.0" />
-            </padding>
-            <Label style="-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #cdd6f4; -fx-padding: 0 0 6 0;"
-                   text="%sagas.list.title" />
-            <ListView fx:id="listaSagas"
-                      style="-fx-background-color: transparent; -fx-border-color: transparent;"
-                      VBox.vgrow="ALWAYS" />
-        </VBox>
-
-        <!-- Panel derecho: portadas de la saga seleccionada -->
-        <ScrollPane fitToWidth="true"
-                    style="-fx-background-color: transparent; -fx-background: #181825;">
-            <content>
-                <VBox spacing="20.0" style="-fx-background-color: #181825;">
-                    <padding>
-                        <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
-                    </padding>
-                    <Label fx:id="lblTituloSaga"
-                           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #cdd6f4;"
-                           text="%sagas.select.prompt" />
-                    <Label fx:id="lblResumenSaga"
-                           style="-fx-font-size: 12px; -fx-text-fill: #a6adc8;" />
-                    <FlowPane fx:id="panelLibros" hgap="20.0" vgap="20.0" />
+            <VBox styleClass="content-box" spacing="15">
+                <padding>
+                    <Insets top="20" right="20" bottom="20" left="20"/>
+                </padding>
+                
+                <VBox spacing="5">
+                    <Label fx:id="lblTituloSaga" text="Selecciona una saga..." style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
+                    <Label fx:id="lblResumenSaga" text="" style="-fx-font-size: 14px; -fx-text-fill: #666666;" />
                 </VBox>
-            </content>
-        </ScrollPane>
 
-    </items>
-</SplitPane>
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                    <content>
+                        <FlowPane fx:id="panelLibros" hgap="20" vgap="25" alignment="TOP_LEFT" style="-fx-padding: 10; -fx-background-color: transparent;">
+                        </FlowPane>
+                    </content>
+                </ScrollPane>
+
+            </VBox>
+        </SplitPane>
+    </center>
+</BorderPane>

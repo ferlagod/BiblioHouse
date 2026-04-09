@@ -187,7 +187,7 @@ public class SagasController {
                 : "";
 
         Label lblNumero = new Label(numTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #a6adc8;");
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;"); // Letra gris oscura
 
         // Portada con sombra
         ImageView img = new ImageView();
@@ -196,21 +196,20 @@ public class SagasController {
         img.setFitHeight(178);
         img.setPreserveRatio(true);
 
-        DropShadow sombra = new DropShadow(8, Color.color(0, 0, 0, 0.5));
+        DropShadow sombra = new DropShadow(8, Color.color(0, 0, 0, 0.3)); // Sombra más suave
         img.setEffect(sombra);
 
-        // Tooltip con título completo
         Tooltip.install(img, new Tooltip(libro.getTitulo()));
 
         Label lblTitulo = new Label(libro.getTitulo());
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #cdd6f4;");
+        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #333333;"); // Letra muy oscura
 
-        // Hover: resaltar tarjeta
+        // Hover: resaltar tarjeta con gris clarito
         tarjeta.setOnMouseEntered(e -> tarjeta.setStyle(
-                "-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: #313244;"));
+                "-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: #e0e0e0;"));
         tarjeta.setOnMouseExited(e -> tarjeta.setStyle(
                 "-fx-padding: 6; -fx-background-radius: 8;"));
 
@@ -228,23 +227,23 @@ public class SagasController {
         tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;");
 
         Label lblNumero = new Label("Tomo " + numeroTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #f38ba8;");
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #d32f2f;"); // Letra roja
 
-        // Placeholder rojo semitransparente con interrogación
+        // Placeholder rojo claro con interrogación
         StackPane placeholder = new StackPane();
         placeholder.setPrefSize(120, 178);
         placeholder.setMaxSize(120, 178);
         placeholder.setStyle(
-                "-fx-background-color: #3d1a1a; "
+                "-fx-background-color: #ffebee; "
                 + "-fx-background-radius: 6; "
-                + "-fx-border-color: #f38ba8; "
+                + "-fx-border-color: #d32f2f; "
                 + "-fx-border-width: 2; "
                 + "-fx-border-radius: 6;");
 
         Label lblInterrogacion = new Label("?");
         lblInterrogacion.setStyle(
                 "-fx-font-size: 48px; -fx-font-weight: bold; "
-                + "-fx-text-fill: #f38ba8; -fx-opacity: 0.8;");
+                + "-fx-text-fill: #d32f2f; -fx-opacity: 0.8;");
 
         placeholder.getChildren().add(lblInterrogacion);
 
@@ -254,7 +253,7 @@ public class SagasController {
         lblTitulo.setAlignment(Pos.CENTER);
         lblTitulo.setStyle(
                 "-fx-font-size: 11px; -fx-font-weight: bold; "
-                + "-fx-text-fill: #f38ba8;");
+                + "-fx-text-fill: #d32f2f;");
 
         tarjeta.getChildren().addAll(lblNumero, placeholder, lblTitulo);
         return tarjeta;
@@ -293,18 +292,18 @@ public class SagasController {
                 VBox contenido = new VBox(2);
 
                 Label nombre = new Label(saga);
-                nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #cdd6f4;");
+                nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #333333;");
                 nombre.setWrapText(true);
 
                 List<Libro> libros = sagasMap.get(saga);
                 int total = libros != null ? libros.size() : 0;
                 Label info = new Label(total + " tomo" + (total != 1 ? "s" : ""));
-                info.setStyle("-fx-font-size: 10px; -fx-text-fill: #a6adc8;");
+                info.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
 
                 contenido.getChildren().addAll(nombre, info);
                 setGraphic(contenido);
                 setText(null);
-                setStyle("-fx-padding: 8 10;");
+                setStyle("-fx-padding: 8 10; -fx-background-color: transparent;");
             }
         }
     }

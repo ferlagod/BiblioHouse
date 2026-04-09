@@ -50,7 +50,6 @@
                 <Menu fx:id="menuHerramientas" text="%menu.tools">
                     <items>
                         <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
-                        <MenuItem onAction="#abrirGestorSagas" text="%menu.series.manager" />
                         <MenuItem onAction="#buscarPortadasFaltantes" text="%menu.tools.fetch_covers" />
                         <MenuItem onAction="#buscarSagasFaltantes" text="%menu.tools.fetch_sagas" />
                         <MenuItem onAction="#abrirConfiguracion" text="%menu.config" />
@@ -359,6 +358,11 @@
                                 </ScrollPane>
                             </children>
                         </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Sagas" closable="false">
+                    <content>
+                        <fx:include fx:id="pestañaSagas" source="sagas.fxml" />
                     </content>
                 </Tab>
             </tabs>
