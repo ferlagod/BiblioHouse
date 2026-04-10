@@ -13,7 +13,7 @@
     <center>
         <SplitPane dividerPositions="0.25" styleClass="main-split-pane" style="-fx-background-color: transparent; -fx-padding: 0;">
             
-            <VBox styleClass="sidebar-box" spacing="10">
+            <VBox styleClass="sidebar-box" spacing="10" minWidth="220">
                 <padding>
                     <Insets top="15" right="10" bottom="15" left="10"/>
                 </padding>
@@ -22,7 +22,7 @@
                 <ListView fx:id="listaSagas" VBox.vgrow="ALWAYS" styleClass="custom-list-view" style="-fx-background-color: transparent;" />
             </VBox>
 
-            <VBox styleClass="content-box" spacing="15">
+            <VBox styleClass="content-box" spacing="15" minWidth="500">
                 <padding>
                     <Insets top="20" right="20" bottom="20" left="20"/>
                 </padding>
@@ -32,9 +32,9 @@
                     <Label fx:id="lblResumenSaga" text="" style="-fx-font-size: 14px; -fx-text-fill: #666666;" />
                 </VBox>
 
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
+                <ScrollPane fitToWidth="true" minWidth="450" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">
                     <content>
-                        <FlowPane fx:id="panelLibros" hgap="20" vgap="25" alignment="TOP_LEFT" style="-fx-padding: 10; -fx-background-color: transparent;">
+                        <FlowPane fx:id="panelLibros" minWidth="430" prefWidth="600" hgap="20" vgap="25" alignment="TOP_LEFT" style="-fx-padding: 10; -fx-background-color: transparent;">
                         </FlowPane>
                     </content>
                 </ScrollPane>

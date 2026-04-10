@@ -23,18 +23,24 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tooltip;
-
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import java.util.Optional;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 
 /**
  * Controlador del Gestor de Sagas y Colecciones.
@@ -59,6 +65,7 @@ public class SagasController {
 
     //Mapa: nombre de serie → lista de libros pertenecientes.
     private Map<String, List<Libro>> sagasMap;
+    private List<Libro> listaLibrosPrincipal;
 
     // -----------------------------------------------------------------------
     //  Inicialización pública
@@ -73,6 +80,7 @@ public class SagasController {
     public void initData(List<Libro> todosLosLibros) {
         // 1. Agrupar los libros usando el nombre NORMALIZADO (fusión "antitorpes")
         // Así "Harry Potter", "harry potter" y "Harry Pótter" caen en el mismo saco.
+        this.listaLibrosPrincipal = todosLosLibros;
         Map<String, List<Libro>> agrupadoNormalizado = todosLosLibros.stream()
                 .filter(l -> l.getSerie() != null && !l.getSerie().trim().isEmpty())
                 .collect(Collectors.groupingBy(l -> com.bibliohouse.utils.ProcesadorSagas.normalizar(l.getSerie())));
@@ -104,10 +112,7 @@ public class SagasController {
                     }
                 });
 
-        // Seleccionar la primera saga automáticamente si existe
-        if (!nombres.isEmpty()) {
-            listaSagas.getSelectionModel().selectFirst();
-        }
+        // Eliminada la autoselección inicial para no bloquear el hilo de arranque
     }
 
     // -----------------------------------------------------------------------
@@ -146,27 +151,30 @@ public class SagasController {
                     + " tomo" + (encontrados != 1 ? "s" : ""));
         }
 
-        // Iterar desde el tomo 1 hasta el máximo para detectar huecos
-        for (double i = 1.0; i <= maxOrden; i += 1.0) {
-            final double tomo = i;
-            boolean encontrado = false;
-            Libro libroActual = null;
+        // Delegar el renderizado pesado a un momento libre de la UI
+        Platform.runLater(() -> {
+            // Iterar desde el tomo 1 hasta el máximo para detectar huecos
+            for (double i = 1.0; i <= maxOrden; i += 1.0) {
+                final double tomo = i;
+                boolean encontrado = false;
+                Libro libroActual = null;
 
-            for (Libro l : libros) {
-                if (Math.abs(l.getOrdenEnSerie() - tomo) < 0.1) {
-                    encontrado = true;
-                    libroActual = l;
-                    break;
+                for (Libro l : libros) {
+                    if (Math.abs(l.getOrdenEnSerie() - tomo) < 0.1) {
+                        encontrado = true;
+                        libroActual = l;
+                        break;
+                    }
+                }
+
+                if (encontrado && libroActual != null) {
+                    panelLibros.getChildren().add(crearTarjetaLibro(libroActual, false));
+                } else {
+                    // ¡Hueco! Falta este tomo
+                    panelLibros.getChildren().add(crearTarjetaHueco((int) tomo));
                 }
             }
-
-            if (encontrado && libroActual != null) {
-                panelLibros.getChildren().add(crearTarjetaLibro(libroActual, false));
-            } else {
-                // ¡Hueco! Falta este tomo
-                panelLibros.getChildren().add(crearTarjetaHueco((int) tomo));
-            }
-        }
+        });
     }
 
     // -----------------------------------------------------------------------
@@ -282,28 +290,139 @@ public class SagasController {
      */
     private class SagaListCell extends javafx.scene.control.ListCell<String> {
 
+        private ContextMenu menu;
+        private javafx.scene.layout.VBox contenido;
+        private javafx.scene.control.Label nombre;
+        private javafx.scene.control.Label info;
+
+        public SagaListCell() {
+            setStyle("-fx-padding: 8 10; -fx-background-color: transparent;");
+
+            // 1. Crear los elementos visuales SOLO UNA VEZ
+            contenido = new javafx.scene.layout.VBox(2);
+            nombre = new javafx.scene.control.Label();
+            nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #333333;");
+
+            info = new javafx.scene.control.Label();
+            info.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
+
+            contenido.getChildren().addAll(nombre, info);
+
+            // 2. Crear el menú SOLO UNA VEZ
+            menu = new ContextMenu();
+            MenuItem itemRenombrar = new MenuItem("Renombrar saga");
+            MenuItem itemBorrarSaga = new MenuItem("Eliminar saga (mantener libros)");
+            MenuItem itemBorrarTodo = new MenuItem("Eliminar saga y sus libros");
+
+            itemRenombrar.setOnAction(e -> renombrarSaga(getItem()));
+            itemBorrarSaga.setOnAction(e -> eliminarSaga(getItem(), false));
+            itemBorrarTodo.setOnAction(e -> eliminarSaga(getItem(), true));
+
+            menu.getItems().addAll(itemRenombrar, itemBorrarSaga, itemBorrarTodo);
+        }
+
         @Override
         protected void updateItem(String saga, boolean empty) {
             super.updateItem(saga, empty);
+
             if (empty || saga == null) {
                 setGraphic(null);
                 setText(null);
+                setContextMenu(null);
             } else {
-                VBox contenido = new VBox(2);
+                // 3. Al hacer scroll, SOLO ACTUALIZAMOS EL TEXTO
+                nombre.setText(saga);
 
-                Label nombre = new Label(saga);
-                nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #333333;");
-                nombre.setWrapText(true);
-
-                List<Libro> libros = sagasMap.get(saga);
+                java.util.List<com.bibliohouse.logic.Libro> libros = sagasMap.get(saga);
                 int total = libros != null ? libros.size() : 0;
-                Label info = new Label(total + " tomo" + (total != 1 ? "s" : ""));
-                info.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
+                info.setText(total + " tomo" + (total != 1 ? "s" : ""));
 
-                contenido.getChildren().addAll(nombre, info);
                 setGraphic(contenido);
                 setText(null);
-                setStyle("-fx-padding: 8 10; -fx-background-color: transparent;");
+                setContextMenu(menu);
+            }
+        }
+    }
+
+    /**
+     * Elimina la agrupación de saga o borra los libros por completo.
+     */
+    private void eliminarSaga(String nombreSaga, boolean borrarLibros) {
+        if (nombreSaga == null || !sagasMap.containsKey(nombreSaga)) {
+            return;
+        }
+
+        List<Libro> librosDeSaga = sagasMap.get(nombreSaga);
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmar eliminación");
+
+        if (borrarLibros) {
+            alert.setHeaderText("¿Seguro que deseas eliminar la saga y TODOS sus libros?");
+            alert.setContentText("Se borrarán " + librosDeSaga.size() + " libros de tu biblioteca. Esta acción no se puede deshacer.");
+        } else {
+            alert.setHeaderText("¿Seguro que deseas desvincular estos libros de la saga?");
+            alert.setContentText("Los libros seguirán en tu biblioteca, pero ya no formarán parte de la colección.");
+        }
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (borrarLibros) {
+                // Borra los libros físicamente de la lista principal
+                listaLibrosPrincipal.removeAll(librosDeSaga);
+            } else {
+                // Solo limpia el texto de la serie
+                for (Libro l : librosDeSaga) {
+                    l.setSerie("");
+                    l.setOrdenEnSerie(0);
+                }
+            }
+
+            // Recargar la lista lateral
+            initData(listaLibrosPrincipal);
+
+            // Limpiar la pantalla si la saga borrada era la que estábamos viendo
+            if (lblTituloSaga.getText().equals(nombreSaga)) {
+                lblTituloSaga.setText("Selecciona una saga...");
+                lblResumenSaga.setText("");
+                panelLibros.getChildren().clear();
+            }
+        }
+    }
+
+    /**
+     * Pide un nuevo nombre y actualiza todos los libros de la saga.
+     */
+    private void renombrarSaga(String nombreAntiguo) {
+        if (nombreAntiguo == null || !sagasMap.containsKey(nombreAntiguo)) {
+            return;
+        }
+
+        TextInputDialog dialog = new TextInputDialog(nombreAntiguo);
+        dialog.setTitle("Renombrar saga");
+        dialog.setHeaderText("Introduce el nuevo nombre para la colección:");
+        dialog.setContentText("Nombre:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String nuevoNombre = result.get().trim();
+
+            // Si el nombre es válido y diferente al anterior
+            if (!nuevoNombre.isEmpty() && !nuevoNombre.equals(nombreAntiguo)) {
+                List<Libro> librosDeSaga = sagasMap.get(nombreAntiguo);
+
+                // Actualizar el texto en todos los libros afectados
+                for (Libro l : librosDeSaga) {
+                    l.setSerie(nuevoNombre);
+                }
+
+                // Recargar la interfaz con los datos nuevos
+                initData(listaLibrosPrincipal);
+
+                // Si estábamos viendo esa saga, la volvemos a seleccionar con su nuevo nombre
+                if (lblTituloSaga.getText().equals(nombreAntiguo)) {
+                    listaSagas.getSelectionModel().select(nuevoNombre);
+                }
             }
         }
     }

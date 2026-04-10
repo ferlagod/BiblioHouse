@@ -549,7 +549,9 @@ public class PrimaryController implements Initializable {
                 .collect(Collectors.toList());
 
         if (!overdueLoans.isEmpty()) {
-            Platform.runLater(() -> {
+            // Retrasar la alerta 1 segundo para evitar bloqueos en macOS al iniciar la ventana principal
+            javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
+            delay.setOnFinished(e -> {
                 // Construir el mensaje de alerta
                 StringBuilder sb = new StringBuilder();
                 sb.append("Se han detectado ").append(overdueLoans.size()).append(" préstamos vencidos:\n\n");
@@ -569,6 +571,9 @@ public class PrimaryController implements Initializable {
                 }
 
                 Alert alert = new Alert(Alert.AlertType.WARNING);
+                if (tablaLibros.getScene() != null && tablaLibros.getScene().getWindow() != null) {
+                    alert.initOwner(tablaLibros.getScene().getWindow());
+                }
                 alert.setTitle("⚠️ ATENCIÓN: Préstamos Vencidos");
                 alert.setHeaderText("¡Tienes libros pendientes de devolución!");
                 alert.setContentText(sb.toString());
@@ -588,6 +593,7 @@ public class PrimaryController implements Initializable {
                     }
                 }
             });
+            delay.play();
         }
     }
 
