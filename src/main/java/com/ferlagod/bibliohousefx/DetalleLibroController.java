@@ -187,7 +187,9 @@ public class DetalleLibroController {
 
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(lblTitulo.getScene().getWindow());
-
+            stage.setMinWidth(900);
+            stage.setMinHeight(900);
+            stage.sizeToScene();
             stage.showAndWait(); // Esperamos a que cierre
 
             // Si guardó los cambios, refrescamos la vista de detalles

@@ -81,4 +81,8 @@ Este proyecto es Software Libre y se distribuye bajo la Licencia **GNU General P
 
 ---
 🌐 **Web Oficial:** [bibliohouse.org](https://bibliohouse.org)  
+
+[![Apóyame en Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/ferlagod./)
+
 *Desarrollado con ❤️ y mucho café por [ferlagod](https://github.com/ferlagod).*
+

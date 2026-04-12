@@ -645,6 +645,7 @@ public class PrimaryController implements Initializable {
                     .add(new javafx.scene.image.Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
             stage.initModality(Modality.NONE); // Ventana no modal, permite seguir usando la app
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             mostrarAlerta("Error", "No se pudo cargar el Manual de Ayuda.");
@@ -1594,7 +1595,9 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
-
+            stage.setMinWidth(900);
+            stage.setMinHeight(900);
+            stage.sizeToScene();
             stage.showAndWait();
 
             if (controller.isGuardado()) {
@@ -2031,6 +2034,9 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
+            stage.setMinWidth(750);
+            stage.setMinHeight(600);
+            stage.sizeToScene();
             stage.show();
         } catch (IOException e) {
             mostrarAlerta("Error de estadísticas", "No se pudo abrir la ventana de estadísticas.");
@@ -2231,6 +2237,9 @@ public class PrimaryController implements Initializable {
             stage.setTitle("Detalles: " + libro.getTitulo());
             setScene(stage, root);
             stage.initOwner(tablaLibros.getScene().getWindow());
+            stage.setMinWidth(700);
+            stage.setMinHeight(600);
+            stage.sizeToScene();
             stage.showAndWait();
 
             if (controller.isModified()) {
