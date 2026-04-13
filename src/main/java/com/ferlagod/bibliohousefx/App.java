@@ -23,7 +23,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 
 /**
@@ -31,7 +30,7 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Ferlagod
- * @version 1.5
+ * @version 1.6
  */
 public class App extends Application {
 
@@ -39,6 +38,7 @@ public class App extends Application {
     private static java.util.Locale currentLocale = java.util.Locale.forLanguageTag("es");
     private static java.util.ResourceBundle bundle;
     private static Scene scene;
+    private static App instance;
 
     public static void main(String[] args) {
         // Cargar librerías nativas de OpenCV AL INICIO para evitar conflictos
@@ -74,6 +74,19 @@ public class App extends Application {
      */
     public static java.util.Locale getCurrentLocale() {
         return currentLocale;
+    }
+
+    /**
+     * Devuelve la instancia única de la aplicación.
+     *
+     * Este método proporciona acceso al singleton de la clase {@code App},
+     * permitiendo interactuar con la aplicación desde cualquier parte del
+     * código.
+     *
+     * @return la instancia única de la clase {@code App}.
+     */
+    public static App getApp() {
+        return instance;
     }
 
     /**
@@ -140,7 +153,7 @@ public class App extends Application {
         // Icono también para esta ventana
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
-        // ✨ NUEVO: Forzar a que la ventana ocupe toda la pantalla al arrancar
+        // Forzar a que la ventana ocupe toda la pantalla al arrancar
         mainStage.setMaximized(true);
 
         mainStage.show();

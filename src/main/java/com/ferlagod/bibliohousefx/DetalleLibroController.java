@@ -36,7 +36,7 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class DetalleLibroController {
 

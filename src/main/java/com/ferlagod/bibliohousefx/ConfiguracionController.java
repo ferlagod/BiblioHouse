@@ -22,6 +22,7 @@ import com.bibliohouse.logic.NextCloudSyncService;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class ConfiguracionController {
 
@@ -553,7 +554,7 @@ public class ConfiguracionController {
 
     /**
      * Borra todos los libros de la biblioteca tras confirmar con el usuario.
-     * ¡Acción destructiva!
+     * Acción destructiva
      *
      * @param event El evento del botón.
      */
@@ -612,5 +613,20 @@ public class ConfiguracionController {
         alert.setHeaderText(null);
         alert.setContentText(contenido);
         alert.showAndWait();
+    }
+
+    /**
+     * Abre la página de Liberapay del proyecto en el navegador por defecto del
+     * sistema.
+     *
+     *
+     */
+    @FXML
+    private void abrirLiberapay() {
+        try {
+            java.awt.Desktop.getDesktop().browse(new java.net.URI("https://liberapay.com/ferlagod./"));
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 }

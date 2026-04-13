@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class EstadisticasController {
 

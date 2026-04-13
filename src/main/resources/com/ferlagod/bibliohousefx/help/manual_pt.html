@@ -1,242 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <title>Manual do Usuário - BiblioHouse v1.6</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f4f4f9;
+            }
+            h1 {
+                color: #1976D2;
+                border-bottom: 2px solid #1976D2;
+                padding-bottom: 10px;
+            }
+            h2 {
+                color: #2c3e50;
+                margin-top: 30px;
+                border-left: 5px solid #1976D2;
+                padding-left: 10px;
+            }
+            .feature-box {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .new-tag {
+                background: #4CAF50;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>BiblioHouse <small>v1.6</small> - Manual do Usuário</h1>
+        <p>Bem-vindo ao BiblioHouse. Esta versão inclui novas ferramentas de automação e um sistema de coleções redesenhado.</p>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Manual do Usuário BiblioHouse</title>
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --text-color: #333;
-            --bg-color: #f9f9f9;
-            --section-bg: #ffffff;
-            --border-color: #e0e0e0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--section-bg);
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--accent-color);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            color: var(--accent-color);
-            margin-top: 40px;
-            border-left: 5px solid var(--accent-color);
-            padding-left: 15px;
-        }
-
-        h3 {
-            color: var(--primary-color);
-            margin-top: 25px;
-        }
-
-        p,
-        ul,
-        ol {
-            margin-bottom: 15px;
-        }
-
-        ul {
-            list-style-type: disc;
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        .shortcut {
-            background: #eee;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-family: monospace;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .note {
-            background: #e3f2fd;
-            border-left: 5px solid #2196f3;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .warning {
-            background: #fff3e0;
-            border-left: 5px solid #ff9800;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        code {
-            background: #f4f4f4;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        .footer {
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #777;
-            text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>Manual do Usuário - BiblioHouse</h1>
-        <p>Bem-vindo ao <strong>BiblioHouse</strong>, sua solução integral para a gestão de bibliotecas pessoais. Este
-            guia detalhado ajudará você a tirar o máximo proveito de todas as funcionalidades, desde a catalogação de
-            livros até a gestão de empréstimos e sócios.</p>
-
-        <h2>1. Primeiros Passos</h2>
-        <p>Ao iniciar o BiblioHouse, você encontrará o painel principal. A interface foi projetada para ser intuitiva e
-            está dividida em abas para facilitar a navegação:</p>
-        <ul>
-            <li><strong>Catálogo (Tabela/Galeria):</strong> Sua coleção completa de livros.</li>
-            <li><strong>Empréstimos:</strong> Gestão ativa de livros emprestados.</li>
-            <li><strong>Histórico:</strong> Registro histórico de todas as movimentações.</li>
-        </ul>
-        <div class="note">
-            <strong>Nota:</strong> Você pode personalizar o idioma do aplicativo a qualquer momento em <em>Ferramentas >
-                Configuração</em> ou no menu <em>Idioma</em>.
+        <h2>1. Gestão de Sagas <span class="new-tag">Novo</span></h2>
+        <div class="feature-box">
+            <p>As sagas agora têm a sua própria **aba principal**. O sistema destaca em vermelho os volumes que faltam na sua coleção.</p>
+            <p>Clique com o botão direito para <b>Renomear</b> ou excluir uma saga.</p>
         </div>
 
-        <h2>2. Gestão de Livros</h2>
-        <h3>Adicionar Livros</h3>
-        <p>O BiblioHouse oferece três métodos poderosos para adicionar livros à sua coleção:</p>
+        <h2>2. Capas</h2>
+        <p>Baixe capas automaticamente em <code>Ferramentas > Buscar capas em falta</code>.</p>
 
-        <h4>A. Busca Automática Unificada</h4>
-        <p>A forma mais rápida. O BiblioHouse busca simultaneamente em <strong>OpenLibrary, Google Books e
-                Inventaire</strong>.</p>
-        <ol>
-            <li>Vá para a aba "Catálogo".</li>
-            <li>Na barra superior (Busca Online), digite o título, autor ou ISBN.</li>
-            <li>Pressione <span class="shortcut">Enter</span> ou clique no ícone da lupa.</li>
-            <li>Aparecerá uma janela com os resultados encontrados. Selecione o livro correto e clique em "Adicionar".
-            </li>
-        </ol>
-
-        <h4>B. Escaneamento de Código de Barras</h4>
-        <p>Ideal se você tiver o livro físico em mãos. Utiliza a câmera do seu computador.</p>
-        <ol>
-            <li>Clique no botão com o ícone de <strong>Câmera/Código de Barras</strong>.</li>
-            <li>Mostre o código de barras (ISBN) do livro para a câmera.</li>
-            <li>O sistema detectará automaticamente o código, fechará a janela e preencherá os dados do livro buscando
-                na internet.</li>
-        </ol>
-
-        <h4>C. Adição Manual</h4>
-        <p>Para livros antigos ou raros que não aparecem na internet.</p>
-        <ol>
-            <li>Preencha os campos do painel lateral esquerdo: Título, Autor, Editora, Gênero, etc.</li>
-            <li>Se o livro pertence a uma saga, indique o nome da <strong>Série</strong> e a <strong>Ordem</strong> (ex.
-                "Harry Potter", 1).</li>
-            <li>Você pode arrastar uma imagem de capa diretamente sobre o quadro de imagem ou clicar em "Selecionar
-                Capa".</li>
-            <li>Clique em <strong>Adicionar à Biblioteca</strong>.</li>
-        </ol>
-
-        <h3>Editar e Organizar</h3>
-        <ul>
-            <li><strong>Editar:</strong> Clique duas vezes em qualquer livro na lista para abrir o editor completo. Você
-                pode modificar todos os dados, alterar a estante ou atualizar a capa.</li>
-            <li><strong>Organizar por Estantes:</strong> Atribua livros a "Estantes" personalizadas (ex. "Favoritos",
-                "Ficção Científica") no menu de edição. Use o painel lateral esquerdo para filtrar sua visualização por
-                estante.</li>
-            <li><strong>Estoque Múltiplo:</strong> Se você tiver várias cópias do mesmo livro, o BiblioHouse gerencia a
-                quantidade. Ao excluir, ele perguntará se você deseja apagar uma unidade ou todo o registro.</li>
-        </ul>
-
-        <h2>3. Gestão de Sócios</h2>
-        <p>Para emprestar livros, primeiro você precisa registrar as pessoas (Sócios).</p>
-        <ol>
-            <li>Vá ao menu <strong>Sócios > Gestão de Sócios</strong>.</li>
-            <li>Use o formulário para cadastrar um novo sócio (Nome, Documento, Telefone...).</li>
-            <li>Desta janela você também pode editar dados de contato ou excluir sócios (desde que não tenham livros
-                pendentes de devolução).</li>
-        </ol>
-
-        <h2>4. Sistema de Empréstimos</h2>
-        <h3>Realizar um Empréstimo</h3>
-        <ol>
-            <li>Vá para a aba <strong>Empréstimos</strong>.</li>
-            <li>No painel "Novo Empréstimo", selecione o livro no menu suspenso (apenas os disponíveis em estoque serão
-                mostrados).</li>
-            <li>Selecione o sócio que levará o livro.</li>
-            <li>Clique em <strong>Realizar Empréstimo</strong>.</li>
-        </ol>
-
-        <h3>Devoluções e Vencimentos</h3>
-        <p>Na tabela inferior você verá todos os empréstimos ativos.</p>
-        <ul>
-            <li><strong>Devolver:</strong> Selecione a linha do empréstimo e clique em <strong>Marcar como
-                    Devolvido</strong>. O livro ficará disponível em seu estoque novamente.</li>
-            <li><strong>Alertas de Atraso:</strong> Se um empréstimo exceder o tempo limite configurado (padrão 30
-                dias), a linha será marcada em <span style="color:red; font-weight:bold;">vermelho</span> e você
-                receberá um alerta ao abrir o aplicativo.</li>
-        </ul>
-
-        <h2>5. Ferramentas Avançadas</h2>
-        <h3>Cópias de Segurança</h3>
-        <p>Proteja seus dados. Vá para <em>Ferramentas > Configuração</em>.</p>
-        <ul>
-            <li><strong>Exportar Backup (ZIP):</strong> Cria um arquivo compactado com todos os seus dados e capas.
-                Ideal para mover sua biblioteca para outro computador.</li>
-            <li><strong>Importar/Exportar JSON:</strong> No menu <em>Arquivo</em>, você pode exportar apenas os dados
-                dos livros em formato JSON leve ou importar um banco de dados externo.</li>
-        </ul>
-
-        <h3>Relatórios PDF</h3>
-        <p>Gere catálogos profissionais da sua biblioteca. Vá para <em>Arquivo > Exportar para PDF</em>. Você pode
-            filtrar por estante ou gênero antes de gerar o documento.</p>
-
-        <h2>6. Atalhos de Teclado</h2>
-        <p>Aumente sua produtividade com estes atalhos rápidos:</p>
-        <ul>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Buscar na minha biblioteca (Foco
-                no filtro local).</li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Novo livro (Foco no formulário
-                manual).</li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Ir para a aba de Empréstimos.
-            </li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Sair do aplicativo.</li>
-        </ul>
-        <div class="note">
-            No macOS, use a tecla <span class="shortcut">Cmd ⌘</span> em vez de Ctrl.
-        </div>
-
-        <div class="footer">
-            BiblioHouse Pro &copy; 2026 Fernando Lago Dávila - Licença GNU GPL v3
-        </div>
-    </div>
-</body>
-
+        <h2>3. Doações</h2>
+        <p>Software livre. Apoie o projeto aqui: <a href="https://liberapay.com/ferlagod./">Liberapay</a>.</p>
+    </body>
 </html>

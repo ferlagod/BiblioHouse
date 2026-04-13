@@ -29,7 +29,7 @@
             </font>
         </Label>
         
-        <Label text="Versión 1.5" textFill="#5f6368">
+        <Label text="Versión 1.6" textFill="#5f6368">
             <font>
                 <Font size="14.0" />
             </font>
@@ -73,6 +73,7 @@
             </VBox.margin>
         </ImageView>
 
+        <Button onAction="#abrirLiberapay" prefHeight="35.0" style="-fx-background-color: #f6c915; -fx-text-fill: #1a171b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15 5 15;" text="Apoyar en Liberapay" />        
         <Button cancelButton="true" mnemonicParsing="false" onAction="#cerrarVentana" styleClass="text-button" text="Cerrar">
             <VBox.margin>
                 <Insets top="20.0" />

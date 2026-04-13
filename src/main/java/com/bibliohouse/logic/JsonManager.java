@@ -50,7 +50,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  *
  */
 public class JsonManager {
@@ -533,6 +533,7 @@ public class JsonManager {
 
     /**
      * Guarda la lista de deseos en el archivo de base de datos.
+     *
      * @param deseos lista de libros que se guardarán en deseos
      */
     public void guardarDeseos(List<Libro> deseos) {

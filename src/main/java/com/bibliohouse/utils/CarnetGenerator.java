@@ -42,7 +42,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * barras para facilitar el préstamo.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  *
  */
 public class CarnetGenerator {
@@ -83,7 +83,7 @@ public class CarnetGenerator {
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
-            // Cargar el logo usando el InputStream para evitar fallos cuando compiles el .jar
+            // Cargar el logo usando el InputStream para evitar fallos cuando se compile el .jar
             PDImageXObject logoBiblio = null;
             try (InputStream is = getClass().getResourceAsStream("/resources/LogoBiblioHouse100.png")) {
                 if (is != null) {

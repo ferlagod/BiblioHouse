@@ -24,7 +24,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -42,7 +41,7 @@ import java.util.stream.Collectors;
  * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class ServicioExportarPdf {
 

@@ -50,7 +50,7 @@ import javafx.scene.control.TextInputDialog;
  * resaltarlos en rojo.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class SagasController {
 

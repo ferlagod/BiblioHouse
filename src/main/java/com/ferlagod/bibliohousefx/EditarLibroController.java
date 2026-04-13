@@ -43,7 +43,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Ferlagod
- * @version 1.5
+ * @version 1.6
  */
 public class EditarLibroController {
 
@@ -204,7 +204,6 @@ public class EditarLibroController {
         }
 
         // Estado y Calificación
-        // chkLeido.setSelected(libro.isLeido()); // <-- ELIMINADO
         String estado = libro.getEstadoLectura();
         if (estado == null || estado.isEmpty()) {
             estado = "Pendiente";
@@ -535,5 +534,5 @@ public class EditarLibroController {
         }
         return "";
     }
-    
+
 }

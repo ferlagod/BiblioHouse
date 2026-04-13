@@ -31,7 +31,7 @@ import java.net.URISyntaxException;
  * autobombo y pongo mi contacto.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class AcercaDeController {
 
@@ -58,6 +58,21 @@ public class AcercaDeController {
             Desktop.getDesktop().mail(new URI("mailto:info@bibliohouse.org"));
         } catch (IOException | URISyntaxException e) {
             System.out.println("No se pudo abrir el cliente de correo.");
+        }
+    }
+
+    /**
+     * Abre la página de Liberapay del proyecto en el navegador por defecto del
+     * sistema.
+     *
+     *
+     */
+    @FXML
+    private void abrirLiberapay() {
+        try {
+            java.awt.Desktop.getDesktop().browse(new java.net.URI("https://liberapay.com/ferlagod./"));
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -42,7 +42,7 @@ import javafx.stage.FileChooser;
  * de socios y permite añadir, editar o eliminarlos.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class SociosManagerController {
 

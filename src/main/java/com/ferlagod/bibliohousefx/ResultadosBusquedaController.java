@@ -33,7 +33,7 @@ import javafx.stage.Stage;
  * Permite al usuario seleccionar un libro de los resultados.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class ResultadosBusquedaController {
 
@@ -55,7 +55,7 @@ public class ResultadosBusquedaController {
     // Libro que el usuario ha seleccionado.
     private Libro libroSeleccionado = null;
     // Variable para saber el destino
-    private boolean paraDeseos = false; 
+    private boolean paraDeseos = false;
 
     /**
      * Inicializa el controlador. Configura las columnas y añade doble clic para

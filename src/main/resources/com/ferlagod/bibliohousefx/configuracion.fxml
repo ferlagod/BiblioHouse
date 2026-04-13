@@ -140,11 +140,20 @@
                                 </ImageView>
                       
                                 <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="BiblioHouse FX" />
-                                <Label text="Versión 1.5.0 (Estable)" />
+                                <Label text="Versión 1.6.0 (Estable)" />
                                 <Label text="%config.about.desc" textFill="#888" />
                       
                                 <Separator maxWidth="200.0" />
                                 <Label text="%config.about.copyright" />
+                                
+                                <VBox alignment="CENTER" spacing="10">
+                                    <Label style="-fx-font-size: 14px;" text="%config.apoyar" />
+                                    <Button onAction="#abrirLiberapay" style="-fx-background-color: #f6c915; -fx-text-fill: #1a171b; -fx-font-weight: bold; -fx-cursor: hand;" text="Liberapay">
+                                        <padding>
+                                            <Insets bottom="5" left="15" right="15" top="5" />
+                                        </padding>
+                                    </Button>
+                                </VBox>
                             </children>
                         </VBox>
                     </content>

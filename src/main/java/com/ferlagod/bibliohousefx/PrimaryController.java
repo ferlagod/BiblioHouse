@@ -58,7 +58,7 @@ import javafx.stage.Stage;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Ferlagod
- * @version 1.5
+ * @version 1.6
  */
 public class PrimaryController implements Initializable {
 
@@ -589,7 +589,7 @@ public class PrimaryController implements Initializable {
                     // Encontrar el TabPane (asumiendo que es el único en BorderPane.center)
                     TabPane tabPane = (TabPane) tablaLibros.getScene().lookup(".tab-pane");
                     if (tabPane != null) {
-                        tabPane.getSelectionModel().select(1); // La pestaña de Préstamos es la segunda (índice 1)
+                        tabPane.getSelectionModel().select(1);
                     }
                 }
             });
@@ -680,7 +680,7 @@ public class PrimaryController implements Initializable {
                 scene.getAccelerators().put(
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+L"),
                         () -> {
-                            // Seleccionar tab de préstamos (índice 1)
+                            // Seleccionar tab de préstamos
                             tabPaneVistaLibros.getSelectionModel().select(1);
                             comboLibrosPrestamo.requestFocus();
                         });

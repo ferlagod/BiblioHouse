@@ -1,239 +1,60 @@
 <!DOCTYPE html>
 <html lang="eu">
+    <head>
+        <meta charset="UTF-8">
+        <title>Erabiltzailearen Eskuliburua - BiblioHouse v1.6</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f4f4f9;
+            }
+            h1 {
+                color: #1976D2;
+                border-bottom: 2px solid #1976D2;
+                padding-bottom: 10px;
+            }
+            h2 {
+                color: #2c3e50;
+                margin-top: 30px;
+                border-left: 5px solid #1976D2;
+                padding-left: 10px;
+            }
+            .feature-box {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .new-tag {
+                background: #4CAF50;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.8em;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>BiblioHouse <small>v1.6</small> - Eskuliburua</h1>
+        <p>Ongi etorri BiblioHousera. Bertsio honek bildumen kudeaketa berritua dakar.</p>
 
-<head>
-    <meta charset="UTF-8">
-    <title>BiblioHouse Erabiltzailearen Eskuliburua</title>
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --text-color: #333;
-            --bg-color: #f9f9f9;
-            --section-bg: #ffffff;
-            --border-color: #e0e0e0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: var(--section-bg);
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--accent-color);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            color: var(--accent-color);
-            margin-top: 40px;
-            border-left: 5px solid var(--accent-color);
-            padding-left: 15px;
-        }
-
-        h3 {
-            color: var(--primary-color);
-            margin-top: 25px;
-        }
-
-        p,
-        ul,
-        ol {
-            margin-bottom: 15px;
-        }
-
-        ul {
-            list-style-type: disc;
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        .shortcut {
-            background: #eee;
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-family: monospace;
-            font-weight: bold;
-            color: #555;
-        }
-
-        .note {
-            background: #e3f2fd;
-            border-left: 5px solid #2196f3;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        .warning {
-            background: #fff3e0;
-            border-left: 5px solid #ff9800;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-
-        code {
-            background: #f4f4f4;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-
-        .footer {
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #777;
-            text-align: center;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>Erabiltzailearen Eskuliburua - BiblioHouse</h1>
-        <p>Ongi etorri <strong>BiblioHouse</strong>ra, zure liburutegi pertsonala kudeatzeko irtenbide osoa. Gida zehatz
-            honek funtzionalitate guztiei ahalik eta etekin handiena ateratzen lagunduko dizu, liburuak katalogatzetik
-            hasi eta maileguak edo bazkideak kudeatzeraino.</p>
-
-        <h2>1. Lehen Urratsak</h2>
-        <p>BiblioHouse abiaraztean, panel nagusia ikusiko duzu. Interfazea intuitiboa izateko diseinatuta dago eta
-            nabigazioa errazteko fitxetan banatuta dago:</p>
-        <ul>
-            <li><strong>Katalogoa (Taula/Galeria):</strong> Zure liburu-bilduma osoa.</li>
-            <li><strong>Maileguak:</strong> Mailegatutako liburuen kudeaketa aktiboa.</li>
-            <li><strong>Historia:</strong> Mugimendu guztien erregistro historikoa.</li>
-        </ul>
-        <div class="note">
-            <strong>Oharra:</strong> Aplikazioaren hizkuntza edonoiz alda dezakezu <em>Tresnak > Konfigurazioa</em>
-            ataletik edo <em>Hizkuntza</em> menutik.
+        <h2>1. Bildumen Kudeaketa <span class="new-tag">Berria</span></h2>
+        <div class="feature-box">
+            <p>Bildumek **fitxa propioa** dute orain. Falta diren liburuak gorriz markatzen dira.</p>
+            <p>Egin klik eskuineko botoiaz bilduma baten gainean <b>Berrizendatzeko</b> edo ezabatzeko.</p>
         </div>
 
-        <h2>2. Liburuen Kudeaketa</h2>
-        <h3>Liburuak Gehitu</h3>
-        <p>BiblioHousek hiru metodo indartsu eskaintzen ditu liburuak zure bildumara gehitzeko:</p>
+        <h2>2. Azalak</h2>
+        <p>Azalak automatikoki deskargatzeko, joan hona: <code>Tresnak > Falta diren azalak bilatu</code>.</p>
 
-        <h4>A. Bilaketa Automatiko Bateratua</h4>
-        <p>Modurik azkarrena. BiblioHousek aldi berean bilatzen du <strong>OpenLibrary, Google Books eta
-                Inventaire</strong> guneetan.</p>
-        <ol>
-            <li>Joan "Katalogoa" fitxara.</li>
-            <li>Goiko barran (Online Bilaketa), idatzi izenburua, egilea edo ISBN.</li>
-            <li>Sakatu <span class="shortcut">Enter</span> edo egin klik luparen ikonoan.</li>
-            <li>Emaitzen leiho bat agertuko da. Aukeratu liburu egokia eta sakatu "Gehitu".</li>
-        </ol>
-
-        <h4>B. Kode-barra Eskaneatzea</h4>
-        <p>Liburu fisikoa eskuan baduzu, aproposa. Zure ordenagailuko kamera erabiltzen du.</p>
-        <ol>
-            <li>Egin klik <strong>Kamera/Kode-barra</strong> ikonoa duen botoian.</li>
-            <li>Erakutsi liburuaren kode-barra (ISBN) kamerari.</li>
-            <li>Sistemak automatikoki detektatuko du kodea, leihoa itxi eta liburuaren datuak beteko ditu Interneten
-                bilatuz.</li>
-        </ol>
-
-        <h4>C. Eskuz Gehitzea</h4>
-        <p>Interneten agertzen ez diren liburu zahar edo bakanentzat.</p>
-        <ol>
-            <li>Bete ezkerreko alboko paneleko eremuak: Izenburua, Egilea, Argitaletxea, Generoa, etab.</li>
-            <li>Liburua saga batekoa bada, adierazi <strong>Seriea</strong>ren izena eta <strong>Ordena</strong> (adib.
-                "Harry Potter", 1).</li>
-            <li>Azaleko irudi bat zuzenean arrastatu dezakezu irudi-koadrora edo "Aukeratu Azala" sakatu.</li>
-            <li>Egin klik <strong>Gehitu Liburutegira</strong> botoian.</li>
-        </ol>
-
-        <h3>Editatu eta Antolatu</h3>
-        <ul>
-            <li><strong>Editatu:</strong> Egin klik bikoitza zerrendako edozein liburutan editore osoa irekitzeko. Datu
-                guztiak alda ditzakezu, apala aldatu edo azala eguneratu.</li>
-            <li><strong>Apalen arabera Antolatu:</strong> Esleitu liburuak "Apal" pertsonalizatuei (adib. "Gogokoak",
-                "Zientzia Fikzioa") edizio-menutik. Erabili ezkerreko alboko panela zure ikuspegia apalen arabera
-                iragazteko.</li>
-            <li><strong>Stock Anizkoitza:</strong> Liburu beraren kopia bat baino gehiago badituzu, BiblioHousek
-                kantitatea kudeatzen du. Ezabatzean, ale bat edo erregistro osoa ezabatu nahi duzun galdetuko dizu.</li>
-        </ul>
-
-        <h2>3. Bazkideen Kudeaketa</h2>
-        <p>Liburuak mailegatzeko, lehenik pertsonak (Bazkideak) erregistratu behar dituzu.</p>
-        <ol>
-            <li>Joan <strong>Bazkideak > Bazkideen Kudeaketa</strong> menura.</li>
-            <li>Erabili inprimakia bazkide berri bat alta emateko (Izena, NAN, Telefonoa...).</li>
-            <li>Leiho honetatik kontaktu-datuak editatu edo bazkideak ezabatu ditzakezu (itzultzeke libururik ez
-                badute).</li>
-        </ol>
-
-        <h2>4. Mailegu Sistema</h2>
-        <h3>Mailegu bat Egin</h3>
-        <ol>
-            <li>Joan <strong>Maileguak</strong> fitxara.</li>
-            <li>"Mailegu Berria" panelean, aukeratu liburua goitibeherako menuan (stockean daudenak bakarrik agertuko
-                dira).</li>
-            <li>Aukeratu liburua eramango duen bazkidea.</li>
-            <li>Sakatu <strong>Mailegua Egin</strong>.</li>
-        </ol>
-
-        <h3>Itzulketak eta Epemugak</h3>
-        <p>Beheko taulan mailegu aktibo guztiak ikusiko dituzu.</p>
-        <ul>
-            <li><strong>Itzuli:</strong> Aukeratu maileguaren lerroa eta sakatu <strong>Markatu Itzulitakotzat</strong>.
-                Liburua berriz eskuragarri egongo da zure stockean.</li>
-            <li><strong>Atzerapen Alertak:</strong> Mailegu batek konfiguratutako denbora-muga gainditzen badu
-                (lehenetsia 30 egun), lerroa <span style="color:red; font-weight:bold;">gorriz</span> markatuko da eta
-                alerta bat jasoko duzu aplikazioa irekitzean.</li>
-        </ul>
-
-        <h2>5. Tresna Aurreratuak</h2>
-        <h3>Segurtasun Kopiak</h3>
-        <p>Babestu zure datuak. Joan <em>Tresnak > Konfigurazioa</em> atalera.</p>
-        <ul>
-            <li><strong>Esportatu Backup (ZIP):</strong> Zure datu eta azal guztiekin fitxategi konprimitu bat sortzen
-                du. Aproposa zure liburutegia beste ordenagailu batera eramateko.</li>
-            <li><strong>JSON Inportatu/Esportatu:</strong> <em>Fitxategia</em> menutik, liburuen datuak soilik esporta
-                ditzakezu JSON formatu arinean edo kanpoko datu-base bat inportatu.</li>
-        </ul>
-
-        <h3>PDF Txostenak</h3>
-        <p>Sortu zure liburutegiaren katalogo profesionalak. Joan <em>Fitxategia > Esportatu PDFra</em> atalera.
-            Apalaren edo generoaren arabera iragazi dezakezu dokumentua sortu aurretik.</p>
-
-        <h2>6. Teklatuko Lasterbideak</h2>
-        <p>Handitu zure produktibitatea lasterbide azkar hauekin:</p>
-        <ul>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">F</span> : Bilatu nire liburutegian (Fokua
-                iragazki lokalean).</li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">N</span> : Liburu berria (Fokua eskuzko
-                inprimakian).</li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">L</span> : Joan Maileguak fitxara.</li>
-            <li><span class="shortcut">Ctrl</span> + <span class="shortcut">Q</span> : Irten aplikaziotik.</li>
-        </ul>
-        <div class="note">
-            MacOSen, erabili <span class="shortcut">Cmd ⌘</span> tekla Ctrl-ren ordez.
-        </div>
-
-        <div class="footer">
-            BiblioHouse Pro &copy; 2026 Fernando Lago Dávila - GNU GPL v3 Lizentzia
-        </div>
-    </div>
-</body>
-
+        <h2>3. Laguntza</h2>
+        <p>Software librea. Lagundu hemen: <a href="https://liberapay.com/ferlagod./">Liberapay</a>.</p>
+    </body>
 </html>

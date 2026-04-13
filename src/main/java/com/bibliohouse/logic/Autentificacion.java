@@ -26,7 +26,7 @@ import java.util.Base64;
  * Esta clase tiene métodos para manejar contraseñas de forma segura.
  *
  * @author Fernando Lago
- * @version 1.5
+ * @version 1.6
  */
 public class Autentificacion {
 
