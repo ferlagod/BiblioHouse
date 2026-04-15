@@ -69,9 +69,17 @@ public class AcercaDeController {
      */
     @FXML
     private void abrirLiberapay() {
+        String url = "https://liberapay.com/ferlagod./";
         try {
-            java.awt.Desktop.getDesktop().browse(new java.net.URI("https://liberapay.com/ferlagod./"));
-        } catch (IOException | URISyntaxException e) {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+            } else if (os.contains("mac")) {
+                Runtime.getRuntime().exec("open " + url);
+            } else if (os.contains("nix") || os.contains("nux")) {
+                Runtime.getRuntime().exec(new String[]{"xdg-open", url});
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
