@@ -118,6 +118,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- BCrypt for secure password hashing (SEC-01) -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
         <!-- NextCloud WebDAV Sync -->
         <dependency>
             <groupId>com.github.lookfirst</groupId>

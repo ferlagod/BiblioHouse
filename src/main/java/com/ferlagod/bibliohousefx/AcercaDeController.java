@@ -25,6 +25,8 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador de la pantallita "Acerca de". Aquí es donde hago un poco de
@@ -34,6 +36,8 @@ import java.net.URISyntaxException;
  * @version 1.6
  */
 public class AcercaDeController {
+
+    private static final Logger LOGGER = Logger.getLogger(AcercaDeController.class.getName());
 
     /**
      * Cierra esta ventana. Botón de pánico o de "ya he visto suficiente".
@@ -57,7 +61,7 @@ public class AcercaDeController {
         try {
             Desktop.getDesktop().mail(new URI("mailto:info@bibliohouse.org"));
         } catch (IOException | URISyntaxException e) {
-            System.out.println("No se pudo abrir el cliente de correo.");
+            LOGGER.log(Level.WARNING, "No se pudo abrir el cliente de correo.", e);
         }
     }
 
@@ -69,18 +73,10 @@ public class AcercaDeController {
      */
     @FXML
     private void abrirLiberapay() {
-        String url = "https://liberapay.com/ferlagod./";
         try {
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-            } else if (os.contains("mac")) {
-                Runtime.getRuntime().exec("open " + url);
-            } else if (os.contains("nix") || os.contains("nux")) {
-                Runtime.getRuntime().exec(new String[]{"xdg-open", url});
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            Desktop.getDesktop().browse(new URI("https://liberapay.com/ferlagod./"));
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.log(Level.WARNING, "No se pudo abrir el navegador.", e);
         }
     }
 }

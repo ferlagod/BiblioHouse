@@ -22,12 +22,16 @@ import com.bibliohouse.logic.NextCloudSyncService;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -81,6 +85,11 @@ public class ConfiguracionController {
     private JsonManager jsonManager;
     private PrimaryController mainController;
 
+    private static final Logger LOGGER = Logger.getLogger(ConfiguracionController.class.getName());
+    /** Nodo de Preferences donde se guarda la contraseña de NextCloud (SEC-02). */
+    private static final String NC_PREFS_NODE = "com/ferlagod/bibliohousefx/nextcloud";
+    private static final String NC_PREF_PASS  = "password";
+
     /**
      * Inicializa los datos de la ventana de configuración. Carga las
      * preferencias actuales y configura los listeners.
@@ -95,7 +104,8 @@ public class ConfiguracionController {
         // Cargar la ruta de datos actual
         txtRutaDatos.setText(mainController.getRutaUsuario());
 
-        // Cargar credenciales NextCloud desde preferencias
+        // Cargar credenciales NextCloud
+        // URL y usuario desde JSON (no sensibles), contraseña desde Preferences/llavero (SEC-02)
         Map<String, String> savedPrefs = jsonManager.cargarPreferencias();
         if (txtNextcloudUrl != null) {
             txtNextcloudUrl.setText(savedPrefs.getOrDefault("nextcloud.url", ""));
@@ -104,7 +114,21 @@ public class ConfiguracionController {
             txtNextcloudUser.setText(savedPrefs.getOrDefault("nextcloud.user", ""));
         }
         if (txtNextcloudPass != null) {
-            txtNextcloudPass.setText(savedPrefs.getOrDefault("nextcloud.password", ""));
+            Preferences ncPrefs = Preferences.userRoot().node(NC_PREFS_NODE);
+            String pass = ncPrefs.get(NC_PREF_PASS, "");
+
+            // Migración silenciosa: si la contraseña aún está en el JSON antiguo, la movemos
+            if (pass.isEmpty()) {
+                String legacyPass = savedPrefs.getOrDefault("nextcloud.password", "");
+                if (!legacyPass.isEmpty()) {
+                    ncPrefs.put(NC_PREF_PASS, legacyPass);
+                    savedPrefs.remove("nextcloud.password");
+                    jsonManager.guardarPreferencias(savedPrefs);
+                    pass = legacyPass;
+                    LOGGER.log(Level.INFO, "Contraseña de NextCloud migrada al llavero del sistema.");
+                }
+            }
+            txtNextcloudPass.setText(pass);
         }
 
         // Configurar el ComboBox de Idioma
@@ -220,16 +244,26 @@ public class ConfiguracionController {
             mainController.setDueDaysLimit(spinnerDiasPrestamo.getValue());
         }
 
-        // Guardar credenciales NextCloud en preferencias
+        // Guardar credenciales NextCloud
+        // URL y usuario en JSON (no sensibles); contraseña SOLO en el llavero del SO (SEC-02)
         if (txtNextcloudUrl != null) {
             Map<String, String> ncPrefs = jsonManager.cargarPreferencias();
-            String url = txtNextcloudUrl.getText().trim();
+            String url  = txtNextcloudUrl.getText().trim();
             String user = txtNextcloudUser.getText().trim();
             String pass = txtNextcloudPass.getText();
-            ncPrefs.put("nextcloud.url", url);
+
+            ncPrefs.put("nextcloud.url",  url);
             ncPrefs.put("nextcloud.user", user);
-            ncPrefs.put("nextcloud.password", pass);
+            ncPrefs.remove("nextcloud.password"); // Asegurarse de que no quede en JSON
             jsonManager.guardarPreferencias(ncPrefs);
+
+            // Guardar contraseña en el llavero del sistema operativo
+            Preferences osPrefs = Preferences.userRoot().node(NC_PREFS_NODE);
+            if (pass.isBlank()) {
+                osPrefs.remove(NC_PREF_PASS);
+            } else {
+                osPrefs.put(NC_PREF_PASS, pass);
+            }
 
             // Activar / desactivar auto-sync inmediatamente (sin reiniciar)
             if (!url.isBlank() && !user.isBlank() && !pass.isBlank()) {
@@ -240,16 +274,15 @@ public class ConfiguracionController {
                         try {
                             syncService.subirBaseDatos(localDir);
                         } catch (Exception ex) {
-                            java.util.logging.Logger.getLogger("BiblioHouse.AutoSync")
-                                    .log(java.util.logging.Level.WARNING,
-                                            "Auto-sync NextCloud fallido: " + ex.getMessage(), ex);
+                            LOGGER.log(Level.WARNING,
+                                    "Auto-sync NextCloud fallido: " + ex.getMessage(), ex);
                         }
                     });
                 } catch (IllegalArgumentException ignored) {
                     jsonManager.setAutoSyncTask(null);
                 }
             } else {
-                jsonManager.setAutoSyncTask(null); // Desactivar si falta algún campo
+                jsonManager.setAutoSyncTask(null);
             }
         }
 
@@ -625,16 +658,9 @@ public class ConfiguracionController {
     private void abrirLiberapay() {
         String url = "https://liberapay.com/ferlagod./";
         try {
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
-                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-            } else if (os.contains("mac")) {
-                Runtime.getRuntime().exec("open " + url);
-            } else if (os.contains("nix") || os.contains("nux")) {
-                Runtime.getRuntime().exec(new String[]{"xdg-open", url});
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            Desktop.getDesktop().browse(new URI(url));
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.log(Level.WARNING, "No se pudo abrir el navegador.", e);
         }
     }
 }

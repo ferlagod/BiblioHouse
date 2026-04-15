@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -43,6 +45,8 @@ import javafx.stage.Stage;
  * @version 1.6
  */
 public class LoginController {
+
+    private static final Logger LOGGER = Logger.getLogger(LoginController.class.getName());
 
     // --- ELEMENTOS DE LA UI ---
     @FXML
@@ -137,7 +141,21 @@ public class LoginController {
             return;
         }
 
-        File userDir = new File(USERS_BASE_PATH, user);
+        // SEC-03: Canonicalización para prevenir Path Traversal
+        File userDir;
+        try {
+            File base = new File(USERS_BASE_PATH).getCanonicalFile();
+            userDir = new File(base, user).getCanonicalFile();
+            if (!userDir.getPath().startsWith(base.getPath() + File.separator)
+                    && !userDir.equals(base)) {
+                setError(lblLoginError, "Nombre de usuario no válido.");
+                return;
+            }
+        } catch (IOException e) {
+            setError(lblLoginError, "Error al verificar el usuario.");
+            return;
+        }
+
         File authFile = new File(userDir, AUTH_FILE_NAME);
 
         if (!userDir.exists() || !authFile.exists()) {
@@ -152,6 +170,10 @@ public class LoginController {
             String storedHash = props.getProperty("passwordHash");
 
             if (Autentificacion.checkPassword(pass, storedHash)) {
+                // SEC-01: Migración silenciosa SHA-256 → BCrypt en el primer login
+                if (Autentificacion.isLegacyHash(storedHash)) {
+                    migrateHashIfLegacy(authFile, pass);
+                }
                 entrarALaApp(user, userDir.getAbsolutePath());
             } else {
                 setError(lblLoginError, "Contraseña incorrecta.");
@@ -184,8 +206,9 @@ public class LoginController {
             setError(lblRegError, "El usuario solo puede tener letras, números y _");
             return;
         }
-        if (pass.length() < 4) {
-            setError(lblRegError, "La contraseña es muy corta.");
+        // SEC-04: Mínimo 8 caracteres para nuevas cuentas
+        if (pass.length() < 8) {
+            setError(lblRegError, "La contraseña debe tener al menos 8 caracteres.");
             return;
         }
         if (!pass.equals(confirm)) {
@@ -230,6 +253,31 @@ public class LoginController {
             }
         } else {
             setError(lblRegError, "No se pudo crear la carpeta del usuario.");
+        }
+    }
+
+    /**
+     * Migra silenciosamente un hash SHA-256 legado a BCrypt tras un login exitoso.
+     * Si la migración falla, el usuario puede seguir usando el hash antiguo.
+     *
+     * @param authFile Archivo user.auth donde actualizar el hash.
+     * @param plainPassword Contraseña en texto plano (disponible justo después del login).
+     */
+    private void migrateHashIfLegacy(File authFile, String plainPassword) {
+        try {
+            Properties props = new Properties();
+            try (FileReader r = new FileReader(authFile)) {
+                props.load(r);
+            }
+            String newHash = Autentificacion.hashPassword(plainPassword);
+            props.setProperty("passwordHash", newHash);
+            try (FileWriter w = new FileWriter(authFile)) {
+                props.store(w, "BiblioHouse User Auth");
+            }
+            LOGGER.log(Level.INFO, "Hash de contraseña migrado a BCrypt correctamente.");
+        } catch (IOException e) {
+            // No crítico: el usuario puede seguir usando el hash SHA-256 hasta la próxima vez
+            LOGGER.log(Level.WARNING, "No se pudo migrar el hash de contraseña a BCrypt.", e);
         }
     }
 

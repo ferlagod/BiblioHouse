@@ -43,6 +43,9 @@ module com.ferlagod.bibliohousefx {
     // NextCloud WebDAV sync
     requires com.github.sardine;
 
+    // BCrypt para hashing de contraseñas (SEC-01)
+    requires jbcrypt;
+
     // 4. Configuración de permisos (EXPORTS y OPENS)
     opens com.ferlagod.bibliohousefx to javafx.fxml;
 

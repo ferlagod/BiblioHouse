@@ -21,61 +21,128 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
- * Esta clase tiene métodos para manejar contraseñas de forma segura.
+ * Gestiona el hashing y verificación de contraseñas de forma segura.
+ *
+ * <p>
+ * <b>Compatibilidad con versiones anteriores:</b> los hashes generados con la
+ * versión antigua (SHA-256 en Base64 puro, sin prefijo "$2a$") siguen siendo
+ * reconocidos. Al primer login exitoso con un hash antiguo, el sistema lo migra
+ * automáticamente a BCrypt sin que el usuario lo note.</p>
+ *
+ * <p>
+ * Los nuevos hashes siempre usan BCrypt (factor de coste 12).</p>
  *
  * @author Fernando Lago
- * @version 1.6
+ * @version 1.7
  */
 public class Autentificacion {
 
-    private static final String HASH_ALGORITHM = "SHA-256";
+    private static final Logger LOGGER = Logger.getLogger(Autentificacion.class.getName());
 
     /**
-     * Este método convierte una contraseña normal en un hash para que no se vea
-     * la contraseña real.
+     * Factor de coste BCrypt. 12 rounds ≈ ~300 ms en hardware moderno,
+     * suficientemente lento para desalentar ataques de fuerza bruta.
+     */
+    private static final int BCRYPT_ROUNDS = 12;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // API pública
+    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Genera un hash BCrypt seguro (con salt integrado) para una contraseña.
+     * Todos los usuarios nuevos o actualizados usarán este método.
      *
-     * @param password La contraseña que escribe el usuario.
-     * @return Un código largo en Base64 que representa la contraseña, o null si
-     * algo sale mal.
+     * @param password La contraseña en texto plano.
+     * @return El hash BCrypt listo para almacenar, o {@code null} si la
+     * contraseña es nula o vacía.
      */
     public static String hashPassword(String password) {
-        // Compruebo que la contraseña no esté vacía o sea null
         if (password == null || password.isEmpty()) {
             return null;
         }
+        return BCrypt.hashpw(password, BCrypt.gensalt(BCRYPT_ROUNDS));
+    }
+
+    /**
+     * Verifica si una contraseña coincide con su hash almacenado. Detecta
+     * automáticamente si el hash es del formato antiguo (SHA-256 Base64) o del
+     * nuevo formato (BCrypt).
+     *
+     * @param inputPassword La contraseña introducida por el usuario.
+     * @param storedHash El hash almacenado en disco.
+     * @return {@code true} si la contraseña es correcta, {@code false} en caso
+     * contrario o si algún parámetro es nulo.
+     */
+    public static boolean checkPassword(String inputPassword, String storedHash) {
+        if (inputPassword == null || storedHash == null || storedHash.isEmpty()) {
+            return false;
+        }
+        if (isLegacyHash(storedHash)) {
+            return checkLegacy(inputPassword, storedHash);
+        }
+        return checkBcrypt(inputPassword, storedHash);
+    }
+
+    /**
+     * Indica si el hash guardado en disco es del formato antiguo (SHA-256). Los
+     * hashes BCrypt siempre comienzan por {@code $2} (p.ej. {@code $2a$},
+     * {@code $2b$}). Un hash SHA-256 en Base64 nunca empieza así.
+     *
+     * @param storedHash El hash a examinar.
+     * @return {@code true} si es un hash SHA-256 legado.
+     */
+    public static boolean isLegacyHash(String storedHash) {
+        return storedHash != null && !storedHash.startsWith("$2");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Métodos internos
+    // ─────────────────────────────────────────────────────────────────────────
+    /**
+     * Verifica una contraseña contra un hash BCrypt.
+     */
+    private static boolean checkBcrypt(String password, String bcryptHash) {
         try {
-            MessageDigest digest = MessageDigest.getInstance(HASH_ALGORITHM);
-            // Convierto la contraseña a bytes y luego se hashea, paraluego guardarlo como
-            // texto en la base de datos
-            byte[] hashedBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
-            // Si no encuentra el algoritmo, se imprime el error y devuelve null
-            System.err.println("Error grave: Algoritmo de hash no encontrado: " + HASH_ALGORITHM);
-            return null;
+            return BCrypt.checkpw(password, bcryptHash);
+        } catch (IllegalArgumentException e) {
+            // Hash malformado
+            LOGGER.log(Level.WARNING, "Hash BCrypt malformado al verificar contraseña.", e);
+            return false;
         }
     }
 
     /**
-     * Comprueba si la contraseña que escribe el usuario coincide con el hash
-     * guardado.
-     *
-     * @param inputPassword La contraseña que escribe el usuario al iniciar
-     * sesión.
-     * @param hashGuardado El hash que tenemos guardado en la base de datos.
-     * @return true si coinciden, false si no coinciden o si algo va mal.
+     * Verifica una contraseña contra un hash SHA-256 (formato legado). Solo se
+     * usa durante la migración transparente.
      */
-    public static boolean checkPassword(String inputPassword, String hashGuardado) {
-        // Se comprueba que ni la contraseña ni el hash estén vacíos
-        if (inputPassword == null || hashGuardado == null || hashGuardado.isEmpty()) {
-            return false;
-        }
-        // Calcula el hash de la contraseña introducida
-        String inputHash = hashPassword(inputPassword);
+    private static boolean checkLegacy(String password, String legacyHash) {
+        String inputHash = hashSha256(password);
+        return legacyHash.equals(inputHash);
+    }
 
-        // Compara los hashes (ambos deben estar codificados en Base64)
-        return hashGuardado.equals(inputHash);
+    /**
+     * Calcula el hash SHA-256 en Base64, tal como lo hacía la versión anterior.
+     * Solo se conserva para la migración de hashes legados.
+     *
+     * @param password La contraseña en texto plano.
+     * @return El hash SHA-256 en Base64, o {@code null} si falla el algoritmo.
+     */
+    static String hashSha256(String password) {
+        if (password == null || password.isEmpty()) {
+            return null;
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashedBytes);
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.log(Level.SEVERE, "Algoritmo SHA-256 no disponible.", e);
+            return null;
+        }
     }
 }
