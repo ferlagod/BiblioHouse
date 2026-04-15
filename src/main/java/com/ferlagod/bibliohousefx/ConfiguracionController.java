@@ -86,9 +86,11 @@ public class ConfiguracionController {
     private PrimaryController mainController;
 
     private static final Logger LOGGER = Logger.getLogger(ConfiguracionController.class.getName());
-    /** Nodo de Preferences donde se guarda la contraseña de NextCloud (SEC-02). */
+    /**
+     * Nodo de Preferences donde se guarda la contraseña de NextCloud (SEC-02).
+     */
     private static final String NC_PREFS_NODE = "com/ferlagod/bibliohousefx/nextcloud";
-    private static final String NC_PREF_PASS  = "password";
+    private static final String NC_PREF_PASS = "password";
 
     /**
      * Inicializa los datos de la ventana de configuración. Carga las
@@ -248,11 +250,11 @@ public class ConfiguracionController {
         // URL y usuario en JSON (no sensibles); contraseña SOLO en el llavero del SO (SEC-02)
         if (txtNextcloudUrl != null) {
             Map<String, String> ncPrefs = jsonManager.cargarPreferencias();
-            String url  = txtNextcloudUrl.getText().trim();
+            String url = txtNextcloudUrl.getText().trim();
             String user = txtNextcloudUser.getText().trim();
             String pass = txtNextcloudPass.getText();
 
-            ncPrefs.put("nextcloud.url",  url);
+            ncPrefs.put("nextcloud.url", url);
             ncPrefs.put("nextcloud.user", user);
             ncPrefs.remove("nextcloud.password"); // Asegurarse de que no quede en JSON
             jsonManager.guardarPreferencias(ncPrefs);
@@ -656,11 +658,18 @@ public class ConfiguracionController {
      */
     @FXML
     private void abrirLiberapay() {
-        String url = "https://liberapay.com/ferlagod./";
+        String url = "https://liberapay.com/ferlagod/donate";
         try {
-            Desktop.getDesktop().browse(new URI(url));
-        } catch (IOException | URISyntaxException e) {
-            LOGGER.log(Level.WARNING, "No se pudo abrir el navegador.", e);
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+            } else if (os.contains("mac")) {
+                Runtime.getRuntime().exec("open " + url);
+            } else if (os.contains("nix") || os.contains("nux")) {
+                Runtime.getRuntime().exec(new String[]{"xdg-open", url});
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
