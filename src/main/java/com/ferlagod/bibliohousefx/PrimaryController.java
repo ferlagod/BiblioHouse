@@ -501,9 +501,12 @@ public class PrimaryController implements Initializable {
 
         // Configurar auto-sync con NextCloud si hay credenciales guardadas
         this.preferencias = jsonManager.cargarPreferencias();
-        String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
+        String ncUrl  = preferencias.getOrDefault("nextcloud.url",  "");
         String ncUser = preferencias.getOrDefault("nextcloud.user", "");
-        String ncPass = preferencias.getOrDefault("nextcloud.password", "");
+        // SEC-02: la contraseña se guarda en el llavero del SO, no en JSON
+        java.util.prefs.Preferences osPrefs = java.util.prefs.Preferences.userRoot()
+                .node("com/ferlagod/bibliohousefx/nextcloud");
+        String ncPass = osPrefs.get("password", "");
         if (!ncUrl.isBlank() && !ncUser.isBlank() && !ncPass.isBlank()) {
             try {
                 NextCloudSyncService syncService = new NextCloudSyncService(ncUrl, ncUser, ncPass);

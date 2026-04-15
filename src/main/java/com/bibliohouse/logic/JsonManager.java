@@ -42,6 +42,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -75,20 +79,41 @@ public class JsonManager {
     private final Gson gson;
 
     /**
-     * Tarea opcional que se ejecuta tras cada escritura en disco. Se usa para
-     * sincronizar automáticamente con NextCloud.
+     * Tarea de sincronización automática con NextCloud. Puede ser {@code null}
+     * si la sincronización está desactivada.
      */
     private Runnable autoSyncTask;
 
     /**
-     * Establece la tarea de sincronización automática que se ejecutará en un
-     * hilo de fondo tras cada guardado de datos. Pasar {@code null} desactiva
-     * la sincronización automática.
+     * Ejecutor programado para el debounce del auto-sync. Un único hilo daemon
+     * compartido para toda la vida del gestor.
+     */
+    private final ScheduledExecutorService syncScheduler =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "nextcloud-autosync");
+                t.setDaemon(true);
+                return t;
+            });
+
+    /** Referencia al sync pendiente (para cancelarlo si llega otro antes). */
+    private ScheduledFuture<?> pendingSyncFuture;
+
+    /**
+     * Establece la tarea de sincronización automática. Pasar {@code null}
+     * desactiva la sincronización.
      *
-     * @param task La tarea a ejecutar, o null para desactivar.
+     * @param task La tarea a ejecutar, o {@code null} para desactivar.
      */
     public void setAutoSyncTask(Runnable task) {
         this.autoSyncTask = task;
+    }
+
+    /**
+     * Cierra el ejecutor del auto-sync de forma ordenada. Debe llamarse al
+     * salir de la aplicación para no dejar hilos huérfanos.
+     */
+    public void shutdown() {
+        syncScheduler.shutdownNow();
     }
 
     /**
@@ -158,6 +183,10 @@ public class JsonManager {
 
         // Se crea las carpetas necesarias si no existen
         crearDirectorioBaseSiNoExiste();
+
+        // Registrar shutdown hook para cerrar el ejecutor del auto-sync al salir de la JVM
+        Runtime.getRuntime().addShutdownHook(new Thread(syncScheduler::shutdownNow,
+                "nextcloud-sync-shutdown"));
         crearDirectorioUsuarioSiNoExiste();
     }
 
@@ -260,12 +289,15 @@ public class JsonManager {
             }
         }
 
-        // Lanzar sincronización automática en hilo daemon de fondo (si está
-        // configurada)
+        // Lanzar sincronización automática con debounce de 2 s.
+        // Varios guardados consecutivos (p.ej. mover un libro de deseos a la biblioteca
+        // guarda biblioteca.json y deseos.json casi al mismo tiempo) se colapsan en
+        // una sola subida, evitando la condición de carrera 423 Locked en WebDAV.
         if (autoSyncTask != null) {
-            Thread syncThread = new Thread(autoSyncTask, "nextcloud-autosync");
-            syncThread.setDaemon(true);
-            syncThread.start();
+            if (pendingSyncFuture != null && !pendingSyncFuture.isDone()) {
+                pendingSyncFuture.cancel(false); // Cancelar la subida aún no iniciada
+            }
+            pendingSyncFuture = syncScheduler.schedule(autoSyncTask, 2, TimeUnit.SECONDS);
         }
     }
 
