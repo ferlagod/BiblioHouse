@@ -22,8 +22,6 @@ import com.bibliohouse.logic.NextCloudSyncService;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -658,7 +656,7 @@ public class ConfiguracionController {
      */
     @FXML
     private void abrirLiberapay() {
-        String url = "https://liberapay.com/ferlagod/donate";
+        String url = "https://liberapay.com/ferlagod./";
         try {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("win")) {

@@ -73,7 +73,7 @@ public class AcercaDeController {
      */
     @FXML
     private void abrirLiberapay() {
-        String url = "https://liberapay.com/ferlagod/donate";
+        String url = "https://liberapay.com/ferlagod./";
         try {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("win")) {
