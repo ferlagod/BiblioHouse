@@ -501,7 +501,7 @@ public class PrimaryController implements Initializable {
 
         // Configurar auto-sync con NextCloud si hay credenciales guardadas
         this.preferencias = jsonManager.cargarPreferencias();
-        String ncUrl  = preferencias.getOrDefault("nextcloud.url",  "");
+        String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
         String ncUser = preferencias.getOrDefault("nextcloud.user", "");
         // SEC-02: la contraseña se guarda en el llavero del SO, no en JSON
         java.util.prefs.Preferences osPrefs = java.util.prefs.Preferences.userRoot()
@@ -535,6 +535,35 @@ public class PrimaryController implements Initializable {
         }
 
         checkOverdueLoans();
+
+        // Comprobar actualizaciones en ForjaLibre
+        com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Actualización disponible");
+            alert.setHeaderText("¡Hay una nueva versión de BiblioHouse!");
+            alert.setContentText("La versión " + versionNueva + " ya está disponible.\nPuedes descargarla desde ForjaLibre.");
+
+            ButtonType btnDescargar = new ButtonType("Descargar");
+            ButtonType btnCerrar = new ButtonType("Más tarde", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(btnDescargar, btnCerrar);
+
+            java.util.Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == btnDescargar) {
+                try {
+                    String url = "https://forjalibre.eu/ferlagod/BiblioHouse/releases/latest";
+                    String os = System.getProperty("os.name").toLowerCase();
+                    if (os.contains("win")) {
+                        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+                    } else if (os.contains("mac")) {
+                        Runtime.getRuntime().exec("open " + url);
+                    } else if (os.contains("nix") || os.contains("nux")) {
+                        Runtime.getRuntime().exec(new String[]{"xdg-open", url});
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
