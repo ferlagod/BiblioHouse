@@ -2809,11 +2809,37 @@ public class PrimaryController implements Initializable {
         tarjeta.setPrefWidth(140);
         tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
 
-        // Al hacer clic en la tarjeta, abre los detalles del libro
         tarjeta.setOnMouseClicked(e -> mostrarDetalleLibro(libro));
 
         javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
         com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
+
+        // 1. Contenedor para apilar el badge sobre la imagen
+        javafx.scene.layout.StackPane contenedorPortada = new javafx.scene.layout.StackPane(img);
+
+        // 2. Lógica del Badge de estado
+        String estado = libro.getEstadoLectura();
+        if (estado != null) {
+            Label badge = null;
+            if (estado.equalsIgnoreCase("Leído")) {
+                badge = new Label("✓");
+                badge.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 2 6 2 6; -fx-background-radius: 12; -fx-font-size: 11px;");
+            } else if (estado.equalsIgnoreCase("Leyendo")) {
+                badge = new Label("•••");
+                badge.setStyle("-fx-background-color: #ff9800; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 1 6 3 6; -fx-background-radius: 12; -fx-font-size: 11px;");
+            }
+            // "Pendiente" no tiene etiqueta, así que se queda nulo y limpio
+
+            if (badge != null) {
+                // Sombra sutil para que se vea bien incluso si la portada del libro es blanca
+                badge.setStyle(badge.getStyle() + " -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);");
+                // Alinear arriba a la derecha con 5px de margen
+                javafx.scene.layout.StackPane.setAlignment(badge, javafx.geometry.Pos.TOP_RIGHT);
+                javafx.scene.layout.StackPane.setMargin(badge, new javafx.geometry.Insets(5, 5, 0, 0));
+
+                contenedorPortada.getChildren().add(badge);
+            }
+        }
 
         Label lblTitulo = new Label(libro.getTitulo());
         lblTitulo.setWrapText(true);
@@ -2821,7 +2847,8 @@ public class PrimaryController implements Initializable {
         lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
 
-        tarjeta.getChildren().addAll(img, lblTitulo);
+        // 3. Añadimos el contenedor (que lleva imagen + badge) en vez de solo la imagen
+        tarjeta.getChildren().addAll(contenedorPortada, lblTitulo);
         return tarjeta;
     }
 }

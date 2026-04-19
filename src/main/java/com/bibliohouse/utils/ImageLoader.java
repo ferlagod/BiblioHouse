@@ -35,6 +35,11 @@ import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 /**
  * Clase para cargar imágenes sin que se trabe la app. Guarda las fotos en una
@@ -116,22 +121,21 @@ public class ImageLoader {
             return;
         }
 
-        // Limpiar imagen previa mientras carga la nueva
+        // Detener animación previa (crítico al hacer scroll rápido)
+        stopSkeleton(target);
+
         if (urlOrPath == null || urlOrPath.isEmpty()) {
             loadDefault(target, w, h);
             return;
         }
 
-        // 1. CLAVE DE CACHÉ (Incluye dimensiones para el mapa en memoria)
         String memoryKey = urlOrPath + "_" + w + "x" + h;
 
-        // 2. CHECK MEMORY CACHE
         if (memoryCache.containsKey(memoryKey)) {
             target.setImage(memoryCache.get(memoryKey));
             return;
         }
 
-        // 3. DECIDIR FUENTE
         if (isValidUrl(urlOrPath)) {
             handleWebImage(urlOrPath, target, w, h, memoryKey);
         } else {
@@ -151,23 +155,28 @@ public class ImageLoader {
      * la carga del disco. 3. Si no, la descarga y la guarda.
      */
     private static void handleWebImage(String url, ImageView target, double w, double h, String memoryKey) {
-        // Si no se ha configurado caché, no guardamos en disco (o usamos temp)
         if (cacheDir == null) {
             LOGGER.warning("ImageLoader: cacheDir no configurado. Usando carga directa.");
+            startSkeleton(target, w, h);
             Image image = new Image(url, w > 0 ? w : 0, h > 0 ? h : 0, true, true, true);
-            target.setImage(image);
+            // Mostrar cuando cargue
+            image.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0 && !image.isError()) {
+                    stopSkeleton(target);
+                    target.setImage(image);
+                }
+            });
             return;
         }
 
-        // Generar nombre de archivo basado en hash de la URL
         String filename = hashUrl(url);
         File cacheFile = new File(cacheDir, filename);
 
         if (cacheFile.exists()) {
-            // HIT EN DISCO: Cargar desde archivo local
             handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
         } else {
-            // MISS EN DISCO: Descargar en background
+            // Empezar el esqueleto ANTES de descargar de internet
+            startSkeleton(target, w, h);
             downloadAndLoad(url, cacheFile, target, w, h, memoryKey);
         }
     }
@@ -176,13 +185,10 @@ public class ImageLoader {
      * Descarga la imagen en un hilo separado, la guarda y luego la carga en el
      * UI.
      */
-    private static void downloadAndLoad(String url, File destination, ImageView target, double w, double h,
-            String memoryKey) {
-        // Usamos un placeholder o spinner si se desea. Por ahora nada.
+    private static void downloadAndLoad(String url, File destination, ImageView target, double w, double h, String memoryKey) {
         Task<Void> task = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                // Descargar bytes y guardar en disco
                 try (InputStream in = new URL(url).openStream()) {
                     Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
@@ -191,18 +197,17 @@ public class ImageLoader {
 
             @Override
             protected void succeeded() {
-                // Éxito: Ahora cargamos desde el archivo local recién creado
+                // Éxito: Cargar localmente (ahí se detendrá el skeleton al terminar de leer el disco)
                 handleLocalImage(destination.getAbsolutePath(), target, w, h, memoryKey);
             }
 
             @Override
             protected void failed() {
-                // Fallo: Cargar imagen por defecto
+                stopSkeleton(target);
                 LOGGER.warning("Fallo al descargar imagen para caché: " + url);
                 loadDefault(target, w, h);
             }
         };
-
         executor.submit(task);
     }
 
@@ -212,30 +217,47 @@ public class ImageLoader {
     private static void handleLocalImage(String path, ImageView target, double w, double h, String memoryKey) {
         File file = new File(path);
         if (!file.exists()) {
+            stopSkeleton(target);
             loadDefault(target, w, h);
             return;
         }
 
-        // Construir imagen
         String uri = file.toURI().toString();
-
-        double loadW = (w > 0) ? w : 0; // 0 significa tamaño original en constructor de Image
+        double loadW = (w > 0) ? w : 0;
         double loadH = (h > 0) ? h : 0;
 
-        Image image = new Image(uri, loadW, loadH, true, true, true); // backgroundLoading=true
+        Image image = new Image(uri, loadW, loadH, true, true, true);
 
-        // Guardar en caché de memoria inmediatamente (aunque se esté cargando)
-        memoryCache.put(memoryKey, image);
-
-        // Si falla la carga, quitar de cache y mostrar default
-        image.errorProperty().addListener((obs, oldVal, isError) -> {
-            if (isError) {
-                memoryCache.remove(memoryKey);
-                loadDefault(target, w, h);
+        // Si por casualidad se cargó al instante, la ponemos y listo
+        if (image.getProgress() >= 1.0) {
+            if (!image.isError()) {
+                memoryCache.put(memoryKey, image);
             }
-        });
+            stopSkeleton(target);
+            target.setImage(image);
+        } else {
+            // Activar skeleton mientras se lee del disco
+            startSkeleton(target, w, h);
 
-        target.setImage(image);
+            // Esperar pacientemente a que llegue al 100% (1.0)
+            image.progressProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() >= 1.0) {
+                    stopSkeleton(target);
+                    if (!image.isError()) {
+                        memoryCache.put(memoryKey, image);
+                        target.setImage(image); // Dar el cambiazo
+                    }
+                }
+            });
+
+            image.errorProperty().addListener((obs, oldVal, isError) -> {
+                if (isError) {
+                    stopSkeleton(target);
+                    memoryCache.remove(memoryKey);
+                    loadDefault(target, w, h);
+                }
+            });
+        }
     }
 
     /**
@@ -343,5 +365,49 @@ public class ImageLoader {
             LOGGER.severe("Error al hacer la portada offline: " + e.getMessage());
             return urlOrPath; // Si falla por lo que sea, devolvemos lo que había para no romper nada
         }
+    }
+
+    /**
+     * Inicia la animación de "Skeleton Loader" (pulso gris) en el ImageView.
+     */
+    private static void startSkeleton(ImageView target, double w, double h) {
+        // Evitar dobles animaciones en la misma celda
+        if (target.getProperties().containsKey("skeleton_anim")) {
+            return;
+        }
+
+        // Crear una imagen gris vacía del tamaño deseado
+        int width = (w > 0) ? (int) w : 130;
+        int height = (h > 0) ? (int) h : 180;
+        WritableImage placeholder = new WritableImage(width, height);
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                placeholder.getPixelWriter().setColor(x, y, Color.rgb(225, 225, 225));
+            }
+        }
+        target.setImage(placeholder);
+
+        // Crear la animación de pulso (Fade)
+        FadeTransition ft = new FadeTransition(Duration.millis(700), target);
+        ft.setFromValue(0.4);
+        ft.setToValue(0.9);
+        ft.setCycleCount(Animation.INDEFINITE);
+        ft.setAutoReverse(true);
+        ft.play();
+
+        // Guardar la animación en las propiedades del nodo para detenerla luego
+        target.getProperties().put("skeleton_anim", ft);
+    }
+
+    /**
+     * Detiene la animación de "Skeleton Loader" y restaura la opacidad.
+     */
+    private static void stopSkeleton(ImageView target) {
+        if (target.getProperties().containsKey("skeleton_anim")) {
+            FadeTransition ft = (FadeTransition) target.getProperties().get("skeleton_anim");
+            ft.stop();
+            target.getProperties().remove("skeleton_anim");
+        }
+        target.setOpacity(1.0);
     }
 }
