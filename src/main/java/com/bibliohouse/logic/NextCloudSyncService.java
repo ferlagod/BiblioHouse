@@ -26,6 +26,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipInputStream;
+import java.io.FileInputStream;
 
 /**
  * Servicio que gestiona la sincronización de la base de datos local de
@@ -50,7 +54,8 @@ public class NextCloudSyncService {
         "prestamos.json",
         "socios.json",
         "estanterias.json",
-        "deseos.json"
+        "deseos.json",
+        "portadas.zip"
     };
 
     /**
@@ -279,6 +284,8 @@ public class NextCloudSyncService {
                 }
             }
 
+            empaquetarPortadas(localDir);
+
             for (String fileName : DB_FILES) {
                 File localFile = new File(localDir, fileName);
                 if (!localFile.exists()) {
@@ -298,6 +305,7 @@ public class NextCloudSyncService {
                     throw new IOException("Error al subir " + fileName + ": " + e.getMessage(), e);
                 }
             }
+            desempaquetarPortadas(localDir);
         } finally {
             try {
                 sardine.shutdown();
@@ -346,6 +354,66 @@ public class NextCloudSyncService {
                 sardine.shutdown();
             } catch (IOException ignored) {
             }
+        }
+    }
+
+    /**
+     * Empaqueta todas las portadas de libros en un archivo ZIP. Solo incluye
+     * archivos visibles (ignora subcarpetas y archivos ocultos como .DS_Store).
+     *
+     * @param localDir Ruta del directorio local donde se encuentra la carpeta
+     * "portadas".
+     */
+    private void empaquetarPortadas(String localDir) {
+        File dirPortadas = new File(localDir, "portadas");
+        if (!dirPortadas.exists() || !dirPortadas.isDirectory()) {
+            return;
+        }
+
+        File zipFile = new File(localDir, "portadas.zip");
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
+            File[] files = dirPortadas.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // Ignorar subcarpetas y archivos ocultos del sistema como .DS_Store
+                    if (file.isFile() && !file.getName().startsWith(".")) {
+                        zos.putNextEntry(new ZipEntry(file.getName()));
+                        Files.copy(file.toPath(), zos);
+                        zos.closeEntry();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error al empaquetar portadas: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Desempaqueta el archivo ZIP de portadas en la carpeta "portadas". Si la
+     * carpeta no existe, la crea. Sobrescribe los archivos existentes.
+     *
+     * @param localDir Ruta del directorio local donde se encuentra el archivo
+     * "portadas.zip".
+     */
+    private void desempaquetarPortadas(String localDir) {
+        File zipFile = new File(localDir, "portadas.zip");
+        if (!zipFile.exists()) {
+            return;
+        }
+
+        File dirPortadas = new File(localDir, "portadas");
+        if (!dirPortadas.exists()) {
+            dirPortadas.mkdirs();
+        }
+
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                File target = new File(dirPortadas, entry.getName());
+                Files.copy(zis, target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error al desempaquetar portadas: " + e.getMessage());
         }
     }
 }
