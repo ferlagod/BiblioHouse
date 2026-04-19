@@ -216,6 +216,10 @@ public class PrimaryController implements Initializable {
     private List<Libro> listaDeseos;
     @FXML
     private SagasController pestañaSagasController;
+    @FXML
+    private javafx.scene.layout.FlowPane panelMisLibros;
+    @FXML
+    private TextField txtBuscarMisLibros;
 
     @FXML
     private void cambiarAEspanol() {
@@ -451,6 +455,11 @@ public class PrimaryController implements Initializable {
                     }
                 }
             });
+        }
+
+        // Buscador visual rápido en la pestaña Mis Libros
+        if (txtBuscarMisLibros != null) {
+            txtBuscarMisLibros.textProperty().addListener((observable, oldValue, newValue) -> actualizarPanelMisLibros());
         }
     }
 
@@ -1163,6 +1172,8 @@ public class PrimaryController implements Initializable {
         if (lblEstado != null && filteredData != null && listaLibrosCompleta != null) {
             lblEstado.setText("Mostrando " + filteredData.size() + " de " + listaLibrosCompleta.size() + " libros.");
         }
+
+        actualizarPanelMisLibros();
     }
 
     /**
@@ -2753,5 +2764,64 @@ public class PrimaryController implements Initializable {
         } catch (InterruptedException | ExecutionException e) {
         }
         return null;
+    }
+
+    /**
+     * Dibuja la cuadrícula de libros en la pestaña principal, ordenados de la A
+     * a la Z. Respeta los filtros del menú lateral y de búsqueda.
+     */
+    private void actualizarPanelMisLibros() {
+        if (panelMisLibros == null || filteredData == null) {
+            return;
+        }
+        panelMisLibros.getChildren().clear();
+
+        // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
+        String busquedaRapida = txtBuscarMisLibros != null ? txtBuscarMisLibros.getText().toLowerCase().trim() : "";
+
+        // 2. Filtrar los libros aplicando la búsqueda rápida
+        List<Libro> librosMostrados = filteredData.stream()
+                .filter(Libro::isPoseido)
+                .filter(l -> {
+                    if (busquedaRapida.isEmpty()) {
+                        return true;
+                    }
+                    // Buscar coincidencias en título o autor
+                    boolean tituloCoincide = l.getTitulo() != null && l.getTitulo().toLowerCase().contains(busquedaRapida);
+                    boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(busquedaRapida);
+                    return tituloCoincide || autorCoincide;
+                })
+                .sorted((l1, l2) -> l1.getTitulo().compareToIgnoreCase(l2.getTitulo()))
+                .collect(Collectors.toList());
+
+        // 3. Dibujar las tarjetas
+        for (Libro libro : librosMostrados) {
+            panelMisLibros.getChildren().add(crearTarjetaMisLibros(libro));
+        }
+    }
+
+    /**
+     * Crea una tarjeta interactiva para la biblioteca principal.
+     */
+    private javafx.scene.layout.VBox crearTarjetaMisLibros(Libro libro) {
+        javafx.scene.layout.VBox tarjeta = new javafx.scene.layout.VBox(8);
+        tarjeta.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        tarjeta.setPrefWidth(140);
+        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
+
+        // Al hacer clic en la tarjeta, abre los detalles del libro
+        tarjeta.setOnMouseClicked(e -> mostrarDetalleLibro(libro));
+
+        javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
+        com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
+
+        Label lblTitulo = new Label(libro.getTitulo());
+        lblTitulo.setWrapText(true);
+        lblTitulo.setMaxWidth(130);
+        lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
+
+        tarjeta.getChildren().addAll(img, lblTitulo);
+        return tarjeta;
     }
 }

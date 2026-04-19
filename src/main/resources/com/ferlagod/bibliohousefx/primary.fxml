@@ -31,6 +31,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.PrimaryController">
    
@@ -92,7 +93,33 @@
     <center>
         <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
             <tabs>
-                <Tab text="%tab.books">
+                <Tab text="%tab.my_books">
+                    <content>
+                        <VBox spacing="20.0" styleClass="content-area">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                    <children>
+                                        <Label styleClass="heading-text" text="%tab.my_books" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <TextField fx:id="txtBuscarMisLibros" promptText="Buscar título o autor..." prefWidth="250.0" style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: #ddd; -fx-border-radius: 15; -fx-background-color: white;" />
+                                    </children>
+                                </HBox>
+                                <Separator />
+                                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                                    <content>
+                                        <FlowPane fx:id="panelMisLibros" hgap="25.0" vgap="25.0" />
+                                    </content>
+                                </ScrollPane>
+                            </children>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <Tab text="%tab.manage_books">
+                    
                     <content>
                         <VBox spacing="20.0" styleClass="content-area">
                             <padding>
