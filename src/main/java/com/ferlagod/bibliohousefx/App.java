@@ -142,21 +142,28 @@ public class App extends Application {
 
         // Creamos una NUEVA ventana (Stage) para la aplicación principal
         Stage mainStage = new Stage();
-        // app.title.main=BiblioHouse - Biblioteca de {0}
         String title = java.text.MessageFormat.format(bundle.getString("app.title.main"), username);
         mainStage.setTitle(title);
 
-        // IMPORTANTE: Creamos una escena nueva con la raíz nueva
         Scene mainScene = new Scene(root);
         mainStage.setScene(mainScene);
-
-        // Icono también para esta ventana
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
-        // Forzar a que la ventana ocupe toda la pantalla al arrancar
-        mainStage.setMaximized(true);
+        // 1. Leer preferencia de maximizado ANTES de mostrar la ventana
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+        boolean isMaximized = Boolean.parseBoolean(prefs.get("maximized", "true"));
+        mainStage.setMaximized(isMaximized);
 
+        // 2. Preparar el efecto Fade-In (arranque suave)
+        root.setOpacity(0);
+
+        // 3. Mostrar la ventana y ejecutar la transición
         mainStage.show();
+
+        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(400), root);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
     }
 
     /**

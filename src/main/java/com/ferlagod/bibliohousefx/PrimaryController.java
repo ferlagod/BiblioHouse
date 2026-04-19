@@ -52,6 +52,9 @@ import javafx.scene.layout.TilePane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.animation.FadeTransition;
+import javafx.util.Duration;
+import javafx.scene.Node;
 
 /**
  * Este es el controlador principal. Aquí manejo la tabla de libros, los
@@ -220,6 +223,7 @@ public class PrimaryController implements Initializable {
     private javafx.scene.layout.FlowPane panelMisLibros;
     @FXML
     private TextField txtBuscarMisLibros;
+    private ContextMenu contextMenuLibros;
 
     @FXML
     private void cambiarAEspanol() {
@@ -283,6 +287,29 @@ public class PrimaryController implements Initializable {
                 alert.setHeaderText("Fallo al iniciar la pantalla principal");
                 alert.setContentText("Ocurrió un error inesperado al configurar la vista: " + e.getMessage());
                 alert.showAndWait();
+            });
+        }
+
+        if (mainTabPane != null) {
+            mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+                if (newTab != null && newTab.getContent() != null) {
+                    Node content = newTab.getContent();
+
+                    // Configuramos la transición de desvanecimiento
+                    FadeTransition fade = new FadeTransition(Duration.millis(300), content);
+                    fade.setFromValue(0.0); // Empieza totalmente transparente
+                    fade.setToValue(1.0);   // Termina totalmente opaco
+                    fade.setCycleCount(1);
+                    fade.setAutoReverse(false);
+                    // Pequeño efecto de desplazamiento hacia arriba (Slide + Fade)
+                    content.setTranslateY(10); // Baja el contenido 10 píxeles inicialmente
+                    javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(300), content);
+                    slide.setFromY(10);
+                    slide.setToY(0);
+                    slide.play();
+
+                    fade.play(); // Iniciamos la animación
+                }
             });
         }
     }
@@ -364,7 +391,7 @@ public class PrimaryController implements Initializable {
      * Configura el menú contextual de la tabla de libros.
      */
     private void configurarContextMenu() {
-        ContextMenu contextMenuLibros = new ContextMenu();
+        this.contextMenuLibros = new ContextMenu();
 
         MenuItem itemPrestar = new MenuItem("Prestar este libro");
         itemPrestar.setOnAction(e -> {
@@ -386,7 +413,7 @@ public class PrimaryController implements Initializable {
 
         contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
                 new SeparatorMenuItem(), itemEliminar);
-        tablaLibros.setContextMenu(contextMenuLibros);
+        tablaLibros.setContextMenu(this.contextMenuLibros);
     }
 
     /**
@@ -630,7 +657,7 @@ public class PrimaryController implements Initializable {
                     // Encontrar el TabPane (asumiendo que es el único en BorderPane.center)
                     TabPane tabPane = (TabPane) tablaLibros.getScene().lookup(".tab-pane");
                     if (tabPane != null) {
-                        tabPane.getSelectionModel().select(1);
+                        tabPane.getSelectionModel().select(2);
                     }
                 }
             });
@@ -722,7 +749,7 @@ public class PrimaryController implements Initializable {
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+L"),
                         () -> {
                             // Seleccionar tab de préstamos
-                            tabPaneVistaLibros.getSelectionModel().select(1);
+                            tabPaneVistaLibros.getSelectionModel().select(2);
                             comboLibrosPrestamo.requestFocus();
                         });
             }
@@ -757,29 +784,12 @@ public class PrimaryController implements Initializable {
      * después de que la interfaz gráfica esté lista.
      */
     private void aplicarPreferenciasGuardadas() {
-        // Cargar días de préstamo (por defecto 30 si no existe o hay error)
         try {
             String diasStr = preferencias.getOrDefault("dias_prestamo", "30");
             this.dueDaysLimit = Integer.parseInt(diasStr);
         } catch (NumberFormatException e) {
             this.dueDaysLimit = 30;
         }
-
-        // Mover la aplicación de UI al hilo de JavaFX después de la renderización
-        // inicial
-        Platform.runLater(() -> {
-            Scene scene = tablaLibros.getScene();
-            if (scene == null) {
-                return;
-            }
-
-            // 1. APLICAR MAXIMIZADO
-            Stage mainStage = (Stage) scene.getWindow();
-            boolean isMaximized = Boolean.parseBoolean(preferencias.getOrDefault("maximized", "false"));
-            if (isMaximized) {
-                mainStage.setMaximized(true);
-            }
-        });
     }
 
     /**
@@ -1183,7 +1193,7 @@ public class PrimaryController implements Initializable {
      */
     public void prepararPrestamoLibro(Libro libro) {
         if (mainTabPane != null) {
-            mainTabPane.getSelectionModel().select(1); // Seleccionar pestaña Préstamos
+            mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
         }
 
         if (comboLibrosPrestamo != null) {
@@ -1207,7 +1217,7 @@ public class PrimaryController implements Initializable {
      */
     public void prepararPrestamoSocio(Socio socio) {
         if (mainTabPane != null) {
-            mainTabPane.getSelectionModel().select(1); // Seleccionar pestaña Préstamos
+            mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
         }
 
         if (comboSocios != null) {
@@ -1761,6 +1771,9 @@ public class PrimaryController implements Initializable {
         if (pestañaSagasController != null) {
             pestañaSagasController.initData(listaLibrosCompleta);
         }
+
+        // Refrescar la cuadrícula de "Mis Libros"
+        actualizarPanelMisLibros();
     }
 
     // --- MENÚ ARCHIVO ---
@@ -2809,6 +2822,25 @@ public class PrimaryController implements Initializable {
         tarjeta.setPrefWidth(140);
         tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
 
+        // CLIC IZQUIERDO: Abrir detalles (Ignorando Ctrl+Clic en Mac)
+        tarjeta.setOnMouseClicked(e -> {
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && !e.isControlDown() && !e.isPopupTrigger()) {
+                mostrarDetalleLibro(libro);
+            }
+        });
+
+        // CLIC DERECHO: Mostrar el menú de gestión
+        tarjeta.setOnContextMenuRequested(e -> {
+            // Sincronizamos la selección de la tabla con este libro 
+            // para que las acciones del menú (Editar, Eliminar) sepan sobre qué libro actuar.
+            tablaLibros.getSelectionModel().select(libro);
+
+            // Mostramos el menú en la posición del ratón
+            if (contextMenuLibros != null) {
+                contextMenuLibros.show(tarjeta, e.getScreenX(), e.getScreenY());
+            }
+        });
+
         tarjeta.setOnMouseClicked(e -> mostrarDetalleLibro(libro));
 
         javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
@@ -2839,6 +2871,7 @@ public class PrimaryController implements Initializable {
 
                 contenedorPortada.getChildren().add(badge);
             }
+
         }
 
         Label lblTitulo = new Label(libro.getTitulo());
