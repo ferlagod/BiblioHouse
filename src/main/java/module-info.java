@@ -21,6 +21,8 @@ module com.ferlagod.bibliohousefx {
     requires javafx.fxml;
     requires transitive javafx.graphics;
     requires javafx.web;
+    requires atlantafx.base;
+    requires org.controlsfx.controls;
 
     // 2. Módulos estándar de Java
     requires java.net.http;

@@ -1,227 +1,33 @@
-/* 
- * Base Theme (Cleaner & More Compact)
- * Focuses on elegance, readability, and spacing.
+/* * BiblioHouse Custom Styles
+ * (Los botones, tablas, inputs y colores base los gestiona AtlantaFX)
  */
 
-.root {
-    /* Color Palette - Neutral/Professional */
-    -color-primary: #1976D2;
-    /* Standard Blue */
-    -color-bg-default: #f4f4f4;
-    -color-surface: #ffffff;
-    -color-text-primary: #333333;
-    -color-text-secondary: #666666;
-    -color-border: #d1d1d1;
-    -color-hover: #e0e0e0;
-    -color-pressed: #c0c0c0;
-
-    /* Metrics for Compactness */
-    -fx-font-family: "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
-    -fx-font-size: 13px;
-    /* Reduced for elegance */
-    -fx-base: -color-bg-default;
-    -fx-background: -color-bg-default;
-    -fx-control-inner-background: -color-surface;
-}
-
-/* --- GENERAL CONTAINERS --- */
-
-.split-pane {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-.split-pane:horizontal>.split-pane-divider {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-
-/* --- LABELS & TEXT --- */
-.label {
-    -fx-text-fill: -color-text-primary;
-}
-
+/* --- TEXTOS PERSONALIZADOS --- */
 .heading-text {
     -fx-font-size: 18px;
-    /* Reduced from 22/24px */
     -fx-font-weight: bold;
-    -fx-text-fill: -color-text-primary;
     -fx-padding: 0 0 10px 0;
+    /* Hemos quitado el text-fill para que AtlantaFX lo cambie si usas modo oscuro */
 }
 
 .subheading-text {
     -fx-font-size: 14px;
-    -fx-font-weight: normal;
-    -fx-text-fill: -color-text-secondary;
 }
 
-/* --- BUTTONS --- */
-.button {
-    -fx-background-color: -color-surface;
-    -fx-border-color: -color-border;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-padding: 4px 12px;
-    /* More compact padding */
-    -fx-text-fill: -color-text-primary;
-    -fx-cursor: hand;
-    -fx-effect: null;
-    /* Remove aggressive shadows */
-}
-
-.button:hover {
-    -fx-background-color: -color-hover;
-    -fx-border-color: #b0b0b0;
-}
-
-.button:pressed {
-    -fx-background-color: -color-pressed;
-}
-
-/* Primary/Accent Button */
-.button.primary,
-.google-button {
-    -fx-background-color: -color-primary;
-    -fx-text-fill: white;
-    -fx-border-color: -color-primary;
-    -fx-font-weight: bold;
-}
-
-.button.primary:hover,
-.google-button:hover {
-    -fx-background-color: derive(-color-primary, 10%);
-    -fx-border-color: derive(-color-primary, 10%);
-}
-
-.button.primary:pressed,
-.google-button:pressed {
-    -fx-background-color: derive(-color-primary, -10%);
-}
-
-/* --- TEXT FIELDS & INPUTS --- */
-.text-field,
-.password-field,
-.combo-box,
-.date-picker {
-    -fx-background-color: -color-surface;
-    -fx-border-color: -color-border;
-    -fx-border-radius: 3px;
-    -fx-background-radius: 3px;
-    -fx-padding: 4px 8px;
-    /* Compact */
-    -fx-prompt-text-fill: derive(-color-text-secondary, 20%);
-}
-
-.text-field:focused,
-.password-field:focused,
-.combo-box:focused,
-.date-picker:focused {
-    -fx-border-color: -color-primary;
-    -fx-background-color: -color-surface;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 120, 215, 0.2), 3, 0.0, 0, 0);
-}
-
-/* --- TABLE VIEW --- */
-.table-view {
-    -fx-background-color: -color-surface;
-    -fx-border-color: -color-border;
-    -fx-border-width: 1px;
-}
-
-.table-view .column-header-background {
-    -fx-background-color: #f0f0f0;
-    -fx-border-color: transparent transparent -color-border transparent;
-    -fx-border-width: 0 0 1px 0;
-}
-
-.table-view .column-header,
-.table-view .filler {
-    -fx-background-color: transparent;
-    -fx-size: 30px;
-    /* Reduced header height */
-    -fx-border-width: 0 1px 0 0;
-    -fx-border-color: transparent;
-}
-
-.table-view .column-header .label {
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-text-secondary;
-    -fx-alignment: center-left;
-}
-
-.table-row-cell {
-    -fx-background-color: -color-surface;
-    -fx-cell-size: 28px;
-    /* Very compact rows */
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: transparent transparent #f4f4f4 transparent;
-}
-
-.table-row-cell:odd {
-    -fx-background-color: #fafafa;
-    /* Subtle striping */
-}
-
-.table-row-cell:selected {
-    -fx-background-color: -color-primary;
-    -fx-background-insets: 0;
-}
-
-.table-row-cell:selected .text {
-    -fx-fill: white;
-}
-
-/* --- SCROLL BARS --- */
-.scroll-bar:vertical,
-.scroll-bar:horizontal {
-    -fx-background-color: transparent;
-}
-
-.scroll-bar:vertical .thumb,
-.scroll-bar:horizontal .thumb {
-    -fx-background-color: #cdcdcd;
-    -fx-background-radius: 4px;
-}
-
-.scroll-bar:vertical .thumb:hover,
-.scroll-bar:horizontal .thumb:hover {
-    -fx-background-color: #a6a6a6;
-}
-
-/* --- SIDEBAR --- */
+/* --- CONTENEDORES ESPECÍFICOS --- */
 .sidebar {
-    -fx-background-color: #f7f7f7;
-    -fx-border-color: -color-border;
-    -fx-border-width: 0 1px 0 0;
     -fx-padding: 10px;
+    -fx-border-width: 0 1px 0 0;
+    -fx-border-color: -color-border-default; /* Usa la variable nativa de AtlantaFX */
 }
 
-.list-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 5px 8px;
-    /* Compact list items */
-    -fx-cursor: hand;
-}
-
-.list-cell:filled:selected {
-    -fx-text-fill: white;
-    -fx-background-color: #1976D2; /* Azul para la selección */
-}
-.list-cell:filled:hover {
-    -fx-background-color: rgba(0, 120, 215, 0.1);
-    -fx-text-fill: -color-primary;
-    -fx-background-radius: 3px;
-    -fx-font-weight: bold;
-}
-
-/* --- SPECIAL CLASSES --- */
+/* --- LÓGICA DE NEGOCIO (Préstamos caducados) --- */
 .overdue-loan {
     -fx-text-fill: #d32f2f;
     -fx-font-weight: bold;
 }
 
-/* Ensure entire row gets color in table */
+/* Fila entera del préstamo caducado */
 .table-row-cell.overdue-loan {
     -fx-background-color: #ffebee;
 }
@@ -230,7 +36,7 @@
     -fx-background-color: #ef9a9a;
 }
 
-/* Colores profesionales tipo Google/Office */
+/* --- COLORES ESPECÍFICOS DE LOS GRÁFICOS --- */
 .default-color0.chart-pie, .default-color0.chart-bar {
     -fx-pie-color: #0078d7;
     -fx-bar-fill: #0078d7;
@@ -242,4 +48,47 @@
 .default-color2.chart-pie, .default-color2.chart-bar {
     -fx-pie-color: #ef5350;
     -fx-bar-fill: #ef5350;
+}
+
+.root {
+    /* Esto reducirá el tamaño de TODO el tema proporcionalmente */
+    -fx-font-size: 13px;
+}
+
+/* Forzar que las tablas sean más densas */
+.table-view {
+    -fx-cell-size: 25px; /* Filas más estrechas */
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 11px; /* Cabeceras más pequeñas */
+}
+
+/* Botones más compactos */
+.button {
+    -fx-padding: 4px 10px;
+}
+
+/* Campos de texto menos altos */
+.text-field, .combo-box {
+    -fx-padding: 3px 7px;
+}
+
+/* Ajuste ultra-compacto para campos de texto y combos */
+.text-field, .password-field, .combo-box, .date-picker {
+    -fx-font-size: 12px;           /* Fuente un poco más pequeña que el resto */
+    -fx-padding: 2px 6px;          /* Padding mínimo */
+    -fx-min-height: 24px;          /* Fuerza una altura baja */
+    -fx-pref-height: 26px;         /* Altura preferida ajustada */
+}
+
+/* Reducir también el tamaño de los iconos o botones internos (como el del DatePicker) */
+.combo-box .arrow-button, .date-picker .arrow-button {
+    -fx-padding: 0 4px;
+}
+
+/* Si usas GridPanes en el formulario, reduce el espaciado entre filas */
+.grid-pane {
+    -fx-vgap: 5px;                 /* Menos espacio vertical entre campos */
+    -fx-hgap: 10px;
 }

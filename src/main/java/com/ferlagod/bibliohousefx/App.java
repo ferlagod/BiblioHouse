@@ -97,8 +97,11 @@ public class App extends Application {
      */
     @Override
     public void start(Stage stage) throws IOException {
+        instance = this;
         // Configurar logs y "securizar" carpeta de datos (ocultarla)
         com.bibliohouse.logic.ConfiguracionLogs.setup();
+        // Aplicar el tema moderno de AtlantaFX
+        Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
 
         // Cargar preferencia de idioma si existe (simplificado: por defecto es)
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
@@ -149,17 +152,18 @@ public class App extends Application {
         mainStage.setScene(mainScene);
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
-        // 1. Leer preferencia de maximizado ANTES de mostrar la ventana
+        // 1. Preparar el efecto Fade-In (arranque suave)
+        root.setOpacity(0);
+
+        // 2. MOSTRAR LA VENTANA PRIMERO
+        mainStage.show();
+
+        // 3. LEER Y APLICAR MAXIMIZADO DESPUÉS DE MOSTRAR
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         boolean isMaximized = Boolean.parseBoolean(prefs.get("maximized", "true"));
         mainStage.setMaximized(isMaximized);
 
-        // 2. Preparar el efecto Fade-In (arranque suave)
-        root.setOpacity(0);
-
-        // 3. Mostrar la ventana y ejecutar la transición
-        mainStage.show();
-
+        // 4. Ejecutar la transición
         javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(400), root);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);

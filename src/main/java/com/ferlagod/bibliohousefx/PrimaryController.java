@@ -55,6 +55,8 @@ import javafx.stage.Stage;
 import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import javafx.scene.Node;
+import org.controlsfx.control.Notifications;
+import javafx.util.Duration;
 
 /**
  * Este es el controlador principal. Aquí manejo la tabla de libros, los
@@ -275,6 +277,17 @@ public class PrimaryController implements Initializable {
 
             configurarColumnasLibros();
             configurarColumnasPrestamos();
+
+            // Placeholder para la tabla de préstamos
+            Label placeholderPrestamos = new Label("No hay préstamos activos en este momento.");
+            placeholderPrestamos.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
+            tablaPrestamos.setPlaceholder(placeholderPrestamos);
+
+            // Ya que estás, haz lo mismo para la tabla de libros principal
+            Label placeholderLibros = new Label("La tabla está vacía. Añade libros o cambia los filtros.");
+            placeholderLibros.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
+            tablaLibros.setPlaceholder(placeholderLibros);
+
             configurarContextMenu();
             configurarFiltros();
             configurarAtajosYEventos();
@@ -1979,12 +1992,11 @@ public class PrimaryController implements Initializable {
     private void buscarDuplicados(ActionEvent event) {
         List<Libro> librosParaBorrar = new ArrayList<>();
         int contadorFusionados = 0;
+        int duplicadosEncontrados = 0;
+        StringBuilder reporte = new StringBuilder();
 
-        // Buscamos duplicados
         for (int i = 0; i < listaLibrosCompleta.size(); i++) {
             Libro original = listaLibrosCompleta.get(i);
-
-            // Si este libro ya está marcado para borrar, lo saltamos
             if (librosParaBorrar.contains(original)) {
                 continue;
             }
@@ -1992,50 +2004,68 @@ public class PrimaryController implements Initializable {
             for (int j = i + 1; j < listaLibrosCompleta.size(); j++) {
                 Libro duplicado = listaLibrosCompleta.get(j);
 
-                // Criterio de duplicidad: ISBN igual O (Título y Autor iguales)
-                boolean esMismoIsbn = !original.getIsbn().isEmpty() && original.getIsbn().equals(duplicado.getIsbn());
-                boolean esMismoTitulo = original.getTitulo().equalsIgnoreCase(duplicado.getTitulo())
+                // Protecciones seguras contra nulos para evitar que la aplicación falle
+                boolean tieneIsbn = original.getIsbn() != null && !original.getIsbn().isEmpty() && duplicado.getIsbn() != null;
+                boolean esMismoIsbn = tieneIsbn && original.getIsbn().equals(duplicado.getIsbn());
+
+                boolean tieneTitulo = original.getTitulo() != null && duplicado.getTitulo() != null;
+                boolean tieneAutor = original.getAutor() != null && duplicado.getAutor() != null;
+                boolean esMismoTitulo = tieneTitulo && tieneAutor
+                        && original.getTitulo().equalsIgnoreCase(duplicado.getTitulo())
                         && original.getAutor().equalsIgnoreCase(duplicado.getAutor());
 
                 if (esMismoIsbn || esMismoTitulo) {
+                    duplicadosEncontrados++;
 
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                     alert.setTitle("Duplicado Encontrado");
-                    alert.setHeaderText(
-                            "Conflicto entre:\n1. " + original.getTitulo() + " (Stock: " + original.getCantidad()
-                            + ")\n2. " + duplicado.getTitulo() + " (Stock: " + duplicado.getCantidad() + ")");
+                    alert.setHeaderText("Conflicto entre:\n1. " + original.getTitulo() + "\n2. " + duplicado.getTitulo());
                     alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
 
-                    ButtonType btnFusionar = new ButtonType("Fusionar y Eliminar duplicado");
+                    ButtonType btnFusionar = new ButtonType("Fusionar");
                     ButtonType btnIgnorar = new ButtonType("Ignorar");
-
                     alert.getButtonTypes().setAll(btnFusionar, btnIgnorar);
+
                     Optional<ButtonType> res = alert.showAndWait();
-
                     if (res.isPresent() && res.get() == btnFusionar) {
-                        // 1. Sumar stock al original
                         original.setCantidad(original.getCantidad() + duplicado.getCantidad());
-
-                        // 2. Marcar el segundo para borrar
                         librosParaBorrar.add(duplicado);
                         contadorFusionados++;
+                        reporte.append("✔️ Fusionado: ").append(original.getTitulo()).append("\n");
+                    } else {
+                        reporte.append("❌ Ignorado: ").append(original.getTitulo()).append("\n");
                     }
                 }
             }
         }
 
+        // Si no se encuentra nada, informamos directamente y salimos
+        if (duplicadosEncontrados == 0) {
+            mostrarAlerta("Búsqueda de Duplicados", "No se han encontrado libros duplicados en la biblioteca.");
+            return;
+        }
+
+        // Aplicamos la limpieza
         if (contadorFusionados > 0) {
-            // Aplicar borrados
-
             listaLibrosCompleta.removeAll(librosParaBorrar);
-
-            // Guardar
             jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
             tablaLibros.refresh();
+        }
 
-            mostrarAlerta("Limpieza completada", "Se han fusionado " + contadorFusionados + " libros duplicados.");
-        } else {
-            mostrarAlerta("Duplicados", "No se encontraron duplicados o no se realizaron cambios.");
+        // Restauramos el uso de tu ventana de resultados para mostrar el informe
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("duplicados.fxml"));
+            Parent root = loader.load();
+            DuplicadosController controller = loader.getController();
+            controller.setTextoResultados("Análisis terminado.\nSe detectaron " + duplicadosEncontrados + " duplicados.\n\n" + reporte.toString());
+
+            Stage stage = new Stage();
+            stage.setTitle("Informe de Duplicados");
+            setScene(stage, root);
+            stage.show();
+        } catch (Exception e) {
+            // Plan B por si el archivo duplicados.fxml no carga
+            mostrarAlerta("Completado", "Se han fusionado " + contadorFusionados + " libros.");
         }
     }
 
@@ -2315,11 +2345,13 @@ public class PrimaryController implements Initializable {
      * @param mensaje Contenido del mensaje.
      */
     private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+        javafx.application.Platform.runLater(() -> {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            alert.setTitle(titulo);
+            alert.setHeaderText(null);
+            alert.setContentText(mensaje);
+            alert.showAndWait();
+        });
     }
 
     /**
@@ -2807,7 +2839,15 @@ public class PrimaryController implements Initializable {
                 .sorted((l1, l2) -> l1.getTitulo().compareToIgnoreCase(l2.getTitulo()))
                 .collect(Collectors.toList());
 
-        // 3. Dibujar las tarjetas
+        // 3. Comprobar si está vacío ANTES de dibujar
+        if (librosMostrados.isEmpty()) {
+            Label lblVacio = new Label("No hay libros aquí.\nPrueba a cambiar los filtros o añade libros nuevos.");
+            lblVacio.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px; -fx-alignment: center;");
+            panelMisLibros.getChildren().add(lblVacio);
+            return; // Salimos del método aquí
+        }
+
+        // 4. Dibujar las tarjetas si hay resultados
         for (Libro libro : librosMostrados) {
             panelMisLibros.getChildren().add(crearTarjetaMisLibros(libro));
         }
