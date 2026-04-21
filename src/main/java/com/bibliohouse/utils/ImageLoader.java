@@ -28,6 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,14 +53,21 @@ public class ImageLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
 
-    // Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
-    private static final Map<String, Image> memoryCache = Collections.synchronizedMap(new HashMap<>());
     // Directorio donde se guardarán las imágenes descargadas.
     private static String cacheDir = null;
     // Executor para descargas en segundo plano.
     private static final ExecutorService executor = Executors.newFixedThreadPool(16);
     // Ruta de la imagen por defecto
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
+    private static final int MAX_CACHE_SIZE = 100; // Mantendrá las últimas 100 portadas usadas en memoria
+
+    // Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
+    private static final Map<String, Image> memoryCache = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+            return size() > MAX_CACHE_SIZE;
+        }
+    };
 
     /**
      * Esta función carga la imagen por defecto (esa gris con el logo) cuando un
@@ -121,26 +129,54 @@ public class ImageLoader {
             return;
         }
 
-        // Detener animación previa (crítico al hacer scroll rápido)
+        // 1. Detener animaciones de carga previas
         stopSkeleton(target);
 
+        // 2. Si no hay ruta, cargar imagen por defecto inmediatamente
         if (urlOrPath == null || urlOrPath.isEmpty()) {
             loadDefault(target, w, h);
             return;
         }
 
-        String memoryKey = urlOrPath + "_" + w + "x" + h;
+        // 3. Comprobar Caché de memoria para respuesta instantánea
+        // Forzamos siempre el tamaño de miniatura (110x160) para ahorrar RAM
+        // Aunque el componente pida más, cargamos poco para ganar fluidez
+        double thumbW = 110;
+        double thumbH = 160;
+        String memoryKey = urlOrPath + "_" + thumbW + "x" + thumbH;
 
         if (memoryCache.containsKey(memoryKey)) {
             target.setImage(memoryCache.get(memoryKey));
             return;
         }
 
-        if (isValidUrl(urlOrPath)) {
-            handleWebImage(urlOrPath, target, w, h, memoryKey);
-        } else {
-            handleLocalImage(urlOrPath, target, w, h, memoryKey);
-        }
+        // 4. CARGA ASÍNCRONA REAL (Punto 1: Fluidez)
+        // Usamos el constructor de Image con backgroundLoading = true
+        // Parámetros: url, ancho, alto, preservar ratio, suavizado, CARGA EN SEGUNDO PLANO
+        String finalUrl = isValidUrl(urlOrPath) ? urlOrPath : new File(urlOrPath).toURI().toString();
+
+        // El tercer parámetro 'true' activa el suavizado y el último 'true' la carga en segundo plano
+        Image image = new Image(finalUrl, thumbW, thumbH, true, true, true);
+
+        // Mostramos un estado vacío o placeholder mientras descarga/lee del disco
+        target.setImage(null);
+
+        // Cuando la imagen esté lista en segundo plano, se asigna al ImageView
+        image.progressProperty().addListener((obs, oldProgress, newProgress) -> {
+            if (newProgress.doubleValue() == 1.0 && !image.isError()) {
+                javafx.application.Platform.runLater(() -> {
+                    target.setImage(image);
+                    memoryCache.put(memoryKey, image); // Guardar en caché para la próxima vez
+                });
+            }
+        });
+
+        // Manejo de errores silencioso para no bloquear la app
+        image.errorProperty().addListener((obs, oldErr, isError) -> {
+            if (isError) {
+                javafx.application.Platform.runLater(() -> loadDefault(target, w, h));
+            }
+        });
     }
 
     /**

@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+import com.bibliohouse.logic.GoogleBooksCliente;
+import com.bibliohouse.logic.InventaireCliente;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.NextCloudSyncService;
 import com.bibliohouse.logic.Libro;
@@ -30,9 +32,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -53,9 +57,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.animation.FadeTransition;
-import javafx.util.Duration;
 import javafx.scene.Node;
-import org.controlsfx.control.Notifications;
 import javafx.util.Duration;
 
 /**
@@ -226,6 +228,7 @@ public class PrimaryController implements Initializable {
     @FXML
     private TextField txtBuscarMisLibros;
     private ContextMenu contextMenuLibros;
+    private javafx.animation.PauseTransition searchDelay;
 
     @FXML
     private void cambiarAEspanol() {
@@ -308,12 +311,23 @@ public class PrimaryController implements Initializable {
                 if (newTab != null && newTab.getContent() != null) {
                     Node content = newTab.getContent();
 
+                    // MEJORA DE SUAVIDAD: Activamos la caché de hardware antes de la animación
+                    content.setCache(true);
+                    content.setCacheHint(javafx.scene.CacheHint.SPEED);
+
                     // Configuramos la transición de desvanecimiento
                     FadeTransition fade = new FadeTransition(Duration.millis(300), content);
                     fade.setFromValue(0.0); // Empieza totalmente transparente
                     fade.setToValue(1.0);   // Termina totalmente opaco
                     fade.setCycleCount(1);
                     fade.setAutoReverse(false);
+
+                    // Al terminar la animación, desactivamos la caché para liberar memoria de video
+                    fade.setOnFinished(e -> {
+                        content.setCache(false);
+                        content.setCacheHint(javafx.scene.CacheHint.DEFAULT);
+                    });
+
                     // Pequeño efecto de desplazamiento hacia arriba (Slide + Fade)
                     content.setTranslateY(10); // Baja el contenido 10 píxeles inicialmente
                     javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(300), content);
@@ -498,8 +512,14 @@ public class PrimaryController implements Initializable {
         }
 
         // Buscador visual rápido en la pestaña Mis Libros
+        // En PrimaryController.java
         if (txtBuscarMisLibros != null) {
-            txtBuscarMisLibros.textProperty().addListener((observable, oldValue, newValue) -> actualizarPanelMisLibros());
+            searchDelay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
+            searchDelay.setOnFinished(event -> actualizarPanelMisLibros());
+
+            txtBuscarMisLibros.textProperty().addListener((observable, oldValue, newValue) -> {
+                searchDelay.playFromStart(); // Reinicia el cronómetro con cada letra
+            });
         }
     }
 
@@ -1990,82 +2010,62 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void buscarDuplicados(ActionEvent event) {
-        List<Libro> librosParaBorrar = new ArrayList<>();
-        int contadorFusionados = 0;
-        int duplicadosEncontrados = 0;
-        StringBuilder reporte = new StringBuilder();
+        if (listaLibrosCompleta == null || listaLibrosCompleta.isEmpty()) {
+            return;
+        }
 
-        for (int i = 0; i < listaLibrosCompleta.size(); i++) {
-            Libro original = listaLibrosCompleta.get(i);
-            if (librosParaBorrar.contains(original)) {
-                continue;
+        // 1. Usar un Map para encontrar duplicados en una sola pasada (O(n))
+        // Agrupamos por una "clave de identidad" (ISBN normalizado o Titulo+Autor)
+        Map<String, List<Libro>> grupos = listaLibrosCompleta.stream().collect(Collectors.groupingBy(l -> {
+            if (l.getIsbn() != null && !l.getIsbn().isBlank()) {
+                return l.getIsbn().replaceAll("[^0-9X]", ""); // Normalizar ISBN
             }
+            return (l.getTitulo() + "|" + l.getAutor()).toLowerCase().trim();
+        }));
 
-            for (int j = i + 1; j < listaLibrosCompleta.size(); j++) {
-                Libro duplicado = listaLibrosCompleta.get(j);
+        List<Libro> librosParaBorrar = new ArrayList<>();
+        StringBuilder reporte = new StringBuilder("Análisis de duplicados:\n\n");
+        int contadorFusionados = 0;
 
-                // Protecciones seguras contra nulos para evitar que la aplicación falle
-                boolean tieneIsbn = original.getIsbn() != null && !original.getIsbn().isEmpty() && duplicado.getIsbn() != null;
-                boolean esMismoIsbn = tieneIsbn && original.getIsbn().equals(duplicado.getIsbn());
+        for (List<Libro> grupo : grupos.values()) {
+            if (grupo.size() > 1) {
+                Libro principal = grupo.get(0);
+                for (int i = 1; i < grupo.size(); i++) {
+                    Libro duplicado = grupo.get(i);
 
-                boolean tieneTitulo = original.getTitulo() != null && duplicado.getTitulo() != null;
-                boolean tieneAutor = original.getAutor() != null && duplicado.getAutor() != null;
-                boolean esMismoTitulo = tieneTitulo && tieneAutor
-                        && original.getTitulo().equalsIgnoreCase(duplicado.getTitulo())
-                        && original.getAutor().equalsIgnoreCase(duplicado.getAutor());
-
-                if (esMismoIsbn || esMismoTitulo) {
-                    duplicadosEncontrados++;
-
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Duplicado Encontrado");
-                    alert.setHeaderText("Conflicto entre:\n1. " + original.getTitulo() + "\n2. " + duplicado.getTitulo());
-                    alert.setContentText("¿Deseas fusionarlos en uno solo y sumar su stock?");
-
-                    ButtonType btnFusionar = new ButtonType("Fusionar");
-                    ButtonType btnIgnorar = new ButtonType("Ignorar");
-                    alert.getButtonTypes().setAll(btnFusionar, btnIgnorar);
-
-                    Optional<ButtonType> res = alert.showAndWait();
-                    if (res.isPresent() && res.get() == btnFusionar) {
-                        original.setCantidad(original.getCantidad() + duplicado.getCantidad());
-                        librosParaBorrar.add(duplicado);
-                        contadorFusionados++;
-                        reporte.append("✔️ Fusionado: ").append(original.getTitulo()).append("\n");
-                    } else {
-                        reporte.append("❌ Ignorado: ").append(original.getTitulo()).append("\n");
-                    }
+                    // Sumar stock al principal
+                    principal.setCantidad(principal.getCantidad() + duplicado.getCantidad());
+                    librosParaBorrar.add(duplicado);
+                    contadorFusionados++;
+                    reporte.append("✔️ ").append(principal.getTitulo()).append(" (Fusionado)\n");
                 }
             }
         }
 
-        // Si no se encuentra nada, informamos directamente y salimos
-        if (duplicadosEncontrados == 0) {
-            mostrarAlerta("Búsqueda de Duplicados", "No se han encontrado libros duplicados en la biblioteca.");
+        if (contadorFusionados == 0) {
+            mostrarAlerta("Búsqueda de Duplicados", "No se encontraron libros repetidos.");
             return;
         }
 
-        // Aplicamos la limpieza
-        if (contadorFusionados > 0) {
-            listaLibrosCompleta.removeAll(librosParaBorrar);
-            jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-            tablaLibros.refresh();
-        }
+        // 2. Aplicar cambios
+        listaLibrosCompleta.removeAll(librosParaBorrar);
+        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+        tablaLibros.refresh();
+        actualizarPanelMisLibros();
 
-        // Restauramos el uso de tu ventana de resultados para mostrar el informe
+        // 3. Mostrar informe en tu ventana de duplicados
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("duplicados.fxml"));
             Parent root = loader.load();
             DuplicadosController controller = loader.getController();
-            controller.setTextoResultados("Análisis terminado.\nSe detectaron " + duplicadosEncontrados + " duplicados.\n\n" + reporte.toString());
+            controller.setTextoResultados(reporte.toString());
 
             Stage stage = new Stage();
             stage.setTitle("Informe de Duplicados");
             setScene(stage, root);
             stage.show();
-        } catch (Exception e) {
-            // Plan B por si el archivo duplicados.fxml no carga
-            mostrarAlerta("Completado", "Se han fusionado " + contadorFusionados + " libros.");
+        } catch (IOException e) {
+            mostrarAlerta("Éxito", "Se han fusionado " + contadorFusionados + " libros.");
         }
     }
 
@@ -2230,6 +2230,17 @@ public class PrimaryController implements Initializable {
         // Validación de stock
         if (libro.getCantidad() <= 0) {
             mostrarAlerta("Sin stock", "No quedan ejemplares disponibles de este libro.");
+            return;
+        }
+
+        //Evitar duplicados activos para el mismo socio
+        boolean yaLoTiene = listaPrestamosCompleta.stream()
+                .anyMatch(p -> p.getNumeroSocio() == socio.getNumeroSocio()
+                && p.getLibroId().equals(libro.getId())
+                && p.getFechaDevolucion() == null);
+
+        if (yaLoTiene) {
+            mostrarAlerta("Préstamo duplicado", socio.getNombre() + " ya tiene una copia activa de este libro.");
             return;
         }
 
@@ -2453,77 +2464,39 @@ public class PrimaryController implements Initializable {
      * @param query El texto a buscar (título, autor o ISBN).
      */
     // Método unificado para lanzar la búsqueda RÁPIDA (con Timeouts)
+    // En PrimaryController.java
     private void ejecutarBusquedaGlobal(String query) {
-        System.out.println("[DEBUG] Iniciando búsqueda MULTI-PROVEEDOR rápida para: " + query);
-        lblEstado.setText("Buscando a toda máquina (máx 3 segundos)...");
+        lblEstado.setText(resources.getString("status.searching")); // Usar bundle para i18n
+        txtBusquedaOpenLibrary.setDisable(true); // Bloquear UI inmediatamente
 
-        Thread searchThread = new Thread(() -> {
+        // Usamos el pool de hilos común para no saturar el sistema
+        java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            // Ejecución en paralelo de los 3 proveedores con tiempos de espera estrictos
+            var f1 = java.util.concurrent.CompletableFuture.supplyAsync(() -> OpenLibraryCliente.buscarLibros(query));
+            var f2 = java.util.concurrent.CompletableFuture.supplyAsync(() -> GoogleBooksCliente.buscarLibros(query));
+            var f3 = java.util.concurrent.CompletableFuture.supplyAsync(() -> InventaireCliente.buscarLibros(query));
+
             try {
-                // Si tardan más de 3 segundos, devuelven una lista vacía y no bloquean a los demás.
-
-                java.util.concurrent.CompletableFuture<List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> OpenLibraryCliente.buscarLibros(query))
-                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                        .exceptionally(ex -> new ArrayList<>());
-
-                java.util.concurrent.CompletableFuture<List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
-                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                        .exceptionally(ex -> new ArrayList<>());
-
-                java.util.concurrent.CompletableFuture<List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                        .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
-                        .completeOnTimeout(new ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                        .exceptionally(ex -> new ArrayList<>());
-
-                // Esperamos a los tres, pero como todos tienen un límite de 3s, la espera MÁXIMA total será de 3s.
-                java.util.concurrent.CompletableFuture.allOf(futureOpenLib, futureGoogle, futureInventaire).join();
-
-                List<Libro> resultadosTotales = new ArrayList<>();
-                if (futureOpenLib.get() != null) {
-                    resultadosTotales.addAll(futureOpenLib.get());
-                }
-                if (futureGoogle.get() != null) {
-                    resultadosTotales.addAll(futureGoogle.get());
-                }
-                if (futureInventaire.get() != null) {
-                    resultadosTotales.addAll(futureInventaire.get());
-                }
-
-                Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setDisable(false);
-                    if (resultadosTotales.isEmpty()) {
-                        mostrarAlerta("Sin resultados", "No se encontró nada (o los servidores tardaron demasiado en responder).");
-                        lblEstado.setText("Búsqueda finalizada sin éxito.");
-                    } else {
-                        // Opcional: Eliminar duplicados si Google y OpenLibrary traen el mismo ISBN exacto
-                        List<Libro> resultadosLimpios = resultadosTotales.stream()
-                                .filter(l -> l.getIsbn() != null && !l.getIsbn().isEmpty())
-                                .collect(java.util.stream.Collectors.collectingAndThen(
-                                        java.util.stream.Collectors.toCollection(() -> new java.util.TreeSet<>(java.util.Comparator.comparing(Libro::getIsbn))),
-                                        ArrayList::new));
-
-                        // Si después de limpiar duplicados por ISBN nos quedamos sin nada (ej: libros sin ISBN), mostramos los totales
-                        if (resultadosLimpios.isEmpty()) {
-                            resultadosLimpios = resultadosTotales;
-                        }
-
-                        abrirVentanaResultados(resultadosLimpios);
-                        lblEstado.setText("Búsqueda finalizada. Resultados: " + resultadosLimpios.size());
-                    }
-                });
-
-            } catch (InterruptedException | ExecutionException e) {
-                Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setDisable(false);
-                    lblEstado.setText("Error en la búsqueda.");
-                    mostrarAlerta("Error", "Error crítico al buscar: " + e.getMessage());
-                });
+                java.util.concurrent.CompletableFuture.allOf(f1, f2, f3).get(5, java.util.concurrent.TimeUnit.SECONDS);
+                List<Libro> unidos = new ArrayList<>();
+                unidos.addAll(f1.get());
+                unidos.addAll(f2.get());
+                unidos.addAll(f3.get());
+                return unidos;
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                return new ArrayList<Libro>();
             }
+        }).thenAccept(resultados -> {
+            // Volver al hilo de UI para mostrar resultados
+            Platform.runLater(() -> {
+                txtBusquedaOpenLibrary.setDisable(false);
+                if (resultados.isEmpty()) {
+                    mostrarAlerta("Sin resultados", "No se encontraron libros.");
+                } else {
+                    abrirVentanaResultados(resultados);
+                }
+            });
         });
-
-        searchThread.setDaemon(true);
-        searchThread.start();
     }
 
     /**
@@ -2816,9 +2789,8 @@ public class PrimaryController implements Initializable {
      * a la Z. Respeta los filtros del menú lateral y de búsqueda.
      */
     private void actualizarPanelMisLibros() {
-        if (panelMisLibros == null || filteredData == null) {
-            return;
-        }
+        if (panelMisLibros == null || filteredData == null) return;
+        
         panelMisLibros.getChildren().clear();
 
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador

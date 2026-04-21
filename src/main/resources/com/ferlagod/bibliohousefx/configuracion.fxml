@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox minHeight="573.0" minWidth="600.0" prefHeight="573.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ConfiguracionController">
+<VBox minHeight="610.0" minWidth="710.0" prefHeight="610.0" prefWidth="710.0" spacing="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ConfiguracionController">
     <children>
         <Label styleClass="heading-text" text="%config.title" />
         <Separator />
@@ -44,7 +44,7 @@
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <children>
                                             <Label text="%config.language" />
-                                            <ComboBox fx:id="comboIdioma" prefWidth="200.0" />
+                                            <ComboBox fx:id="comboIdioma" prefHeight="32.0" prefWidth="200.0" />
                                         </children>
                                     </HBox>
                                 </VBox>
