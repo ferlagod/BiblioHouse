@@ -2789,8 +2789,10 @@ public class PrimaryController implements Initializable {
      * a la Z. Respeta los filtros del menú lateral y de búsqueda.
      */
     private void actualizarPanelMisLibros() {
-        if (panelMisLibros == null || filteredData == null) return;
-        
+        if (panelMisLibros == null || filteredData == null) {
+            return;
+        }
+
         panelMisLibros.getChildren().clear();
 
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
@@ -2834,30 +2836,24 @@ public class PrimaryController implements Initializable {
         tarjeta.setPrefWidth(140);
         tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
 
-        // CLIC IZQUIERDO: Abrir detalles (Ignorando Ctrl+Clic en Mac)
+        // --- CLIC IZQUIERDO (DOBLE CLIC) ---
         tarjeta.setOnMouseClicked(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && !e.isControlDown() && !e.isPopupTrigger()) {
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && e.getClickCount() == 2) {
                 mostrarDetalleLibro(libro);
             }
         });
 
-        // CLIC DERECHO: Mostrar el menú de gestión
+        // --- CLIC DERECHO (MENÚ CONTEXTUAL) ---
         tarjeta.setOnContextMenuRequested(e -> {
-            // Sincronizamos la selección de la tabla con este libro 
-            // para que las acciones del menú (Editar, Eliminar) sepan sobre qué libro actuar.
             tablaLibros.getSelectionModel().select(libro);
-
-            // Mostramos el menú en la posición del ratón
             if (contextMenuLibros != null) {
                 contextMenuLibros.show(tarjeta, e.getScreenX(), e.getScreenY());
             }
         });
 
-        tarjeta.setOnMouseClicked(e -> mostrarDetalleLibro(libro));
-
-        javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
+       javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
         com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
-
+        
         // 1. Contenedor para apilar el badge sobre la imagen
         javafx.scene.layout.StackPane contenedorPortada = new javafx.scene.layout.StackPane(img);
 
