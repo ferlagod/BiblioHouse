@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.logic;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -448,5 +449,20 @@ public class Libro {
     public String toString() {
         // Devuelve solo el título para mostrarlo en el JComboBox
         return this.titulo;
+    }
+
+    /**
+     * Obtiene el nombre del archivo de la portada a partir de su URL o ruta
+     * local.
+     *
+     * @return El nombre del archivo (ej: "portada.jpg") o null si la URL está
+     * vacía o es nula.
+     */
+    public String getNombreArchivoPortada() {
+        if (portadaURL == null || portadaURL.isEmpty()) {
+            return null;
+        }
+        File f = new File(portadaURL);
+        return f.getName();
     }
 }

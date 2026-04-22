@@ -88,14 +88,16 @@ public class JsonManager {
      * Ejecutor programado para el debounce del auto-sync. Un único hilo daemon
      * compartido para toda la vida del gestor.
      */
-    private final ScheduledExecutorService syncScheduler =
-            Executors.newSingleThreadScheduledExecutor(r -> {
+    private final ScheduledExecutorService syncScheduler
+            = Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = new Thread(r, "nextcloud-autosync");
                 t.setDaemon(true);
                 return t;
             });
 
-    /** Referencia al sync pendiente (para cancelarlo si llega otro antes). */
+    /**
+     * Referencia al sync pendiente (para cancelarlo si llega otro antes).
+     */
     private ScheduledFuture<?> pendingSyncFuture;
 
     /**
@@ -363,16 +365,58 @@ public class JsonManager {
      *
      * @return Lista de libros cargados.
      */
+    /**
+     * Carga la lista de libros y realiza una migración automática de portadas
+     * de la carpeta antigua 'portadas' a la nueva 'covers' si es necesario.
+     */
     public List<Libro> cargarLibros() {
         Type tipoLista = new TypeToken<ArrayList<Libro>>() {
         }.getType();
+
+        // 1. Cargamos los libros del archivo JSON
         List<Libro> libros = cargarDatos(databaseFilePath, tipoLista, "libros");
-        // Se comprueba que los libros tengan todos los campos necesarios
+
+        // 2. Definimos rutas
+        String carpetaCovers = rutaDatosUsuario + File.separator + "covers";
+        String carpetaPortadasAntigua = rutaDatosUsuario + File.separator + "portadas";
+
+        // --- INICIO RUTINA DE MIGRACIÓN ---
+        File oldDir = new File(carpetaPortadasAntigua);
+        File newDir = new File(carpetaCovers);
+
+        if (oldDir.exists() && oldDir.isDirectory()) {
+            if (!newDir.exists()) {
+                newDir.mkdirs();
+            }
+
+            File[] files = oldDir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    File dest = new File(newDir, f.getName());
+                    // Movemos el archivo a la nueva carpeta
+                    f.renameTo(dest);
+                }
+            }
+            // Una vez vacía, intentamos borrar la carpeta antigua para limpiar
+            oldDir.delete();
+            LOGGER.info("Migración de portadas completada: de 'portadas' a 'covers'.");
+        }
+        // --- FIN RUTINA DE MIGRACIÓN ---
+
+        // 3. Procesamos la lista cargada para reparar rutas dinámicas
         for (Libro libro : libros) {
             if (libro.getEstanterias() == null) {
                 libro.setEstanterias(new ArrayList<>());
             }
+
+            String url = libro.getPortadaURL();
+            if (url != null && !url.isEmpty() && !url.startsWith("http") && !url.contains("default_cover")) {
+                // Reparamos la ruta para que apunte SIEMPRE a la carpeta 'covers' del PC actual
+                File archivo = new File(url);
+                libro.setPortadaURL(carpetaCovers + File.separator + archivo.getName());
+            }
         }
+
         return libros;
     }
 

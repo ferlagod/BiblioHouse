@@ -365,10 +365,10 @@ public class ImageLoader {
             return urlOrPath;
         }
 
-        // Creamos la subcarpeta 'portadas' dentro de la del usuario
-        File dirPortadas = new File(carpetaUsuario, "portadas");
-        if (!dirPortadas.exists()) {
-            dirPortadas.mkdirs();
+        //Usamos 'covers' para que coincida con la sincronización de NextCloud
+        File dirCovers = new File(carpetaUsuario, "covers");
+        if (!dirCovers.exists()) {
+            dirCovers.mkdirs();
         }
 
         // Determinamos la extensión (por defecto .jpg)
@@ -377,8 +377,8 @@ public class ImageLoader {
             extension = ".png";
         }
 
-        // El archivo final se llamará como el ID del libro (ej: 123e4567-e89b...jpg)
-        File archivoDestino = new File(dirPortadas, idLibro + extension);
+        // El archivo final se llamará como el ID del libro
+        File archivoDestino = new File(dirCovers, idLibro + extension);
 
         try {
             if (isValidUrl(urlOrPath)) {
@@ -389,17 +389,26 @@ public class ImageLoader {
             } else {
                 // Es un archivo local, lo copiamos
                 File archivoOrigen = new File(urlOrPath);
-                // Solo lo copiamos si existe y no es ya el archivo de destino
-                if (archivoOrigen.exists() && !archivoOrigen.getAbsolutePath().equals(archivoDestino.getAbsolutePath())) {
-                    Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                // IMPORTANTE: Si el archivo ya está en la carpeta covers (aunque sea con otra ruta absoluta)
+                // solo necesitamos devolver la ruta, no volver a copiarlo sobre sí mismo.
+                if (archivoOrigen.exists()) {
+                    if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
+                        Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } else {
+                    // Si nos pasan una ruta que no existe (ej. de otro PC), devolvemos null
+                    // para que el sistema intente buscarla o cargar la por defecto.
+                    return urlOrPath;
                 }
             }
-            // Devolvemos la ruta local absoluta
+
+            // Devolvemos la ruta local absoluta de este PC
             return archivoDestino.getAbsolutePath();
 
         } catch (IOException e) {
             LOGGER.severe("Error al hacer la portada offline: " + e.getMessage());
-            return urlOrPath; // Si falla por lo que sea, devolvemos lo que había para no romper nada
+            return urlOrPath;
         }
     }
 

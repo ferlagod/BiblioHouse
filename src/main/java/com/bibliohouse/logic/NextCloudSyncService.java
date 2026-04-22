@@ -30,6 +30,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipInputStream;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Servicio que gestiona la sincronización de la base de datos local de
@@ -271,7 +273,7 @@ public class NextCloudSyncService {
             String davBase = resolverDavBase(sardine);
             String remoteFolderUrl = buildRemoteFolderUrl(davBase);
 
-            // Crear carpeta BiblioHouse; 405 = ya existe (ignorado).
+            // 1. Asegurar que la carpeta BiblioHouse existe en la nube
             try {
                 sardine.createDirectory(remoteFolderUrl);
                 LOGGER.log(Level.INFO, "Carpeta creada en NextCloud: {0}", remoteFolderUrl);
@@ -284,28 +286,42 @@ public class NextCloudSyncService {
                 }
             }
 
+            // 2. EMPAQUETAR PORTADAS: Crea el archivo covers.zip en la carpeta local
+            // Este paso es CRÍTICO para que las fotos viajen entre PCs
             empaquetarPortadas(localDir);
 
-            for (String fileName : DB_FILES) {
+            // 3. Definir la lista de archivos a subir (JSONs + el nuevo ZIP de portadas)
+            List<String> archivosParaSubir = new ArrayList<>(List.of(DB_FILES));
+            archivosParaSubir.add("covers.zip"); // Añadimos el paquete de fotos
+
+            for (String fileName : archivosParaSubir) {
                 File localFile = new File(localDir, fileName);
                 if (!localFile.exists()) {
                     LOGGER.log(Level.FINE, "Archivo local no encontrado, omitiendo: {0}", fileName);
                     continue;
                 }
+
                 String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
                 try {
-                    // Usamos byte[] para evitar que Sardine re-codifique los '%'
-                    // del URL al construir internamente el java.net.URI.
                     byte[] data = Files.readAllBytes(localFile.toPath());
-                    sardine.put(remoteFileUrl, data, "application/json");
-                    LOGGER.log(Level.INFO, "Subido a NextCloud: {0}", fileName);
+
+                    // Definimos el tipo de contenido según la extensión
+                    String contentType = fileName.endsWith(".zip") ? "application/zip" : "application/json";
+
+                    sardine.put(remoteFileUrl, data, contentType);
+                    LOGGER.log(Level.INFO, "Sincronizado con éxito: {0}", fileName);
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Error al subir {0}: {1}",
-                            new Object[]{fileName, e.getMessage()});
-                    throw new IOException("Error al subir " + fileName + ": " + e.getMessage(), e);
+                    LOGGER.log(Level.WARNING, "Error al subir {0}: {1}", new Object[]{fileName, e.getMessage()});
+                    // No lanzamos excepción aquí para que si falla una foto, al menos suba los JSON
                 }
             }
-            desempaquetarPortadas(localDir);
+
+            // 4. LIMPIEZA: Borramos el ZIP local después de subirlo para no ocupar espacio doble
+            File zipTemporal = new File(localDir, "covers.zip");
+            if (zipTemporal.exists()) {
+                zipTemporal.delete();
+            }
+
         } finally {
             try {
                 sardine.shutdown();
