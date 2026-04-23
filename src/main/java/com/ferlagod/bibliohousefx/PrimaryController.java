@@ -57,8 +57,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.scene.Node;
 import javafx.util.Duration;
+import org.controlsfx.control.NotificationPane;
 
 /**
  * Este es el controlador principal. Aquí manejo la tabla de libros, los
@@ -83,6 +85,7 @@ public class PrimaryController implements Initializable {
     private java.util.Map<String, String> preferencias;
     private FilteredList<Libro> filteredData; // Lista que la tabla usará para filtrar
     private SortedList<Libro> sortedData; // Lista que la tabla usará para ordenar (basada en filteredData)
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(PrimaryController.class.getName());
 
     // --- LÍMITE DE PRÉSTAMO ---
     /**
@@ -226,6 +229,8 @@ public class PrimaryController implements Initializable {
     @FXML
     private javafx.scene.layout.FlowPane panelMisLibros;
     @FXML
+    private NotificationPane notificationPane;
+    @FXML
     private TextField txtBuscarMisLibros;
     private ContextMenu contextMenuLibros;
     private javafx.animation.PauseTransition searchDelay;
@@ -275,6 +280,7 @@ public class PrimaryController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
         try {
             this.resources = rb;
 
@@ -2218,47 +2224,68 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void realizarPrestamo(ActionEvent event) {
-        // 1. Obtener datos de LOS COMBOS (No de la tabla)
-        Libro libro = comboLibrosPrestamo.getValue();
+        // 1. Obtener datos de LOS COMBOS
+        Libro libroSeleccionado = comboLibrosPrestamo.getValue();
         Socio socio = comboSocios.getValue();
 
-        if (libro == null || socio == null) {
+        if (libroSeleccionado == null || socio == null) {
             mostrarAlerta("Datos faltantes", "Por favor, selecciona un libro y un socio de las listas.");
             return;
         }
 
-        // Validación de stock
-        if (libro.getCantidad() <= 0) {
+        // 2. BUSCAR EL LIBRO ORIGINAL (Aseguramos trabajar con el objeto maestro)
+        Libro libroOriginal = listaLibrosCompleta.stream()
+                .filter(l -> l.getId().equals(libroSeleccionado.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (libroOriginal == null) {
+            mostrarAlerta("Error", "No se pudo localizar el libro en la base de datos.");
+            return;
+        }
+
+        // 3. VALIDACIÓN: Stock real
+        if (libroOriginal.getCantidad() <= 0) {
             mostrarAlerta("Sin stock", "No quedan ejemplares disponibles de este libro.");
             return;
         }
 
-        //Evitar duplicados activos para el mismo socio
+        // 4. VALIDACIÓN: Evitar duplicados (CON PROTECCIÓN NULA - FIX CRASH)
         boolean yaLoTiene = listaPrestamosCompleta.stream()
-                .anyMatch(p -> p.getNumeroSocio() == socio.getNumeroSocio()
-                && p.getLibroId().equals(libro.getId())
-                && p.getFechaDevolucion() == null);
+                .anyMatch(p -> {
+                    // Comprobamos que sea el mismo socio y esté sin devolver
+                    if (p.getNumeroSocio() == socio.getNumeroSocio() && p.getFechaDevolucion() == null) {
+                        // PROTECCIÓN: Si el préstamo viejo no tiene ID, comparamos por título (legacy)
+                        // Si tiene ID, comparamos estrictamente por ID.
+                        if (p.getLibroId() != null) {
+                            return p.getLibroId().equals(libroOriginal.getId());
+                        } else {
+                            return p.getTituloLibro() != null && p.getTituloLibro().equals(libroOriginal.getTitulo());
+                        }
+                    }
+                    return false;
+                });
 
         if (yaLoTiene) {
             mostrarAlerta("Préstamo duplicado", socio.getNombre() + " ya tiene una copia activa de este libro.");
             return;
         }
 
-        // 2. Crear préstamo
-        Prestamo p = new Prestamo(libro, socio);
-        listaPrestamosCompleta.add(p);
+        // 5. REGISTRAR PRÉSTAMO
+        Prestamo nuevoPrestamo = new Prestamo(libroOriginal, socio);
+        listaPrestamosCompleta.add(nuevoPrestamo);
 
-        // 3. Restar Stock
-        libro.setCantidad(libro.getCantidad() - 1);
+        // 6. RESTAR STOCK
+        libroOriginal.setCantidad(libroOriginal.getCantidad() - 1);
 
-        // 4. Guardar y Refrescar
+        // 7. GUARDAR Y REFRESCAR
         jsonManager.guardarPrestamos(new ArrayList<>(listaPrestamosCompleta));
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
 
-        tablaLibros.refresh(); // Refrescar tabla principal
+        tablaLibros.refresh();
         actualizarComboLibrosDisponibles();
 
-        lblEstado.setText("Préstamo realizado: " + libro.getTitulo() + " -> " + socio.getNombre());
+        lblEstado.setText("Préstamo realizado: " + libroOriginal.getTitulo());
         mostrarAlerta("Éxito", "Préstamo registrado correctamente.");
     }
 
@@ -2270,6 +2297,7 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void marcarDevuelto(ActionEvent event) {
+        // 1. Obtener el préstamo seleccionado
         Prestamo p = tablaPrestamos.getSelectionModel().getSelectedItem();
 
         if (p == null) {
@@ -2277,43 +2305,42 @@ public class PrimaryController implements Initializable {
             return;
         }
 
-        // 1. COMPROBACIÓN: ¿Ya estaba devuelto?
+        // 2. Comprobar si ya estaba devuelto para evitar duplicados
         if (p.getFechaDevolucion() != null) {
             mostrarAlerta("Aviso", "Este préstamo ya figura como devuelto el " + p.getFechaDevolucionFormateada());
             return;
         }
 
-        // 2. ACTUALIZAR ESTADO DEL PRÉSTAMO
+        // 3. ACTUALIZAR ESTADO DEL PRÉSTAMO
         p.setFechaDevolucion(LocalDate.now());
 
-        // 3. DEVOLVER STOCK AL LIBRO
-        // Buscamos primero por ID (fiable incluso si el título fue editado),
-        // con fallback por título para compatibilidad con datos legado sin ID.
-        for (Libro l : listaLibrosCompleta) {
-            boolean coincidePorId = p.getLibroId() != null && p.getLibroId().equals(l.getId());
-            boolean coincidePorTitulo = !coincidePorId && l.getTitulo().equals(p.getTituloLibro());
-            if (coincidePorId || coincidePorTitulo) {
-                l.setCantidad(l.getCantidad() + 1);
-                break;
-            }
-        }
+        // 4. DEVOLVER STOCK AL LIBRO (Uso estricto de ID único)
+        // Buscamos en la lista maestra el libro que coincida exactamente con el ID guardado en el préstamo
+        listaLibrosCompleta.stream()
+                .filter(l -> l.getId().equals(p.getLibroId()))
+                .findFirst()
+                .ifPresentOrElse(
+                        libro -> {
+                            libro.setCantidad(libro.getCantidad() + 1);
+                            LOGGER.log(java.util.logging.Level.INFO, "Stock devuelto para el libro: {0}", libro.getTitulo());
+                        },
+                        () -> LOGGER.log(java.util.logging.Level.WARNING, "No se encontró el libro con ID {0} para devolver stock. ¿Fue borrado?", p.getLibroId())
+                );
 
-        // 4. GUARDAR CAMBIOS
-        // Guardamos la lista de préstamos
+        // 5. GUARDAR CAMBIOS (Ahora de forma atómica gracias al cambio en JsonManager)
         jsonManager.guardarPrestamos(new ArrayList<>(listaPrestamosCompleta));
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
 
-        // 5. REFRESCAR UI
-        // Forzamos el re-filtrado de ambas tablas para que el préstamo pase de Activos
-        // a Historial
+        // 6. REFRESCAR INTERFAZ
+        // Re-filtramos para que el préstamo desaparezca de "Activos" y aparezca en "Historial"
         filteredPrestamos.setPredicate(p2 -> p2.getFechaDevolucion() == null);
         filteredHistory.setPredicate(p2 -> p2.getFechaDevolucion() != null);
 
         tablaPrestamos.refresh();
         tablaHistorial.refresh();
-        actualizarComboLibrosDisponibles(); // El libro vuelve a estar disponible en el combo
+        actualizarComboLibrosDisponibles();
 
-        lblEstado.setText("Devolución registrada correctamente.");
+        lblEstado.setText("Devolución registrada correctamente (ID: " + p.getLibroId() + ")");
     }
 
     // --- DETALLES ---
@@ -2539,68 +2566,89 @@ public class PrimaryController implements Initializable {
      * @param event El evento que desencadena la acción.
      */
     @FXML
-    private void buscarPortadasFaltantes(javafx.event.ActionEvent event) {
-        java.util.List<Libro> librosSinPortada = listaLibrosCompleta.stream()
+    private void buscarPortadasFaltantes(ActionEvent event) {
+        // 1. Filtrar libros que realmente necesiten portada
+        List<Libro> librosSinPortada = listaLibrosCompleta.stream()
                 .filter(l -> l.getPortadaURL() == null || l.getPortadaURL().isEmpty() || l.getPortadaURL().contains("default_cover"))
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
 
         if (librosSinPortada.isEmpty()) {
-            mostrarAlerta("Información", "No hay ningún libro sin portada en tu biblioteca.");
+            notificar(resources.getString("status.no_covers_pending")); // O usa un texto directo si no tienes la clave
             return;
         }
 
-        // Cuadro de advertencia antes de empezar 
-        javafx.scene.control.Alert confirmacion = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        // 2. Confirmación previa
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Búsqueda masiva");
         confirmacion.setHeaderText("Se van a procesar " + librosSinPortada.size() + " libros.");
-        confirmacion.setContentText("Este proceso conecta con servidores externos y puede tardar varios minutos.\n\n¿Deseas continuar?");
+        confirmacion.setContentText("Este proceso conectará con servidores externos. ¿Deseas continuar?");
 
-        java.util.Optional<javafx.scene.control.ButtonType> resultado = confirmacion.showAndWait();
-        if (!resultado.isPresent() || resultado.get() != javafx.scene.control.ButtonType.OK) {
-            return; // El usuario pulsó cancelar
+        if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
         }
 
-        // Crear diálogo de carga
-        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        dialogo.setTitle("Descargando portadas...");
-        dialogo.setHeaderText("Procesando, no cierres el programa.");
-        dialogo.getDialogPane().getButtonTypes().clear();
+        // 3. Crear la Tarea (Task) para segundo plano
+        javafx.concurrent.Task<Integer> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected Integer call() throws Exception {
+                int actualizadas = 0;
+                for (int i = 0; i < librosSinPortada.size(); i++) {
+                    if (isCancelled()) {
+                        break;
+                    }
 
-        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(-1);
-        progressBar.setPrefWidth(250);
-        dialogo.getDialogPane().setContent(progressBar);
-        dialogo.show();
+                    Libro libro = librosSinPortada.get(i);
 
-        Thread hilo = new Thread(() -> {
-            int actualizadas = 0;
-            for (Libro libro : librosSinPortada) {
-                String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
-                String urlEncontrada = buscarImagenEnApisMasivo(query);
+                    // Actualizar barra de progreso y mensaje informativo
+                    updateMessage("Buscando: " + libro.getTitulo());
+                    updateProgress(i + 1, librosSinPortada.size());
 
-                if (urlEncontrada.isEmpty() && libro.getIsbn() != null && !libro.getIsbn().isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isEmpty()) {
-                    urlEncontrada = buscarImagenEnApisMasivo(libro.getTitulo());
+                    // Lógica de búsqueda (ISBN primero, luego Título)
+                    String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
+                    String urlEncontrada = buscarImagenEnApisMasivo(query);
+
+                    if (urlEncontrada.isEmpty() && libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
+                        urlEncontrada = buscarImagenEnApisMasivo(libro.getTitulo());
+                    }
+
+                    if (!urlEncontrada.isEmpty()) {
+                        String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(urlEncontrada, libro.getId(), rutaUsuario);
+                        libro.setPortadaURL(rutaLocal);
+                        actualizadas++;
+                    }
+
+                    // Pequeña pausa para ser respetuosos con las APIs y permitir ver el progreso
+                    Thread.sleep(300);
                 }
-
-                if (!urlEncontrada.isEmpty()) {
-                    String idLibro = libro.getId() != null ? libro.getId() : java.util.UUID.randomUUID().toString();
-                    String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(urlEncontrada, idLibro, this.rutaUsuario);
-                    libro.setPortadaURL(rutaLocal);
-                    actualizadas++;
-                }
+                return actualizadas;
             }
+        };
 
-            final int totalActualizadas = actualizadas;
-            javafx.application.Platform.runLater(() -> {
-                jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
-                tablaLibros.refresh();
-                actualizarPanelDeseos();
-                dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
-                dialogo.close();
-                mostrarAlerta("Terminado", "Se han descargado " + totalActualizadas + " portadas.");
-            });
+        // 4. Mostrar el diálogo de progreso de ControlsFX
+        org.controlsfx.dialog.ProgressDialog progressDialog = new org.controlsfx.dialog.ProgressDialog(task);
+        progressDialog.setTitle("BiblioHouse - Descarga de Portadas");
+        progressDialog.setHeaderText("Procesando colección...");
+        progressDialog.initOwner(tablaLibros.getScene().getWindow());
+
+        // 5. Qué hacer cuando termine con éxito
+        task.setOnSucceeded(e -> {
+            jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+            tablaLibros.refresh();
+            actualizarPanelMisLibros();
+            actualizarPanelDeseos();
+            notificar("¡Completado! Se han actualizado " + task.getValue() + " portadas.");
         });
-        hilo.setDaemon(true);
-        hilo.start();
+
+        // 6. Qué hacer si falla
+        task.setOnFailed(e -> {
+            LOGGER.log(java.util.logging.Level.SEVERE, "Error en descarga masiva", task.getException());
+            mostrarAlerta("Error", "Ocurrió un error durante la descarga masiva.");
+        });
+
+        // Lanzar en un hilo nuevo
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -2851,9 +2899,9 @@ public class PrimaryController implements Initializable {
             }
         });
 
-       javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
+        javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
         com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
-        
+
         // 1. Contenedor para apilar el badge sobre la imagen
         javafx.scene.layout.StackPane contenedorPortada = new javafx.scene.layout.StackPane(img);
 
@@ -2891,5 +2939,14 @@ public class PrimaryController implements Initializable {
         // 3. Añadimos el contenedor (que lleva imagen + badge) en vez de solo la imagen
         tarjeta.getChildren().addAll(contenedorPortada, lblTitulo);
         return tarjeta;
+    }
+
+    private void notificar(String mensaje) {
+        notificationPane.setText(mensaje);
+        notificationPane.show();
+        // Se oculta automáticamente tras 3 segundos
+        PauseTransition delay = new PauseTransition(Duration.seconds(3));
+        delay.setOnFinished(e -> notificationPane.hide());
+        delay.play();
     }
 }

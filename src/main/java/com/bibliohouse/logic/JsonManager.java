@@ -256,48 +256,44 @@ public class JsonManager {
      * guardando.
      */
     private <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
-        // Asegurarse de que el directorio del usuario exista antes de intentar escribir
         crearDirectorioUsuarioSiNoExiste();
 
-        File archivoActual = new File(path);
+        File archivoFinal = new File(path);
+        File archivoTemporal = new File(path + ".tmp");
         File archivoBackup = new File(path + ".bak");
 
-        // 1. Crear backup si existe el archivo actual
-        if (archivoActual.exists()) {
-            try {
-                java.nio.file.Files.copy(archivoActual.toPath(), archivoBackup.toPath(),
-                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "No se pudo crear el backup para " + path, e);
-            }
-        }
-
-        try (FileWriter writer = new FileWriter(path)) {
+        // 1. Escribir en el archivo TEMPORAL primero
+        try (FileWriter writer = new FileWriter(archivoTemporal)) {
             gson.toJson(lista, writer);
-            LOGGER.log(Level.FINE, "Guardados {0} {1} en {2}", new Object[]{lista.size(), tipoDato, path});
+            // Forzamos el volcado al disco físico
+            writer.flush();
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error al guardar " + tipoDato + " en " + path, e);
-            // Intentar restaurar backup si falló la escritura y el archivo quedó
-            // corrupto/vacío
-            if (archivoBackup.exists()) {
-                try {
-                    java.nio.file.Files.copy(archivoBackup.toPath(), archivoActual.toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    LOGGER.log(Level.INFO, "Restaurado backup tras fallo de escritura en " + path);
-                } catch (IOException restoreEx) {
-                    LOGGER.log(Level.SEVERE, "FALLO CRÍTICO: No se pudo restaurar el backup tras error de escritura.",
-                            restoreEx);
-                }
-            }
+            LOGGER.log(Level.SEVERE, "Error crítico: No se pudo escribir el archivo temporal para " + tipoDato, e);
+            return; // Si falla el temporal, no tocamos el original
         }
 
-        // Lanzar sincronización automática con debounce de 2 s.
-        // Varios guardados consecutivos (p.ej. mover un libro de deseos a la biblioteca
-        // guarda biblioteca.json y deseos.json casi al mismo tiempo) se colapsan en
-        // una sola subida, evitando la condición de carrera 423 Locked en WebDAV.
+        // 2. Si la escritura fue bien, gestionamos el reemplazo atómico
+        try {
+            // Creamos un backup del original antes de borrarlo (seguridad extra)
+            if (archivoFinal.exists()) {
+                java.nio.file.Files.copy(archivoFinal.toPath(), archivoBackup.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // Movemos el temporal al final (esto es una operación atómica en el SO)
+            java.nio.file.Files.move(archivoTemporal.toPath(), archivoFinal.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+
+            LOGGER.log(Level.FINE, "Guardado atómico completado: {0}", path);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error al renombrar archivo temporal a final para " + tipoDato, e);
+        }
+
+        // 3. Lanzar sincronización si existe
         if (autoSyncTask != null) {
             if (pendingSyncFuture != null && !pendingSyncFuture.isDone()) {
-                pendingSyncFuture.cancel(false); // Cancelar la subida aún no iniciada
+                pendingSyncFuture.cancel(false);
             }
             pendingSyncFuture = syncScheduler.schedule(autoSyncTask, 2, TimeUnit.SECONDS);
         }

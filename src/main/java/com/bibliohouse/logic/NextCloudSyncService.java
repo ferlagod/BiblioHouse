@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.logic;
 
+import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 import java.io.File;
@@ -32,6 +33,8 @@ import java.util.zip.ZipInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Servicio que gestiona la sincronización de la base de datos local de
@@ -272,61 +275,64 @@ public class NextCloudSyncService {
         try {
             String davBase = resolverDavBase(sardine);
             String remoteFolderUrl = buildRemoteFolderUrl(davBase);
+            String remoteCoversUrl = remoteFolderUrl + "covers/";
 
-            // 1. Asegurar que la carpeta BiblioHouse existe en la nube
-            try {
-                sardine.createDirectory(remoteFolderUrl);
-                LOGGER.log(Level.INFO, "Carpeta creada en NextCloud: {0}", remoteFolderUrl);
-            } catch (IOException e) {
-                String msg = e.getMessage() != null ? e.getMessage() : "";
-                if (msg.contains("405") || msg.contains("Method Not Allowed") || msg.contains("301")) {
-                    LOGGER.log(Level.FINE, "Carpeta BiblioHouse ya existía (ignorado).");
-                } else {
-                    LOGGER.log(Level.WARNING, "Respuesta inesperada al crear carpeta: {0}", msg);
-                }
-            }
+            // 1. Asegurar directorios en la nube
+            crearDirectorioSiNoExiste(sardine, remoteFolderUrl);
+            crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
 
-            // 2. EMPAQUETAR PORTADAS: Crea el archivo covers.zip en la carpeta local
-            // Este paso es CRÍTICO para que las fotos viajen entre PCs
-            empaquetarPortadas(localDir);
-
-            // 3. Definir la lista de archivos a subir (JSONs + el nuevo ZIP de portadas)
-            List<String> archivosParaSubir = new ArrayList<>(List.of(DB_FILES));
-            archivosParaSubir.add("covers.zip"); // Añadimos el paquete de fotos
-
-            for (String fileName : archivosParaSubir) {
+            // 2. Sincronizar archivos JSON (Se suben siempre porque cambian constantemente)
+            for (String fileName : DB_FILES) {
                 File localFile = new File(localDir, fileName);
-                if (!localFile.exists()) {
-                    LOGGER.log(Level.FINE, "Archivo local no encontrado, omitiendo: {0}", fileName);
-                    continue;
-                }
-
-                String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                try {
-                    byte[] data = Files.readAllBytes(localFile.toPath());
-
-                    // Definimos el tipo de contenido según la extensión
-                    String contentType = fileName.endsWith(".zip") ? "application/zip" : "application/json";
-
-                    sardine.put(remoteFileUrl, data, contentType);
-                    LOGGER.log(Level.INFO, "Sincronizado con éxito: {0}", fileName);
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Error al subir {0}: {1}", new Object[]{fileName, e.getMessage()});
-                    // No lanzamos excepción aquí para que si falla una foto, al menos suba los JSON
+                if (localFile.exists()) {
+                    String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
+                    // Usamos put con InputStream para archivos que podrían ser algo más grandes
+                    try (InputStream fis = new FileInputStream(localFile)) {
+                        sardine.put(remoteFileUrl, fis, "application/json");
+                    }
+                    LOGGER.log(Level.INFO, "JSON sincronizado: {0}", fileName);
                 }
             }
 
-            // 4. LIMPIEZA: Borramos el ZIP local después de subirlo para no ocupar espacio doble
-            File zipTemporal = new File(localDir, "covers.zip");
-            if (zipTemporal.exists()) {
-                zipTemporal.delete();
-            }
+            // 3. Sincronización INCREMENTAL de portadas
+            // Usamos la carpeta "covers" que es la estándar que definimos
+            File carpetaLocalCovers = new File(localDir, "covers");
+            if (carpetaLocalCovers.exists() && carpetaLocalCovers.isDirectory()) {
+                File[] portadas = carpetaLocalCovers.listFiles();
+                if (portadas != null) {
+                    // Listamos la nube una sola vez para comparar
+                    List<DavResource> resources = sardine.list(remoteCoversUrl);
+                    Set<String> nombresEnRemoto = resources.stream()
+                            .map(DavResource::getName)
+                            .collect(Collectors.toSet());
 
+                    for (File portada : portadas) {
+                        // Solo subimos si es archivo, no es oculto y NO está ya en la nube
+                        if (portada.isFile() && !portada.getName().startsWith(".") && !nombresEnRemoto.contains(portada.getName())) {
+                            String remoteFileUrl = remoteCoversUrl + portada.getName();
+                            try (InputStream fis = new FileInputStream(portada)) {
+                                sardine.put(remoteFileUrl, fis, "image/jpeg");
+                            }
+                            LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", portada.getName());
+                        }
+                    }
+                }
+            }
         } finally {
-            try {
-                sardine.shutdown();
-            } catch (IOException ignored) {
+            sardine.shutdown();
+        }
+    }
+
+    /**
+     * Método auxiliar para evitar errores 405 si la carpeta ya existe
+     */
+    private void crearDirectorioSiNoExiste(Sardine sardine, String url) {
+        try {
+            if (!sardine.exists(url)) {
+                sardine.createDirectory(url);
             }
+        } catch (IOException e) {
+            // Ignoramos errores de "Ya existe" o similares
         }
     }
 
@@ -373,63 +379,4 @@ public class NextCloudSyncService {
         }
     }
 
-    /**
-     * Empaqueta todas las portadas de libros en un archivo ZIP. Solo incluye
-     * archivos visibles (ignora subcarpetas y archivos ocultos como .DS_Store).
-     *
-     * @param localDir Ruta del directorio local donde se encuentra la carpeta
-     * "portadas".
-     */
-    private void empaquetarPortadas(String localDir) {
-        File dirPortadas = new File(localDir, "portadas");
-        if (!dirPortadas.exists() || !dirPortadas.isDirectory()) {
-            return;
-        }
-
-        File zipFile = new File(localDir, "portadas.zip");
-        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile))) {
-            File[] files = dirPortadas.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // Ignorar subcarpetas y archivos ocultos del sistema como .DS_Store
-                    if (file.isFile() && !file.getName().startsWith(".")) {
-                        zos.putNextEntry(new ZipEntry(file.getName()));
-                        Files.copy(file.toPath(), zos);
-                        zos.closeEntry();
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Error al empaquetar portadas: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Desempaqueta el archivo ZIP de portadas en la carpeta "portadas". Si la
-     * carpeta no existe, la crea. Sobrescribe los archivos existentes.
-     *
-     * @param localDir Ruta del directorio local donde se encuentra el archivo
-     * "portadas.zip".
-     */
-    private void desempaquetarPortadas(String localDir) {
-        File zipFile = new File(localDir, "portadas.zip");
-        if (!zipFile.exists()) {
-            return;
-        }
-
-        File dirPortadas = new File(localDir, "portadas");
-        if (!dirPortadas.exists()) {
-            dirPortadas.mkdirs();
-        }
-
-        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                File target = new File(dirPortadas, entry.getName());
-                Files.copy(zis, target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Error al desempaquetar portadas: " + e.getMessage());
-        }
-    }
 }

@@ -26,8 +26,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -43,25 +41,20 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 /**
- * Clase para cargar imágenes sin que se trabe la app. Guarda las fotos en una
- * carpeta para no descargarlas dos veces.
+ * Clase para cargar imágenes de forma asíncrona con caché multinivel.
  *
- * @author Fernando Lago
- * @version 1.6
+ * * @author Fernando Lago
+ * @version 1.7
  */
 public class ImageLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
-
-    // Directorio donde se guardarán las imágenes descargadas.
     private static String cacheDir = null;
-    // Executor para descargas en segundo plano.
-    private static final ExecutorService executor = Executors.newFixedThreadPool(16);
-    // Ruta de la imagen por defecto
+    private static final ExecutorService executor = Executors.newFixedThreadPool(8); // Pool reducido para no saturar IO
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
-    private static final int MAX_CACHE_SIZE = 100; // Mantendrá las últimas 100 portadas usadas en memoria
+    private static final int MAX_CACHE_SIZE = 60; // Optimizado para fluidez sin devorar RAM
 
-    // Caché en memoria (RAM) para acceso ultrarrápido durante la sesión.
+    // Caché en memoria (LRU)
     private static final Map<String, Image> memoryCache = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
@@ -70,42 +63,39 @@ public class ImageLoader {
     };
 
     /**
-     * Esta función carga la imagen por defecto (esa gris con el logo) cuando un
-     * libro no tiene portada o cuando la url está mal. Intento cargarla de la
-     * memoria para que vaya rápido.
+     * Carga la imagen por defecto en el ImageView especificado, escalándola al
+     * tamaño indicado. Utiliza una caché en memoria para evitar recargar la
+     * misma imagen con las mismas dimensiones.
+     *
+     * @param target ImageView donde se cargará la imagen.
+     * @param w Ancho deseado para la imagen
      */
     private static void loadDefault(ImageView target, double w, double h) {
         try {
-            // Intentar cargar desde recursos
             URL defaultUrl = ImageLoader.class.getResource(DEFAULT_IMAGE_PATH);
             if (defaultUrl != null) {
                 String uri = defaultUrl.toExternalForm();
-                // Usar caché de memoria para la imagen por defecto también
                 String memoryKey = "DEFAULT_" + w + "x" + h;
                 if (memoryCache.containsKey(memoryKey)) {
                     target.setImage(memoryCache.get(memoryKey));
                     return;
                 }
-
-                double loadW = (w > 0) ? w : 0;
-                double loadH = (h > 0) ? h : 0;
-                Image img = new Image(uri, loadW, loadH, true, true, false);
+                Image img = new Image(uri, w > 0 ? w : 0, h > 0 ? h : 0, true, true, false);
                 memoryCache.put(memoryKey, img);
                 target.setImage(img);
             } else {
-                LOGGER.warning("No se encontró la imagen por defecto en: " + DEFAULT_IMAGE_PATH);
                 target.setImage(null);
             }
         } catch (Exception e) {
-            LOGGER.severe("Error cargando imagen por defecto: " + e.getMessage());
             target.setImage(null);
         }
     }
 
     /**
-     * Configura el directorio de caché. Debe llamarse al iniciar sesión.
+     * Establece el directorio donde se almacenarán las imágenes en caché. Si el
+     * directorio no existe, lo crea automáticamente.
      *
-     * @param path Ruta absoluta a la carpeta de caché.
+     * @param path Ruta del directorio donde se guardará la caché.
      */
     public static void setCacheDir(String path) {
         cacheDir = path;
@@ -116,92 +106,62 @@ public class ImageLoader {
     }
 
     /**
-     * Esta función pone la imagen en el cuadro (ImageView). Si ya la tenemos en
-     * memoria, la usa. Si no, la busca.
+     * Carga una imagen de forma asíncrona en un ImageView, aplicando skeleton
+     * loading mientras se procesa. Prioriza el uso de la caché en memoria para
+     * evitar recargas innecesarias.
      *
-     * @param url La dirección de la foto o la ruta del archivo.
-     * @param target El cuadro donde va la foto.
-     * @param w Ancho que queremos.
-     * @param h Alto que queremos.
+     * @param urlOrPath Ruta local o URL de la imagen a cargar.
+     * @param target ImageView donde se mostrará la imagen.
+     * @param w Ancho deseado para la imagen
      */
     public static void load(String urlOrPath, ImageView target, double w, double h) {
         if (target == null) {
             return;
         }
 
-        // 1. Detener animaciones de carga previas
         stopSkeleton(target);
 
-        // 2. Si no hay ruta, cargar imagen por defecto inmediatamente
-        if (urlOrPath == null || urlOrPath.isEmpty()) {
+        if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.contains("default_cover")) {
             loadDefault(target, w, h);
             return;
         }
 
-        // 3. Comprobar Caché de memoria para respuesta instantánea
-        // Forzamos siempre el tamaño de miniatura (110x160) para ahorrar RAM
-        // Aunque el componente pida más, cargamos poco para ganar fluidez
-        double thumbW = 110;
-        double thumbH = 160;
-        String memoryKey = urlOrPath + "_" + thumbW + "x" + thumbH;
+        // Tamaño de miniatura para la caché si no se especifica
+        double loadW = (w > 0) ? w : 110;
+        double loadH = (h > 0) ? h : 160;
+        String memoryKey = urlOrPath + "_" + loadW + "x" + loadH;
 
+        // 1. Respuesta instantánea desde caché en memoria
         if (memoryCache.containsKey(memoryKey)) {
             target.setImage(memoryCache.get(memoryKey));
             return;
         }
 
-        // 4. CARGA ASÍNCRONA REAL (Punto 1: Fluidez)
-        // Usamos el constructor de Image con backgroundLoading = true
-        // Parámetros: url, ancho, alto, preservar ratio, suavizado, CARGA EN SEGUNDO PLANO
-        String finalUrl = isValidUrl(urlOrPath) ? urlOrPath : new File(urlOrPath).toURI().toString();
+        // 2. Iniciar skeleton loading mientras se procesa
+        startSkeleton(target, loadW, loadH);
 
-        // El tercer parámetro 'true' activa el suavizado y el último 'true' la carga en segundo plano
-        Image image = new Image(finalUrl, thumbW, thumbH, true, true, true);
-
-        // Mostramos un estado vacío o placeholder mientras descarga/lee del disco
-        target.setImage(null);
-
-        // Cuando la imagen esté lista en segundo plano, se asigna al ImageView
-        image.progressProperty().addListener((obs, oldProgress, newProgress) -> {
-            if (newProgress.doubleValue() == 1.0 && !image.isError()) {
-                javafx.application.Platform.runLater(() -> {
-                    target.setImage(image);
-                    memoryCache.put(memoryKey, image); // Guardar en caché para la próxima vez
-                });
-            }
-        });
-
-        // Manejo de errores silencioso para no bloquear la app
-        image.errorProperty().addListener((obs, oldErr, isError) -> {
-            if (isError) {
-                javafx.application.Platform.runLater(() -> loadDefault(target, w, h));
-            }
-        });
+        // 3. Determinar si es una imagen web o local
+        if (isValidUrl(urlOrPath)) {
+            handleWebImage(urlOrPath, target, loadW, loadH, memoryKey);
+        } else {
+            handleLocalImage(urlOrPath, target, loadW, loadH, memoryKey);
+        }
     }
 
     /**
-     * Sobrecarga para cargar tamaño original.
-     */
-    public static void load(String urlOrPath, ImageView target) {
-        load(urlOrPath, target, -1, -1);
-    }
-
-    /**
-     * Si la imagen es de internet: 1. Mira si ya la bajamos antes. 2. Si está,
-     * la carga del disco. 3. Si no, la descarga y la guarda.
+     * Gestiona la carga de una imagen desde una URL remota. Primero verifica si
+     * la imagen está en caché local (disco).
+     *
+     * @param url URL de la imagen remota.
+     * @param target ImageView donde se mostrará la imagen.
+     * @param w Ancho deseado para la imagen.
+     * @param h Alto deseado para la imagen.
+     * @param memoryKey Clave única para identificar la imagen en la caché en
+     * memoria.
      */
     private static void handleWebImage(String url, ImageView target, double w, double h, String memoryKey) {
         if (cacheDir == null) {
-            LOGGER.warning("ImageLoader: cacheDir no configurado. Usando carga directa.");
-            startSkeleton(target, w, h);
-            Image image = new Image(url, w > 0 ? w : 0, h > 0 ? h : 0, true, true, true);
-            // Mostrar cuando cargue
-            image.progressProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                    stopSkeleton(target);
-                    target.setImage(image);
-                }
-            });
+            loadImageAsync(url, target, w, h, memoryKey);
             return;
         }
 
@@ -211,44 +171,41 @@ public class ImageLoader {
         if (cacheFile.exists()) {
             handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
         } else {
-            // Empezar el esqueleto ANTES de descargar de internet
-            startSkeleton(target, w, h);
-            downloadAndLoad(url, cacheFile, target, w, h, memoryKey);
+            // Descargar en segundo plano y luego cargar
+            Task<Void> downloadTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    try (InputStream in = new URL(url).openStream()) {
+                        Files.copy(in, cacheFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void succeeded() {
+                    handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
+                }
+
+                @Override
+                protected void failed() {
+                    stopSkeleton(target);
+                    loadDefault(target, w, h);
+                }
+            };
+            executor.submit(downloadTask);
         }
     }
 
     /**
-     * Descarga la imagen en un hilo separado, la guarda y luego la carga en el
-     * UI.
-     */
-    private static void downloadAndLoad(String url, File destination, ImageView target, double w, double h, String memoryKey) {
-        Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                try (InputStream in = new URL(url).openStream()) {
-                    Files.copy(in, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                return null;
-            }
-
-            @Override
-            protected void succeeded() {
-                // Éxito: Cargar localmente (ahí se detendrá el skeleton al terminar de leer el disco)
-                handleLocalImage(destination.getAbsolutePath(), target, w, h, memoryKey);
-            }
-
-            @Override
-            protected void failed() {
-                stopSkeleton(target);
-                LOGGER.warning("Fallo al descargar imagen para caché: " + url);
-                loadDefault(target, w, h);
-            }
-        };
-        executor.submit(task);
-    }
-
-    /**
-     * Carga una imagen local.
+     * Gestiona la carga de una imagen desde una ruta local. Si el archivo no
+     * existe, detiene el skeleton loading y carga la imagen por defecto.
+     *
+     * @param path Ruta local del archivo de imagen.
+     * @param target ImageView donde se mostrará la imagen.
+     * @param w Ancho deseado para la imagen.
+     * @param h Alto deseado para la imagen.
+     * @param memoryKey Clave única para identificar la imagen en la caché en
+     * memoria.
      */
     private static void handleLocalImage(String path, ImageView target, double w, double h, String memoryKey) {
         File file = new File(path);
@@ -257,59 +214,65 @@ public class ImageLoader {
             loadDefault(target, w, h);
             return;
         }
+        loadImageAsync(file.toURI().toString(), target, w, h, memoryKey);
+    }
 
-        String uri = file.toURI().toString();
-        double loadW = (w > 0) ? w : 0;
-        double loadH = (h > 0) ? h : 0;
+    /**
+     * Carga una imagen de forma asíncrona usando el motor nativo de JavaFX, sin
+     * bloquear el hilo principal de la aplicación.
+     *
+     * @param uri URI o ruta de la imagen a cargar.
+     * @param target ImageView donde se mostrará la imagen.
+     * @param w Ancho deseado para la imagen.
+     * @param h Alto deseado para la imagen.
+     * @param memoryKey Clave única para almacenar la imagen en la caché en
+     * memoria.
+     */
+    private static void loadImageAsync(String uri, ImageView target, double w, double h, String memoryKey) {
+        // backgroundLoading (último parámetro) = true
+        Image image = new Image(uri, w, h, true, true, true);
 
-        Image image = new Image(uri, loadW, loadH, true, true, true);
-
-        // Si por casualidad se cargó al instante, la ponemos y listo
-        if (image.getProgress() >= 1.0) {
-            if (!image.isError()) {
-                memoryCache.put(memoryKey, image);
-            }
-            stopSkeleton(target);
-            target.setImage(image);
-        } else {
-            // Activar skeleton mientras se lee del disco
-            startSkeleton(target, w, h);
-
-            // Esperar pacientemente a que llegue al 100% (1.0)
-            image.progressProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal.doubleValue() >= 1.0) {
-                    stopSkeleton(target);
+        image.progressProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() >= 1.0) {
+                javafx.application.Platform.runLater(() -> {
                     if (!image.isError()) {
+                        stopSkeleton(target);
                         memoryCache.put(memoryKey, image);
-                        target.setImage(image); // Dar el cambiazo
+                        target.setImage(image);
+                    } else {
+                        stopSkeleton(target);
+                        loadDefault(target, w, h);
                     }
-                }
-            });
+                });
+            }
+        });
 
-            image.errorProperty().addListener((obs, oldVal, isError) -> {
-                if (isError) {
-                    stopSkeleton(target);
-                    memoryCache.remove(memoryKey);
-                    loadDefault(target, w, h);
-                }
-            });
+        // Caso especial: la imagen ya estaba lista al crearse
+        if (image.getProgress() >= 1.0 && !image.isError()) {
+            stopSkeleton(target);
+            memoryCache.put(memoryKey, image);
+            target.setImage(image);
         }
     }
 
     /**
-     * Comprueba si una cadena de texto es una URL válida. Solo se considera
-     * válida si la URL comienza con "http://" o "https://".
+     * Verifica si una cadena es una URL válida (http o https).
      *
-     * @param url Cadena de texto a validar como URL.
-     * @return true si la URL no es nula y comienza con "http://" o "https://".
-     * false en caso contrario, incluyendo si la URL es nula.
+     * @param url Cadena a verificar.
+     * @return true si la cadena no es nula y comienza con "http://" o
+     * "https://", false en caso contrario.
      */
     private static boolean isValidUrl(String url) {
         return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 
     /**
-     * Genera un hash SHA-256 de la URL para usar como nombre de archivo seguro.
+     * Genera un hash SHA-256 de una URL y lo devuelve como una cadena
+     * hexadecimal, añadiendo la extensión ".png" al final.
+     *
+     * @param url La URL de la que se generará el hash.
+     * @return Cadena hexadecimal del hash SHA-256 de la URL, con extensión
+     * ".png".
      */
     private static String hashUrl(String url) {
         try {
@@ -323,129 +286,98 @@ public class ImageLoader {
                 }
                 hexString.append(hex);
             }
-
-            // Ponemos .png por defecto para que el SO lo reconozca como imagen si se
-            // explora.
             return hexString.toString() + ".png";
         } catch (NoSuchAlgorithmException e) {
-            // Fallback muy simple (no ideal por caracteres especiales)
             return String.valueOf(url.hashCode()) + ".png";
         }
     }
 
     /**
-     * Limpia la caché de memoria.
-     */
-    public static void clearMemoryCache() {
-        memoryCache.clear();
-    }
-
-    /**
-     * Detiene el executor service para permitir que la aplicación se cierre
-     * correctamente.
-     */
-    public static void shutdown() {
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdownNow();
-        }
-    }
-
-    /**
-     * Descarga (o copia) la portada a la carpeta local 'portadas' del usuario
-     * para que sea 100% offline e independiente de internet.
+     * Guarda una portada de libro localmente en la carpeta de usuario, ya sea
+     * descargándola desde una URL o copiándola desde una ruta local.
      *
-     * * @param urlOrPath URL de internet o ruta de un archivo local.
-     * @param idLibro ID del libro (para nombrar el archivo de forma única).
-     * @param carpetaUsuario Ruta absoluta de la carpeta base del usuario.
-     * @return La nueva ruta local del archivo, o la original si falla.
+     * @param urlOrPath URL o ruta local de la portada original.
+     * @param idLibro Identificador único del libro, usado como nombre de
+     * archivo.
+     * @param carpetaUsuario Ruta de la carpeta del usuario donde se guardará la
+     * portada.
+     * @return Ruta absoluta del archivo de portada guardado localmente, o la
+     * ruta original si no se pudo procesar.
      */
     public static String hacerPortadaLocalOffline(String urlOrPath, String idLibro, String carpetaUsuario) {
-        // Si no hay portada o es la por defecto, no hacemos nada
         if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH)) {
             return urlOrPath;
         }
 
-        //Usamos 'covers' para que coincida con la sincronización de NextCloud
         File dirCovers = new File(carpetaUsuario, "covers");
         if (!dirCovers.exists()) {
             dirCovers.mkdirs();
         }
 
-        // Determinamos la extensión (por defecto .jpg)
-        String extension = ".jpg";
-        if (urlOrPath.toLowerCase().endsWith(".png")) {
-            extension = ".png";
-        }
-
-        // El archivo final se llamará como el ID del libro
+        String extension = urlOrPath.toLowerCase().endsWith(".png") ? ".png" : ".jpg";
         File archivoDestino = new File(dirCovers, idLibro + extension);
 
         try {
             if (isValidUrl(urlOrPath)) {
-                // Es de internet: la descargamos
                 try (InputStream in = new URL(urlOrPath).openStream()) {
                     Files.copy(in, archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             } else {
-                // Es un archivo local, lo copiamos
                 File archivoOrigen = new File(urlOrPath);
-
-                // IMPORTANTE: Si el archivo ya está en la carpeta covers (aunque sea con otra ruta absoluta)
-                // solo necesitamos devolver la ruta, no volver a copiarlo sobre sí mismo.
                 if (archivoOrigen.exists()) {
                     if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
                         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
                 } else {
-                    // Si nos pasan una ruta que no existe (ej. de otro PC), devolvemos null
-                    // para que el sistema intente buscarla o cargar la por defecto.
                     return urlOrPath;
                 }
             }
-
-            // Devolvemos la ruta local absoluta de este PC
             return archivoDestino.getAbsolutePath();
-
         } catch (IOException e) {
-            LOGGER.severe("Error al hacer la portada offline: " + e.getMessage());
             return urlOrPath;
         }
     }
 
     /**
-     * Inicia la animación de "Skeleton Loader" (pulso gris) en el ImageView.
+     * Muestra un efecto de skeleton loading (animación de carga) en el
+     * ImageView especificado.
+     *
+     * @param target ImageView donde se mostrará la animación de skeleton.
+     * @param w Ancho deseado para el marcador de posición (si es <= 0, usa
+     * 110px). @param h Alto deseado para el marcador de posición (si es <= 0,
+     * usa 160px).
      */
     private static void startSkeleton(ImageView target, double w, double h) {
-        // Evitar dobles animaciones en la misma celda
         if (target.getProperties().containsKey("skeleton_anim")) {
             return;
         }
 
-        // Crear una imagen gris vacía del tamaño deseado
-        int width = (w > 0) ? (int) w : 130;
-        int height = (h > 0) ? (int) h : 180;
+        int width = (w > 0) ? (int) w : 110;
+        int height = (h > 0) ? (int) h : 160;
+
         WritableImage placeholder = new WritableImage(width, height);
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                placeholder.getPixelWriter().setColor(x, y, Color.rgb(225, 225, 225));
+                placeholder.getPixelWriter().setColor(x, y, Color.rgb(235, 235, 235));
             }
         }
         target.setImage(placeholder);
 
-        // Crear la animación de pulso (Fade)
-        FadeTransition ft = new FadeTransition(Duration.millis(700), target);
-        ft.setFromValue(0.4);
-        ft.setToValue(0.9);
+        FadeTransition ft = new FadeTransition(Duration.millis(800), target);
+        ft.setFromValue(0.3);
+        ft.setToValue(0.8);
         ft.setCycleCount(Animation.INDEFINITE);
         ft.setAutoReverse(true);
         ft.play();
-
-        // Guardar la animación en las propiedades del nodo para detenerla luego
         target.getProperties().put("skeleton_anim", ft);
     }
 
     /**
-     * Detiene la animación de "Skeleton Loader" y restaura la opacidad.
+     * Detiene y elimina la animación de skeleton loading del ImageView
+     * especificado, restaurando su opacidad al valor original (1.0). Si no hay
+     * animación activa, no realiza ninguna acción.
+     *
+     * @param target ImageView del que se detendrá la animación de skeleton.
      */
     private static void stopSkeleton(ImageView target) {
         if (target.getProperties().containsKey("skeleton_anim")) {
@@ -454,5 +386,16 @@ public class ImageLoader {
             target.getProperties().remove("skeleton_anim");
         }
         target.setOpacity(1.0);
+    }
+
+    /**
+     * Apaga el ejecutor de hilos utilizado para las tareas asíncronas de carga
+     * de imágenes. Si el ejecutor ya está apagado, no realiza ninguna acción.
+     * Este método debe llamarse al cerrar la aplicación para liberar recursos.
+     */
+    public static void shutdown() {
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdownNow();
+        }
     }
 }
