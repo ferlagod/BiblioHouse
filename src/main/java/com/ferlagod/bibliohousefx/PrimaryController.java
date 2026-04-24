@@ -2471,7 +2471,11 @@ public class PrimaryController implements Initializable {
     // Método unificado para lanzar la búsqueda RÁPIDA (con Timeouts)
     // En PrimaryController.java
     private void ejecutarBusquedaGlobal(String query) {
-        lblEstado.setText(resources.getString("status.searching")); // Usar bundle para i18n
+        if (resources != null && resources.containsKey("status.searching")) {
+            lblEstado.setText(resources.getString("status.searching"));
+        } else {
+            lblEstado.setText("Buscando..."); // Texto de respaldo si falta la traducción
+        }
         txtBusquedaOpenLibrary.setDisable(true); // Bloquear UI inmediatamente
 
         // Usamos el pool de hilos común para no saturar el sistema
