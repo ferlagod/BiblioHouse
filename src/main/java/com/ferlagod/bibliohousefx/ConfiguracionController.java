@@ -29,7 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -44,6 +46,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 
 /**
@@ -609,14 +612,92 @@ public class ConfiguracionController {
     }
 
     /**
-     * Restaura la configuración de fábrica (pendiente de implementar).
+     * Restaura la configuración de fábrica, borrando todos los datos del
+     * usuario.
      *
      * @param event El evento del botón.
      */
     @FXML
     private void restaurarFabrica(ActionEvent event) {
-        mostrarAlerta(resources.getString("config.alert.info.title"),
-                resources.getString("config.alert.factory.pending"));
+        // Pedimos confirmación de seguridad escribiendo "BORRAR"
+        TextInputDialog confirmDialog = new TextInputDialog();
+        confirmDialog.setTitle("Restaurar a Fábrica");
+        confirmDialog.setHeaderText("¡PELIGRO! Borrado total del sistema.");
+        confirmDialog.setContentText("Esta acción eliminará TODOS los libros, socios, portadas y configuraciones.\nNo se puede deshacer.\n\nEscribe 'BORRAR' para confirmar:");
+
+        Optional<String> result = confirmDialog.showAndWait();
+        if (result.isPresent()) {
+            if (result.get().trim().equalsIgnoreCase("BORRAR")) {
+                ejecutarBorradoDeFabrica();
+            } else {
+                mostrarAlerta("Cancelado", "Palabra de seguridad incorrecta. Operación cancelada.");
+            }
+        }
+    }
+
+    /**
+     * Ejecuta el borrado completo de todos los datos de la aplicación. Este
+     * método no puede deshacerse y eliminará permanentemente todos los datos.
+     */
+    private void ejecutarBorradoDeFabrica() {
+        try {
+            // 1. Borrar archivos de la carpeta del usuario (biblioteca, covers, etc.)
+            if (mainController != null && mainController.getRutaUsuario() != null) {
+                File dirUsuario = new File(mainController.getRutaUsuario());
+                if (dirUsuario.exists() && dirUsuario.isDirectory()) {
+                    borrarDirectorioRecursivo(dirUsuario);
+                }
+            }
+
+            // 2. Limpiar las credenciales y configuraciones del registro del Sistema Operativo
+            Preferences osPrefs = Preferences.userRoot().node(NC_PREFS_NODE);
+            osPrefs.clear(); // Elimina las credenciales cifradas de NextCloud
+
+            Preferences appPrefs = Preferences.userNodeForPackage(App.class);
+            appPrefs.clear(); // Elimina idioma y configuraciones globales
+
+            // 3. Detener la sincronización activa si la hubiera
+            if (jsonManager != null) {
+                jsonManager.setAutoSyncTask(null);
+            }
+
+            // 4. Mostrar aviso y cerrar la app
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("Restauración Completa");
+            info.setHeaderText("Sistema restaurado a valores de fábrica");
+            info.setContentText("Todos los datos han sido eliminados.\nLa aplicación se cerrará ahora. La próxima vez que la abras, estará como recién instalada.");
+            info.showAndWait();
+
+            Platform.exit(); // Cerrar interfaz de JavaFX
+            System.exit(0);  // Forzar cierre total para matar hilos en segundo plano (ej. descargas de portadas pendientes)
+
+        } catch (BackingStoreException e) {
+            LOGGER.log(Level.SEVERE, "Error durante la restauración a fábrica", e);
+            mostrarAlerta("Error Crítico", "Ocurrió un error al intentar borrar los datos: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Elimina un directorio y todo su contenido de forma recursiva. Este método
+     * borra todos los archivos y subdirectorios dentro del directorio
+     * especificado, y finalmente elimina el directorio vacío.
+     *
+     * @param directorio El directorio a eliminar.
+     */
+    private void borrarDirectorioRecursivo(File directorio) {
+        if (directorio.exists()) {
+            File[] archivos = directorio.listFiles();
+            if (archivos != null) {
+                for (File f : archivos) {
+                    if (f.isDirectory()) {
+                        borrarDirectorioRecursivo(f);
+                    } else {
+                        f.delete();
+                    }
+                }
+            }
+            directorio.delete();
+        }
     }
 
     /**

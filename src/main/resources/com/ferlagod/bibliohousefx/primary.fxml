@@ -308,7 +308,7 @@
 
                         <Tab closable="false" text="Sagas">
                             <content>
-                                <fx:include fx:id="pestañaSagas" source="sagas.fxml" />
+                                <fx:include fx:id="pestanaSagas" source="sagas.fxml" />
                             </content>
                         </Tab>
                     </tabs>

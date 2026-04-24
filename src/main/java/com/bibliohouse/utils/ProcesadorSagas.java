@@ -32,13 +32,42 @@ public class ProcesadorSagas {
      * Normaliza el nombre de la saga: quita tildes, espacios extra y pasa a
      * minúsculas. Evita que "Harry Potter" y "harry potter" se separen.
      */
-    public static String normalizar(String saga) {
-        if (saga == null || saga.trim().isEmpty()) {
-            return "Sin Saga";
+    /**
+     * Limpia el nombre de una saga para evitar que "Saga X Vol. 1" y "Saga X
+     * Vol. 2" se consideren dos sagas distintas.
+     */
+    public static String normalizar(String serieOriginal) {
+        if (serieOriginal == null || serieOriginal.isBlank()) {
+            return "";
         }
-        String limpia = Normalizer.normalize(saga, Normalizer.Form.NFD);
-        limpia = limpia.replaceAll("\\p{M}", ""); // Elimina marcas diacríticas (tildes)
-        return limpia.toLowerCase().trim();
+
+        String limpia = serieOriginal.trim();
+
+        // 1. Eliminar indicadores de volumen seguidos de números al final de la cadena
+        // Ej: "El Archivo de las Tormentas, Libro 1" -> "El Archivo de las Tormentas"
+        limpia = limpia.replaceAll("(?i)[,\\s-]*\\b(vol\\.?|volumen|tomo|libro|book|parte|part)\\s*\\d+.*$", "");
+
+        // 2. Eliminar el símbolo '#' seguido de números al final
+        // Ej: "Nacidos de la Bruma #3" -> "Nacidos de la Bruma"
+        limpia = limpia.replaceAll("(?i)[,\\s-]*#\\s*\\d+.*$", "");
+
+        // 3. Eliminar números romanos al final si están precedidos por un espacio
+        // Ej: "Fundación III" -> "Fundación" (Cuidado de no romper palabras como "Carlos III")
+        limpia = limpia.replaceAll("(?i)\\s+(I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3})$", "");
+
+        // 4. Eliminar la palabra "La serie de", "Saga" o "The series" para normalizar
+        // Ej: "La saga de Harry Potter" -> "Harry Potter"
+        limpia = limpia.replaceAll("(?i)^(la\\s+)?(saga|serie|series)\\s+(de|of)?\\s*", "");
+
+        // 5. Limpiar espacios extra dobles que hayan podido quedar
+        limpia = limpia.replaceAll("\\s{2,}", " ").trim();
+
+        // 6. Convertir la primera letra a mayúscula para homogeneizar visualmente
+        if (!limpia.isEmpty()) {
+            limpia = limpia.substring(0, 1).toUpperCase() + limpia.substring(1);
+        }
+
+        return limpia;
     }
 
     /**

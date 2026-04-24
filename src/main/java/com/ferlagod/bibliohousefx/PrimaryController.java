@@ -17,7 +17,9 @@
  */
 package com.ferlagod.bibliohousefx;
 
+import com.bibliohouse.logic.BusquedaSagas;
 import com.bibliohouse.logic.GoogleBooksCliente;
+import com.bibliohouse.logic.ImportarExportarBD;
 import com.bibliohouse.logic.InventaireCliente;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.NextCloudSyncService;
@@ -86,6 +88,8 @@ public class PrimaryController implements Initializable {
     private FilteredList<Libro> filteredData; // Lista que la tabla usará para filtrar
     private SortedList<Libro> sortedData; // Lista que la tabla usará para ordenar (basada en filteredData)
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(PrimaryController.class.getName());
+    private BusquedaSagas busquedaSagas = new BusquedaSagas();
+    private ImportarExportarBD gestorArchivos = new ImportarExportarBD();
 
     // --- LÍMITE DE PRÉSTAMO ---
     /**
@@ -225,7 +229,7 @@ public class PrimaryController implements Initializable {
     private javafx.scene.layout.FlowPane panelDeseos;
     private List<Libro> listaDeseos;
     @FXML
-    private SagasController pestañaSagasController;
+    private SagasController pestanaSagasController;
     @FXML
     private javafx.scene.layout.FlowPane panelMisLibros;
     @FXML
@@ -894,8 +898,12 @@ public class PrimaryController implements Initializable {
         // cargar
         actualizarFiltros();
 
-        if (pestañaSagasController != null) {
-            pestañaSagasController.initData(listaLibrosCompleta);
+        if (pestanaSagasController != null) {
+            pestanaSagasController.initData(listaLibrosCompleta, () -> {
+                // Esto es el Runnable (callback). Se ejecutará cuando SagasController llame a ejecutarGuardado()
+                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh(); // Refrescamos la tabla principal también por si borraron libros
+            });
         }
         // --- CONFIGURAR FILTRADO EN COMBOS ---
         // Configurar filtrado para Libros
@@ -1507,8 +1515,8 @@ public class PrimaryController implements Initializable {
     private void guardarYNotificar(String mensaje) {
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
         lblEstado.setText(mensaje);
-        if (pestañaSagasController != null) {
-            pestañaSagasController.initData(listaLibrosCompleta);
+        if (pestanaSagasController != null) {
+            pestanaSagasController.initData(listaLibrosCompleta);
         }
     }
 
@@ -1674,8 +1682,8 @@ public class PrimaryController implements Initializable {
                 tablaLibros.refresh();
                 jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
                 cargarListaEstanterias();
-                if (pestañaSagasController != null) {
-                    pestañaSagasController.initData(listaLibrosCompleta);
+                if (pestanaSagasController != null) {
+                    pestanaSagasController.initData(listaLibrosCompleta);
                 }
                 lblEstado.setText("Libro editado correctamente.");
             }
@@ -1785,8 +1793,8 @@ public class PrimaryController implements Initializable {
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
         lblEstado.setText("Libro eliminado definitivamente: " + libro.getTitulo());
 
-        if (pestañaSagasController != null) {
-            pestañaSagasController.initData(listaLibrosCompleta);
+        if (pestanaSagasController != null) {
+            pestanaSagasController.initData(listaLibrosCompleta);
         }
 
         // Refrescar la cuadrícula de "Mis Libros"
@@ -1802,39 +1810,14 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void importarBaseDatos(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Importar Base de Datos");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
-        File archivo = fileChooser.showOpenDialog(tablaLibros.getScene().getWindow());
-
-        if (archivo != null) {
-            List<Libro> importados = jsonManager.importarLibrosDesdeArchivo(archivo);
-            if (importados != null && !importados.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Importar");
-                alert.setContentText("¿Añadir a los existentes o Reemplazar todo?");
-                ButtonType btnAdd = new ButtonType("Añadir");
-                ButtonType btnReplace = new ButtonType("Reemplazar");
-                ButtonType btnCancel = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-                alert.getButtonTypes().setAll(btnAdd, btnReplace, btnCancel);
-
-                Optional<ButtonType> res = alert.showAndWait();
-                if (res.isPresent()) {
-                    if (res.get() == btnAdd) {
-
-                        listaLibrosCompleta.addAll(importados);
-                    } else if (res.get() == btnReplace) {
-
-                        listaLibrosCompleta.setAll(importados);
-                    }
-                    if (res.get() != btnCancel) {
-                        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-                        cargarListaEstanterias();
-                        actualizarComboLibrosDisponibles(); // Actualizar combo de préstamos
-                    }
-                }
-            }
-        }
+        gestorArchivos.importarBaseDatos(tablaLibros.getScene().getWindow(), jsonManager, listaLibrosCompleta, () -> {
+            // Este bloque se ejecuta solo si la importación tiene éxito
+            cargarListaEstanterias();
+            actualizarComboLibrosDisponibles();
+            tablaLibros.refresh();
+            actualizarFiltros();
+            mostrarAlerta("Importación completa", "La biblioteca se ha actualizado correctamente.");
+        });
     }
 
     /**
@@ -1844,20 +1827,7 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void exportarBaseDatos(ActionEvent event) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Exportar Backup");
-        fileChooser.setInitialFileName("biblioteca_backup.json");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
-        File archivo = fileChooser.showSaveDialog(tablaLibros.getScene().getWindow());
-
-        if (archivo != null) {
-            boolean ok = jsonManager.exportarLibros(archivo, new ArrayList<>(listaLibrosCompleta));
-            if (ok) {
-                mostrarAlerta("Éxito", "Copia guardada correctamente.");
-            } else {
-                mostrarAlerta("Error", "Fallo al exportar.");
-            }
-        }
+        gestorArchivos.exportarBaseDatos(tablaLibros.getScene().getWindow(), jsonManager, listaLibrosCompleta);
     }
 
     /**
@@ -2692,126 +2662,22 @@ public class PrimaryController implements Initializable {
      * Busca y asigna sagas a los libros que no tienen serie asignada. Muestra
      * un diálogo de confirmación y una barra de progreso durante la búsqueda.
      *
-     * @param event El evento que desencadena la acción.
      */
     @FXML
     private void buscarSagasFaltantes(javafx.event.ActionEvent event) {
-        java.util.List<Libro> librosSinSaga = listaLibrosCompleta.stream()
-                .filter(l -> l.getSerie() == null || l.getSerie().trim().isEmpty())
-                .collect(java.util.stream.Collectors.toList());
+        busquedaSagas.buscarSagasFaltantes(listaLibrosCompleta, jsonManager, () -> {
+            // Refrescar tabla principal
+            tablaLibros.refresh();
 
-        if (librosSinSaga.isEmpty()) {
-            mostrarAlerta("Información", "Todos tus libros ya tienen una saga asignada.");
-            return;
-        }
-
-        javafx.scene.control.Alert confirmacion = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Búsqueda de Sagas Online");
-        confirmacion.setHeaderText("Analizando " + librosSinSaga.size() + " libros sin saga.");
-        confirmacion.setContentText("El programa interrogará a las bases de datos para extraer la serie de los títulos. Puede tardar unos minutos.\n\n¿Iniciar proceso?");
-
-        if (confirmacion.showAndWait().orElse(javafx.scene.control.ButtonType.CANCEL) != javafx.scene.control.ButtonType.OK) {
-            return;
-        }
-
-        javafx.scene.control.Alert dialogo = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        dialogo.setTitle("Buscando sagas...");
-        dialogo.setHeaderText("Por favor, espera.");
-        dialogo.getDialogPane().getButtonTypes().clear();
-        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(-1);
-        progressBar.setPrefWidth(250);
-        dialogo.getDialogPane().setContent(progressBar);
-        dialogo.show();
-
-        Thread hilo = new Thread(() -> {
-            int actualizados = 0;
-            for (Libro libro : librosSinSaga) {
-                // 1. Priorizamos buscar por Título + Autor (da mejores resultados para sagas que el ISBN puro)
-                String query = libro.getTitulo();
-                if (libro.getAutor() != null && !libro.getAutor().isEmpty() && !libro.getAutor().equals("Desconocido")) {
-                    query += " " + libro.getAutor();
-                }
-
-                Libro apiLibro = buscarSagaEnApisSilencioso(query);
-
-                // Fallback al ISBN solo si por título falló estrepitosamente
-                if (apiLibro == null && libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
-                    apiLibro = buscarSagaEnApisSilencioso(libro.getIsbn());
-                }
-
-                if (apiLibro != null && apiLibro.getSerie() != null && !apiLibro.getSerie().isEmpty()) {
-                    libro.setSerie(apiLibro.getSerie());
-                    libro.setOrdenEnSerie(apiLibro.getOrdenEnSerie());
-                    actualizados++;
-                }
-
-                // 2. Freno anti-baneo: esperar 800ms antes de interrogar por el siguiente libro
-                try {
-                    Thread.sleep(800);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            // Refrescar panel de sagas (usando el nombre nuevo sin tilde)
+            if (pestanaSagasController != null) {
+                pestanaSagasController.initData(listaLibrosCompleta);
+            } else {
+                System.err.println("Error: pestanaSagasController es null. Revisa el fx:id en primary.fxml");
             }
 
-            final int totalAct = actualizados;
-            javafx.application.Platform.runLater(() -> {
-                jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
-                tablaLibros.refresh();
-                if (pestañaSagasController != null) {
-                    pestañaSagasController.initData(listaLibrosCompleta);
-                }
-                dialogo.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
-                dialogo.close();
-                mostrarAlerta("Terminado", "Se han deducido " + totalAct + " sagas nuevas.");
-            });
+            actualizarFiltros();
         });
-        hilo.setDaemon(true);
-        hilo.start();
-    }
-
-    /**
-     * Busca información de saga para un libro en Google Books y OpenLibrary.
-     *
-     * @param query El ISBN o título del libro a buscar.
-     * @return El primer libro encontrado con información de saga, o null si no
-     * se encuentra.
-     */
-    private Libro buscarSagaEnApisSilencioso(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib).join();
-
-            // Como los clientes ya ejecutan ProcesadorSagas.extraerSagaDeTitulo internamente,
-            // solo devolvemos el primer libro que venga con el campo de serie lleno.
-            if (futureGoogle.get() != null) {
-                for (Libro l : futureGoogle.get()) {
-                    if (l.getSerie() != null && !l.getSerie().isEmpty()) {
-                        return l;
-                    }
-                }
-            }
-            if (futureOpenLib.get() != null) {
-                for (Libro l : futureOpenLib.get()) {
-                    if (l.getSerie() != null && !l.getSerie().isEmpty()) {
-                        return l;
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-        }
-        return null;
     }
 
     /**

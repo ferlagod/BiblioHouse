@@ -66,62 +66,88 @@ public class SagasController {
     //Mapa: nombre de serie → lista de libros pertenecientes.
     private Map<String, List<Libro>> sagasMap;
     private List<Libro> listaLibrosPrincipal;
+    private Runnable onDatosCambiados;
 
     // -----------------------------------------------------------------------
     //  Inicialización pública
     // -----------------------------------------------------------------------
     /**
-     * Recibe la biblioteca completa, filtra los libros que pertenecen a una
-     * serie y construye el listado lateral ordenado alfabéticamente de forma
-     * robusta.
+     * Inicializa el controlador con la lista completa de libros y un callback
+     * para guardar los cambios realizados.
      *
-     * @param todosLosLibros Lista completa de libros del usuario.
+     * @param todosLosLibros Lista completa de libros de la biblioteca.
+     * @param onDatosCambiados Callback que se ejecutará para guardar los
+     * cambios.
+     */
+    public void initData(List<Libro> todosLosLibros, Runnable onDatosCambiados) {
+        this.listaLibrosPrincipal = todosLosLibros;
+        this.onDatosCambiados = onDatosCambiados;
+        actualizarVistaLateral();
+    }
+
+    /**
+     * Sobrecarga de {@code initData} para compatibilidad interna al refrescar
+     * la vista. No establece un callback de guardado.
+     *
+     * @param todosLosLibros Lista completa de libros de la biblioteca.
      */
     public void initData(List<Libro> todosLosLibros) {
-        // 1. Agrupar los libros usando el nombre NORMALIZADO (fusión "antitorpes")
-        // Así "Harry Potter", "harry potter" y "Harry Pótter" caen en el mismo saco.
         this.listaLibrosPrincipal = todosLosLibros;
-        Map<String, List<Libro>> agrupadoNormalizado = todosLosLibros.stream()
+        actualizarVistaLateral();
+    }
+
+    /**
+     * Actualiza la lista lateral de sagas, agrupando los libros por su serie
+     * normalizada. Crea un mapa de sagas y actualiza el ListView con los
+     * nombres de las sagas ordenadas.
+     */
+    private void actualizarVistaLateral() {
+        // Agrupar libros por saga normalizada
+        Map<String, List<Libro>> agrupadoNormalizado = listaLibrosPrincipal.stream()
                 .filter(l -> l.getSerie() != null && !l.getSerie().trim().isEmpty())
                 .collect(Collectors.groupingBy(l -> com.bibliohouse.utils.ProcesadorSagas.normalizar(l.getSerie())));
 
-        // 2. Reconstruir el mapa para la interfaz visual. 
-        // Usamos el nombre original (con sus mayúsculas y tildes) del primer libro del grupo.
+        // Crear mapa de sagas con nombres originales
         sagasMap = agrupadoNormalizado.values().stream()
                 .collect(Collectors.toMap(
-                        lista -> lista.get(0).getSerie(), // Nombre "bonito" para mostrar
+                        lista -> lista.get(0).getSerie().trim(),
                         lista -> lista
                 ));
 
-        // Llenar la lista lateral en orden alfabético
+        // Ordenar y actualizar la lista de sagas
         List<String> nombres = sagasMap.keySet().stream()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
 
-        listaSagas.getItems().clear(); // Limpiamos por si se recarga la vista
+        listaSagas.getItems().clear();
         listaSagas.getItems().addAll(nombres);
-
-        // Estilizar las celdas de la lista lateral
         listaSagas.setCellFactory(lv -> new SagaListCell());
 
-        // Reaccionar a la selección
-        listaSagas.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldVal, newVal) -> {
-                    if (newVal != null) {
-                        mostrarSaga(newVal);
-                    }
-                });
-
-        // Eliminada la autoselección inicial para no bloquear el hilo de arranque
+        // Configurar listener para cambios de selección
+        listaSagas.getSelectionModel().selectedItemProperty().removeListener(this::cambioSeleccionListener);
+        listaSagas.getSelectionModel().selectedItemProperty().addListener(this::cambioSeleccionListener);
     }
 
-    // -----------------------------------------------------------------------
-    //  Lógica de visualización
-    // -----------------------------------------------------------------------
     /**
-     * Renderiza el panel de portadas para la saga indicada, detectando huecos.
+     * Listener para cambios en la selección de sagas. Muestra la saga
+     * seleccionada en el panel principal.
      *
-     * @param nombreSaga Nombre de la saga seleccionada.
+     * @param obs ObservableValue asociado al cambio.
+     * @param oldVal Valor anterior de la selección.
+     * @param newVal Nuevo valor seleccionado (nombre de la saga).
+     */
+    private void cambioSeleccionListener(javafx.beans.value.ObservableValue<? extends String> obs, String oldVal, String newVal) {
+        if (newVal != null) {
+            mostrarSaga(newVal);
+        }
+    }
+
+    /**
+     * Muestra los libros de una saga en el panel principal, incluyendo los
+     * tomos faltantes. Ordena los libros por su número en la serie y muestra un
+     * resumen de la colección.
+     *
+     * @param nombreSaga Nombre de la saga a mostrar.
      */
     private void mostrarSaga(String nombreSaga) {
         lblTituloSaga.setText(nombreSaga);
@@ -133,15 +159,16 @@ public class SagasController {
             return;
         }
 
-        // Ordenar por número de tomo
+        // Ordenar libros por su posición en la saga
         libros.sort(Comparator.comparingDouble(Libro::getOrdenEnSerie));
 
+        // Calcular tomos totales y faltantes
         double maxOrden = libros.get(libros.size() - 1).getOrdenEnSerie();
         int totalTomos = (int) maxOrden;
         int encontrados = libros.size();
         int huecos = totalTomos - encontrados;
 
-        // Actualizar resumen
+        // Actualizar resumen de la saga
         if (huecos > 0) {
             lblResumenSaga.setText("Tienes " + encontrados + " de " + totalTomos
                     + " tomo" + (totalTomos != 1 ? "s" : "") + " · Faltan " + huecos
@@ -151,14 +178,14 @@ public class SagasController {
                     + " tomo" + (encontrados != 1 ? "s" : ""));
         }
 
-        // Delegar el renderizado pesado a un momento libre de la UI
+        // Mostrar los tomos en el panel
         Platform.runLater(() -> {
-            // Iterar desde el tomo 1 hasta el máximo para detectar huecos
             for (double i = 1.0; i <= maxOrden; i += 1.0) {
                 final double tomo = i;
                 boolean encontrado = false;
                 Libro libroActual = null;
 
+                // Buscar el libro correspondiente al tomo actual
                 for (Libro l : libros) {
                     if (Math.abs(l.getOrdenEnSerie() - tomo) < 0.1) {
                         encontrado = true;
@@ -167,21 +194,23 @@ public class SagasController {
                     }
                 }
 
+                // Mostrar tarjeta de libro o hueco
                 if (encontrado && libroActual != null) {
                     panelLibros.getChildren().add(crearTarjetaLibro(libroActual, false));
                 } else {
-                    // ¡Hueco! Falta este tomo
                     panelLibros.getChildren().add(crearTarjetaHueco((int) tomo));
                 }
             }
         });
     }
 
-    // -----------------------------------------------------------------------
-    //  Construcción de tarjetas
-    // -----------------------------------------------------------------------
     /**
-     * Crea la tarjeta visual para un libro que sí está en la colección.
+     * Crea una tarjeta visual para un libro en la saga.
+     *
+     * @param libro Libro del que se creará la tarjeta.
+     * @param esHueco Indica si es un hueco (no utilizado aquí, solo para
+     * sobrecarga).
+     * @return VBox configurado como tarjeta de libro.
      */
     private VBox crearTarjetaLibro(Libro libro, boolean esHueco) {
         VBox tarjeta = new VBox(8);
@@ -190,43 +219,39 @@ public class SagasController {
         tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;");
 
         // Número de tomo
-        String numTomo = libro.getOrdenEnSerie() > 0
-                ? "Tomo " + formatarTomo(libro.getOrdenEnSerie())
-                : "";
-
+        String numTomo = libro.getOrdenEnSerie() > 0 ? "Tomo " + formatarTomo(libro.getOrdenEnSerie()) : "";
         Label lblNumero = new Label(numTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;"); // Letra gris oscura
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
 
-        // Portada con sombra
+        // Imagen de portada
         ImageView img = new ImageView();
         ImageLoader.load(libro.getPortadaURL(), img, 120, 178);
         img.setFitWidth(120);
         img.setFitHeight(178);
         img.setPreserveRatio(true);
-
-        DropShadow sombra = new DropShadow(8, Color.color(0, 0, 0, 0.3)); // Sombra más suave
-        img.setEffect(sombra);
-
+        img.setEffect(new DropShadow(8, Color.color(0, 0, 0, 0.3)));
         Tooltip.install(img, new Tooltip(libro.getTitulo()));
 
+        // Título del libro
         Label lblTitulo = new Label(libro.getTitulo());
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #333333;"); // Letra muy oscura
+        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #333333;");
 
-        // Hover: resaltar tarjeta con gris clarito
-        tarjeta.setOnMouseEntered(e -> tarjeta.setStyle(
-                "-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: #e0e0e0;"));
-        tarjeta.setOnMouseExited(e -> tarjeta.setStyle(
-                "-fx-padding: 6; -fx-background-radius: 8;"));
+        // Efectos de hover
+        tarjeta.setOnMouseEntered(e -> tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: #e0e0e0;"));
+        tarjeta.setOnMouseExited(e -> tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;"));
 
         tarjeta.getChildren().addAll(lblNumero, img, lblTitulo);
         return tarjeta;
     }
 
     /**
-     * Crea la tarjeta visual para un hueco (tomo que falta en la colección).
+     * Crea una tarjeta visual para un tomo faltante en la saga.
+     *
+     * @param numeroTomo Número del tomo faltante.
+     * @return VBox configurado como tarjeta de hueco.
      */
     private VBox crearTarjetaHueco(int numeroTomo) {
         VBox tarjeta = new VBox(8);
@@ -234,45 +259,37 @@ public class SagasController {
         tarjeta.setPrefWidth(130);
         tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;");
 
+        // Número de tomo
         Label lblNumero = new Label("Tomo " + numeroTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #d32f2f;"); // Letra roja
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #d32f2f;");
 
-        // Placeholder rojo claro con interrogación
+        // Placeholder visual
         StackPane placeholder = new StackPane();
         placeholder.setPrefSize(120, 178);
         placeholder.setMaxSize(120, 178);
-        placeholder.setStyle(
-                "-fx-background-color: #ffebee; "
-                + "-fx-background-radius: 6; "
-                + "-fx-border-color: #d32f2f; "
-                + "-fx-border-width: 2; "
-                + "-fx-border-radius: 6;");
+        placeholder.setStyle("-fx-background-color: #ffebee; -fx-background-radius: 6; -fx-border-color: #d32f2f; -fx-border-width: 2; -fx-border-radius: 6;");
 
         Label lblInterrogacion = new Label("?");
-        lblInterrogacion.setStyle(
-                "-fx-font-size: 48px; -fx-font-weight: bold; "
-                + "-fx-text-fill: #d32f2f; -fx-opacity: 0.8;");
-
+        lblInterrogacion.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-opacity: 0.8;");
         placeholder.getChildren().add(lblInterrogacion);
 
+        // Texto informativo
         Label lblTitulo = new Label("¡Falta el Tomo " + numeroTomo + "!");
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
-        lblTitulo.setStyle(
-                "-fx-font-size: 11px; -fx-font-weight: bold; "
-                + "-fx-text-fill: #d32f2f;");
+        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
 
         tarjeta.getChildren().addAll(lblNumero, placeholder, lblTitulo);
         return tarjeta;
     }
 
-    // -----------------------------------------------------------------------
-    //  Utilidades
-    // -----------------------------------------------------------------------
     /**
-     * Formatea el número de tomo: si es entero lo muestra sin decimales, si es
-     * decimal (p.ej. 1.5) lo muestra tal cual.
+     * Formatea el número de tomo para mostrarlo sin decimales si es un número
+     * entero.
+     *
+     * @param orden Número de orden del tomo.
+     * @return Cadena formateada del número de tomo.
      */
     private String formatarTomo(double orden) {
         if (orden == Math.floor(orden)) {
@@ -281,12 +298,10 @@ public class SagasController {
         return String.valueOf(orden);
     }
 
-    // -----------------------------------------------------------------------
-    //  Celda personalizada para la lista lateral
-    // -----------------------------------------------------------------------
     /**
-     * Celda de la lista lateral que muestra el nombre de la saga y cuántos
-     * tomos tiene.
+     * Celda personalizada para mostrar sagas en el ListView. Muestra el nombre
+     * de la saga y el número de tomos que contiene, además de un menú
+     * contextual con opciones de edición.
      */
     private class SagaListCell extends javafx.scene.control.ListCell<String> {
 
@@ -298,7 +313,6 @@ public class SagasController {
         public SagaListCell() {
             setStyle("-fx-padding: 8 10; -fx-background-color: transparent;");
 
-            // 1. Crear los elementos visuales SOLO UNA VEZ
             contenido = new javafx.scene.layout.VBox(2);
             nombre = new javafx.scene.control.Label();
             nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #333333;");
@@ -308,7 +322,7 @@ public class SagasController {
 
             contenido.getChildren().addAll(nombre, info);
 
-            // 2. Crear el menú SOLO UNA VEZ
+            // Menú contextual
             menu = new ContextMenu();
             MenuItem itemRenombrar = new MenuItem("Renombrar saga");
             MenuItem itemBorrarSaga = new MenuItem("Eliminar saga (mantener libros)");
@@ -330,9 +344,7 @@ public class SagasController {
                 setText(null);
                 setContextMenu(null);
             } else {
-                // 3. Al hacer scroll, SOLO ACTUALIZAMOS EL TEXTO
                 nombre.setText(saga);
-
                 java.util.List<com.bibliohouse.logic.Libro> libros = sagasMap.get(saga);
                 int total = libros != null ? libros.size() : 0;
                 info.setText(total + " tomo" + (total != 1 ? "s" : ""));
@@ -345,7 +357,10 @@ public class SagasController {
     }
 
     /**
-     * Elimina la agrupación de saga o borra los libros por completo.
+     * Elimina una saga, con opción de borrar también sus libros.
+     *
+     * @param nombreSaga Nombre de la saga a eliminar.
+     * @param borrarLibros Si es true, elimina también los libros de la saga.
      */
     private void eliminarSaga(String nombreSaga, boolean borrarLibros) {
         if (nombreSaga == null || !sagasMap.containsKey(nombreSaga)) {
@@ -368,20 +383,17 @@ public class SagasController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             if (borrarLibros) {
-                // Borra los libros físicamente de la lista principal
                 listaLibrosPrincipal.removeAll(librosDeSaga);
             } else {
-                // Solo limpia el texto de la serie
                 for (Libro l : librosDeSaga) {
-                    l.setSerie("");
+                    l.setSerie(null);
                     l.setOrdenEnSerie(0);
                 }
             }
 
-            // Recargar la lista lateral
+            ejecutarGuardado();
             initData(listaLibrosPrincipal);
 
-            // Limpiar la pantalla si la saga borrada era la que estábamos viendo
             if (lblTituloSaga.getText().equals(nombreSaga)) {
                 lblTituloSaga.setText("Selecciona una saga...");
                 lblResumenSaga.setText("");
@@ -391,7 +403,11 @@ public class SagasController {
     }
 
     /**
-     * Pide un nuevo nombre y actualiza todos los libros de la saga.
+     * Permite renombrar una saga existente. Muestra un diálogo para introducir
+     * el nuevo nombre y actualiza todos los libros de la saga con el nuevo
+     * nombre.
+     *
+     * @param nombreAntiguo Nombre actual de la saga.
      */
     private void renombrarSaga(String nombreAntiguo) {
         if (nombreAntiguo == null || !sagasMap.containsKey(nombreAntiguo)) {
@@ -407,23 +423,30 @@ public class SagasController {
         if (result.isPresent()) {
             String nuevoNombre = result.get().trim();
 
-            // Si el nombre es válido y diferente al anterior
             if (!nuevoNombre.isEmpty() && !nuevoNombre.equals(nombreAntiguo)) {
                 List<Libro> librosDeSaga = sagasMap.get(nombreAntiguo);
 
-                // Actualizar el texto en todos los libros afectados
                 for (Libro l : librosDeSaga) {
                     l.setSerie(nuevoNombre);
                 }
 
-                // Recargar la interfaz con los datos nuevos
+                ejecutarGuardado();
                 initData(listaLibrosPrincipal);
 
-                // Si estábamos viendo esa saga, la volvemos a seleccionar con su nuevo nombre
                 if (lblTituloSaga.getText().equals(nombreAntiguo)) {
                     listaSagas.getSelectionModel().select(nuevoNombre);
                 }
             }
+        }
+    }
+
+    /**
+     * Ejecuta el callback de guardado para persistir los cambios realizados.
+     * Solo actúa si el callback está definido.
+     */
+    private void ejecutarGuardado() {
+        if (onDatosCambiados != null) {
+            onDatosCambiados.run();
         }
     }
 }
