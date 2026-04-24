@@ -292,7 +292,8 @@ public class SagasController {
      * @return Cadena formateada del número de tomo.
      */
     private String formatarTomo(double orden) {
-        if (orden == Math.floor(orden)) {
+        // Si la diferencia entre el número y su versión sin decimales es mínima
+        if (Math.abs(orden - Math.floor(orden)) < 0.001) {
             return String.valueOf((int) orden);
         }
         return String.valueOf(orden);
