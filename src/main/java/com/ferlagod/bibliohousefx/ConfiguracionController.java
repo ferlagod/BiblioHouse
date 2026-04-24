@@ -230,9 +230,8 @@ public class ConfiguracionController {
      */
     @FXML
     private void guardarCambios(ActionEvent event) {
-        // Lógica de guardado
+        // Lógica de guardado del título
         if (!txtNombreBiblioteca.getText().isEmpty() && mainController != null) {
-            // Obtenemos el Stage principal a través del controlador
             Stage mainStage = (Stage) ((Stage) txtNombreBiblioteca.getScene().getWindow()).getOwner();
             if (mainStage != null) {
                 mainStage.setTitle(txtNombreBiblioteca.getText());
@@ -244,38 +243,39 @@ public class ConfiguracionController {
             mainController.setDueDaysLimit(spinnerDiasPrestamo.getValue());
         }
 
-        // Guardar credenciales NextCloud
-        // URL y usuario en JSON (no sensibles); contraseña SOLO en el llavero del SO (SEC-02)
+        // --- GESTIÓN DE CREDENCIALES NEXTCLOUD CON CIFRADO ---
         if (txtNextcloudUrl != null) {
             Map<String, String> ncPrefs = jsonManager.cargarPreferencias();
             String url = txtNextcloudUrl.getText().trim();
             String user = txtNextcloudUser.getText().trim();
-            String pass = txtNextcloudPass.getText();
+            String passClaro = txtNextcloudPass.getText(); // Contraseña escrita por el usuario
 
             ncPrefs.put("nextcloud.url", url);
             ncPrefs.put("nextcloud.user", user);
-            ncPrefs.remove("nextcloud.password"); // Asegurarse de que no quede en JSON
+            ncPrefs.remove("nextcloud.password"); // Seguridad: Asegurar que nunca vaya al JSON
             jsonManager.guardarPreferencias(ncPrefs);
 
-            // Guardar contraseña en el llavero del sistema operativo
+            // Cifrar la contraseña antes de guardarla en el registro del SO
             Preferences osPrefs = Preferences.userRoot().node(NC_PREFS_NODE);
-            if (pass.isBlank()) {
+            if (passClaro.isBlank()) {
                 osPrefs.remove(NC_PREF_PASS);
             } else {
-                osPrefs.put(NC_PREF_PASS, pass);
+                // USAMOS SeguridadUtil para que no sea legible por humanos
+                String passEncriptada = com.bibliohouse.utils.SeguridadUtil.encriptar(passClaro);
+                osPrefs.put(NC_PREF_PASS, passEncriptada);
             }
 
-            // Activar / desactivar auto-sync inmediatamente (sin reiniciar)
-            if (!url.isBlank() && !user.isBlank() && !pass.isBlank()) {
+            // Activar / desactivar auto-sync inmediatamente
+            if (!url.isBlank() && !user.isBlank() && !passClaro.isBlank()) {
                 try {
-                    NextCloudSyncService syncService = new NextCloudSyncService(url, user, pass);
+                    // El servicio recibe la contraseña en claro para poder conectar
+                    NextCloudSyncService syncService = new NextCloudSyncService(url, user, passClaro);
                     final String localDir = jsonManager.getRutaDatosUsuario();
                     jsonManager.setAutoSyncTask(() -> {
                         try {
                             syncService.subirBaseDatos(localDir);
                         } catch (Exception ex) {
-                            LOGGER.log(Level.WARNING,
-                                    "Auto-sync NextCloud fallido: " + ex.getMessage(), ex);
+                            LOGGER.log(Level.WARNING, "Auto-sync NextCloud fallido: " + ex.getMessage());
                         }
                     });
                 } catch (IllegalArgumentException ignored) {
@@ -286,7 +286,7 @@ public class ConfiguracionController {
             }
         }
 
-        // Cerrar al guardar
+        // Cerrar ventana
         cancelar(event);
     }
 
