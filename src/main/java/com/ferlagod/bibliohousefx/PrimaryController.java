@@ -569,7 +569,7 @@ public class PrimaryController implements Initializable {
         this.usuarioActual = username;
         this.rutaUsuario = userPath;
 
-        // Inicializar ImageLoader con la ruta de portadas del usuario
+        // 1. Inicializar servicios y gestores
         String coversPath = this.rutaUsuario + java.io.File.separator + "covers";
         com.bibliohouse.utils.ImageLoader.setCacheDir(coversPath);
 
@@ -577,17 +577,27 @@ public class PrimaryController implements Initializable {
         this.listaDeseos = jsonManager.cargarDeseos();
         actualizarPanelDeseos();
 
-        // Configurar auto-sync con NextCloud si hay credenciales guardadas
+        // 2. Cargar datos maestros
+        cargarDatos();
+
+        // IMPORTANTE: Configurar el callback de guardado para el gestor de sagas
+        if (pestanaSagasController != null) {
+            pestanaSagasController.initData(listaLibrosCompleta, () -> {
+                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarFiltros();
+            });
+        }
+
+        // 3. Sincronización NextCloud con seguridad mejorada
         this.preferencias = jsonManager.cargarPreferencias();
         String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
         String ncUser = preferencias.getOrDefault("nextcloud.user", "");
 
-        // --- MEJORA DE SEGURIDAD: Recuperar y desencriptar contraseña ---
         java.util.prefs.Preferences osPrefs = java.util.prefs.Preferences.userRoot()
                 .node("com/ferlagod/bibliohousefx/nextcloud");
 
         String ncPassEncriptada = osPrefs.get("password", "");
-        // Desencriptamos usando la clave única del hardware de este equipo
         String ncPass = com.bibliohouse.utils.SeguridadUtil.desencriptar(ncPassEncriptada);
 
         if (!ncUrl.isBlank() && !ncUser.isBlank() && !ncPass.isBlank()) {
@@ -598,15 +608,15 @@ public class PrimaryController implements Initializable {
                     try {
                         syncService.subirBaseDatos(localDir);
                     } catch (IOException ex) {
-                        LOGGER.log(java.util.logging.Level.WARNING, "Auto-sync NextCloud fallido: {0}", ex.getMessage());
+                        LOGGER.log(java.util.logging.Level.WARNING, "Auto-sync fallido: {0}", ex.getMessage());
                     }
                 });
-            } catch (IllegalArgumentException ex) {
-                // Credenciales mal formadas o error en desencriptación — no activamos auto-sync
+            } catch (Exception ex) {
+                LOGGER.log(java.util.logging.Level.SEVERE, "Error al iniciar servicio de sincronización");
             }
         }
 
-        cargarDatos();
+        // 4. Configuración de interfaz y estado
         aplicarPreferenciasGuardadas();
 
         if (resources != null) {
@@ -617,9 +627,40 @@ public class PrimaryController implements Initializable {
 
         checkOverdueLoans();
 
-        // Comprobar actualizaciones (se mantiene igual...)
+        // 5. Lógica para pantalla completa / Maximizado en Linux
+        Platform.runLater(() -> {
+            if (lblEstado.getScene() != null && lblEstado.getScene().getWindow() != null) {
+                Stage stage = (Stage) lblEstado.getScene().getWindow();
+
+                boolean iniciarMaximizado = Boolean.parseBoolean(preferencias.getOrDefault("maximized", "true"));
+
+                if (iniciarMaximizado) {
+                    // Intento 1: Vía estándar nativa
+                    stage.setMaximized(true);
+
+                    // Intento 2: Fuerza bruta asíncrona para gestores de ventanas de Linux
+                    // Retrasamos la ejecución 150 milisegundos para darle tiempo al SO a asimilar la escena
+                    javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+                    delay.setOnFinished(e -> {
+                        stage.setMaximized(true); // Insistimos
+
+                        // Si el SO ignoró el comando, fijamos las dimensiones a la fuerza usando los límites de la pantalla
+                        javafx.geometry.Rectangle2D bounds = javafx.stage.Screen.getPrimary().getVisualBounds();
+                        if (stage.getWidth() < bounds.getWidth() * 0.9) {
+                            stage.setX(bounds.getMinX());
+                            stage.setY(bounds.getMinY());
+                            stage.setWidth(bounds.getWidth());
+                            stage.setHeight(bounds.getHeight());
+                        }
+                    });
+                    delay.play();
+                }
+            }
+        });
+
+        // 6. Actualizaciones en segundo plano
         com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
-            // ... (resto del código de actualización)
+            // Lógica de notificación de nueva versión
         });
     }
 
@@ -1836,7 +1877,7 @@ public class PrimaryController implements Initializable {
      *
      * @param event El evento del menú.
      */
-    @FXML
+   @FXML
     private void exportarPDF(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("exportar_pdf.fxml"));
@@ -1863,6 +1904,11 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
+            
+            // Forzar el tamaño mínimo en el Stage para Linux
+            stage.setMinWidth(820);
+            stage.setMinHeight(720);
+
             stage.showAndWait();
 
         } catch (IOException e) {
