@@ -58,4 +58,5 @@ module com.ferlagod.bibliohousefx {
     opens com.bibliohouse.logic to com.google.gson;
 
     exports com.bibliohouse.logic;
+    exports com.bibliohouse.utils;
 }

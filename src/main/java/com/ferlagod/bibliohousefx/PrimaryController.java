@@ -18,27 +18,20 @@
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.BusquedaSagas;
-import com.bibliohouse.logic.GoogleBooksCliente;
 import com.bibliohouse.logic.ImportarExportarBD;
-import com.bibliohouse.logic.InventaireCliente;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.NextCloudSyncService;
 import com.bibliohouse.logic.Libro;
+import com.bibliohouse.logic.LibroService;
 import com.bibliohouse.logic.Prestamo;
 import com.bibliohouse.logic.Socio;
-import com.bibliohouse.logic.OpenLibraryCliente;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -54,7 +47,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.TilePane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -90,6 +82,9 @@ public class PrimaryController implements Initializable {
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(PrimaryController.class.getName());
     private BusquedaSagas busquedaSagas = new BusquedaSagas();
     private ImportarExportarBD gestorArchivos = new ImportarExportarBD();
+    private LibroService libroService;
+    private com.bibliohouse.logic.BusquedaService busquedaService = new com.bibliohouse.logic.BusquedaService();
+    private com.bibliohouse.logic.PrestamoService prestamoService;
 
     // --- LÍMITE DE PRÉSTAMO ---
     /**
@@ -101,7 +96,6 @@ public class PrimaryController implements Initializable {
     // --- CONSTANTES DE VISTA ---
     private static final String VISTA_TODOS = "Todos los libros";
     private static final String VISTA_DESEOS = "Lista de Deseos";
-    private static final String CSS_PRESTAMO_VENCIDO = "overdue-loan";
     private static final List<String> ESTANTERIAS_DEFAULT = List.of(
             "Novela", "Ciencia Ficción", "Fantasía", "Historia", "Tecnología",
             "Aventura", "Biografía", "Romántica", "Poesía", "Teatro", "Infantil", "Ensayo"
@@ -131,7 +125,9 @@ public class PrimaryController implements Initializable {
     @FXML
     private TableColumn<Libro, Integer> colCantidad;
     @FXML
-    private ComboBox<Libro> comboLibrosPrestamo;
+    private PrestamosController pestanaPrestamosController;
+    @FXML
+    private HistorialController pestanaHistorialController;
     // Manual input
     @FXML
     private TextField txtTitulo;
@@ -160,17 +156,12 @@ public class PrimaryController implements Initializable {
     @FXML
     private ComboBox<String> cmbFiltroEstado;
     @FXML
-    private TabPane tabPaneVistaLibros;
-    @FXML
     private TabPane mainTabPane;
-    @FXML
-    private Tab tabGaleria;
-    @FXML
-    private Tab tabTabla;
-    @FXML
-    private TilePane tilePanePortadas; // El contenedor de la cuadrícula
-    @FXML
-    private ScrollPane scrollPaneGaleria;
+    // Galería eliminada — se usa directamente mainTabPane
+    // private Tab tabGaleria; (eliminado)
+    // private Tab tabTabla;   (eliminado)
+    // private TilePane tilePanePortadas; (eliminado)
+    // private ScrollPane scrollPaneGaleria; (eliminado)
     // PORTADA MANUAL
     @FXML
     private ImageView imgPortadaManual;
@@ -179,32 +170,7 @@ public class PrimaryController implements Initializable {
     // Search OpenLibrary
     @FXML
     private TextField txtBusquedaOpenLibrary;
-    // Prestamos
-    @FXML
-    private ComboBox<Socio> comboSocios;
-    @FXML
-    private ComboBox<String> cmbFiltroPrestamos;
-    @FXML
-    private TableView<Prestamo> tablaPrestamos;
-    @FXML
-    private TableColumn<Prestamo, String> colPrestamoLibro;
-    @FXML
-    private TableColumn<Prestamo, String> colPrestamoSocio;
-    @FXML
-    private TableColumn<Prestamo, String> colPrestamoFecha;
-    @FXML
-    private TableColumn<Prestamo, String> colPrestamoDevolucion;
-    // Historial
-    @FXML
-    private TableView<Prestamo> tablaHistorial;
-    @FXML
-    private TableColumn<Prestamo, String> colHistorialLibro;
-    @FXML
-    private TableColumn<Prestamo, String> colHistorialSocio;
-    @FXML
-    private TableColumn<Prestamo, String> colHistorialFechaPrestamo;
-    @FXML
-    private TableColumn<Prestamo, String> colHistorialFechaDevolucion;
+    // Se movieron al PrestamosController y HistorialController
     // Estado y Lateral
     @FXML
     private Label lblEstado;
@@ -226,7 +192,7 @@ public class PrimaryController implements Initializable {
     @FXML
     private RadioMenuItem menuPt;
     @FXML
-    private javafx.scene.layout.FlowPane panelDeseos;
+    private WishlistController pestanaWishlistController;
     private List<Libro> listaDeseos;
     @FXML
     private SagasController pestanaSagasController;
@@ -289,14 +255,8 @@ public class PrimaryController implements Initializable {
             this.resources = rb;
 
             configurarColumnasLibros();
-            configurarColumnasPrestamos();
 
-            // Placeholder para la tabla de préstamos
-            Label placeholderPrestamos = new Label("No hay préstamos activos en este momento.");
-            placeholderPrestamos.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
-            tablaPrestamos.setPlaceholder(placeholderPrestamos);
-
-            // Ya que estás, haz lo mismo para la tabla de libros principal
+            // Placeholder para la tabla de libros principal
             Label placeholderLibros = new Label("La tabla está vacía. Añade libros o cambia los filtros.");
             placeholderLibros.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
             tablaLibros.setPlaceholder(placeholderLibros);
@@ -367,62 +327,7 @@ public class PrimaryController implements Initializable {
         colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
     }
 
-    /**
-     * Configura las columnas de las tablas de préstamos e historial.
-     */
-    private void configurarColumnasPrestamos() {
-        colPrestamoLibro.setCellValueFactory(cellData -> {
-            Prestamo p = cellData.getValue();
-            if (p.getLibroId() != null) {
-                return FXCollections.observableArrayList(listaLibrosCompleta).stream()
-                        .filter(l -> l.getId().equals(p.getLibroId()))
-                        .findFirst()
-                        .map(Libro::getTitulo)
-                        .map(javafx.beans.property.SimpleStringProperty::new)
-                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro() + " (Borrado)"));
-            }
-            return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
-        });
-
-        colPrestamoSocio.setCellValueFactory(cellData -> {
-            Prestamo p = cellData.getValue();
-            return FXCollections.observableArrayList(listaSocios).stream()
-                    .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
-                    .findFirst()
-                    .map(Socio::getNombreCompleto)
-                    .map(javafx.beans.property.SimpleStringProperty::new)
-                    .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio() + " (Borrado)"));
-        });
-
-        colPrestamoFecha.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-        colPrestamoDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
-
-        colHistorialLibro.setCellValueFactory(cellData -> {
-            Prestamo p = cellData.getValue();
-            if (p.getLibroId() != null) {
-                return FXCollections.observableArrayList(listaLibrosCompleta).stream()
-                        .filter(l -> l.getId().equals(p.getLibroId()))
-                        .findFirst()
-                        .map(Libro::getTitulo)
-                        .map(javafx.beans.property.SimpleStringProperty::new)
-                        .orElse(new javafx.beans.property.SimpleStringProperty(p.getTituloLibro()));
-            }
-            return new javafx.beans.property.SimpleStringProperty(p.getTituloLibro());
-        });
-
-        colHistorialSocio.setCellValueFactory(cellData -> {
-            Prestamo p = cellData.getValue();
-            return FXCollections.observableArrayList(listaSocios).stream()
-                    .filter(s -> s.getNumeroSocio() == p.getNumeroSocio())
-                    .findFirst()
-                    .map(Socio::getNombreCompleto)
-                    .map(javafx.beans.property.SimpleStringProperty::new)
-                    .orElse(new javafx.beans.property.SimpleStringProperty(p.getNombreSocio()));
-        });
-
-        colHistorialFechaPrestamo.setCellValueFactory(new PropertyValueFactory<>("fechaPrestamoFormateada"));
-        colHistorialFechaDevolucion.setCellValueFactory(new PropertyValueFactory<>("fechaDevolucionFormateada"));
-    }
+    // Las columnas de préstamos ahora se configuran en sus respectivos controladores
 
     /**
      * Configura el menú contextual de la tabla de libros.
@@ -502,24 +407,7 @@ public class PrimaryController implements Initializable {
             cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
         }
 
-        // Row Factory para marcar préstamos vencidos
-        if (tablaPrestamos != null) {
-            tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
-                @Override
-                protected void updateItem(Prestamo item, boolean empty) {
-                    super.updateItem(item, empty);
-                    getStyleClass().remove(CSS_PRESTAMO_VENCIDO);
-                    if (item != null && !empty) {
-                        if (item.getFechaDevolucion() == null && item.getFechaPrestamo() != null) {
-                            LocalDate dueDate = item.getFechaPrestamo().plusDays(dueDaysLimit);
-                            if (dueDate.isBefore(LocalDate.now())) {
-                                getStyleClass().add(CSS_PRESTAMO_VENCIDO);
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        // Row Factory para marcar préstamos vencidos movido a PrestamosController
 
         // Buscador visual rápido en la pestaña Mis Libros
         // En PrimaryController.java
@@ -575,7 +463,9 @@ public class PrimaryController implements Initializable {
 
         this.jsonManager = new JsonManager(userPath);
         this.listaDeseos = jsonManager.cargarDeseos();
-        actualizarPanelDeseos();
+        if (pestanaWishlistController != null) {
+            pestanaWishlistController.initData(this, jsonManager, listaDeseos, resources);
+        }
 
         // 2. Cargar datos maestros
         cargarDatos();
@@ -669,30 +559,19 @@ public class PrimaryController implements Initializable {
      * DUE_DAYS_LIMIT).
      */
     private void checkOverdueLoans() {
-        // Filtramos solo los préstamos activos (no devueltos) y que han superado el
-        // límite
-        List<Prestamo> overdueLoans = listaPrestamosCompleta.stream()
-                .filter(p -> p.getFechaDevolucion() == null)
-                .filter(p -> p.getFechaPrestamo() != null)
-                .filter(p -> p.getFechaPrestamo().isBefore(LocalDate.now().minusDays(dueDaysLimit))) // Usar variable
-                // dinámica
-                .collect(Collectors.toList());
+        if (prestamoService == null) return;
+        List<Prestamo> overdueLoans = prestamoService.obtenerPrestamosVencidos(dueDaysLimit);
 
         if (!overdueLoans.isEmpty()) {
-            // Retrasar la alerta 1 segundo para evitar bloqueos en macOS al iniciar la ventana principal
             javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
             delay.setOnFinished(e -> {
-                // Construir el mensaje de alerta
                 StringBuilder sb = new StringBuilder();
                 sb.append("Se han detectado ").append(overdueLoans.size()).append(" préstamos vencidos:\n\n");
 
                 overdueLoans.stream().limit(5).forEach(p -> {
-                    // Calcular días de retraso
-                    long daysOverdue = ChronoUnit.DAYS.between(p.getFechaPrestamo().plusDays(dueDaysLimit),
-                            LocalDate.now());
+                    long daysOverdue = prestamoService.calcularDiasRetraso(p, dueDaysLimit);
                     sb.append("• ").append(p.getTituloLibro()).append(" (Socio #").append(p.getNumeroSocio())
-                            .append("): ");
-                    sb.append(daysOverdue).append(" días de retraso.\n");
+                            .append("): ").append(daysOverdue).append(" días de retraso.\n");
                 });
 
                 if (overdueLoans.size() > 5) {
@@ -708,7 +587,6 @@ public class PrimaryController implements Initializable {
                 alert.setHeaderText("¡Tienes libros pendientes de devolución!");
                 alert.setContentText(sb.toString());
 
-                // Botón para saltar a la pestaña de Préstamos
                 ButtonType viewLoansButton = new ButtonType("Ver Préstamos", ButtonBar.ButtonData.OK_DONE);
                 ButtonType dismissButton = new ButtonType("Aceptar", ButtonBar.ButtonData.CANCEL_CLOSE);
                 alert.getButtonTypes().setAll(viewLoansButton, dismissButton);
@@ -716,7 +594,6 @@ public class PrimaryController implements Initializable {
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.isPresent() && result.get() == viewLoansButton) {
-                    // Encontrar el TabPane (asumiendo que es el único en BorderPane.center)
                     TabPane tabPane = (TabPane) tablaLibros.getScene().lookup(".tab-pane");
                     if (tabPane != null) {
                         tabPane.getSelectionModel().select(2);
@@ -786,34 +663,29 @@ public class PrimaryController implements Initializable {
      * Configura los atajos de teclado globales para la escena principal.
      */
     private void setupShortcuts() {
-        // Necesitamos esperar a que la escena esté lista
         Platform.runLater(() -> {
             Scene scene = tablaLibros.getScene();
             if (scene != null) {
-                // Ctrl+F (Cmd+F) -> Foco en búsqueda
+                // Ctrl+F (Cmd+F) -> Foco en búsqueda (Tab "Gestionar Libros" = índice 1)
                 scene.getAccelerators().put(
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+F"),
                         () -> {
-                            tabPaneVistaLibros.getSelectionModel().select(tabTabla);
-                            txtBusquedaLocal.requestFocus();
+                            mainTabPane.getSelectionModel().select(1);
+                            if (txtBusquedaOpenLibrary != null) txtBusquedaOpenLibrary.requestFocus();
                         });
 
-                // Ctrl+N (Cmd+N) -> Foco en añadir manual
+                // Ctrl+N (Cmd+N) -> Foco en añadir manual (Tab "Gestionar Libros" = índice 1)
                 scene.getAccelerators().put(
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+N"),
                         () -> {
-                            tabPaneVistaLibros.getSelectionModel().select(tabTabla);
-                            txtTitulo.requestFocus();
+                            mainTabPane.getSelectionModel().select(1);
+                            if (txtTitulo != null) txtTitulo.requestFocus();
                         });
 
-                // Ctrl+L (Cmd+L) -> Foco en préstamos
+                // Ctrl+L (Cmd+L) -> Foco en préstamos (Tab índice 2)
                 scene.getAccelerators().put(
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+L"),
-                        () -> {
-                            // Seleccionar tab de préstamos
-                            tabPaneVistaLibros.getSelectionModel().select(2);
-                            comboLibrosPrestamo.requestFocus();
-                        });
+                        () -> mainTabPane.getSelectionModel().select(2));
             }
         });
     }
@@ -868,8 +740,8 @@ public class PrimaryController implements Initializable {
             jsonManager.guardarPreferencias(preferencias);
         }
 
-        if (tablaPrestamos != null) {
-            tablaPrestamos.refresh();
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
         }
     }
 
@@ -890,69 +762,52 @@ public class PrimaryController implements Initializable {
         // 1. Cargar la lista maestra de libros
         List<Libro> libros = jsonManager.cargarLibros();
         listaLibrosCompleta = FXCollections.observableArrayList(libros);
+        this.libroService = new LibroService(jsonManager, listaLibrosCompleta);
 
         // 2. Inicializar las listas de filtrado/ordenación
-        filteredData = new FilteredList<>(listaLibrosCompleta, p -> true); // Predicado inicial: mostrar todo
+        filteredData = new FilteredList<>(listaLibrosCompleta, p -> true);
         sortedData = new SortedList<>(filteredData);
 
-        // 3. Unir la SortedList con el comparador de la tabla, PERO personalizando
-        // Establecer comparador por defecto (Series)
+        // 3. Ordenación por defecto (Series), escucha cambios del usuario en la tabla
         sortedData.setComparator(this::compareBySeries);
-
-        // 3.B Lógica de ordenación personalizada
-        // Escuchamos cambios en el orden de la tabla
         tablaLibros.comparatorProperty().addListener((obs, oldComp, newComp) -> {
             if (newComp == null) {
-                // Si la tabla no tiene orden (estado inicial o reseteado), usasmos el nuestro
                 sortedData.setComparator(this::compareBySeries);
             } else {
-                // Si la tabla tiene orden (usuario hizo click), usamos ese.
                 sortedData.setComparator(newComp);
             }
         });
 
-        // 4. Asignar la lista DINÁMICA a la tabla (FIX)
+        // 4. Asignar lista dinámica a la tabla
         tablaLibros.setItems(sortedData);
 
-        // Socios
+        // 5. Socios
         List<Socio> socios = jsonManager.cargarSocios();
         listaSocios = FXCollections.observableArrayList(socios);
-        comboSocios.setItems(listaSocios);
 
-        // Prestamos
+        // 6. Préstamos (CRÍTICO: inicializar antes de los sub-controladores)
         List<Prestamo> prestamos = jsonManager.cargarPrestamos();
         listaPrestamosCompleta = FXCollections.observableArrayList(prestamos);
+        this.prestamoService = new com.bibliohouse.logic.PrestamoService(jsonManager, listaPrestamosCompleta, listaLibrosCompleta);
 
-        // Préstamos Activos (solo los que NO tienen fecha de devolución)
+        // Préstamos activos (sin fecha de devolución)
         filteredPrestamos = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() == null);
-        tablaPrestamos.setItems(filteredPrestamos);
-
-        // Historial (solo los que SÍ tienen fecha de devolución)
+        // Historial (con fecha de devolución)
         filteredHistory = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() != null);
-        tablaHistorial.setItems(filteredHistory);
 
-        // Estanterías Lateral
-        cargarListaEstanterias();
-        actualizarComboLibrosDisponibles();
-
-        // Aplicar filtros iniciales para que la tabla se muestre correctamente al
-        // cargar
-        actualizarFiltros();
-
-        if (pestanaSagasController != null) {
-            pestanaSagasController.initData(listaLibrosCompleta, () -> {
-                // Esto es el Runnable (callback). Se ejecutará cuando SagasController llame a ejecutarGuardado()
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-                tablaLibros.refresh(); // Refrescamos la tabla principal también por si borraron libros
-            });
+        // 7. Inicializar sub-controladores de pestañas
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
         }
-        // --- CONFIGURAR FILTRADO EN COMBOS ---
-        // Configurar filtrado para Libros
-        setupFilteringComboBox(comboLibrosPrestamo, Libro::getTitulo);
+        if (pestanaHistorialController != null) {
+            pestanaHistorialController.initData(this, filteredHistory);
+        }
 
-        // Configurar filtrado para Socios
-        setupFilteringComboBox(comboSocios, Socio::getNombreCompleto);
+        // 8. Estanterías laterales + filtros iniciales (CRÍTICO: sin esto el panel queda vacío)
+        cargarListaEstanterias();
+        actualizarFiltros();
     }
+
 
     /**
      * Abre un diálogo para seleccionar un archivo CSV y, si es válido, importa
@@ -1035,6 +890,10 @@ public class PrimaryController implements Initializable {
      * @param displayFunc La función para saber qué texto mostrar de cada
      * objeto.
      */
+    public <T> void setupFilteringComboBoxPublic(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
+        setupFilteringComboBox(comboBox, displayFunc);
+    }
+
     @SuppressWarnings("unchecked")
     private <T> void setupFilteringComboBox(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
         if (comboBox == null) {
@@ -1061,7 +920,7 @@ public class PrimaryController implements Initializable {
             // Para los libros usamos la lista 'listaLibrosCompleta' directamente,
             // porque si usamos 'originalItems' no salen los libros que acabamos de añadir.
             ObservableList<T> sourceList;
-            if (comboBox == comboLibrosPrestamo) {
+            if (comboBox.getId() != null && comboBox.getId().equals("comboLibrosPrestamo")) {
                 // Solo queremos libros que tengan stock (cantidad > 0)
                 sourceList = FXCollections.observableArrayList();
                 for (Object o : listaLibrosCompleta) {
@@ -1070,7 +929,7 @@ public class PrimaryController implements Initializable {
                         sourceList.add((T) l);
                     }
                 }
-            } else if (comboBox == comboSocios) {
+            } else if (comboBox.getId() != null && comboBox.getId().equals("comboSocios")) {
                 // Para socios usamos la lista de socios actual
                 sourceList = (ObservableList<T>) listaSocios;
             } else {
@@ -1262,17 +1121,8 @@ public class PrimaryController implements Initializable {
             mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
         }
 
-        if (comboLibrosPrestamo != null) {
-            // Buscamos el libro en el combo para seleccionarlo correctamente
-            for (Libro l : comboLibrosPrestamo.getItems()) {
-                // Comparamos por ID o Título/Autor si no hay ID único, asumiendo objetos
-                // iguales
-                if (l.equals(libro)) {
-                    comboLibrosPrestamo.getSelectionModel().select(l);
-                    break;
-                }
-            }
-            comboLibrosPrestamo.requestFocus();
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.seleccionarLibro(libro);
         }
     }
 
@@ -1286,27 +1136,22 @@ public class PrimaryController implements Initializable {
             mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
         }
 
-        if (comboSocios != null) {
-            for (Socio s : comboSocios.getItems()) {
-                if (s.equals(socio)) {
-                    comboSocios.getSelectionModel().select(s);
-                    break;
-                }
-            }
-            comboSocios.requestFocus();
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.seleccionarSocio(socio);
         }
     }
 
     // Método auxiliar para refrescar el desplegable de libros
-    /**
-     * Actualiza el ComboBox de libros disponibles para préstamo. Solo incluye
-     * libros que tengan stock disponible (cantidad > 0).
-     */
-    private void actualizarComboLibrosDisponibles() {
-        ObservableList<Libro> librosConStock = listaLibrosCompleta.stream()
+    public void actualizarComboLibrosDisponibles() {
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
+        }
+    }
+
+    private ObservableList<Libro> obtenerLibrosDisponibles() {
+        return listaLibrosCompleta.stream()
                 .filter(l -> l.getCantidad() > 0)
                 .collect(java.util.stream.Collectors.toCollection(FXCollections::observableArrayList));
-        comboLibrosPrestamo.setItems(librosConStock);
     }
 
     /**
@@ -1629,7 +1474,9 @@ public class PrimaryController implements Initializable {
 
                     listaDeseos.add(elegido);
                     jsonManager.guardarDeseos(listaDeseos);
-                    actualizarPanelDeseos();
+                    if (pestanaWishlistController != null) {
+                        pestanaWishlistController.actualizarPanelDeseos();
+                    }
                     lblEstado.setText("Añadido a tu Lista de Deseos: " + elegido.getTitulo());
                 } else {
                     // SE PULSÓ "IMPORTAR A BIBLIOTECA"
@@ -1768,77 +1615,48 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void eliminarLibro(ActionEvent event) {
-        // 1. Obtener el libro seleccionado
         Libro libroSeleccionado = tablaLibros.getSelectionModel().getSelectedItem();
-
         if (libroSeleccionado == null) {
             mostrarAlerta("Ningún libro seleccionado", "Por favor, selecciona un libro de la tabla para eliminarlo.");
             return;
         }
 
-        // 2. CASO A: TIENE MÁS DE 1 UNIDAD (STOCK MÚLTIPLE)
         if (libroSeleccionado.getCantidad() > 1) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Gestión de Stock");
             alert.setHeaderText("Tienes " + libroSeleccionado.getCantidad() + " copias de este libro.");
             alert.setContentText("¿Qué deseas hacer?");
-
             ButtonType btnEliminarUno = new ButtonType("Eliminar solo 1 unidad");
             ButtonType btnEliminarTodo = new ButtonType("Borrar el libro entero");
             ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-
             alert.getButtonTypes().setAll(btnEliminarUno, btnEliminarTodo, btnCancelar);
 
             Optional<ButtonType> result = alert.showAndWait();
-
             if (result.isPresent()) {
                 if (result.get() == btnEliminarUno) {
-                    // RESTAR 1 AL STOCK
-                    libroSeleccionado.setCantidad(libroSeleccionado.getCantidad() - 1);
-
-                    // Refrescar tabla y guardar
-                    tablaLibros.refresh();
-                    jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                    libroService.actualizarStock(libroSeleccionado, -1);
                     lblEstado.setText("Se ha eliminado una copia. Quedan: " + libroSeleccionado.getCantidad());
-
                 } else if (result.get() == btnEliminarTodo) {
-                    // BORRARLO DEL MAPA
-                    borrarTotalmente(libroSeleccionado);
+                    libroService.borrarTotalmente(libroSeleccionado);
+                    lblEstado.setText("Libro eliminado definitivamente: " + libroSeleccionado.getTitulo());
                 }
             }
-
         } else {
-            // 3. CASO B: SOLO QUEDA 1 UNIDAD (Comportamiento normal)
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Eliminar Libro");
             alert.setHeaderText("¿Estás seguro de que quieres borrar este libro?");
-            alert.setContentText(
-                    "Vas a eliminar: " + libroSeleccionado.getTitulo() + "\nEsta acción no se puede deshacer.");
-
+            alert.setContentText("Vas a eliminar: " + libroSeleccionado.getTitulo() + "\nEsta acción no se puede deshacer.");
             if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                borrarTotalmente(libroSeleccionado);
+                libroService.borrarTotalmente(libroSeleccionado);
+                lblEstado.setText("Libro eliminado definitivamente: " + libroSeleccionado.getTitulo());
             }
         }
-    }
 
-    /**
-     * Elimina completamente un libro de la lista y del archivo JSON.
-     *
-     * @param libro El libro a eliminar.
-     */
-    private void borrarTotalmente(Libro libro) {
-
-        if (listaLibrosCompleta != null) {
-            listaLibrosCompleta.remove(libro);
-        }
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-        lblEstado.setText("Libro eliminado definitivamente: " + libro.getTitulo());
-
+        // Refresco general de UI tras las operaciones de borrado o stock
+        tablaLibros.refresh();
         if (pestanaSagasController != null) {
             pestanaSagasController.initData(listaLibrosCompleta);
         }
-
-        // Refrescar la cuadrícula de "Mis Libros"
         actualizarPanelMisLibros();
     }
 
@@ -1877,7 +1695,7 @@ public class PrimaryController implements Initializable {
      *
      * @param event El evento del menú.
      */
-   @FXML
+    @FXML
     private void exportarPDF(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("exportar_pdf.fxml"));
@@ -1904,7 +1722,7 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
-            
+
             // Forzar el tamaño mínimo en el Stage para Linux
             stage.setMinWidth(820);
             stage.setMinHeight(720);
@@ -2010,62 +1828,28 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void buscarDuplicados(ActionEvent event) {
-        if (listaLibrosCompleta == null || listaLibrosCompleta.isEmpty()) {
-            return;
-        }
+        String reporte = libroService.buscarYFusionarDuplicados();
 
-        // 1. Usar un Map para encontrar duplicados en una sola pasada (O(n))
-        // Agrupamos por una "clave de identidad" (ISBN normalizado o Titulo+Autor)
-        Map<String, List<Libro>> grupos = listaLibrosCompleta.stream().collect(Collectors.groupingBy(l -> {
-            if (l.getIsbn() != null && !l.getIsbn().isBlank()) {
-                return l.getIsbn().replaceAll("[^0-9X]", ""); // Normalizar ISBN
-            }
-            return (l.getTitulo() + "|" + l.getAutor()).toLowerCase().trim();
-        }));
-
-        List<Libro> librosParaBorrar = new ArrayList<>();
-        StringBuilder reporte = new StringBuilder("Análisis de duplicados:\n\n");
-        int contadorFusionados = 0;
-
-        for (List<Libro> grupo : grupos.values()) {
-            if (grupo.size() > 1) {
-                Libro principal = grupo.get(0);
-                for (int i = 1; i < grupo.size(); i++) {
-                    Libro duplicado = grupo.get(i);
-
-                    // Sumar stock al principal
-                    principal.setCantidad(principal.getCantidad() + duplicado.getCantidad());
-                    librosParaBorrar.add(duplicado);
-                    contadorFusionados++;
-                    reporte.append("✔️ ").append(principal.getTitulo()).append(" (Fusionado)\n");
-                }
-            }
-        }
-
-        if (contadorFusionados == 0) {
+        if (reporte == null) {
             mostrarAlerta("Búsqueda de Duplicados", "No se encontraron libros repetidos.");
             return;
         }
 
-        // 2. Aplicar cambios
-        listaLibrosCompleta.removeAll(librosParaBorrar);
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
         tablaLibros.refresh();
         actualizarPanelMisLibros();
 
-        // 3. Mostrar informe en tu ventana de duplicados
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("duplicados.fxml"));
             Parent root = loader.load();
-            DuplicadosController controller = loader.getController();
-            controller.setTextoResultados(reporte.toString());
+            com.ferlagod.bibliohousefx.DuplicadosController controller = loader.getController();
+            controller.setTextoResultados(reporte);
 
             Stage stage = new Stage();
             stage.setTitle("Informe de Duplicados");
             setScene(stage, root);
             stage.show();
         } catch (IOException e) {
-            mostrarAlerta("Éxito", "Se han fusionado " + contadorFusionados + " libros.");
+            mostrarAlerta("Éxito", "Proceso completado. Revisa la tabla.");
         }
     }
 
@@ -2135,6 +1919,8 @@ public class PrimaryController implements Initializable {
      *
      * @param event El evento del botón Nuevo Socio.
      */
+    public void nuevoSocioPublic() { nuevoSocio(null); }
+
     @FXML
     private void nuevoSocio(ActionEvent event) {
         try {
@@ -2163,6 +1949,8 @@ public class PrimaryController implements Initializable {
     /**
      * Abre la ventana de gestión de socios para editar/eliminar.
      */
+    public void gestionarSociosPublic() { gestionarSocios(null); }
+
     @FXML
     private void gestionarSocios(ActionEvent event) {
         try {
@@ -2194,10 +1982,9 @@ public class PrimaryController implements Initializable {
         List<Socio> socios = jsonManager.cargarSocios();
         listaSocios.clear();
         listaSocios.addAll(socios);
-        comboSocios.setItems(listaSocios);
-
-        actualizarComboLibrosDisponibles(); // Por si el stock cambió
-        tablaPrestamos.refresh(); // Refrescamos la tabla de préstamos
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
+        }
     }
 
     /**
@@ -2210,132 +1997,36 @@ public class PrimaryController implements Initializable {
         return listaPrestamosCompleta;
     }
 
-    /**
-     * Realiza un préstamo de un libro a un socio. Verifica el stock y registra
-     * el préstamo.
-     *
-     * @param event El evento del botón Prestar.
-     */
-    @FXML
-    private void realizarPrestamo(ActionEvent event) {
-        // 1. Obtener datos de LOS COMBOS
-        Libro libroSeleccionado = comboLibrosPrestamo.getValue();
-        Socio socio = comboSocios.getValue();
-
-        if (libroSeleccionado == null || socio == null) {
-            mostrarAlerta("Datos faltantes", "Por favor, selecciona un libro y un socio de las listas.");
-            return;
-        }
-
-        // 2. BUSCAR EL LIBRO ORIGINAL (Aseguramos trabajar con el objeto maestro)
-        Libro libroOriginal = listaLibrosCompleta.stream()
-                .filter(l -> l.getId().equals(libroSeleccionado.getId()))
-                .findFirst()
-                .orElse(null);
-
-        if (libroOriginal == null) {
-            mostrarAlerta("Error", "No se pudo localizar el libro en la base de datos.");
-            return;
-        }
-
-        // 3. VALIDACIÓN: Stock real
-        if (libroOriginal.getCantidad() <= 0) {
-            mostrarAlerta("Sin stock", "No quedan ejemplares disponibles de este libro.");
-            return;
-        }
-
-        // 4. VALIDACIÓN: Evitar duplicados (CON PROTECCIÓN NULA - FIX CRASH)
-        boolean yaLoTiene = listaPrestamosCompleta.stream()
-                .anyMatch(p -> {
-                    // Comprobamos que sea el mismo socio y esté sin devolver
-                    if (p.getNumeroSocio() == socio.getNumeroSocio() && p.getFechaDevolucion() == null) {
-                        // PROTECCIÓN: Si el préstamo viejo no tiene ID, comparamos por título (legacy)
-                        // Si tiene ID, comparamos estrictamente por ID.
-                        if (p.getLibroId() != null) {
-                            return p.getLibroId().equals(libroOriginal.getId());
-                        } else {
-                            return p.getTituloLibro() != null && p.getTituloLibro().equals(libroOriginal.getTitulo());
-                        }
-                    }
-                    return false;
-                });
-
-        if (yaLoTiene) {
-            mostrarAlerta("Préstamo duplicado", socio.getNombre() + " ya tiene una copia activa de este libro.");
-            return;
-        }
-
-        // 5. REGISTRAR PRÉSTAMO
-        Prestamo nuevoPrestamo = new Prestamo(libroOriginal, socio);
-        listaPrestamosCompleta.add(nuevoPrestamo);
-
-        // 6. RESTAR STOCK
-        libroOriginal.setCantidad(libroOriginal.getCantidad() - 1);
-
-        // 7. GUARDAR Y REFRESCAR
-        jsonManager.guardarPrestamos(new ArrayList<>(listaPrestamosCompleta));
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-
-        tablaLibros.refresh();
-        actualizarComboLibrosDisponibles();
-
-        lblEstado.setText("Préstamo realizado: " + libroOriginal.getTitulo());
-        mostrarAlerta("Éxito", "Préstamo registrado correctamente.");
+    public void mostrarAlertaPublic(String titulo, String mensaje) {
+        mostrarAlerta(titulo, mensaje);
     }
 
-    /**
-     * Marca un préstamo como devuelto. Actualiza la fecha de devolución y
-     * repone el stock del libro.
-     *
-     * @param event El evento del botón Devolver.
-     */
-    @FXML
-    private void marcarDevuelto(ActionEvent event) {
-        // 1. Obtener el préstamo seleccionado
-        Prestamo p = tablaPrestamos.getSelectionModel().getSelectedItem();
-
-        if (p == null) {
-            mostrarAlerta("Selección necesaria", "Selecciona un préstamo de la lista para devolverlo.");
-            return;
+    public void setMensajeEstado(String mensaje) {
+        if (lblEstado != null) {
+            lblEstado.setText(mensaje);
         }
-
-        // 2. Comprobar si ya estaba devuelto para evitar duplicados
-        if (p.getFechaDevolucion() != null) {
-            mostrarAlerta("Aviso", "Este préstamo ya figura como devuelto el " + p.getFechaDevolucionFormateada());
-            return;
-        }
-
-        // 3. ACTUALIZAR ESTADO DEL PRÉSTAMO
-        p.setFechaDevolucion(LocalDate.now());
-
-        // 4. DEVOLVER STOCK AL LIBRO (Uso estricto de ID único)
-        // Buscamos en la lista maestra el libro que coincida exactamente con el ID guardado en el préstamo
-        listaLibrosCompleta.stream()
-                .filter(l -> l.getId().equals(p.getLibroId()))
-                .findFirst()
-                .ifPresentOrElse(
-                        libro -> {
-                            libro.setCantidad(libro.getCantidad() + 1);
-                            LOGGER.log(java.util.logging.Level.INFO, "Stock devuelto para el libro: {0}", libro.getTitulo());
-                        },
-                        () -> LOGGER.log(java.util.logging.Level.WARNING, "No se encontró el libro con ID {0} para devolver stock. ¿Fue borrado?", p.getLibroId())
-                );
-
-        // 5. GUARDAR CAMBIOS (Ahora de forma atómica gracias al cambio en JsonManager)
-        jsonManager.guardarPrestamos(new ArrayList<>(listaPrestamosCompleta));
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-
-        // 6. REFRESCAR INTERFAZ
-        // Re-filtramos para que el préstamo desaparezca de "Activos" y aparezca en "Historial"
-        filteredPrestamos.setPredicate(p2 -> p2.getFechaDevolucion() == null);
-        filteredHistory.setPredicate(p2 -> p2.getFechaDevolucion() != null);
-
-        tablaPrestamos.refresh();
-        tablaHistorial.refresh();
-        actualizarComboLibrosDisponibles();
-
-        lblEstado.setText("Devolución registrada correctamente (ID: " + p.getLibroId() + ")");
     }
+
+    public void actualizarVistasPrestamo() {
+        // Solo refrescar predicados — los items ya están enlazados mediante las FilteredList
+        if (filteredPrestamos != null) {
+            filteredPrestamos.setPredicate(null);
+            filteredPrestamos.setPredicate(p -> p.getFechaDevolucion() == null);
+        }
+        if (filteredHistory != null) {
+            filteredHistory.setPredicate(null);
+            filteredHistory.setPredicate(p -> p.getFechaDevolucion() != null);
+        }
+        // Actualizar combo de libros disponibles en el panel de préstamos
+        if (pestanaPrestamosController != null) {
+            pestanaPrestamosController.refrescarLibrosDisponibles(obtenerLibrosDisponibles());
+        }
+        // También refrescar la tabla principal de libros (stock puede haber cambiado)
+        if (tablaLibros != null) tablaLibros.refresh();
+    }
+
+    public ObservableList<Libro> getListaLibrosCompleta() { return listaLibrosCompleta; }
+    public ObservableList<Socio> getListaSocios() { return listaSocios; }
 
     // --- DETALLES ---
     /**
@@ -2405,62 +2096,11 @@ public class PrimaryController implements Initializable {
     // ==========================================
     // SECCIÓN: LISTA DE DESEOS (WISHLIST)
     // ==========================================
-    /**
-     * Actualiza el panel de deseos mostrando una tarjeta por cada libro en la
-     * lista.
-     */
-    private void actualizarPanelDeseos() {
-        panelDeseos.getChildren().clear();
-        for (Libro libro : listaDeseos) {
-            panelDeseos.getChildren().add(crearTarjetaDeseo(libro));
-        }
-    }
-
-    /**
-     * Crea una tarjeta visual para un libro en la lista de deseos.
-     *
-     * @param libro El libro para el que crear la tarjeta.
-     * @return Un VBox con la imagen, título y botones de acción.
-     */
-    private javafx.scene.layout.VBox crearTarjetaDeseo(Libro libro) {
-        javafx.scene.layout.VBox tarjeta = new javafx.scene.layout.VBox(8);
-        tarjeta.setAlignment(javafx.geometry.Pos.TOP_CENTER);
-        tarjeta.setPrefWidth(140);
-        // Estilo de tarjeta bonita con sombra
-        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
-
-        javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
-        com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
-
-        Label lblTitulo = new Label(libro.getTitulo());
-        lblTitulo.setWrapText(true);
-        lblTitulo.setMaxWidth(130);
-        lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
-
-        // Botón verde de "Conseguido"
-        Button btnMover = new Button(resources.getString("wishlist.move"));
-        btnMover.setStyle("-fx-font-size: 10px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
-        btnMover.setMaxWidth(Double.MAX_VALUE);
-        btnMover.setOnAction(e -> moverDeseoABiblioteca(libro));
-
-        // Botón rojo de borrar
-        Button btnBorrar = new Button(resources.getString("wishlist.delete"));
-        btnBorrar.setStyle("-fx-font-size: 10px; -fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-cursor: hand;");
-        btnBorrar.setOnAction(e -> {
-            listaDeseos.remove(libro);
-            jsonManager.guardarDeseos(listaDeseos);
-            actualizarPanelDeseos();
-        });
-
-        tarjeta.getChildren().addAll(img, lblTitulo, btnMover, btnBorrar);
-        return tarjeta;
-    }
 
     /**
      * Mueve un libro de la lista de deseos a la biblioteca principal.
      */
-    private void moverDeseoABiblioteca(Libro libro) {
+    public void moverDeseoABiblioteca(Libro libro) {
         // 1. Quitar de deseos
         listaDeseos.remove(libro);
         jsonManager.guardarDeseos(listaDeseos);
@@ -2473,7 +2113,9 @@ public class PrimaryController implements Initializable {
 
         // 3. Refrescar vistas
         tablaLibros.refresh();
-        actualizarPanelDeseos();
+        if (pestanaWishlistController != null) {
+            pestanaWishlistController.actualizarPanelDeseos();
+        }
         actualizarComboLibrosDisponibles();
         lblEstado.setText(resources.getString("wishlist.moved.status"));
     }
@@ -2484,35 +2126,15 @@ public class PrimaryController implements Initializable {
      *
      * @param query El texto a buscar (título, autor o ISBN).
      */
-    // Método unificado para lanzar la búsqueda RÁPIDA (con Timeouts)
-    // En PrimaryController.java
     private void ejecutarBusquedaGlobal(String query) {
         if (resources != null && resources.containsKey("status.searching")) {
             lblEstado.setText(resources.getString("status.searching"));
         } else {
-            lblEstado.setText("Buscando..."); // Texto de respaldo si falta la traducción
+            lblEstado.setText("Buscando...");
         }
-        txtBusquedaOpenLibrary.setDisable(true); // Bloquear UI inmediatamente
+        txtBusquedaOpenLibrary.setDisable(true);
 
-        // Usamos el pool de hilos común para no saturar el sistema
-        java.util.concurrent.CompletableFuture.supplyAsync(() -> {
-            // Ejecución en paralelo de los 3 proveedores con tiempos de espera estrictos
-            var f1 = java.util.concurrent.CompletableFuture.supplyAsync(() -> OpenLibraryCliente.buscarLibros(query));
-            var f2 = java.util.concurrent.CompletableFuture.supplyAsync(() -> GoogleBooksCliente.buscarLibros(query));
-            var f3 = java.util.concurrent.CompletableFuture.supplyAsync(() -> InventaireCliente.buscarLibros(query));
-
-            try {
-                java.util.concurrent.CompletableFuture.allOf(f1, f2, f3).get(5, java.util.concurrent.TimeUnit.SECONDS);
-                List<Libro> unidos = new ArrayList<>();
-                unidos.addAll(f1.get());
-                unidos.addAll(f2.get());
-                unidos.addAll(f3.get());
-                return unidos;
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                return new ArrayList<Libro>();
-            }
-        }).thenAccept(resultados -> {
-            // Volver al hilo de UI para mostrar resultados
+        busquedaService.ejecutarBusquedaGlobalAsync(query).thenAccept(resultados -> {
             Platform.runLater(() -> {
                 txtBusquedaOpenLibrary.setDisable(false);
                 if (resultados.isEmpty()) {
@@ -2543,7 +2165,7 @@ public class PrimaryController implements Initializable {
      * Pide al usuario qué libro buscar y lo añade a la lista de deseos.
      */
     @FXML
-    private void buscarLibroParaDeseos(ActionEvent event) {
+    public void buscarLibroParaDeseos() {
         // En la pestaña de deseos pedimos al usuario qué quiere buscar mediante un diálogo
         javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
         dialog.setTitle("Buscar Libro");
@@ -2633,7 +2255,9 @@ public class PrimaryController implements Initializable {
             jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
             tablaLibros.refresh();
             actualizarPanelMisLibros();
-            actualizarPanelDeseos();
+            if (pestanaWishlistController != null) {
+                pestanaWishlistController.actualizarPanelDeseos();
+            }
             notificar("¡Completado! Se han actualizado " + task.getValue() + " portadas.");
         });
 
@@ -2649,59 +2273,8 @@ public class PrimaryController implements Initializable {
         thread.start();
     }
 
-    /**
-     * Motor de búsqueda silencioso. Rastrea las 3 APIs.
-     */
     private String buscarImagenEnApisMasivo(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return "";
-        }
-        try {
-            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture<java.util.List<Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib, futureInventaire).join();
-
-            if (futureGoogle.get() != null) {
-                for (Libro lib : futureGoogle.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
-                        return img;
-                    }
-                }
-            }
-            if (futureOpenLib.get() != null) {
-                for (Libro lib : futureOpenLib.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover") && !img.contains("-S.jpg")) {
-                        return img.replace("-M.jpg", "-L.jpg");
-                    }
-                }
-            }
-            if (futureInventaire.get() != null) {
-                for (Libro lib : futureInventaire.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
-                        return img;
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            // Falla en silencio y sigue con el siguiente libro
-        }
-        return "";
+        return busquedaService.buscarImagenEnApisMasivo(query);
     }
 
     /**
@@ -2740,14 +2313,12 @@ public class PrimaryController implements Initializable {
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
         String busquedaRapida = txtBuscarMisLibros != null ? txtBuscarMisLibros.getText().toLowerCase().trim() : "";
 
-        // 2. Filtrar los libros aplicando la búsqueda rápida
+        // 2. Filtrar los libros — filteredData ya aplica el predicado de estantería/deseos
         List<Libro> librosMostrados = filteredData.stream()
-                .filter(Libro::isPoseido)
                 .filter(l -> {
                     if (busquedaRapida.isEmpty()) {
                         return true;
                     }
-                    // Buscar coincidencias en título o autor
                     boolean tituloCoincide = l.getTitulo() != null && l.getTitulo().toLowerCase().contains(busquedaRapida);
                     boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(busquedaRapida);
                     return tituloCoincide || autorCoincide;
@@ -2760,7 +2331,7 @@ public class PrimaryController implements Initializable {
             Label lblVacio = new Label("No hay libros aquí.\nPrueba a cambiar los filtros o añade libros nuevos.");
             lblVacio.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px; -fx-alignment: center;");
             panelMisLibros.getChildren().add(lblVacio);
-            return; // Salimos del método aquí
+            return;
         }
 
         // 4. Dibujar las tarjetas si hay resultados
@@ -2768,6 +2339,7 @@ public class PrimaryController implements Initializable {
             panelMisLibros.getChildren().add(crearTarjetaMisLibros(libro));
         }
     }
+
 
     /**
      * Crea una tarjeta interactiva para la biblioteca principal.

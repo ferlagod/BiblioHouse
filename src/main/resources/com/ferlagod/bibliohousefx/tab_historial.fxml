@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20.0" styleClass="content-area" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.HistorialController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <Label styleClass="heading-text" text="%history.title" />
+        <TableView fx:id="tablaHistorial" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colHistorialLibro" prefWidth="250.0" text="%col.history.book" />
+                <TableColumn fx:id="colHistorialSocio" prefWidth="200.0" text="%col.history.member" />
+                <TableColumn fx:id="colHistorialFechaPrestamo" prefWidth="120.0" text="%col.history.date_loan" />
+                <TableColumn fx:id="colHistorialFechaDevolucion" prefWidth="120.0" text="%col.history.date_return" />
+            </columns>
+        </TableView>
+    </children>
+</VBox>

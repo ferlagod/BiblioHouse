@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -48,7 +47,6 @@ import javafx.util.Duration;
  */
 public class ImageLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(ImageLoader.class.getName());
     private static String cacheDir = null;
     private static final ExecutorService executor = Executors.newFixedThreadPool(8); // Pool reducido para no saturar IO
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
