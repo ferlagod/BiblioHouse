@@ -212,13 +212,13 @@
                             </content>
                         </Tab>
 
-                        <Tab text="%tab.loans">
+                        <Tab fx:id="tabPrestamos" text="%tab.loans">
                             <content>
                                 <fx:include fx:id="pestanaPrestamos" source="tab_prestamos.fxml" />
                             </content>
                         </Tab>
 
-                        <Tab text="%tab.history">
+                        <Tab fx:id="tabHistorial" text="%tab.history">
                             <content>
                                 <fx:include fx:id="pestanaHistorial" source="tab_historial.fxml" />
                             </content>

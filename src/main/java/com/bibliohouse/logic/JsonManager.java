@@ -95,6 +95,15 @@ public class JsonManager {
                 return t;
             });
 
+    // El shutdown hook se registra una sola vez a nivel de clase, no por instancia,
+    // para evitar acumular hooks huérfanos cuando la UI se recarga (p.ej. al cambiar idioma).
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            // Noop: cada instancia es un daemon thread; la JVM los mata al salir.
+            // Este hook existe solo para loguear si fuera necesario en el futuro.
+        }, "bibliohousefx-shutdown"));
+    }
+
     /**
      * Referencia al sync pendiente (para cancelarlo si llega otro antes).
      */
@@ -186,9 +195,6 @@ public class JsonManager {
         // Se crea las carpetas necesarias si no existen
         crearDirectorioBaseSiNoExiste();
 
-        // Registrar shutdown hook para cerrar el ejecutor del auto-sync al salir de la JVM
-        Runtime.getRuntime().addShutdownHook(new Thread(syncScheduler::shutdownNow,
-                "nextcloud-sync-shutdown"));
         crearDirectorioUsuarioSiNoExiste();
     }
 
@@ -318,7 +324,7 @@ public class JsonManager {
             try (FileReader reader = new FileReader(file)) {
                 List<T> lista = gson.fromJson(reader, tipoLista);
                 if (lista != null) {
-                    LOGGER.log(Level.INFO, "Cargados {0} {1} desde {2}", new Object[]{lista.size(), tipoDato, path});
+                    LOGGER.log(Level.FINE, "Cargados {0} {1} desde {2}", new Object[]{lista.size(), tipoDato, path});
                     return lista;
                 }
             } catch (Exception e) {
@@ -528,7 +534,7 @@ public class JsonManager {
 
         } catch (IOException | JsonSyntaxException e) {
             LOGGER.log(Level.SEVERE, "Error al importar libros desde archivo: " + archivo.getName(), e);
-            return null; // Retornamos null para indicar error
+            return new ArrayList<>(); // Lista vacía para indicar error, nunca null
         }
     }
 

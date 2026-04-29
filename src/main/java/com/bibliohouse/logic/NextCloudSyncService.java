@@ -328,7 +328,10 @@ public class NextCloudSyncService {
                 sardine.createDirectory(url);
             }
         } catch (IOException e) {
-            // Ignoramos errores de "Ya existe" o similares
+            // Puede ser un 405 "Method Not Allowed" si la carpeta ya existe en algunos servidores.
+            // No es crítico, pero lo registramos para diagnóstico.
+            LOGGER.log(Level.WARNING, "No se pudo crear/verificar directorio remoto ({0}): {1}",
+                    new Object[]{url, e.getMessage()});
         }
     }
 

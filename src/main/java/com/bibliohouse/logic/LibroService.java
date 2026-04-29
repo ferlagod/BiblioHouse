@@ -90,8 +90,12 @@ public class LibroService {
             return null;
         }
 
-        // Eliminar duplicados y guardar cambios
-        listaLibrosCompleta.removeAll(librosParaBorrar);
+        // Eliminación eficiente O(n) usando identidad de objeto en vez de removeAll(List) que sería O(n²).
+        java.util.IdentityHashMap<Libro, Boolean> aEliminar = new java.util.IdentityHashMap<>();
+        for (Libro l : librosParaBorrar) {
+            aEliminar.put(l, Boolean.TRUE);
+        }
+        listaLibrosCompleta.removeIf(aEliminar::containsKey);
         jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
 
         return reporte.toString();

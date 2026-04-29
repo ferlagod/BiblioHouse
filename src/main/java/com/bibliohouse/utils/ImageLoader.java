@@ -52,13 +52,16 @@ public class ImageLoader {
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
     private static final int MAX_CACHE_SIZE = 60; // Optimizado para fluidez sin devorar RAM
 
-    // Caché en memoria (LRU)
-    private static final Map<String, Image> memoryCache = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
-            return size() > MAX_CACHE_SIZE;
+    // Caché en memoria (LRU) — envuelta en synchronizedMap para acceso seguro
+    // desde el hilo FX y el ExecutorService simultáneamente.
+    private static final Map<String, Image> memoryCache = java.util.Collections.synchronizedMap(
+        new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+                return size() > MAX_CACHE_SIZE;
+            }
         }
-    };
+    );
 
     /**
      * Carga la imagen por defecto en el ImageView especificado, escalándola al

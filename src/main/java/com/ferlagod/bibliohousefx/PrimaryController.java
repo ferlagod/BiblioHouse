@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -76,7 +78,7 @@ public class PrimaryController implements Initializable {
     private String usuarioActual;
     private String rutaUsuario; // Para recargar app
     private String rutaPortadaTemporal = "";
-    private java.util.Map<String, String> preferencias;
+    private java.util.Map<String, String> preferencias = new java.util.HashMap<>();
     private FilteredList<Libro> filteredData; // Lista que la tabla usará para filtrar
     private SortedList<Libro> sortedData; // Lista que la tabla usará para ordenar (basada en filteredData)
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(PrimaryController.class.getName());
@@ -192,6 +194,10 @@ public class PrimaryController implements Initializable {
     @FXML
     private RadioMenuItem menuPt;
     @FXML
+    private Tab tabPrestamos;
+    @FXML
+    private Tab tabHistorial;
+    @FXML
     private WishlistController pestanaWishlistController;
     private List<Libro> listaDeseos;
     @FXML
@@ -265,48 +271,48 @@ public class PrimaryController implements Initializable {
             configurarFiltros();
             configurarAtajosYEventos();
 
+            if (mainTabPane != null) {
+                mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+                    if (newTab != null && newTab.getContent() != null) {
+                        Node content = newTab.getContent();
+
+                        // MEJORA DE SUAVIDAD: Activamos la caché de hardware antes de la animación
+                        content.setCache(true);
+                        content.setCacheHint(javafx.scene.CacheHint.SPEED);
+
+                        // Configuramos la transición de desvanecimiento
+                        FadeTransition fade = new FadeTransition(Duration.millis(300), content);
+                        fade.setFromValue(0.0);
+                        fade.setToValue(1.0);
+                        fade.setCycleCount(1);
+                        fade.setAutoReverse(false);
+
+                        // Al terminar la animación, desactivamos la caché para liberar memoria de video
+                        fade.setOnFinished(e -> {
+                            content.setCache(false);
+                            content.setCacheHint(javafx.scene.CacheHint.DEFAULT);
+                        });
+
+                        // Pequeño efecto de desplazamiento hacia arriba (Slide + Fade)
+                        content.setTranslateY(10);
+                        javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(300), content);
+                        slide.setFromY(10);
+                        slide.setToY(0);
+                        slide.play();
+
+                        fade.play();
+                    }
+                });
+            }
+
         } catch (Exception e) {
-            System.err.println("[PrimaryController] Error CRÍTICO en initialize: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Error CRÍTICO en initialize", e);
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error de Inicialización");
                 alert.setHeaderText("Fallo al iniciar la pantalla principal");
                 alert.setContentText("Ocurrió un error inesperado al configurar la vista: " + e.getMessage());
                 alert.showAndWait();
-            });
-        }
-
-        if (mainTabPane != null) {
-            mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-                if (newTab != null && newTab.getContent() != null) {
-                    Node content = newTab.getContent();
-
-                    // MEJORA DE SUAVIDAD: Activamos la caché de hardware antes de la animación
-                    content.setCache(true);
-                    content.setCacheHint(javafx.scene.CacheHint.SPEED);
-
-                    // Configuramos la transición de desvanecimiento
-                    FadeTransition fade = new FadeTransition(Duration.millis(300), content);
-                    fade.setFromValue(0.0); // Empieza totalmente transparente
-                    fade.setToValue(1.0);   // Termina totalmente opaco
-                    fade.setCycleCount(1);
-                    fade.setAutoReverse(false);
-
-                    // Al terminar la animación, desactivamos la caché para liberar memoria de video
-                    fade.setOnFinished(e -> {
-                        content.setCache(false);
-                        content.setCacheHint(javafx.scene.CacheHint.DEFAULT);
-                    });
-
-                    // Pequeño efecto de desplazamiento hacia arriba (Slide + Fade)
-                    content.setTranslateY(10); // Baja el contenido 10 píxeles inicialmente
-                    javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(300), content);
-                    slide.setFromY(10);
-                    slide.setToY(0);
-                    slide.play();
-
-                    fade.play(); // Iniciamos la animación
-                }
             });
         }
     }
@@ -594,9 +600,8 @@ public class PrimaryController implements Initializable {
                 Optional<ButtonType> result = alert.showAndWait();
 
                 if (result.isPresent() && result.get() == viewLoansButton) {
-                    TabPane tabPane = (TabPane) tablaLibros.getScene().lookup(".tab-pane");
-                    if (tabPane != null) {
-                        tabPane.getSelectionModel().select(2);
+                    if (tabPrestamos != null) {
+                        mainTabPane.getSelectionModel().select(tabPrestamos);
                     }
                 }
             });
@@ -682,10 +687,14 @@ public class PrimaryController implements Initializable {
                             if (txtTitulo != null) txtTitulo.requestFocus();
                         });
 
-                // Ctrl+L (Cmd+L) -> Foco en préstamos (Tab índice 2)
+                // Ctrl+L (Cmd+L) -> Pestaña Préstamos (por referencia, no por índice)
                 scene.getAccelerators().put(
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+L"),
-                        () -> mainTabPane.getSelectionModel().select(2));
+                        () -> {
+                            if (tabPrestamos != null) {
+                                mainTabPane.getSelectionModel().select(tabPrestamos);
+                            }
+                        });
             }
         });
     }
@@ -937,12 +946,6 @@ public class PrimaryController implements Initializable {
                 sourceList = originalItems;
             }
 
-            if (!comboBox.isShowing()) {
-                // Si el combo está cerrado, a veces da problemas filtrar, así que mejor no
-                // hacemos nada
-            }
-
-            // Si el usuario borra el texto, mostramos todos los elementos (actualizados)
             if (newText == null || newText.isEmpty()) {
                 comboBox.setItems(sourceList);
                 return;
@@ -1031,8 +1034,10 @@ public class PrimaryController implements Initializable {
             return Double.compare(l1.getOrdenEnSerie(), l2.getOrdenEnSerie());
         }
 
-        // 3. Ni serie ni orden: Por Título
-        return l1.getTitulo().compareToIgnoreCase(l2.getTitulo());
+        // 3. Ni serie ni orden: Por Título (null-safe)
+        String t1 = l1.getTitulo() != null ? l1.getTitulo() : "";
+        String t2 = l2.getTitulo() != null ? l2.getTitulo() : "";
+        return t1.compareToIgnoreCase(t2);
     }
 
     /**
@@ -1117,8 +1122,8 @@ public class PrimaryController implements Initializable {
      * @param libro El libro a prestar.
      */
     public void prepararPrestamoLibro(Libro libro) {
-        if (mainTabPane != null) {
-            mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
+        if (mainTabPane != null && tabPrestamos != null) {
+            mainTabPane.getSelectionModel().select(tabPrestamos);
         }
 
         if (pestanaPrestamosController != null) {
@@ -1132,8 +1137,8 @@ public class PrimaryController implements Initializable {
      * @param socio El socio al que prestar.
      */
     public void prepararPrestamoSocio(Socio socio) {
-        if (mainTabPane != null) {
-            mainTabPane.getSelectionModel().select(2); // Seleccionar pestaña Préstamos
+        if (mainTabPane != null && tabPrestamos != null) {
+            mainTabPane.getSelectionModel().select(tabPrestamos);
         }
 
         if (pestanaPrestamosController != null) {
@@ -1141,10 +1146,12 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    // Método auxiliar para refrescar el desplegable de libros
+    // Método auxiliar para refrescar el desplegable de libros disponibles.
+    // Usa refrescarLibrosDisponibles() en lugar de initData() completo para
+    // no resetear el estado del formulario de préstamos.
     public void actualizarComboLibrosDisponibles() {
         if (pestanaPrestamosController != null) {
-            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
+            pestanaPrestamosController.refrescarLibrosDisponibles(obtenerLibrosDisponibles());
         }
     }
 
@@ -1269,12 +1276,15 @@ public class PrimaryController implements Initializable {
         Libro libroExistente = null;
         for (Libro l : listaLibrosCompleta) {
             // Coincidencia por ISBN (si ambos tienen ISBN)
-            if (!isbn.isEmpty() && !l.getIsbn().isEmpty() && l.getIsbn().equals(isbn)) {
+            String libroIsbn = l.getIsbn() != null ? l.getIsbn() : "";
+            if (!isbn.isEmpty() && !libroIsbn.isEmpty() && libroIsbn.equals(isbn)) {
                 libroExistente = l;
                 break;
             }
-            // Coincidencia por Título y Autor (si no hay ISBN o es distinto)
-            if (l.getTitulo().equalsIgnoreCase(titulo) && l.getAutor().equalsIgnoreCase(autor)) {
+            // Coincidencia por Título y Autor (null-safe)
+            String libroTitulo = l.getTitulo() != null ? l.getTitulo() : "";
+            String libroAutor = l.getAutor() != null ? l.getAutor() : "";
+            if (libroTitulo.equalsIgnoreCase(titulo) && libroAutor.equalsIgnoreCase(autor)) {
                 libroExistente = l;
                 break;
             }
@@ -1434,23 +1444,19 @@ public class PrimaryController implements Initializable {
      */
     private void abrirVentanaResultados(List<Libro> resultados) {
         try {
-            System.out.println("[DEBUG] Cargando FXML de resultados_busqueda.fxml");
+            LOGGER.log(Level.FINE, "[PrimaryController] Cargando FXML de resultados_busqueda.fxml");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("resultados_busqueda.fxml"));
 
             if (loader.getLocation() == null) {
-                System.err.println("[ERROR] No se pudo encontrar el archivo resultados_busqueda.fxml");
+                LOGGER.log(Level.SEVERE, "[PrimaryController] No se pudo encontrar el archivo resultados_busqueda.fxml");
                 mostrarAlerta("Error", "No se encontró el archivo de la ventana de resultados.");
                 return;
             }
 
-            System.out.println("[DEBUG] Archivo FXML encontrado en: " + loader.getLocation());
             Parent root = loader.load();
-            System.out.println("[DEBUG] FXML cargado exitosamente");
 
             ResultadosBusquedaController controller = loader.getController();
-            System.out.println("[DEBUG] Controller obtenido: " + controller);
             controller.setResultados(resultados);
-            System.out.println("[DEBUG] Resultados configurados en el controller");
 
             Stage stage = new Stage();
             stage.setTitle("Resultados de búsqueda");
@@ -1458,9 +1464,7 @@ public class PrimaryController implements Initializable {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
 
-            System.out.println("[DEBUG] Mostrando ventana de resultados...");
             stage.showAndWait();
-            System.out.println("[DEBUG] Ventana de resultados cerrada");
 
             // Recoger el libro seleccionado al cerrar
             Libro elegido = controller.getLibroSeleccionado();
@@ -1485,10 +1489,10 @@ public class PrimaryController implements Initializable {
             }
 
         } catch (IOException e) {
-            System.err.println("[ERROR] IOException al abrir ventana de resultados: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] IOException al abrir ventana de resultados", e);
             mostrarAlerta("Error", "No se pudo abrir la ventana de resultados: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("[ERROR] Excepción inesperada al abrir ventana de resultados: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Excepción inesperada al abrir ventana de resultados", e);
             mostrarAlerta("Error", "Error inesperado: " + e.getMessage());
         }
     }
@@ -1576,7 +1580,7 @@ public class PrimaryController implements Initializable {
                 lblEstado.setText("Libro editado correctamente.");
             }
         } catch (IOException e) {
-            System.err.println("[PrimaryController] Error al abrir ventana de edición: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Error al abrir ventana de edición", e);
         }
     }
 
@@ -1742,22 +1746,14 @@ public class PrimaryController implements Initializable {
      */
     @FXML
     private void abrirEscaner(ActionEvent event) {
-
-        System.out.println("[PrimaryController] Solicitud para abrir escáner recibida.");
+        LOGGER.log(Level.INFO, "[PrimaryController] Solicitud para abrir escáner recibida.");
         try {
-            System.out.println("[PrimaryController] Cargando escaner.fxml...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("escaner.fxml"));
             Parent root = loader.load();
-            System.out.println("[PrimaryController] FXML cargado.");
 
             EscanerController escanerController = loader.getController();
             escanerController.setListener(isbns -> {
-                // Cuando se detecta un lote de ISBNs:
                 if (isbns != null && !isbns.isEmpty()) {
-                    // Tomamos el último para rellenar el campo (simulando comportamiento anterior)
-                    // O si es ráfaga, podríamos procesarlos todos.
-                    // Por ahora, procesamos el último para mantener la funcionalidad de búsqueda
-                    // inmediata
                     String ultimoIsbn = isbns.get(isbns.size() - 1);
 
                     txtIsbn.setText(ultimoIsbn);
@@ -1783,22 +1779,17 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.APPLICATION_MODAL);
 
-            // Iniciar cámara al mostrar
-            stage.setOnShown(e -> {
-                System.out.println("[PrimaryController] Ventana mostrada. Invocando escanerController.init()...");
-                escanerController.init();
-            });
-            // Asegurar cierre de cámara al cerrar ventana
+            stage.setOnShown(e -> escanerController.init());
             stage.setOnCloseRequest(e -> escanerController.shutdown());
 
             stage.show();
-            System.out.println("[PrimaryController] Ventana de escáner visible.");
+            LOGGER.log(Level.INFO, "[PrimaryController] Ventana de escáner visible.");
 
         } catch (IOException e) {
-            System.err.println("[PrimaryController] Error IO al abrir escáner: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Error IO al abrir escáner", e);
             mostrarAlerta("Error", "No se pudo abrir el escáner: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("[PrimaryController] Error general al abrir escáner: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Error general al abrir escáner", e);
             mostrarAlerta("Error", "Error inesperado al abrir escáner: " + e.getMessage());
         }
     }
@@ -2134,16 +2125,23 @@ public class PrimaryController implements Initializable {
         }
         txtBusquedaOpenLibrary.setDisable(true);
 
-        busquedaService.ejecutarBusquedaGlobalAsync(query).thenAccept(resultados -> {
-            Platform.runLater(() -> {
-                txtBusquedaOpenLibrary.setDisable(false);
-                if (resultados.isEmpty()) {
-                    mostrarAlerta("Sin resultados", "No se encontraron libros.");
-                } else {
-                    abrirVentanaResultados(resultados);
-                }
-            });
-        });
+        busquedaService.ejecutarBusquedaGlobalAsync(query)
+                .thenAccept(resultados -> Platform.runLater(() -> {
+                    txtBusquedaOpenLibrary.setDisable(false);
+                    if (resultados.isEmpty()) {
+                        mostrarAlerta("Sin resultados", "No se encontraron libros.");
+                    } else {
+                        abrirVentanaResultados(resultados);
+                    }
+                }))
+                .exceptionally(ex -> {
+                    LOGGER.log(Level.SEVERE, "Error en búsqueda global de libros", ex);
+                    Platform.runLater(() -> {
+                        txtBusquedaOpenLibrary.setDisable(false);
+                        mostrarAlerta("Error de red", "No se pudo completar la búsqueda: " + ex.getMessage());
+                    });
+                    return null;
+                });
     }
 
     /**
@@ -2285,14 +2283,12 @@ public class PrimaryController implements Initializable {
     @FXML
     private void buscarSagasFaltantes(javafx.event.ActionEvent event) {
         busquedaSagas.buscarSagasFaltantes(listaLibrosCompleta, jsonManager, () -> {
-            // Refrescar tabla principal
             tablaLibros.refresh();
 
-            // Refrescar panel de sagas (usando el nombre nuevo sin tilde)
             if (pestanaSagasController != null) {
                 pestanaSagasController.initData(listaLibrosCompleta);
             } else {
-                System.err.println("Error: pestanaSagasController es null. Revisa el fx:id en primary.fxml");
+                LOGGER.log(Level.WARNING, "[PrimaryController] pestanaSagasController es null. Revisa el fx:id en primary.fxml");
             }
 
             actualizarFiltros();
@@ -2323,7 +2319,9 @@ public class PrimaryController implements Initializable {
                     boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(busquedaRapida);
                     return tituloCoincide || autorCoincide;
                 })
-                .sorted((l1, l2) -> l1.getTitulo().compareToIgnoreCase(l2.getTitulo()))
+                .sorted(java.util.Comparator.comparing(
+                        l -> l.getTitulo() != null ? l.getTitulo() : "",
+                        String::compareToIgnoreCase))
                 .collect(Collectors.toList());
 
         // 3. Comprobar si está vacío ANTES de dibujar

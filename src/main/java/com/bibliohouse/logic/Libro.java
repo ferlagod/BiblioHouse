@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.logic;
 
+import com.google.gson.annotations.SerializedName;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,14 +38,21 @@ public class Libro {
     private String titulo;
     private String autor;
     private String editorial;
-    private String año;
+    @SerializedName("año")
+    private String anio;
     private String genero;
     private String isbn;
     private String portadaURL;
     private int calificacion;
-    private String reseña;
+    @SerializedName("reseña")
+    private String resena;
     private List<String> estanterias;
     private int cantidad;
+    /**
+     * @deprecated Usar {@link #estadoLectura} directamente. Este campo
+     * permanece para compatibilidad al leer JSONs antiguos.
+     */
+    @Deprecated
     private boolean leido;
     private String estadoLectura = "Pendiente";
     // Fecha en que se marca como "Leído" (para la tasa)
@@ -87,12 +95,12 @@ public class Libro {
         this.titulo = titulo;
         this.autor = autor;
         this.editorial = editorial;
-        this.año = año;
+        this.anio = año;
         this.genero = genero;
         this.isbn = isbn;
         this.portadaURL = portadaURL;
         this.calificacion = calificacion;
-        this.reseña = reseña;
+        this.resena = reseña;
 
         // Valores por defecto
         this.estanterias = new ArrayList<>();
@@ -200,7 +208,7 @@ public class Libro {
      * @return El año de publicación del libro.
      */
     public String getAño() {
-        return año;
+        return anio;
     }
 
     /**
@@ -209,7 +217,7 @@ public class Libro {
      * @param año El nuevo año de publicación del libro.
      */
     public void setAño(String año) {
-        this.año = año;
+        this.anio = año;
     }
 
     /**
@@ -290,7 +298,7 @@ public class Libro {
      * @return La reseña del libro.
      */
     public String getReseña() {
-        return reseña;
+        return resena;
     }
 
     /**
@@ -299,7 +307,7 @@ public class Libro {
      * @param reseña La reseña a establecer para el libro.
      */
     public void setReseña(String reseña) {
-        this.reseña = reseña;
+        this.resena = reseña;
     }
 
     /**
@@ -339,12 +347,13 @@ public class Libro {
     }
 
     /**
-     * Comprueba si el libro ha sido marcado como leído.
+     * Indica si el libro ha sido marcado como leído.
+     * Derivado de {@link #estadoLectura} para mantener consistencia.
      *
-     * @return true si está marcado como leído, false en caso contrario.
+     * @return true si el estadoLectura es "Leído".
      */
     public boolean isLeido() {
-        return leido;
+        return "Leído".equals(this.estadoLectura);
     }
 
     /**
@@ -401,10 +410,9 @@ public class Libro {
     }
 
     /**
-     * Convierte el objeto Libro a texto. Solo devuelve el título porque es lo
-     * que se ve en el JComboBox de la interfaz.
+     * Obtiene el nombre de la saga o serie a la que pertenece el libro.
      *
-     * @return El título del libro.
+     * @return El nombre de la serie, o null si no pertenece a ninguna.
      */
     public String getSerie() {
         return serie;
