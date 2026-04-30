@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 /**
  * Utilidad para cargar configuración desde el archivo config.properties.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ConfigLoader {
 

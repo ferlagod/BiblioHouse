@@ -32,8 +32,8 @@ import javafx.scene.control.ProgressBar;
  * información sobre las sagas de los libros, y permite actualizar la interfaz
  * de usuario mediante callbacks al finalizar el proceso.
  *
- * @author Fernando Lago
- * @version 1.0
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class BusquedaSagas {
 

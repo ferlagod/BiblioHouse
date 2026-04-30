@@ -30,8 +30,8 @@ import java.util.logging.SimpleFormatter;
  * archivo, en vez de solo mostrarse por consola. Así es más fácil revisar qué
  * ha pasado si algo falla.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ConfiguracionLogs {
 

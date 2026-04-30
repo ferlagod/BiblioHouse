@@ -116,7 +116,14 @@ public class NextCloudSyncService {
 
         // Normalizar la URL: extraer solo esquema + host + puerto, ignorando
         // cualquier ruta WebDAV que el usuario haya pegado por error.
-        this.serverUrl = extractBaseUrl(serverUrl.trim());
+        String extractedUrl = extractBaseUrl(serverUrl.trim());
+        
+        // OWASP A02: Cryptographic Failures. Bloquear credenciales en texto plano sobre HTTP
+        if (extractedUrl.startsWith("http://") && !extractedUrl.contains("localhost") && !extractedUrl.contains("127.0.0.1")) {
+            throw new IllegalArgumentException("Seguridad: Se requiere HTTPS para conexiones NextCloud externas (evita robo de credenciales).");
+        }
+        
+        this.serverUrl = extractedUrl;
         this.username = username.trim();
         // Codificar username para paths de URL (@ → %40, espacios → %20, etc.)
         this.usernameEncoded = encodeUrlSegment(this.username);

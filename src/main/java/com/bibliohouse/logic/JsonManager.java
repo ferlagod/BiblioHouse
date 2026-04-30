@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author Fernando Lago
- * @version 1.6
+ * @version 1.7
  *
  */
 public class JsonManager {
@@ -261,7 +261,7 @@ public class JsonManager {
      * @param tipoDato Un String que describe qué tipo de datos estamos
      * guardando.
      */
-    private <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
+    private synchronized <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
         crearDirectorioUsuarioSiNoExiste();
 
         File archivoFinal = new File(path);
@@ -366,10 +366,6 @@ public class JsonManager {
      * estanterías asignadas, se inicializa como una lista vacía.
      *
      * @return Lista de libros cargados.
-     */
-    /**
-     * Carga la lista de libros y realiza una migración automática de portadas
-     * de la carpeta antigua 'portadas' a la nueva 'covers' si es necesario.
      */
     public List<Libro> cargarLibros() {
         Type tipoLista = new TypeToken<ArrayList<Libro>>() {

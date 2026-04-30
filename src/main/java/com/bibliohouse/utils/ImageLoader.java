@@ -176,7 +176,10 @@ public class ImageLoader {
             Task<Void> downloadTask = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
-                    try (InputStream in = new URL(url).openStream()) {
+                    java.net.URLConnection conn = new URL(url).openConnection();
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+                    try (InputStream in = conn.getInputStream()) {
                         Files.copy(in, cacheFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
                     return null;
@@ -320,12 +323,20 @@ public class ImageLoader {
 
         try {
             if (isValidUrl(urlOrPath)) {
-                try (InputStream in = new URL(urlOrPath).openStream()) {
+                java.net.URLConnection conn = new URL(urlOrPath).openConnection();
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                try (InputStream in = conn.getInputStream()) {
                     Files.copy(in, archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             } else {
                 File archivoOrigen = new File(urlOrPath);
                 if (archivoOrigen.exists()) {
+                    // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
+                    String name = archivoOrigen.getName().toLowerCase();
+                    if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp")) {
+                        return urlOrPath; // Rechazar archivos que no sean imágenes
+                    }
                     if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
                         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }

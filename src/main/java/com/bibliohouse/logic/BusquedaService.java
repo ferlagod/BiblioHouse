@@ -12,16 +12,21 @@ import java.util.logging.Logger;
 /**
  * Servicio encargado de gestionar las búsquedas unificadas en APIs externas
  * (Google Books, OpenLibrary, Inventaire).
+ *
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class BusquedaService {
 
     private static final Logger LOGGER = Logger.getLogger(BusquedaService.class.getName());
 
     /**
-     * Busca un libro en varios proveedores de forma asíncrona con un timeout de 5 segundos.
+     * Busca un libro en varios proveedores de forma asíncrona con un timeout de
+     * 5 segundos.
      *
      * @param query El texto a buscar (título, autor o ISBN).
-     * @return Un CompletableFuture que resolverá con la lista de libros encontrados.
+     * @return Un CompletableFuture que resolverá con la lista de libros
+     * encontrados.
      */
     public CompletableFuture<List<Libro>> ejecutarBusquedaGlobalAsync(String query) {
         return CompletableFuture.supplyAsync(() -> {
@@ -32,9 +37,15 @@ public class BusquedaService {
             try {
                 CompletableFuture.allOf(f1, f2, f3).get(5, TimeUnit.SECONDS);
                 List<Libro> unidos = new ArrayList<>();
-                if (!f1.isCompletedExceptionally()) unidos.addAll(f1.get());
-                if (!f2.isCompletedExceptionally()) unidos.addAll(f2.get());
-                if (!f3.isCompletedExceptionally()) unidos.addAll(f3.get());
+                if (!f1.isCompletedExceptionally()) {
+                    unidos.addAll(f1.get());
+                }
+                if (!f2.isCompletedExceptionally()) {
+                    unidos.addAll(f2.get());
+                }
+                if (!f3.isCompletedExceptionally()) {
+                    unidos.addAll(f3.get());
+                }
                 return unidos;
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 LOGGER.log(Level.WARNING, "Timeout o error en la búsqueda global de libros para la query: " + query, e);
@@ -45,10 +56,12 @@ public class BusquedaService {
 
     /**
      * Motor de búsqueda masiva silencioso para recuperar portadas faltantes.
-     * Rastrea las 3 APIs en paralelo y devuelve la primera URL válida que encuentre.
-     * 
+     * Rastrea las 3 APIs en paralelo y devuelve la primera URL válida que
+     * encuentre.
+     *
      * @param query El título o ISBN a buscar.
-     * @return La URL de la portada encontrada, o cadena vacía si no encuentra ninguna.
+     * @return La URL de la portada encontrada, o cadena vacía si no encuentra
+     * ninguna.
      */
     public String buscarImagenEnApisMasivo(String query) {
         if (query == null || query.trim().isEmpty()) {

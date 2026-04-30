@@ -28,16 +28,15 @@ import org.mindrot.jbcrypt.BCrypt;
 /**
  * Gestiona el hashing y verificación de contraseñas de forma segura.
  *
- * <p>
- * <b>Compatibilidad con versiones anteriores:</b> los hashes generados con la
- * versión antigua (SHA-256 en Base64 puro, sin prefijo "$2a$") siguen siendo
+ * Compatibilidad con versiones anteriores: los hashes generados con la versión
+ * antigua (SHA-256 en Base64 puro, sin prefijo "$2a$") siguen siendo
  * reconocidos. Al primer login exitoso con un hash antiguo, el sistema lo migra
- * automáticamente a BCrypt sin que el usuario lo note.</p>
+ * automáticamente a BCrypt sin que el usuario lo note.
  *
  * <p>
  * Los nuevos hashes siempre usan BCrypt (factor de coste 12).</p>
  *
- * @author Fernando Lago
+ * @author Fernando Lago Dávila
  * @version 1.7
  */
 public class Autentificacion {
@@ -91,7 +90,7 @@ public class Autentificacion {
     /**
      * Indica si el hash guardado en disco es del formato antiguo (SHA-256). Los
      * hashes BCrypt siempre comienzan por {@code $2} (p.ej. {@code $2a$},
-     * {@code $2b$}). Un hash SHA-256 en Base64 nunca empieza así.
+     * {@code $2b$}).
      *
      * @param storedHash El hash a examinar.
      * @return {@code true} si es un hash SHA-256 legado.
@@ -105,6 +104,11 @@ public class Autentificacion {
     // ─────────────────────────────────────────────────────────────────────────
     /**
      * Verifica una contraseña contra un hash BCrypt.
+     *
+     * @param password Contraseña en texto plano a verificar.
+     * @param bcryptHash Hash BCrypt almacenado.
+     * @return {@code true} si la contraseña coincide con el hash, {@code false}
+     * si no coincide o si el hash está malformado.
      */
     private static boolean checkBcrypt(String password, String bcryptHash) {
         try {
@@ -119,6 +123,11 @@ public class Autentificacion {
     /**
      * Verifica una contraseña contra un hash SHA-256 (formato legado). Solo se
      * usa durante la migración transparente.
+     *
+     * @param password Contraseña en texto plano a verificar.
+     * @param legacyHash Hash SHA-256 almacenado.
+     * @return {@code true} si la contraseña coincide con el hash, {@code false}
+     * en caso contrario.
      */
     private static boolean checkLegacy(String password, String legacyHash) {
         String inputHash = hashSha256(password);
