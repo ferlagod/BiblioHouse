@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,27 +29,36 @@ public class BusquedaService {
      */
     public CompletableFuture<List<Libro>> ejecutarBusquedaGlobalAsync(String query) {
         return CompletableFuture.supplyAsync(() -> {
-            var f1 = CompletableFuture.supplyAsync(() -> OpenLibraryCliente.buscarLibros(query));
-            var f2 = CompletableFuture.supplyAsync(() -> GoogleBooksCliente.buscarLibros(query));
-            var f3 = CompletableFuture.supplyAsync(() -> InventaireCliente.buscarLibros(query));
+            var f1 = CompletableFuture.supplyAsync(() -> OpenLibraryCliente.buscarLibros(query))
+                    .completeOnTimeout(new ArrayList<>(), 10, TimeUnit.SECONDS)
+                    .exceptionally(ex -> {
+                        LOGGER.log(Level.WARNING, "Error en OpenLibrary", ex);
+                        return new ArrayList<>();
+                    });
+            var f2 = CompletableFuture.supplyAsync(() -> GoogleBooksCliente.buscarLibros(query))
+                    .completeOnTimeout(new ArrayList<>(), 10, TimeUnit.SECONDS)
+                    .exceptionally(ex -> {
+                        LOGGER.log(Level.WARNING, "Error en Google Books", ex);
+                        return new ArrayList<>();
+                    });
+            var f3 = CompletableFuture.supplyAsync(() -> InventaireCliente.buscarLibros(query))
+                    .completeOnTimeout(new ArrayList<>(), 10, TimeUnit.SECONDS)
+                    .exceptionally(ex -> {
+                        LOGGER.log(Level.WARNING, "Error en Inventaire", ex);
+                        return new ArrayList<>();
+                    });
 
+            CompletableFuture.allOf(f1, f2, f3).join();
+
+            List<Libro> unidos = new ArrayList<>();
             try {
-                CompletableFuture.allOf(f1, f2, f3).get(5, TimeUnit.SECONDS);
-                List<Libro> unidos = new ArrayList<>();
-                if (!f1.isCompletedExceptionally()) {
-                    unidos.addAll(f1.get());
-                }
-                if (!f2.isCompletedExceptionally()) {
-                    unidos.addAll(f2.get());
-                }
-                if (!f3.isCompletedExceptionally()) {
-                    unidos.addAll(f3.get());
-                }
-                return unidos;
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                LOGGER.log(Level.WARNING, "Timeout o error en la búsqueda global de libros para la query: " + query, e);
-                return new ArrayList<Libro>();
+                unidos.addAll(f1.get());
+                unidos.addAll(f2.get());
+                unidos.addAll(f3.get());
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.log(Level.WARNING, "Error uniendo resultados", e);
             }
+            return unidos;
         });
     }
 

@@ -30,8 +30,8 @@ import javafx.stage.Stage;
  * Controlador para crear o editar socios. Aquí metemos los datos de la gente a
  * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class GestionSociosController {
 

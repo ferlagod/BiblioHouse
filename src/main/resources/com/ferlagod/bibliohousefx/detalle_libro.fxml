@@ -14,16 +14,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefWidth="700" prefHeight="600" minWidth="700" minHeight="600" spacing="20.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.DetalleLibroController">
+<VBox prefWidth="700" prefHeight="600" minWidth="700" minHeight="600" spacing="20.0" style="-fx-background-color: -color-bg-default;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.DetalleLibroController">
    
     <children>
         <HBox spacing="25.0" VBox.vgrow="ALWAYS">
             <children>
-                <VBox alignment="TOP_CENTER" spacing="10.0" style="-fx-border-color: #dadce0; -fx-border-width: 1; -fx-padding: 5;">
+                <VBox alignment="TOP_CENTER" spacing="10.0" style="-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-padding: 5;">
                     <children>
                         <ImageView fx:id="imgPortada" fitHeight="250.0" fitWidth="170.0" pickOnBounds="true" preserveRatio="true">
                         </ImageView>
-                        <Label fx:id="lblEstadoLectura" style="-fx-background-color: #e8f0fe; -fx-text-fill: #1a73e8; -fx-background-radius: 12; -fx-padding: 4 12 4 12;" text="Leído" visible="false">
+                        <Label fx:id="lblEstadoLectura" style="-fx-background-color: -color-accent-subtle; -fx-text-fill: -color-accent-fg; -fx-background-radius: 12; -fx-padding: 4 12 4 12;" text="%book.state.read" visible="false">
                             <font>
                                 <Font name="System Bold" size="12.0" />
                             </font>
@@ -33,12 +33,12 @@
 
                 <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Label fx:id="lblTitulo" styleClass="heading-text" text="Título del Libro" wrapText="true">
+                        <Label fx:id="lblTitulo" styleClass="heading-text" text="%book.title.default" wrapText="true">
                             <font>
                                 <Font name="Segoe UI" size="24.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblAutor" text="Autor Desconocido" textFill="#5f6368">
+                        <Label fx:id="lblAutor" text="%book.author.default" style="-fx-text-fill: -color-text-muted;">
                             <font>
                                 <Font size="16.0" />
                             </font>
@@ -61,23 +61,23 @@
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #5f6368;" text="Editorial:" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.publisher" />
                                 <Label fx:id="lblEditorial" text="-" GridPane.columnIndex="1" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #5f6368;" text="Año:" GridPane.rowIndex="1" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.year" GridPane.rowIndex="1" />
                                 <Label fx:id="lblAnio" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #5f6368;" text="Género:" GridPane.rowIndex="2" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.genre" GridPane.rowIndex="2" />
                                 <Label fx:id="lblGenero" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #5f6368;" text="ISBN:" GridPane.rowIndex="3" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.isbn" GridPane.rowIndex="3" />
                                 <Label fx:id="lblIsbn" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                             </children>
                         </GridPane>
                   
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: #5f6368;" text="Valoración:" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.rating" />
                                 <Label fx:id="lblEstrellas" style="-fx-text-fill: #fbbc04; -fx-font-size: 18px;" text="★★★★☆" />
                             </children>
                             <VBox.margin>
@@ -91,16 +91,16 @@
       
         <VBox spacing="5.0" VBox.vgrow="ALWAYS">
             <children>
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #202124;" text="Reseña personal:" />
-                <TextArea fx:id="txtResena" editable="false" prefHeight="100.0" wrapText="true" style="-fx-background-color: transparent; -fx-control-inner-background: #f8f9fa;" />
+                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-default;" text="%book.review" />
+                <TextArea fx:id="txtResena" editable="false" prefHeight="100.0" wrapText="true" style="-fx-background-color: transparent; -fx-control-inner-background: -color-bg-subtle;" />
             </children>
         </VBox>
 
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <children>
-                <Button onAction="#editarLibro" styleClass="text-button" text="Editar detalles..." />
+                <Button onAction="#editarLibro" styleClass="text-button" text="%ctx.edit" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button cancelButton="true" onAction="#cerrar" styleClass="google-button" text="Cerrar" />
+                <Button cancelButton="true" onAction="#cerrar" styleClass="google-button" text="%btn.close" />
             </children>
         </HBox>
     </children>

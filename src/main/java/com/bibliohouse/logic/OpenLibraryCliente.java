@@ -42,8 +42,8 @@ import org.json.JSONObject;
  * Cliente para buscar libros en la API de OpenLibrary. Hace peticiones HTTP y
  * devuelve los resultados como objetos Libro.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class OpenLibraryCliente {
 

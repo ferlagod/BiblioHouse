@@ -49,8 +49,8 @@ import javafx.scene.control.TextInputDialog;
  * y detecta automáticamente los huecos en la colección (tomos que faltan) para
  * resaltarlos en rojo.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class SagasController {
 
@@ -221,7 +221,7 @@ public class SagasController {
         // Número de tomo
         String numTomo = libro.getOrdenEnSerie() > 0 ? "Tomo " + formatarTomo(libro.getOrdenEnSerie()) : "";
         Label lblNumero = new Label(numTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-text-muted;");
 
         // Imagen de portada
         ImageView img = new ImageView();
@@ -237,10 +237,10 @@ public class SagasController {
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;");
 
         // Efectos de hover
-        tarjeta.setOnMouseEntered(e -> tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: #e0e0e0;"));
+        tarjeta.setOnMouseEntered(e -> tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8; -fx-background-color: -color-bg-subtle;"));
         tarjeta.setOnMouseExited(e -> tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;"));
 
         tarjeta.getChildren().addAll(lblNumero, img, lblTitulo);
@@ -261,16 +261,16 @@ public class SagasController {
 
         // Número de tomo
         Label lblNumero = new Label("Tomo " + numeroTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: #d32f2f;");
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-danger-fg;");
 
         // Placeholder visual
         StackPane placeholder = new StackPane();
         placeholder.setPrefSize(120, 178);
         placeholder.setMaxSize(120, 178);
-        placeholder.setStyle("-fx-background-color: #ffebee; -fx-background-radius: 6; -fx-border-color: #d32f2f; -fx-border-width: 2; -fx-border-radius: 6;");
+        placeholder.setStyle("-fx-background-color: -color-danger-subtle; -fx-background-radius: 6; -fx-border-color: -color-danger-emphasis; -fx-border-width: 2; -fx-border-radius: 6;");
 
         Label lblInterrogacion = new Label("?");
-        lblInterrogacion.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #d32f2f; -fx-opacity: 0.8;");
+        lblInterrogacion.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: -color-danger-fg; -fx-opacity: 0.8;");
         placeholder.getChildren().add(lblInterrogacion);
 
         // Texto informativo
@@ -278,7 +278,7 @@ public class SagasController {
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;");
+        lblTitulo.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: -color-danger-fg;");
 
         tarjeta.getChildren().addAll(lblNumero, placeholder, lblTitulo);
         return tarjeta;
@@ -316,10 +316,10 @@ public class SagasController {
 
             contenido = new javafx.scene.layout.VBox(2);
             nombre = new javafx.scene.control.Label();
-            nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #333333;");
+            nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: -color-fg-default;");
 
             info = new javafx.scene.control.Label();
-            info.setStyle("-fx-font-size: 10px; -fx-text-fill: #666666;");
+            info.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-text-muted;");
 
             contenido.getChildren().addAll(nombre, info);
 

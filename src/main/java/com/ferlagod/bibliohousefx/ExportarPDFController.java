@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
  * Controlador para la ventana de exportación de informes PDF. Permite filtrar
  * libros por diversos criterios y exportarlos a PDF.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ExportarPDFController {
 
@@ -114,19 +114,25 @@ public class ExportarPDFController {
     }
 
     /**
-     * Carga las estanterías en la lista con checkboxes.
+     * Carga las estanterías disponibles en un ListView con checkboxes para
+     * permitir la selección múltiple. Este método:
+     *
+     * El estado de selección de cada estantería se almacena en el mapa
+     * {@code seleccionEstanterias} para su posterior uso.
      */
     private void cargarEstanterias() {
         ObservableList<String> items = FXCollections.observableArrayList(todasEstanterias);
         listaEstanterias.setItems(items);
 
-        // Configurar checkboxes
+        // Configurar checkboxes: todas las estanterías seleccionadas por defecto
         for (String estanteria : todasEstanterias) {
             seleccionEstanterias.put(estanteria, new SimpleBooleanProperty(true));
         }
 
+        // Configurar fábrica de celdas con checkboxes
         listaEstanterias.setCellFactory(CheckBoxListCell.forListView(estanteria -> {
             SimpleBooleanProperty prop = seleccionEstanterias.get(estanteria);
+            // Listeners para actualizar el estado al cambiar la selección
             prop.addListener((obs, old, newVal) -> {
                 actualizarContador();
                 verificarTodasEstanterias();
@@ -136,7 +142,9 @@ public class ExportarPDFController {
     }
 
     /**
-     * Carga los géneros en la lista con checkboxes.
+     * Carga los géneros en un ListView con checkboxes, todos seleccionados por
+     * defecto. Asocia listeners para actualizar el contador y verificar el
+     * estado de selección.
      */
     private void cargarGeneros() {
         ObservableList<String> items = FXCollections.observableArrayList(todosGeneros);

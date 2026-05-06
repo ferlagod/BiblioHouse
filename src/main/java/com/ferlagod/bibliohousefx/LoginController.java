@@ -41,8 +41,8 @@ import javafx.stage.Stage;
  * Aquí controlamos quien entra y quien no. Gestiona el login y el registro de
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class LoginController {
 
@@ -257,11 +257,13 @@ public class LoginController {
     }
 
     /**
-     * Migra silenciosamente un hash SHA-256 legado a BCrypt tras un login exitoso.
-     * Si la migración falla, el usuario puede seguir usando el hash antiguo.
+     * Migra silenciosamente un hash SHA-256 legado a BCrypt tras un login
+     * exitoso. Si la migración falla, el usuario puede seguir usando el hash
+     * antiguo.
      *
      * @param authFile Archivo user.auth donde actualizar el hash.
-     * @param plainPassword Contraseña en texto plano (disponible justo después del login).
+     * @param plainPassword Contraseña en texto plano (disponible justo después
+     * del login).
      */
     private void migrateHashIfLegacy(File authFile, String plainPassword) {
         try {
@@ -312,11 +314,10 @@ public class LoginController {
 
             // 3. Guardamos la lista en el archivo .json del usuario
             newMgr.guardarEstanterias(defaultShelves);
-
-            System.out.println("✅ Estanterías por defecto creadas en: " + path);
+            LOGGER.log(Level.INFO, "Estanterías por defecto creadas en: {0}", path);
 
         } catch (Exception e) {
-            System.err.println("⚠️ Advertencia: No se pudieron crear las estanterías por defecto.");
+            LOGGER.log(Level.WARNING, "No se pudieron crear las estanterías por defecto", e);
         }
     }
 

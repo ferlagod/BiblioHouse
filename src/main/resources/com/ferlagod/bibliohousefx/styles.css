@@ -23,17 +23,17 @@
 
 /* --- LÓGICA DE NEGOCIO (Préstamos caducados) --- */
 .overdue-loan {
-    -fx-text-fill: #d32f2f;
+    -fx-text-fill: -color-danger-fg;
     -fx-font-weight: bold;
 }
 
 /* Fila entera del préstamo caducado */
 .table-row-cell.overdue-loan {
-    -fx-background-color: #ffebee;
+    -fx-background-color: -color-danger-subtle;
 }
 
 .table-row-cell:selected.overdue-loan {
-    -fx-background-color: #ef9a9a;
+    -fx-background-color: -color-danger-muted;
 }
 
 /* --- COLORES ESPECÍFICOS DE LOS GRÁFICOS --- */

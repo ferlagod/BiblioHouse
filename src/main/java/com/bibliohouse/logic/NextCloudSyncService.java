@@ -40,8 +40,8 @@ import java.util.stream.Collectors;
  * está disponible:
  *
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class NextCloudSyncService {
 
@@ -117,12 +117,12 @@ public class NextCloudSyncService {
         // Normalizar la URL: extraer solo esquema + host + puerto, ignorando
         // cualquier ruta WebDAV que el usuario haya pegado por error.
         String extractedUrl = extractBaseUrl(serverUrl.trim());
-        
+
         // OWASP A02: Cryptographic Failures. Bloquear credenciales en texto plano sobre HTTP
         if (extractedUrl.startsWith("http://") && !extractedUrl.contains("localhost") && !extractedUrl.contains("127.0.0.1")) {
             throw new IllegalArgumentException("Seguridad: Se requiere HTTPS para conexiones NextCloud externas (evita robo de credenciales).");
         }
-        
+
         this.serverUrl = extractedUrl;
         this.username = username.trim();
         // Codificar username para paths de URL (@ → %40, espacios → %20, etc.)
@@ -131,8 +131,16 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Extrae la URL base (esquema + host + puerto) descartando cualquier path.
+     * Extrae la URL base (esquema + host + puerto) de una URL completa,
+     * descartando cualquier path, parámetros o fragmento.
      *
+     * Si la URL no es válida según el estándar URI, intenta extraer la base
+     * eliminando paths conocidos de NextCloud ("/remote.php" o "/nextcloud") o
+     * la barra final.
+     *
+     * @param url URL completa de la que extraer la base.
+     * @return URL base (esquema + host + puerto) o la URL original si no se
+     * puede procesar.
      */
     private static String extractBaseUrl(String url) {
         try {
@@ -155,8 +163,14 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Codifica un segmento de path de URL (RFC 3986). Convierte caracteres como
-     * {@code @} en {@code %40}.
+     * Codifica un segmento de path de URL según el estándar RFC 3986. Convierte
+     * caracteres especiales (como espacios, '@', '/', etc.) en su
+     * representación porcentual (p.ej., '@' → "%40", espacio → "%20").
+     *
+     * @param segment Segmento de URL a codificar (p.ej., nombre de archivo,
+     * parámetro).
+     * @return Segmento codificado según RFC 3986, o el segmento original si
+     * ocurre un error.
      */
     private static String encodeUrlSegment(String segment) {
         try {
@@ -327,7 +341,15 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Método auxiliar para evitar errores 405 si la carpeta ya existe
+     * Crea un directorio remoto si no existe, evitando errores 405 (Method Not
+     * Allowed) que algunos servidores devuelven cuando el directorio ya existe.
+     *
+     * Este método es útil para garantizar que la estructura de directorios
+     * remotos esté disponible antes de realizar operaciones de subida de
+     * archivos, sin que fallen las operaciones si el directorio ya existe.
+     *
+     * @param sardine Cliente Sardine para interactuar con el servidor WebDAV.
+     * @param url URL del directorio remoto a crear/verificar.
      */
     private void crearDirectorioSiNoExiste(Sardine sardine, String url) {
         try {
@@ -335,8 +357,7 @@ public class NextCloudSyncService {
                 sardine.createDirectory(url);
             }
         } catch (IOException e) {
-            // Puede ser un 405 "Method Not Allowed" si la carpeta ya existe en algunos servidores.
-            // No es crítico, pero lo registramos para diagnóstico.
+            // Algunos servidores devuelven 405 si el directorio ya existe
             LOGGER.log(Level.WARNING, "No se pudo crear/verificar directorio remoto ({0}): {1}",
                     new Object[]{url, e.getMessage()});
         }

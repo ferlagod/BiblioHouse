@@ -29,8 +29,8 @@ import java.io.IOException;
  * El corazón de la bestia. Aquí arranca todo: cargamos la configuración,
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
- * @author Ferlagod
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class App extends Application {
 
@@ -90,6 +90,15 @@ public class App extends Application {
     }
 
     /**
+     * Devuelve el ResourceBundle actual para usar traducciones desde código Java.
+     *
+     * @return el ResourceBundle activo.
+     */
+    public static java.util.ResourceBundle getBundle() {
+        return bundle;
+    }
+
+    /**
      * Cargamos el login.
      *
      * @param stage La ventana principal (el escenario).
@@ -100,29 +109,61 @@ public class App extends Application {
         instance = this;
         // Configurar logs y "securizar" carpeta de datos (ocultarla)
         com.bibliohouse.logic.ConfiguracionLogs.setup();
+        // Cargar preferencias del usuario
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+        
         // Aplicar el tema moderno de AtlantaFX
-        Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+        String savedTheme = prefs.get("theme", "Claro (Primer Light)");
+        if (savedTheme.equals("Oscuro (Primer Dark)")) {
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
+        } else {
+            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+        }
 
         // Cargar preferencia de idioma si existe (simplificado: por defecto es)
-        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         String lang = prefs.get("language", "es");
         setLocale(lang);
 
-        // Al arrancar, cargamos la pantalla de BIENVENIDA (Registro vs Invitado)
-        FXMLLoader loader = new FXMLLoader(App.class.getResource("welcome.fxml"));
-        loader.setResources(bundle);
-        Parent root = loader.load();
+        try {
+            // Al arrancar, cargamos primero la pantalla de SPLASH
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("splash.fxml"));
+            loader.setResources(bundle);
+            Parent root = loader.load();
 
-        scene = new Scene(root);
-        scene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
-        stage.setScene(scene);
-        stage.setTitle(bundle.getString("app.title"));
-        stage.setResizable(false);
+            scene = new Scene(root);
+            scene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setTitle(bundle.getString("app.title"));
+            stage.setResizable(false);
 
-        // Icono
-        stage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
+            // Icono
+            stage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
-        stage.show();
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Transición del Splash Screen a la pantalla de Bienvenida.
+     */
+    public void loadWelcome() {
+        try {
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("welcome.fxml"));
+            loader.setResources(bundle);
+            Parent root = loader.load();
+            root.setOpacity(0.0);
+            scene.setRoot(root);
+            
+            javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(600), root);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+        } catch (IOException e) {
+            LOGGER.severe("[App] Error cargando pantalla de bienvenida: " + e.getMessage());
+        }
     }
 
     /**

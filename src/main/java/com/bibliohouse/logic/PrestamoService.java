@@ -9,17 +9,31 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Servicio encargado de gestionar las operaciones de préstamos, 
- * devoluciones y comprobación de vencimientos.
+ * Servicio encargado de gestionar las operaciones de préstamos, devoluciones y
+ * comprobación de vencimientos.
+ *
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class PrestamoService {
 
     private static final Logger LOGGER = Logger.getLogger(PrestamoService.class.getName());
-    
+
     private final JsonManager jsonManager;
     private final List<Prestamo> listaPrestamosCompleta;
     private final List<Libro> listaLibrosCompleta;
 
+    /**
+     * Crea una nueva instancia de PrestamoService con las dependencias
+     * necesarias para gestionar préstamos de libros.
+     *
+     * @param jsonManager Gestor de persistencia para guardar y cargar datos de
+     * préstamos y libros.
+     * @param listaPrestamosCompleta Lista completa de préstamos (activos e
+     * históricos) de la biblioteca.
+     * @param listaLibrosCompleta Lista completa de libros disponibles en la
+     * biblioteca.
+     */
     public PrestamoService(JsonManager jsonManager, List<Prestamo> listaPrestamosCompleta, List<Libro> listaLibrosCompleta) {
         this.jsonManager = jsonManager;
         this.listaPrestamosCompleta = listaPrestamosCompleta;
@@ -28,10 +42,12 @@ public class PrestamoService {
 
     /**
      * Valida y realiza un préstamo, restando el stock correspondiente.
+     *
      * @param libroOriginal El libro a prestar.
      * @param socio El socio que toma prestado el libro.
      * @return El préstamo registrado si tiene éxito.
-     * @throws IllegalArgumentException si no hay stock o si el socio ya tiene el libro.
+     * @throws IllegalArgumentException si no hay stock o si el socio ya tiene
+     * el libro.
      */
     public Prestamo realizarPrestamo(Libro libroOriginal, Socio socio) throws IllegalArgumentException {
         if (libroOriginal == null || socio == null) {
@@ -71,6 +87,7 @@ public class PrestamoService {
 
     /**
      * Marca un préstamo como devuelto y repone el stock.
+     *
      * @param p El préstamo a devolver.
      * @throws IllegalArgumentException si ya estaba devuelto o si no es válido.
      */
@@ -101,6 +118,7 @@ public class PrestamoService {
 
     /**
      * Obtiene una lista de préstamos que han sobrepasado su fecha límite.
+     *
      * @param dueDaysLimit Límite de días para considerar un préstamo vencido.
      * @return Lista de préstamos vencidos.
      */
@@ -114,12 +132,15 @@ public class PrestamoService {
 
     /**
      * Calcula los días de retraso para un préstamo vencido.
+     *
      * @param p El préstamo vencido.
      * @param dueDaysLimit Límite de días configurado.
      * @return Días de retraso.
      */
     public long calcularDiasRetraso(Prestamo p, int dueDaysLimit) {
-        if (p.getFechaPrestamo() == null) return 0;
+        if (p.getFechaPrestamo() == null) {
+            return 0;
+        }
         return ChronoUnit.DAYS.between(p.getFechaPrestamo().plusDays(dueDaysLimit), LocalDate.now());
     }
 }

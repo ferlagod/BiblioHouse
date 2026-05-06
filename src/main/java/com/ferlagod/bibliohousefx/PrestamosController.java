@@ -1,3 +1,20 @@
+/*
+ * BiblioHouse - Un gestor de biblioteca personal.
+ * Copyright (C) 2026 Fernando Lago Dávila
+ *
+ * Este programa es software libre: usted puede redistribuirlo y/o modificarlo
+ * bajo los términos de la Licencia Pública General de GNU tal como se publica
+ * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
+ * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin incluso la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
+ */
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.Libro;
@@ -14,6 +31,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 
+/**
+ * Controlador para la gestión de préstamos de libros. Permite realizar
+ * préstamos, marcar devoluciones y visualizar el estado de los préstamos
+ * activos.
+ *
+ * @author Fernando Lago Dávila
+ * @version 1.7
+ */
 public class PrestamosController {
 
     @FXML
@@ -34,10 +59,22 @@ public class PrestamosController {
     private PrimaryController mainController;
     private PrestamoService prestamoService;
 
+    /**
+     * Inicializa el controlador con los datos necesarios.
+     *
+     * @param mainController Controlador principal.
+     * @param prestamoService Servicio de préstamos.
+     * @param librosDisponibles Lista de libros disponibles para préstamo.
+     * @param socios Lista de socios.
+     * @param prestamosActivos Lista filtrada de préstamos activos.
+     * @param resources Recursos de internacionalización.
+     * @param dueDaysLimit Límite de días para considerar un préstamo como
+     * vencido.
+     */
     public void initData(PrimaryController mainController, PrestamoService prestamoService,
             ObservableList<Libro> librosDisponibles, ObservableList<Socio> socios,
             FilteredList<Prestamo> prestamosActivos, ResourceBundle resources, int dueDaysLimit) {
-        
+
         this.mainController = mainController;
         this.prestamoService = prestamoService;
 
@@ -50,6 +87,10 @@ public class PrestamosController {
         configurarEstilosFilas(dueDaysLimit);
     }
 
+    /**
+     * Configura las columnas de la tabla con sus CellValueFactory. Maneja casos
+     * donde el libro o socio puedan haber sido borrados.
+     */
     private void configurarColumnas() {
         colPrestamoLibro.setCellValueFactory(cellData -> {
             Prestamo p = cellData.getValue();
@@ -78,11 +119,20 @@ public class PrestamosController {
         colPrestamoDevolucion.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("fechaDevolucionFormateada"));
     }
 
+    /**
+     * Configura los filtros para los ComboBox de libros y socios.
+     */
     private void configurarFiltros() {
         mainController.setupFilteringComboBoxPublic(comboLibrosPrestamo, Libro::getTitulo);
         mainController.setupFilteringComboBoxPublic(comboSocios, Socio::getNombreCompleto);
     }
 
+    /**
+     * Configura los estilos de las filas para resaltar préstamos vencidos.
+     *
+     * @param dueDaysLimit Límite de días para considerar un préstamo como
+     * vencido.
+     */
     private void configurarEstilosFilas(int dueDaysLimit) {
         tablaPrestamos.setRowFactory(tv -> new TableRow<Prestamo>() {
             @Override
@@ -111,6 +161,10 @@ public class PrestamosController {
         mainController.gestionarSociosPublic();
     }
 
+    /**
+     * Realiza un nuevo préstamo con el libro y socio seleccionados. Valida los
+     * datos y muestra mensajes de éxito o error.
+     */
     @FXML
     private void realizarPrestamo(ActionEvent event) {
         Libro libroSeleccionado = comboLibrosPrestamo.getValue();
@@ -141,6 +195,10 @@ public class PrestamosController {
         }
     }
 
+    /**
+     * Marca un préstamo como devuelto. Valida la selección y muestra mensajes
+     * de éxito o error.
+     */
     @FXML
     private void marcarDevuelto(ActionEvent event) {
         Prestamo p = tablaPrestamos.getSelectionModel().getSelectedItem();
@@ -159,6 +217,11 @@ public class PrestamosController {
         }
     }
 
+    /**
+     * Selecciona un libro en el ComboBox de préstamos.
+     *
+     * @param libro Libro a seleccionar.
+     */
     public void seleccionarLibro(Libro libro) {
         for (Libro l : comboLibrosPrestamo.getItems()) {
             if (l.equals(libro)) {
@@ -169,6 +232,11 @@ public class PrestamosController {
         comboLibrosPrestamo.requestFocus();
     }
 
+    /**
+     * Selecciona un socio en el ComboBox de préstamos.
+     *
+     * @param socio Socio a seleccionar.
+     */
     public void seleccionarSocio(Socio socio) {
         for (Socio s : comboSocios.getItems()) {
             if (s.equals(socio)) {
@@ -180,8 +248,9 @@ public class PrestamosController {
     }
 
     /**
-     * Actualiza los libros disponibles en el combo de préstamos sin re-inicializar
-     * toda la pestaña. Llamado tras un préstamo o devolución.
+     * Actualiza los libros disponibles en el ComboBox de préstamos.
+     *
+     * @param librosDisponibles Lista actualizada de libros disponibles.
      */
     public void refrescarLibrosDisponibles(ObservableList<Libro> librosDisponibles) {
         if (comboLibrosPrestamo != null) {

@@ -40,8 +40,8 @@ import java.util.stream.Collectors;
  * quedan bastante profesionales, con estadísticas, agrupación por estanterías y
  * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ServicioExportarPdf {
 

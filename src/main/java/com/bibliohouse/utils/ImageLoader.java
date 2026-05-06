@@ -42,7 +42,7 @@ import javafx.util.Duration;
 /**
  * Clase para cargar imágenes de forma asíncrona con caché multinivel.
  *
- * * @author Fernando Lago
+ * * @author Fernando Lago Dávila
  * @version 1.7
  */
 public class ImageLoader {
@@ -55,12 +55,12 @@ public class ImageLoader {
     // Caché en memoria (LRU) — envuelta en synchronizedMap para acceso seguro
     // desde el hilo FX y el ExecutorService simultáneamente.
     private static final Map<String, Image> memoryCache = java.util.Collections.synchronizedMap(
-        new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
-                return size() > MAX_CACHE_SIZE;
-            }
+            new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+            return size() > MAX_CACHE_SIZE;
         }
+    }
     );
 
     /**
@@ -233,7 +233,6 @@ public class ImageLoader {
      * memoria.
      */
     private static void loadImageAsync(String uri, ImageView target, double w, double h, String memoryKey) {
-        // backgroundLoading (último parámetro) = true
         Image image = new Image(uri, w, h, true, true, true);
 
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
@@ -355,9 +354,8 @@ public class ImageLoader {
      * ImageView especificado.
      *
      * @param target ImageView donde se mostrará la animación de skeleton.
-     * @param w Ancho deseado para el marcador de posición (si es <= 0, usa
-     * 110px). @param h Alto deseado para el marcador de posición (si es <= 0,
-     * usa 160px).
+     * @param w Ancho deseado para el marcador de posición
+     * @param h Alto deseado para el marcador de posición
      */
     private static void startSkeleton(ImageView target, double w, double h) {
         if (target.getProperties().containsKey("skeleton_anim")) {

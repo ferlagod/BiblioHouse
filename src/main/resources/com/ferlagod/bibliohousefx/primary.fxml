@@ -104,7 +104,7 @@
                                             <children>
                                                 <Label styleClass="heading-text" text="%tab.my_books" />
                                                 <Region HBox.hgrow="ALWAYS" />
-                                                <TextField fx:id="txtBuscarMisLibros" prefWidth="250.0" promptText="Buscar título o autor..." style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: #ddd; -fx-border-radius: 15; -fx-background-color: white;" />
+                                                <TextField fx:id="txtBuscarMisLibros" prefWidth="250.0" promptText="Buscar título o autor..." style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-background-color: -color-bg-default;" />
                                             </children>
                                         </HBox>
                                         <Separator />
@@ -183,7 +183,7 @@
                                                     <CheckBox fx:id="chkPoseidoManual" selected="true" text="%book.owned" />
                                                     <Region HBox.hgrow="ALWAYS" />
                                                     <Button onAction="#limpiarCamposManuales" style="-fx-padding: 8 20;" text="%book.clear" />
-                                                    <Button onAction="#anadirLibro" style="-fx-background-color: #0078D7; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 25;" text="%book.add" />
+                                                    <Button onAction="#anadirLibro" style="-fx-font-weight: bold; -fx-padding: 8 25;" styleClass="accent" text="%book.add" />
                                                 </HBox>
                                             </VBox>
                                             <VBox managed="false" visible="false">

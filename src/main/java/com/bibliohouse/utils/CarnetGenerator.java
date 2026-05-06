@@ -41,8 +41,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * Utilidad para generar carnets de socios en formato PDF. Incluye código de
  * barras para facilitar el préstamo.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  *
  */
 public class CarnetGenerator {

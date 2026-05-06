@@ -18,7 +18,7 @@
                     <Insets top="15" right="10" bottom="15" left="10"/>
                 </padding>
                 
-                <Label text="Mis Colecciones" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
+                <Label text="Mis Colecciones" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;" />
                 <ListView fx:id="listaSagas" VBox.vgrow="ALWAYS" styleClass="custom-list-view" style="-fx-background-color: transparent;" />
             </VBox>
 
@@ -28,8 +28,8 @@
                 </padding>
                 
                 <VBox spacing="5">
-                    <Label fx:id="lblTituloSaga" text="Selecciona una saga..." style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
-                    <Label fx:id="lblResumenSaga" text="" style="-fx-font-size: 14px; -fx-text-fill: #666666;" />
+                    <Label fx:id="lblTituloSaga" text="Selecciona una saga..." style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-fg-default;" />
+                    <Label fx:id="lblResumenSaga" text="" style="-fx-font-size: 14px; -fx-text-fill: -color-text-muted;" />
                 </VBox>
 
                 <ScrollPane fitToWidth="true" minWidth="450" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: transparent;">

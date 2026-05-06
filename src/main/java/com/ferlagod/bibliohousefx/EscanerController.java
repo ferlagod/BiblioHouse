@@ -53,7 +53,7 @@ import org.opencv.videoio.Videoio;
  * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author Fernando Lago Dávila
- * @version 1.6
+ * @version 1.7
  */
 public class EscanerController {
 
@@ -76,10 +76,13 @@ public class EscanerController {
     }
 
     /**
-     * Establece el listener para comunicar el resultado del escaneo al
-     * controlador principal.
+     * Establece el listener que recibirá los eventos de finalización del
+     * escaneo de libros. Este listener permite al controlador principal ser
+     * notificado cuando el proceso de escaneo finaliza, ya sea con éxito o con
+     * error.
      *
-     * @param listener
+     * @param listener Objeto que implementa {@code EscanerListener} para
+     * recibir los eventos del escaneo.
      */
     public void setListener(EscanerListener listener) {
         this.listener = listener;
@@ -97,8 +100,11 @@ public class EscanerController {
     }
 
     /**
-     * Inicia la captura de la webcam en un hilo aparte para no bloquear la
-     * interfaz.
+     * Inicia la captura de vídeo desde la webcam en un hilo separado para
+     * evitar bloquear la interfaz de usuario. Este método:
+     *
+     * Si la cámara no se puede abrir o ocurre una excepción, muestra un diálogo
+     * de error y cierra la ventana de escaneo.
      */
     private void startWebcam() {
         Task<Void> webCamTask = new Task<Void>() {
@@ -108,10 +114,10 @@ public class EscanerController {
                 System.out.println("[EscanerController] Iniciando tarea de cámara...");
 
                 try {
-                    // Log build info for debugging
+                    // Log de información de OpenCV para depuración
                     System.out.println("[EscanerController] OpenCV Build Info: " + Core.getBuildInformation());
 
-                    // 2. Abrir cámara (índice 0 suele ser la default)
+                    // 2. Abrir cámara (índice 0 suele ser la cámara por defecto)
                     System.out.println("[EscanerController] Intentando abrir VideoCapture(0)...");
 
                     String os = System.getProperty("os.name").toLowerCase();

@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
  * stock. Todas las operaciones modifican la lista de libros y persisten los
  * cambios en disco.
  *
- * @author ferlagod
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class LibroService {
 

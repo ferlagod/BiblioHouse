@@ -29,7 +29,7 @@
             </font>
         </Label>
         
-        <Label text="Versión 1.6" textFill="#5f6368">
+        <Label text="%about.version" textFill="#5f6368">
             <font>
                 <Font size="14.0" />
             </font>
@@ -41,7 +41,7 @@
             </VBox.margin>
         </Separator>
         
-        <Label text="Desarrollado por" textFill="#5f6368" />
+        <Label text="%about.developed" textFill="#5f6368" />
         <Label text="ferlagod" textFill="#202124">
             <font>
                 <Font name="System Bold" size="16.0" />
@@ -50,12 +50,12 @@
         
         <HBox alignment="CENTER" spacing="5.0">
             <children>
-                <Label text="Contacto:" textFill="#5f6368" />
+                <Label text="%about.contact" textFill="#5f6368" />
                 <Hyperlink onAction="#abrirEmail" text="info@bibliohouse.org" />
             </children>
         </HBox>
         
-        <Label text="Licencia Pública General de GNU v3" textFill="#5f6368">
+        <Label text="%about.license" textFill="#5f6368">
             <font>
                 <Font size="11.0" />
             </font>
@@ -73,8 +73,8 @@
             </VBox.margin>
         </ImageView>
 
-        <Button onAction="#abrirLiberapay" prefHeight="35.0" style="-fx-background-color: #f6c915; -fx-text-fill: #1a171b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15 5 15;" text="Apoyar en Liberapay" />        
-        <Button cancelButton="true" mnemonicParsing="false" onAction="#cerrarVentana" styleClass="text-button" text="Cerrar">
+        <Button onAction="#abrirLiberapay" prefHeight="35.0" style="-fx-background-color: #f6c915; -fx-text-fill: #1a171b; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15 5 15;" text="%about.support" />        
+        <Button cancelButton="true" mnemonicParsing="false" onAction="#cerrarVentana" styleClass="text-button" text="%btn.close">
             <VBox.margin>
                 <Insets top="20.0" />
             </VBox.margin>

@@ -22,8 +22,8 @@ package com.bibliohouse.logic;
  * puede llevarse libros prestados. Aquí guardamos sus datos personales: nombre,
  * apellidos, DNI, etc.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class Socio {
 

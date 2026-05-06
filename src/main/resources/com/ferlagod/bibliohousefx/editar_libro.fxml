@@ -32,7 +32,7 @@
                             <children>
                                 <VBox alignment="TOP_CENTER" spacing="15.0" minWidth="200.0">
                                     <children>
-                                        <VBox alignment="CENTER" style="-fx-border-color: #dadce0; -fx-border-width: 1; -fx-padding: 5;">
+                                        <VBox alignment="CENTER" style="-fx-border-color: -color-border-default; -fx-border-width: 1; -fx-padding: 5;">
                                             <children>
                                                 <ImageView fx:id="imgPortada" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" />
                                             </children>
@@ -116,7 +116,7 @@
                                             </children>
                                         </HBox>
                                         <ListView fx:id="listaEstanterias" prefHeight="100.0" />
-                                        <Button onAction="#eliminarEstanteria" style="-fx-text-fill: #d93025;" styleClass="text-button" text="Eliminar seleccionada" />
+                                        <Button onAction="#eliminarEstanteria" style="-fx-text-fill: -color-danger-fg;" styleClass="text-button" text="Eliminar seleccionada" />
                               
                                         <Label style="-fx-font-weight: bold;" text="Reseña personal" />
                                         <TextArea fx:id="txtResena" prefHeight="100.0" wrapText="true" styleClass="google-text-field" />

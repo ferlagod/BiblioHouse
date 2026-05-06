@@ -30,13 +30,16 @@ import javafx.application.Platform;
  * Clase para comprobar actualizaciones de la aplicación BiblioHouse. Consulta
  * la API de Forgejo para verificar si existe una versión más reciente que la
  * actual y notifica el resultado mediante un callback.
+ *
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class UpdateChecker {
 
     // API de Forgejo para tu repositorio
     private static final String API_URL = "https://forjalibre.eu/api/v1/repos/ferlagod/BiblioHouse/releases/latest";
     // Versión actual de la aplicación. 
-    private static final String VERSION_ACTUAL = "1.6";
+    private static final String VERSION_ACTUAL = "1.7";
 
     /**
      * Comprueba si hay una versión más reciente de la aplicación.
@@ -53,22 +56,22 @@ public class UpdateChecker {
                     HttpClient client = HttpClient.newBuilder()
                             .connectTimeout(java.time.Duration.ofSeconds(5))
                             .build();
-                    
+
                     HttpRequest request = HttpRequest.newBuilder()
                             .uri(URI.create(API_URL))
                             .header("Accept", "application/json")
                             .GET()
                             .build();
-                    
+
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    
+
                     if (response.statusCode() == 200) {
                         // Forgejo también devuelve "tag_name": "1.6" o "v1.6"
                         Matcher matcher = Pattern.compile("\"tag_name\"\\s*:\\s*\"v?([0-9.]+)\"").matcher(response.body());
-                        
+
                         if (matcher.find()) {
                             String versionMasReciente = matcher.group(1);
-                            
+
                             if (esVersionMasReciente(VERSION_ACTUAL, versionMasReciente)) {
                                 Platform.runLater(() -> alEncontrarNueva.accept(versionMasReciente));
                             }
@@ -93,6 +96,21 @@ public class UpdateChecker {
      * contrario.
      */
     private static boolean esVersionMasReciente(String actual, String online) {
-        return online.compareTo(actual) > 0;
+        String[] actualParts = actual.split("\\.");
+        String[] onlineParts = online.split("\\.");
+        int length = Math.max(actualParts.length, onlineParts.length);
+
+        for (int i = 0; i < length; i++) {
+            int actualPart = i < actualParts.length ? Integer.parseInt(actualParts[i]) : 0;
+            int onlinePart = i < onlineParts.length ? Integer.parseInt(onlineParts[i]) : 0;
+
+            if (actualPart < onlinePart) {
+                return true;
+            }
+            if (actualPart > onlinePart) {
+                return false;
+            }
+        }
+        return false;
     }
 }

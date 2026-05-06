@@ -32,8 +32,8 @@ import java.util.logging.Logger;
  * Controlador de la pantallita "Acerca de". Aquí es donde hago un poco de
  * autobombo y pongo mi contacto.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class AcercaDeController {
 
@@ -67,8 +67,11 @@ public class AcercaDeController {
 
     /**
      * Abre la página de Liberapay del proyecto en el navegador por defecto del
-     * sistema.
+     * sistema operativo. Detecta automáticamente el sistema operativo (Windows,
+     * macOS o Linux) y usa el comando apropiado para abrir el navegador.
      *
+     * <p>
+     * URL destino: https://liberapay.com/ferlagod./</p>
      *
      */
     @FXML

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" minHeight="450.0" minWidth="320.0" prefHeight="450.0" prefWidth="320.0" spacing="15.0" styleClass="login-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SplashController">
+    <padding>
+        <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+    </padding>
+    <children>
+        <!-- Contenedor del Logo con ID para animar -->
+        <VBox fx:id="logoContainer" alignment="CENTER">
+            <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@../../../resources/LogoBiblioHouse.png" />
+                </image>
+            </ImageView>
+        </VBox>
+        
+        <!-- Contenedor de Textos y Barra con ID para animar -->
+        <VBox fx:id="textContainer" alignment="CENTER" spacing="8.0" opacity="0.0">
+            <children>
+                <Label text="BiblioHouse" styleClass="heading-text" />
+                <Label fx:id="lblStatus" text="Inicializando..." styleClass="subheading-text" />
+                <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="160.0">
+                    <VBox.margin>
+                        <Insets top="20.0" />
+                    </VBox.margin>
+                </ProgressBar>
+            </children>
+        </VBox>
+    </children>
+</VBox>

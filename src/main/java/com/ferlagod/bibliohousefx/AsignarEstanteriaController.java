@@ -40,8 +40,8 @@ import java.util.Optional;
  * También puedes crear estanterías nuevas desde aquí si se te ocurre una sobre
  * la marcha.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class AsignarEstanteriaController {
 

@@ -52,7 +52,7 @@ public class BusquedaSagas {
                 .collect(Collectors.toList());
 
         if (librosSinSaga.isEmpty()) {
-            mostrarAlerta("Información", "Todos tus libros ya tienen una saga asignada.");
+            mostrarAlerta("Búsqueda de Sagas", "Búsqueda finalizada", "Todos tus libros ya tienen una saga asignada.");
             return;
         }
 
@@ -110,7 +110,7 @@ public class BusquedaSagas {
                     onComplete.run();
                 }
 
-                mostrarAlerta("Proceso Terminado", "Se han asignado " + totalAct + " sagas nuevas.");
+                mostrarAlerta("Búsqueda de Sagas", "Búsqueda finalizada", "Se han asignado " + totalAct + " sagas nuevas.");
             });
         });
         hilo.setDaemon(true);
@@ -145,13 +145,14 @@ public class BusquedaSagas {
      * Muestra una alerta informativa al usuario.
      *
      * @param titulo Título de la alerta.
+     * @param cabecera Cabecera de la alerta.
      * @param mensaje Contenido del mensaje.
      */
-    private void mostrarAlerta(String titulo, String mensaje) {
+    private void mostrarAlerta(String titulo, String cabecera, String mensaje) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(titulo);
-            alert.setHeaderText(null);
+            alert.setHeaderText(cabecera);
             alert.setContentText(mensaje);
             alert.showAndWait();
         });

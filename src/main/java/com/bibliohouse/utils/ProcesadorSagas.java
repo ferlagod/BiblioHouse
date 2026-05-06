@@ -22,18 +22,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @autor Fernando Lago
- * @version 1.6
+ * @autor Fernando Lago Dávila
+ * @version 1.7
  */
 public class ProcesadorSagas {
 
     /**
-     * Normaliza el nombre de la saga: quita tildes, espacios extra y pasa a
-     * minúsculas. Evita que "Harry Potter" y "harry potter" se separen.
-     */
-    /**
-     * Limpia el nombre de una saga para evitar que "Saga X Vol. 1" y "Saga X
-     * Vol. 2" se consideren dos sagas distintas.
+     * Normaliza el nombre de una saga para evitar duplicados por diferencias de
+     * formato.
+     *
+     * @param serieOriginal Nombre original de la saga a normalizar.
+     * @return Nombre normalizado de la saga, o cadena vacía si el parámetro es
+     * nulo o vacío.
      */
     public static String normalizar(String serieOriginal) {
         if (serieOriginal == null || serieOriginal.isBlank()) {
@@ -43,25 +43,21 @@ public class ProcesadorSagas {
         String limpia = serieOriginal.trim();
 
         // 1. Eliminar indicadores de volumen seguidos de números al final de la cadena
-        // Ej: "El Archivo de las Tormentas, Libro 1" -> "El Archivo de las Tormentas"
         limpia = limpia.replaceAll("(?i)[,\\s-]*\\b(vol\\.?|volumen|tomo|libro|book|parte|part)\\s*\\d+.*$", "");
 
         // 2. Eliminar el símbolo '#' seguido de números al final
-        // Ej: "Nacidos de la Bruma #3" -> "Nacidos de la Bruma"
         limpia = limpia.replaceAll("(?i)[,\\s-]*#\\s*\\d+.*$", "");
 
         // 3. Eliminar números romanos al final si están precedidos por un espacio
-        // Ej: "Fundación III" -> "Fundación" (Cuidado de no romper palabras como "Carlos III")
         limpia = limpia.replaceAll("(?i)\\s+(I{1,3}|IV|V|VI{1,3}|IX|X|XI{1,3})$", "");
 
-        // 4. Eliminar la palabra "La serie de", "Saga" o "The series" para normalizar
-        // Ej: "La saga de Harry Potter" -> "Harry Potter"
+        // 4. Eliminar prefijos como "La saga de", "Saga", etc.
         limpia = limpia.replaceAll("(?i)^(la\\s+)?(saga|serie|series)\\s+(de|of)?\\s*", "");
 
-        // 5. Limpiar espacios extra dobles que hayan podido quedar
+        // 5. Limpiar espacios extra
         limpia = limpia.replaceAll("\\s{2,}", " ").trim();
 
-        // 6. Convertir la primera letra a mayúscula para homogeneizar visualmente
+        // 6. Capitalizar primera letra
         if (!limpia.isEmpty()) {
             limpia = limpia.substring(0, 1).toUpperCase() + limpia.substring(1);
         }
@@ -70,15 +66,20 @@ public class ProcesadorSagas {
     }
 
     /**
-     * Revisa el título. Si detecta el formato "Titulo (Saga, #1)", recorta la
-     * cadena, asigna la serie, el orden y deja el título limpio.
+     * Analiza el título de un libro para detectar y extraer información de saga
+     * incrustada. Si el título sigue el formato "Título (NombreSaga #1)" o
+     * similar, extrae el nombre de la saga y el número de orden, y limpia el
+     * título.
+     *
+     * @param libro Libro cuyo título se analizará para extraer información de
+     * saga.
      */
     public static void extraerSagaDeTitulo(Libro libro) {
         if (libro.getTitulo() == null) {
             return;
         }
 
-        // Regex para cazar: CualquierCosa (CualquierCosa #Numero) o (CualquierCosa, #Numero)
+        // Regex para detectar: "Título (Saga #1)", "Título (Saga, 1)", "Título (Saga vol. 1)", etc.
         Pattern patron = Pattern.compile("^(.*?)\\s*\\((.*?)[,\\s]*(?:#|vol\\.?|libro|book|tomo)?\\s*(\\d+(?:\\.\\d+)?)\\)$", Pattern.CASE_INSENSITIVE);
         Matcher matcher = patron.matcher(libro.getTitulo());
 

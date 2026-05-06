@@ -23,8 +23,8 @@ import javafx.application.Application;
  * Clase lanzadora para evitar problemas con módulos en JavaFX. Simplemente
  * llama al main de la clase App.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class Launcher {
 

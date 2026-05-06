@@ -32,8 +32,8 @@ import javafx.stage.Stage;
  * Controlador de la ventana que muestra resultados de búsqueda de OpenLibrary.
  * Permite al usuario seleccionar un libro de los resultados.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ResultadosBusquedaController {
 

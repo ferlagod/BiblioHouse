@@ -35,10 +35,13 @@ import javafx.stage.Stage;
  * Ventana para ver la info de un libro. Sale la portada, resumen y las
  * estrellitas.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class DetalleLibroController {
+
+    private static final java.util.logging.Logger LOGGER =
+            java.util.logging.Logger.getLogger(DetalleLibroController.class.getName());
 
     @FXML
     private ImageView imgPortada;
@@ -62,6 +65,7 @@ public class DetalleLibroController {
     private TextArea txtResena;
     private List<String> listaGlobalEstanterias;
     private Libro libroActual;
+    private String rutaUsuario;
 
     /**
      * Asigna el libro que se va a visualizar. Al recibirlo, rellena los datos
@@ -75,7 +79,10 @@ public class DetalleLibroController {
     }
 
     /**
-     * Pone los datos en los labels. También carga la imagen si tiene.
+     * Carga los datos del libro actual en los componentes de la interfaz de
+     * usuario. Rellena los campos de texto con la información del libro y
+     * aplica estilos visuales según el estado de lectura y la calificación.
+     *
      */
     private void cargarDatos() {
         if (libroActual == null) {
@@ -84,31 +91,47 @@ public class DetalleLibroController {
 
         // Textos básicos
         lblTitulo.setText(libroActual.getTitulo());
-        lblAutor.setText(libroActual.getAutor());
-        lblEditorial.setText(libroActual.getEditorial());
-        lblAnio.setText(String.valueOf(libroActual.getAño()));
-        lblGenero.setText(libroActual.getGenero());
-        lblIsbn.setText(libroActual.getIsbn());
+        lblAutor.setText(libroActual.getAutor() != null ? libroActual.getAutor() : "");
+        lblEditorial.setText(libroActual.getEditorial() != null ? libroActual.getEditorial() : "");
+        lblAnio.setText(libroActual.getAño() != null ? libroActual.getAño() : "");
+        lblGenero.setText(libroActual.getGenero() != null ? libroActual.getGenero() : "");
+        lblIsbn.setText(libroActual.getIsbn() != null ? libroActual.getIsbn() : "");
 
-        // Reseña (controlamos nulos)
-        // Estado Leído
-        if (libroActual.isLeido()) {
-            lblEstadoLectura.setText("Leído");
-            lblEstadoLectura.setStyle(
-                    "-fx-background-color: #e8f0fe; -fx-text-fill: #1a73e8; -fx-background-radius: 12; -fx-padding: 4 12 4 12;");
-            lblEstadoLectura.setVisible(true);
-        } else {
-            lblEstadoLectura.setText("Pendiente");
-            lblEstadoLectura.setStyle(
-                    "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12;");
-            lblEstadoLectura.setVisible(true);
+        // Reseña personal
+        if (txtResena != null) {
+            String resena = libroActual.getReseña();
+            txtResena.setText(resena != null ? resena : "");
         }
 
-        // Calificación (Estrellas)
+        // Estado de lectura con 3 estados visuales (no solo leído/pendiente)
+        String estadoLectura = libroActual.getEstadoLectura();
+        if (estadoLectura == null || estadoLectura.isEmpty()) {
+            estadoLectura = "Pendiente";
+        }
+        switch (estadoLectura) {
+            case "Leído":
+                lblEstadoLectura.setText("Leído");
+                lblEstadoLectura.setStyle(
+                    "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                break;
+            case "Leyendo":
+                lblEstadoLectura.setText("Leyendo");
+                lblEstadoLectura.setStyle(
+                    "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                break;
+            default:
+                lblEstadoLectura.setText("Pendiente");
+                lblEstadoLectura.setStyle(
+                    "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                break;
+        }
+        lblEstadoLectura.setVisible(true);
+
+        // Calificación (convertida a estrellas)
         int calif = libroActual.getCalificacion();
         lblEstrellas.setText(generarEstrellas(calif));
 
-        // Portada
+        // Cargar imagen de portada
         cargarImagenPortada(libroActual.getPortadaURL());
     }
 
@@ -154,6 +177,15 @@ public class DetalleLibroController {
     }
 
     /**
+     * Establece la ruta de datos del usuario, necesaria para guardar portadas localmente.
+     *
+     * @param rutaUsuario Ruta al directorio del usuario.
+     */
+    public void setRutaUsuario(String rutaUsuario) {
+        this.rutaUsuario = rutaUsuario;
+    }
+
+    /**
      * Abre la ventana de edición para el libro actual. Si se guardan cambios,
      * recarga los datos en esta ventana.
      *
@@ -165,14 +197,19 @@ public class DetalleLibroController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
 
             // 1. PRIMERO cargamos el idioma y se lo pasamos al loader
-            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", App.getCurrentLocale());
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle(
+                    "com.ferlagod.bibliohousefx.messages", App.getCurrentLocale());
             loader.setResources(bundle);
 
             // 2. LUEGO cargamos la vista (¡Este orden es obligatorio!)
             Parent root = loader.load();
 
             EditarLibroController controller = loader.getController();
-            controller.setLibro(this.libroActual); // Pasamos el libro actual
+            controller.setLibro(this.libroActual);
+            // Pasar rutaUsuario para que la portada se guarde localmente correctamente
+            if (this.rutaUsuario != null) {
+                controller.setRutaUsuario(this.rutaUsuario);
+            }
 
             if (this.listaGlobalEstanterias != null) {
                 controller.setEstanteriasDisponibles(this.listaGlobalEstanterias);
@@ -181,25 +218,20 @@ public class DetalleLibroController {
             Stage stage = new Stage();
             stage.setTitle("Editar: " + libroActual.getTitulo());
             stage.setScene(new Scene(root));
-
-            // Para que la ventana de edición no salga enana en Linux
-            stage.sizeToScene();
-
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(lblTitulo.getScene().getWindow());
-            stage.setMinWidth(900);
-            stage.setMinHeight(900);
-            stage.sizeToScene();
-            stage.showAndWait(); // Esperamos a que cierre
+            stage.setMaximized(true);
+            stage.showAndWait();
 
             // Si guardó los cambios, refrescamos la vista de detalles
             if (controller.isGuardado()) {
-                cargarDatos(); // Recargamos los datos en esta ventana
+                cargarDatos();
                 this.wasModified = true;
             }
 
         } catch (IOException e) {
-            System.err.println("--- ERROR AL ABRIR LA VENTANA DE EDICIÓN ---");
+            LOGGER.log(java.util.logging.Level.SEVERE,
+                    "[DetalleLibroController] Error al abrir la ventana de edición", e);
         }
     }
 

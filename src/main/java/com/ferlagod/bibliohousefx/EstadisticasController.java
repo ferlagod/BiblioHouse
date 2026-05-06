@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
  * Controlador para la ventana de estadísticas. Muestra métricas sobre la
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class EstadisticasController {
 

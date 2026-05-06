@@ -31,7 +31,7 @@ import org.testfx.framework.junit5.Start;
  * pruebas.
  *
  * @author Fernando Lago Dávila
- * @version 1.5
+ * @version 1.7
  */
 @ExtendWith(ApplicationExtension.class)
 @Tag("system")

@@ -19,7 +19,7 @@
     </padding>
     <children>
         <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Exportar Informe de Biblioteca a PDF" />
-        <Label style="-fx-font-size: 11px; -fx-text-fill: #666;" text="Seleccione los filtros que desea aplicar al informe:" wrapText="true" />
+        <Label style="-fx-font-size: 11px; -fx-text-fill: -color-text-muted;" text="Seleccione los filtros que desea aplicar al informe:" wrapText="true" />
         
         <Separator />
         

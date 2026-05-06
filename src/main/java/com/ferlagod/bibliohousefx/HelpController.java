@@ -29,8 +29,8 @@ import javafx.scene.web.WebView;
  * Controlador de la ventana de Ayuda (Manual de Usuario). Muestra un WebView
  * con el contenido HTML correspondiente al idioma seleccionado.
  *
- * @author Ferlagod
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class HelpController implements Initializable {
 

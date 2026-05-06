@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * JsonManager.
  *
  * @author Fernando Lago Dávila
- * @version 1.5
+ * @version 1.7
  */
 class TestVelocidad {
 

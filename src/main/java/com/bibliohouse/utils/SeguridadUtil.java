@@ -30,8 +30,8 @@ import java.util.Arrays;
  * los datos encriptados solo puedan ser leídos en el mismo equipo donde se
  * encriptaron.
  *
- * @author ferlagod
- * @version 1.0
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class SeguridadUtil {
 

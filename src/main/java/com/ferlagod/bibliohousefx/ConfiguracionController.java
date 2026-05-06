@@ -53,8 +53,8 @@ import javafx.stage.Stage;
  * Controlador para la ventana de configuración. Permite cambiar opciones como
  * el tema, la ruta de datos, etc.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class ConfiguracionController {
 
@@ -68,6 +68,8 @@ public class ConfiguracionController {
     private TextField txtRutaDatos;
     @FXML
     private ComboBox<String> comboIdioma;
+    @FXML
+    private ComboBox<String> comboTema;
     @FXML
     private Spinner<Integer> spinnerDiasPrestamo;
 
@@ -216,6 +218,24 @@ public class ConfiguracionController {
                     }
                 });
 
+        // Configurar el ComboBox de Tema
+        comboTema.getItems().setAll("Claro (Primer Light)", "Oscuro (Primer Dark)");
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+        String savedTheme = prefs.get("theme", "Claro (Primer Light)");
+        comboTema.getSelectionModel().select(savedTheme);
+
+        comboTema.getSelectionModel().selectedItemProperty()
+                .addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
+                    if (newVal != null) {
+                        prefs.put("theme", newVal);
+                        if (newVal.equals("Oscuro (Primer Dark)")) {
+                            javafx.application.Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
+                        } else {
+                            javafx.application.Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
+                        }
+                    }
+                });
+
         // Configurar el Spinner de días de préstamo (como ya tenías)
         if (spinnerDiasPrestamo != null) {
             int currentDays = mainController.getDueDaysLimit();
@@ -277,7 +297,7 @@ public class ConfiguracionController {
                     jsonManager.setAutoSyncTask(() -> {
                         try {
                             syncService.subirBaseDatos(localDir);
-                        } catch (Exception ex) {
+                        } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, "Auto-sync NextCloud fallido: " + ex.getMessage());
                         }
                     });
@@ -731,8 +751,11 @@ public class ConfiguracionController {
 
     /**
      * Abre la página de Liberapay del proyecto en el navegador por defecto del
-     * sistema.
+     * sistema operativo. Detecta automáticamente el sistema operativo (Windows,
+     * macOS o Linux) y usa el comando apropiado para abrir el navegador.
      *
+     * <p>
+     * URL destino: https://liberapay.com/ferlagod./</p>
      *
      */
     @FXML

@@ -62,8 +62,8 @@ import org.controlsfx.control.NotificationPane;
  * Este es el controlador principal. Aquí manejo la tabla de libros, los
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
- * @author Ferlagod
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class PrimaryController implements Initializable {
 
@@ -333,8 +333,6 @@ public class PrimaryController implements Initializable {
         colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidad"));
     }
 
-    // Las columnas de préstamos ahora se configuran en sus respectivos controladores
-
     /**
      * Configura el menú contextual de la tabla de libros.
      */
@@ -355,12 +353,54 @@ public class PrimaryController implements Initializable {
         MenuItem itemPortada = new MenuItem(resources.getString("ctx.cover"));
         itemPortada.setOnAction(e -> cambiarPortadaDesdePrincipal(null));
 
+        // --- SUBMENÚ: MARCAR ESTADO DE LECTURA ---
+        Menu menuEstado = new Menu("Marcar como...");
+
+        MenuItem itemPendiente = new MenuItem("📋 Pendiente");
+        itemPendiente.setOnAction(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                selected.setEstadoLectura("Pendiente");
+                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarPanelMisLibros();
+                lblEstado.setText("Estado actualizado: Pendiente — " + selected.getTitulo());
+            }
+        });
+
+        MenuItem itemLeyendo = new MenuItem("📖 Leyendo");
+        itemLeyendo.setOnAction(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                selected.setEstadoLectura("Leyendo");
+                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarPanelMisLibros();
+                lblEstado.setText("Estado actualizado: Leyendo — " + selected.getTitulo());
+            }
+        });
+
+        MenuItem itemLeido = new MenuItem("✅ Leído");
+        itemLeido.setOnAction(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                selected.setEstadoLectura("Leído");
+                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarPanelMisLibros();
+                lblEstado.setText("Estado actualizado: Leído — " + selected.getTitulo());
+            }
+        });
+
+        menuEstado.getItems().addAll(itemPendiente, itemLeyendo, itemLeido);
+        // -----------------------------------------
+
         MenuItem itemEliminar = new MenuItem(resources.getString("ctx.delete"));
         itemEliminar.setStyle("-fx-text-fill: red;");
         itemEliminar.setOnAction(e -> eliminarLibro(null));
 
         contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
-                new SeparatorMenuItem(), itemEliminar);
+                menuEstado, new SeparatorMenuItem(), itemEliminar);
         tablaLibros.setContextMenu(this.contextMenuLibros);
     }
 
@@ -414,7 +454,6 @@ public class PrimaryController implements Initializable {
         }
 
         // Row Factory para marcar préstamos vencidos movido a PrestamosController
-
         // Buscador visual rápido en la pestaña Mis Libros
         // En PrimaryController.java
         if (txtBuscarMisLibros != null) {
@@ -556,7 +595,9 @@ public class PrimaryController implements Initializable {
 
         // 6. Actualizaciones en segundo plano
         com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
-            // Lógica de notificación de nueva versión
+            Platform.runLater(() -> notificar(
+                    "✨ Nueva versión disponible: BiblioHouse " + versionNueva
+                    + ". ¡Visita la web para descargarla!"));
         });
     }
 
@@ -565,7 +606,9 @@ public class PrimaryController implements Initializable {
      * DUE_DAYS_LIMIT).
      */
     private void checkOverdueLoans() {
-        if (prestamoService == null) return;
+        if (prestamoService == null) {
+            return;
+        }
         List<Prestamo> overdueLoans = prestamoService.obtenerPrestamosVencidos(dueDaysLimit);
 
         if (!overdueLoans.isEmpty()) {
@@ -644,6 +687,7 @@ public class PrimaryController implements Initializable {
     private void mostrarAyudaManual(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("help.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -676,7 +720,9 @@ public class PrimaryController implements Initializable {
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+F"),
                         () -> {
                             mainTabPane.getSelectionModel().select(1);
-                            if (txtBusquedaOpenLibrary != null) txtBusquedaOpenLibrary.requestFocus();
+                            if (txtBusquedaOpenLibrary != null) {
+                                txtBusquedaOpenLibrary.requestFocus();
+                            }
                         });
 
                 // Ctrl+N (Cmd+N) -> Foco en añadir manual (Tab "Gestionar Libros" = índice 1)
@@ -684,7 +730,9 @@ public class PrimaryController implements Initializable {
                         javafx.scene.input.KeyCombination.keyCombination("Shortcut+N"),
                         () -> {
                             mainTabPane.getSelectionModel().select(1);
-                            if (txtTitulo != null) txtTitulo.requestFocus();
+                            if (txtTitulo != null) {
+                                txtTitulo.requestFocus();
+                            }
                         });
 
                 // Ctrl+L (Cmd+L) -> Pestaña Préstamos (por referencia, no por índice)
@@ -816,7 +864,6 @@ public class PrimaryController implements Initializable {
         cargarListaEstanterias();
         actualizarFiltros();
     }
-
 
     /**
      * Abre un diálogo para seleccionar un archivo CSV y, si es válido, importa
@@ -1174,6 +1221,7 @@ public class PrimaryController implements Initializable {
     private void mostrarAcercaDe(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("acercade.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             // Asumo que el AcercaDeController no necesita datos, solo abrir la ventana.
@@ -1360,6 +1408,7 @@ public class PrimaryController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("asignar_estanteria.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
             AsignarEstanteriaController controller = loader.getController();
 
@@ -1453,6 +1502,7 @@ public class PrimaryController implements Initializable {
                 return;
             }
 
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             ResultadosBusquedaController controller = loader.getController();
@@ -1565,15 +1615,15 @@ public class PrimaryController implements Initializable {
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaLibros.getScene().getWindow());
-            stage.setMinWidth(900);
-            stage.setMinHeight(900);
-            stage.sizeToScene();
+            stage.setMaximized(true);
             stage.showAndWait();
 
             if (controller.isGuardado()) {
                 tablaLibros.refresh();
                 jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
                 cargarListaEstanterias();
+                actualizarFiltros();
+                actualizarPanelMisLibros();
                 if (pestanaSagasController != null) {
                     pestanaSagasController.initData(listaLibrosCompleta);
                 }
@@ -1703,6 +1753,7 @@ public class PrimaryController implements Initializable {
     private void exportarPDF(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("exportar_pdf.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             ExportarPDFController controller = loader.getController();
@@ -1749,6 +1800,7 @@ public class PrimaryController implements Initializable {
         LOGGER.log(Level.INFO, "[PrimaryController] Solicitud para abrir escáner recibida.");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("escaner.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             EscanerController escanerController = loader.getController();
@@ -1831,6 +1883,7 @@ public class PrimaryController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("duplicados.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
             com.ferlagod.bibliohousefx.DuplicadosController controller = loader.getController();
             controller.setTextoResultados(reporte);
@@ -1886,6 +1939,7 @@ public class PrimaryController implements Initializable {
     private void mostrarEstadisticas(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("estadisticas.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             EstadisticasController controller = loader.getController();
@@ -1910,12 +1964,15 @@ public class PrimaryController implements Initializable {
      *
      * @param event El evento del botón Nuevo Socio.
      */
-    public void nuevoSocioPublic() { nuevoSocio(null); }
+    public void nuevoSocioPublic() {
+        nuevoSocio(null);
+    }
 
     @FXML
     private void nuevoSocio(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("gestion_socios.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
             GestionSociosController controller = loader.getController();
             controller.setListaSocios(listaSocios);
@@ -1940,12 +1997,15 @@ public class PrimaryController implements Initializable {
     /**
      * Abre la ventana de gestión de socios para editar/eliminar.
      */
-    public void gestionarSociosPublic() { gestionarSocios(null); }
+    public void gestionarSociosPublic() {
+        gestionarSocios(null);
+    }
 
     @FXML
     private void gestionarSocios(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("socios_manager.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
 
             SociosManagerController controller = loader.getController();
@@ -1988,18 +2048,34 @@ public class PrimaryController implements Initializable {
         return listaPrestamosCompleta;
     }
 
+    /**
+     * Muestra una alerta con el título y mensaje especificados.
+     *
+     * @param titulo Título de la alerta.
+     * @param mensaje Mensaje de la alerta.
+     */
     public void mostrarAlertaPublic(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje);
     }
 
+    /**
+     * Establece el mensaje de estado en la interfaz.
+     *
+     * @param mensaje Mensaje a mostrar.
+     */
     public void setMensajeEstado(String mensaje) {
         if (lblEstado != null) {
             lblEstado.setText(mensaje);
         }
     }
 
+    /**
+     * Actualiza las vistas relacionadas con préstamos. Refresca los filtros de
+     * préstamos activos e histórico, y actualiza la lista de libros
+     * disponibles.
+     */
     public void actualizarVistasPrestamo() {
-        // Solo refrescar predicados — los items ya están enlazados mediante las FilteredList
+        // Refrescar filtros de préstamos
         if (filteredPrestamos != null) {
             filteredPrestamos.setPredicate(null);
             filteredPrestamos.setPredicate(p -> p.getFechaDevolucion() == null);
@@ -2008,16 +2084,33 @@ public class PrimaryController implements Initializable {
             filteredHistory.setPredicate(null);
             filteredHistory.setPredicate(p -> p.getFechaDevolucion() != null);
         }
-        // Actualizar combo de libros disponibles en el panel de préstamos
+        // Actualizar combo de libros disponibles
         if (pestanaPrestamosController != null) {
             pestanaPrestamosController.refrescarLibrosDisponibles(obtenerLibrosDisponibles());
         }
-        // También refrescar la tabla principal de libros (stock puede haber cambiado)
-        if (tablaLibros != null) tablaLibros.refresh();
+        // Refrescar tabla principal de libros
+        if (tablaLibros != null) {
+            tablaLibros.refresh();
+        }
     }
 
-    public ObservableList<Libro> getListaLibrosCompleta() { return listaLibrosCompleta; }
-    public ObservableList<Socio> getListaSocios() { return listaSocios; }
+    /**
+     * Obtiene la lista completa de libros.
+     *
+     * @return Lista observable de todos los libros.
+     */
+    public ObservableList<Libro> getListaLibrosCompleta() {
+        return listaLibrosCompleta;
+    }
+
+    /**
+     * Obtiene la lista completa de socios.
+     *
+     * @return Lista observable de todos los socios.
+     */
+    public ObservableList<Socio> getListaSocios() {
+        return listaSocios;
+    }
 
     // --- DETALLES ---
     /**
@@ -2028,27 +2121,29 @@ public class PrimaryController implements Initializable {
     private void mostrarDetalleLibro(Libro libro) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("detalle_libro.fxml"));
+            loader.setResources(this.resources);
             Parent root = loader.load();
             DetalleLibroController controller = loader.getController();
             controller.setLibro(libro);
             controller.setListaGlobalEstanterias(jsonManager.cargarEstanterias());
+            controller.setRutaUsuario(this.rutaUsuario);
 
             Stage stage = new Stage();
             stage.setTitle("Detalles: " + libro.getTitulo());
             setScene(stage, root);
             stage.initOwner(tablaLibros.getScene().getWindow());
-            stage.setMinWidth(700);
-            stage.setMinHeight(600);
-            stage.sizeToScene();
+            stage.setMaximized(true);
             stage.showAndWait();
 
             if (controller.isModified()) {
                 jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                tablaLibros.refresh();
+                actualizarFiltros();
+                actualizarPanelMisLibros();
             }
 
-            tablaLibros.refresh();
         } catch (IOException e) {
-            System.err.println("[PrimaryController] Error al abrir detalle del libro: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "[PrimaryController] Error al abrir detalle del libro", e);
         }
     }
 
@@ -2087,7 +2182,6 @@ public class PrimaryController implements Initializable {
     // ==========================================
     // SECCIÓN: LISTA DE DESEOS (WISHLIST)
     // ==========================================
-
     /**
      * Mueve un libro de la lista de deseos a la biblioteca principal.
      */
@@ -2127,13 +2221,13 @@ public class PrimaryController implements Initializable {
 
         busquedaService.ejecutarBusquedaGlobalAsync(query)
                 .thenAccept(resultados -> Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setDisable(false);
-                    if (resultados.isEmpty()) {
-                        mostrarAlerta("Sin resultados", "No se encontraron libros.");
-                    } else {
-                        abrirVentanaResultados(resultados);
-                    }
-                }))
+            txtBusquedaOpenLibrary.setDisable(false);
+            if (resultados.isEmpty()) {
+                mostrarAlerta("Sin resultados", "No se encontraron libros.");
+            } else {
+                abrirVentanaResultados(resultados);
+            }
+        }))
                 .exceptionally(ex -> {
                     LOGGER.log(Level.SEVERE, "Error en búsqueda global de libros", ex);
                     Platform.runLater(() -> {
@@ -2191,7 +2285,13 @@ public class PrimaryController implements Initializable {
                 .collect(Collectors.toList());
 
         if (librosSinPortada.isEmpty()) {
-            notificar(resources.getString("status.no_covers_pending")); // O usa un texto directo si no tienes la clave
+            javafx.application.Platform.runLater(() -> {
+                Alert info = new Alert(Alert.AlertType.INFORMATION);
+                info.setTitle("Búsqueda de Portadas");
+                info.setHeaderText("Búsqueda finalizada");
+                info.setContentText(resources.getString("status.no_covers_pending"));
+                info.showAndWait();
+            });
             return;
         }
 
@@ -2256,7 +2356,13 @@ public class PrimaryController implements Initializable {
             if (pestanaWishlistController != null) {
                 pestanaWishlistController.actualizarPanelDeseos();
             }
-            notificar("¡Completado! Se han actualizado " + task.getValue() + " portadas.");
+            javafx.application.Platform.runLater(() -> {
+                Alert info = new Alert(Alert.AlertType.INFORMATION);
+                info.setTitle("Búsqueda de Portadas");
+                info.setHeaderText("Búsqueda finalizada");
+                info.setContentText("¡Completado! Se han actualizado " + task.getValue() + " portadas.");
+                info.showAndWait();
+            });
         });
 
         // 6. Qué hacer si falla
@@ -2271,6 +2377,13 @@ public class PrimaryController implements Initializable {
         thread.start();
     }
 
+    /**
+     * Busca la portada de un libro en APIs externas usando el servicio de
+     * búsqueda masiva.
+     *
+     * @param query Término de búsqueda (ISBN o título).
+     * @return URL de la portada encontrada, o cadena vacía si no se encuentra.
+     */
     private String buscarImagenEnApisMasivo(String query) {
         return busquedaService.buscarImagenEnApisMasivo(query);
     }
@@ -2326,9 +2439,24 @@ public class PrimaryController implements Initializable {
 
         // 3. Comprobar si está vacío ANTES de dibujar
         if (librosMostrados.isEmpty()) {
-            Label lblVacio = new Label("No hay libros aquí.\nPrueba a cambiar los filtros o añade libros nuevos.");
-            lblVacio.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px; -fx-alignment: center;");
-            panelMisLibros.getChildren().add(lblVacio);
+            javafx.scene.layout.VBox emptyState = new javafx.scene.layout.VBox(12);
+            emptyState.setAlignment(javafx.geometry.Pos.CENTER);
+            emptyState.setStyle("-fx-padding: 60 0 60 0;");
+
+            Label lblIcon = new Label("📚");
+            lblIcon.setStyle("-fx-font-size: 48px;");
+
+            Label lblVacio = new Label("Tu biblioteca está vacía aquí");
+            lblVacio.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+            Label lblSub = new Label("Prueba a cambiar el filtro de estantería\no añade libros nuevos desde «Gestionar Libros»");
+            lblSub.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 13px; -fx-text-alignment: center;");
+            lblSub.setWrapText(true);
+            lblSub.setMaxWidth(400);
+            lblSub.setAlignment(javafx.geometry.Pos.CENTER);
+
+            emptyState.getChildren().addAll(lblIcon, lblVacio, lblSub);
+            panelMisLibros.getChildren().add(emptyState);
             return;
         }
 
@@ -2337,7 +2465,6 @@ public class PrimaryController implements Initializable {
             panelMisLibros.getChildren().add(crearTarjetaMisLibros(libro));
         }
     }
-
 
     /**
      * Crea una tarjeta interactiva para la biblioteca principal.
@@ -2405,6 +2532,13 @@ public class PrimaryController implements Initializable {
         return tarjeta;
     }
 
+    /**
+     * Muestra una notificación con el mensaje especificado en el panel
+     * designado. La notificación se oculta automáticamente tras 3 segundos
+     * mediante una pausa programada.
+     *
+     * @param mensaje el texto a mostrar en la notificación
+     */
     private void notificar(String mensaje) {
         notificationPane.setText(mensaje);
         notificationPane.show();

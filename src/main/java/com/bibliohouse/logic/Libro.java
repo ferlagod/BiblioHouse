@@ -28,8 +28,8 @@ import java.util.UUID;
  * Esta clase es como una ficha para cada libro. Aquí guardamos el título, autor
  * y todo eso.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class Libro {
 
@@ -357,8 +357,8 @@ public class Libro {
     }
 
     /**
-     * Marca el libro como leído o no leído. También imprime un mensaje por
-     * consola para comprobar que funciona (DEBUG).
+     * Marca el libro como leído o no leído. Sincroniza con
+     * {@link #estadoLectura} para mantener compatibilidad con datos antiguos.
      *
      * @param leido true para marcar como leído.
      */

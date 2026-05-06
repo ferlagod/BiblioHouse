@@ -42,8 +42,8 @@ import javafx.stage.Stage;
  * Controlador para la edición de libros. Permite modificar datos como título,
  * autor, portada o gestionar las estanterías.
  *
- * @author Ferlagod
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class EditarLibroController {
 
@@ -171,48 +171,59 @@ public class EditarLibroController {
         cargarDatos();
     }
 
+    /**
+     * Establece la ruta del directorio personal del usuario. Esta ruta se
+     * utiliza como ubicación base para guardar y cargar los datos de la
+     * biblioteca, incluyendo libros, portadas y configuraciones.
+     *
+     * @param rutaUsuario Ruta absoluta del directorio del usuario.
+     */
     public void setRutaUsuario(String rutaUsuario) {
         this.rutaUsuario = rutaUsuario;
     }
 
     /**
-     * Carga los datos del libro actual en los controles de la interfaz. Mapea
-     * las propiedades del libro a los campos visuales correspondientes.
+     * Carga los datos de un libro en los controles de edición de la interfaz de
+     * usuario. Sincroniza todas las propiedades del libro con los campos
+     * correspondientes del formulario.
+     *
      */
     private void cargarDatos() {
         if (libro == null) {
             return;
         }
 
+        // Campos de texto básicos
         txtTitulo.setText(libro.getTitulo());
         txtAutor.setText(libro.getAutor());
         txtEditorial.setText(libro.getEditorial());
         txtGenero.setText(libro.getGenero());
         txtIsbn.setText(libro.getIsbn());
 
+        // Serie y orden
         if (libro.getSerie() != null) {
             txtSerie.setText(libro.getSerie());
         }
         txtOrden.setText(String.valueOf(libro.getOrdenEnSerie()));
 
-        // Año
+        // Año (con manejo de errores)
         try {
             int anio = Integer.parseInt(libro.getAño());
             spinnerAnio.getValueFactory().setValue(anio);
         } catch (NumberFormatException e) {
-            spinnerAnio.getValueFactory().setValue(2024);
+            spinnerAnio.getValueFactory().setValue(2024); // Valor por defecto
         }
 
-        // Estado y Calificación
+        // Estado de lectura
         String estado = libro.getEstadoLectura();
         if (estado == null || estado.isEmpty()) {
             estado = "Pendiente";
         }
         cmbEstadoLectura.setValue(estado);
 
+        // Calificación (0-5 estrellas)
         int calif = libro.getCalificacion();
         if (calif >= 0 && calif <= 5) {
-            // El índice 0 es "Sin calificar", 1 es 1 estrella...
             cmbCalificacion.getSelectionModel().select(calif);
         }
 
@@ -223,7 +234,7 @@ public class EditarLibroController {
         rutaPortadaActual = libro.getPortadaURL();
         cargarImagen(rutaPortadaActual);
 
-        // Poseído
+        // Estado de posesión
         chkPoseido.setSelected(libro.isPoseido());
     }
 
@@ -282,10 +293,8 @@ public class EditarLibroController {
      */
     public void setEstanteriasDisponibles(List<String> todas) {
         if (todas != null) {
-            // Limpiamos por si acaso y añadimos todas
             cmbNuevaEstanteria.getItems().clear();
             cmbNuevaEstanteria.getItems().addAll(todas);
-            System.out.println("DEBUG: Se han añadido " + todas.size() + " estanterías al desplegable.");
         }
     }
 
@@ -423,6 +432,14 @@ public class EditarLibroController {
         alert.showAndWait();
     }
 
+    /**
+     * Busca la portada de un libro en línea utilizando APIs externas (Google
+     * Books, OpenLibrary, Inventaire). Realiza la búsqueda en segundo plano
+     * para no bloquear la interfaz de usuario.
+     *
+     * @param event Evento que desencadena la acción (no utilizado
+     * directamente).
+     */
     @FXML
     private void buscarPortadaOnline(javafx.event.ActionEvent event) {
         String isbn = txtIsbn.getText().trim();
@@ -439,12 +456,12 @@ public class EditarLibroController {
             try {
                 String urlFinal = "";
 
-                // 1. Primer intento: Buscar por ISBN (la edición exacta)
+                // 1. Primer intento: Buscar por ISBN (prioridad para edición exacta)
                 if (!isbn.isEmpty()) {
                     urlFinal = buscarImagenEnApis(isbn);
                 }
 
-                // 2. Segundo intento (Plan B): Si el ISBN no dio resultados (o estaba vacío), buscamos por Título
+                // 2. Segundo intento: Buscar por título si el ISBN no dio resultados
                 if (urlFinal.isEmpty() && !titulo.isEmpty()) {
                     urlFinal = buscarImagenEnApis(titulo);
                 }
@@ -454,7 +471,9 @@ public class EditarLibroController {
                 javafx.application.Platform.runLater(() -> {
                     btnBuscarPortada.setDisable(false);
                     if (!portadaDefinitiva.isEmpty()) {
+                        // Generar ID único si el libro no tiene ID
                         String idLibro = (libro != null && libro.getId() != null) ? libro.getId() : java.util.UUID.randomUUID().toString();
+                        // Descargar y guardar localmente la portada
                         String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(portadaDefinitiva, idLibro, this.rutaUsuario);
 
                         rutaPortadaActual = rutaLocal;
@@ -477,14 +496,20 @@ public class EditarLibroController {
     }
 
     /**
-     * Método auxiliar que lanza a los 3 sabuesos a la vez y devuelve la primera
-     * portada útil.
+     * Busca la portada de un libro en múltiples APIs de libros (Google Books,
+     * OpenLibrary, Inventaire) de forma concurrentes y devuelve la primera URL
+     * de portada válida encontrada.
+     *
+     * @param query Término de búsqueda (ISBN o título del libro).
+     * @return URL de la primera portada válida encontrada, o cadena vacía si no
+     * se encuentra ninguna.
      */
     private String buscarImagenEnApis(String query) {
         if (query == null || query.trim().isEmpty()) {
             return "";
         }
         try {
+            // Consultas asíncronas a las tres APIs con timeout de 3 segundos
             java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureGoogle = java.util.concurrent.CompletableFuture
                     .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
                     .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
@@ -500,6 +525,7 @@ public class EditarLibroController {
                     .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
                     .exceptionally(ex -> new java.util.ArrayList<>());
 
+            // Esperar a que todas las consultas finalicen
             java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib, futureInventaire).join();
 
             // Prioridad 1: Google Books
@@ -511,12 +537,12 @@ public class EditarLibroController {
                     }
                 }
             }
-            // Prioridad 2: OpenLibrary
+            // Prioridad 2: OpenLibrary (con ajuste de tamaño)
             if (futureOpenLib.get() != null) {
                 for (com.bibliohouse.logic.Libro lib : futureOpenLib.get()) {
                     String img = lib.getPortadaURL();
                     if (img != null && !img.trim().isEmpty() && !img.contains("default_cover") && !img.contains("-S.jpg")) {
-                        return img.replace("-M.jpg", "-L.jpg");
+                        return img.replace("-M.jpg", "-L.jpg"); // Preferir tamaño grande
                     }
                 }
             }
@@ -530,7 +556,7 @@ public class EditarLibroController {
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
-            // Si falla algo, devolvemos vacío y que intente el siguiente plan
+            // Si falla algo, devolvemos vacío para que intente el siguiente plan
         }
         return "";
     }

@@ -41,8 +41,8 @@ import javafx.stage.FileChooser;
  * Controlador para la gestión general de la lista de socios. Muestra la tabla
  * de socios y permite añadir, editar o eliminarlos.
  *
- * @author Fernando Lago
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class SociosManagerController {
 
@@ -144,6 +144,7 @@ public class SociosManagerController {
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("gestion_socios.fxml"));
+            loader.setResources(App.getBundle());
             Parent root = loader.load();
 
             GestionSociosController controller = loader.getController();

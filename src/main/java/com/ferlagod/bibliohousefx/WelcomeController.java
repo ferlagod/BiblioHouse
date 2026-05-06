@@ -36,10 +36,13 @@ import javafx.stage.Stage;
  * interacción del usuario con la aplicación, ofreciendo la opción de iniciar
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
- * @author Ferlagod
- * @version 1.6
+ * @author Fernando Lago Dávila
+ * @version 1.7
  */
 public class WelcomeController {
+
+    private static final java.util.logging.Logger LOGGER =
+            java.util.logging.Logger.getLogger(WelcomeController.class.getName());
 
     /**
      * Inicializa el controlador. Se llama automáticamente después de cargar el
@@ -76,7 +79,7 @@ public class WelcomeController {
             stage.getScene().setRoot(root);
 
         } catch (IOException e) {
-            System.err.println("Error fatal al cargar login.fxml");
+            LOGGER.log(java.util.logging.Level.SEVERE, "Error fatal al cargar login.fxml", e);
         }
     }
 
@@ -114,12 +117,12 @@ public class WelcomeController {
                 try (InputStream is = getClass().getResourceAsStream("default_library.json")) {
                     if (is != null) {
                         Files.copy(is, guestLibrary.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        System.out.println("Biblioteca de invitado creada desde plantilla por defecto.");
+                        LOGGER.log(java.util.logging.Level.INFO, "Biblioteca de invitado creada desde plantilla.");
                     } else {
-                        System.err.println("No se encontró default_library.json en recursos.");
+                        LOGGER.log(java.util.logging.Level.WARNING, "No se encontró default_library.json en recursos.");
                     }
                 } catch (IOException e) {
-                    System.err.println("Error al copiar la biblioteca por defecto: " + e.getMessage());
+                    LOGGER.log(java.util.logging.Level.SEVERE, "Error al copiar la biblioteca por defecto", e);
                 }
             }
 
@@ -133,7 +136,7 @@ public class WelcomeController {
                 App.loadMain("Invitado", guestPath);
 
             } catch (IOException e) {
-                System.err.println("Error al cargar la aplicación en modo invitado.");
+                LOGGER.log(java.util.logging.Level.SEVERE, "Error al cargar la aplicación en modo invitado", e);
             }
         }
     }
