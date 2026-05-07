@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.FileInputStream;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,8 +36,7 @@ import java.util.stream.Collectors;
  * BiblioHouse con un servidor NextCloud mediante el protocolo WebDAV.
  *
  * Detecta automáticamente cuál de las dos rutas WebDAV estándar de NextCloud
- * está disponible:
- *
+ * está disponible.
  *
  * @author Fernando Lago Dávila
  * @version 1.7
@@ -55,8 +53,7 @@ public class NextCloudSyncService {
         "prestamos.json",
         "socios.json",
         "estanterias.json",
-        "deseos.json",
-        "portadas.zip"
+        "deseos.json"
     };
 
     /**
@@ -68,41 +65,12 @@ public class NextCloudSyncService {
         "/remote.php/webdav/" // WebDAV clásico
     };
 
-    /**
-     * URL base del servidor NextCloud, ej. {@code https://cloud.example.com}.
-     */
     private final String serverUrl;
-
-    /**
-     * Nombre de usuario de NextCloud.
-     */
     private final String username;
-
-    /**
-     * Contraseña (preferiblemente una «app password» de NextCloud).
-     */
     private final String password;
-
-    /**
-     * URL raíz WebDAV detectada automáticamente (incluye barra final). Es
-     * {@code null} hasta que se llame a {@link #resolverDavBase(Sardine)}.
-     */
     private String davBaseUrl;
-
-    /**
-     * Nombre de usuario de NextCloud codificado para uso en URLs de path.
-     */
     private final String usernameEncoded;
 
-    /**
-     * Construye un nuevo servicio de sincronización con NextCloud.
-     *
-     * @param serverUrl URL del servidor NextCloud.
-     * @param username Nombre de usuario de NextCloud.
-     * @param password Contraseña o app password de NextCloud.
-     * @throws IllegalArgumentException si alguno de los parámetros es nulo o
-     * vacío.
-     */
     public NextCloudSyncService(String serverUrl, String username, String password) {
         if (serverUrl == null || serverUrl.isBlank()) {
             throw new IllegalArgumentException("La URL del servidor no puede ser nula o vacía.");
@@ -114,8 +82,6 @@ public class NextCloudSyncService {
             throw new IllegalArgumentException("La contraseña de NextCloud no puede ser nula o vacía.");
         }
 
-        // Normalizar la URL: extraer solo esquema + host + puerto, ignorando
-        // cualquier ruta WebDAV que el usuario haya pegado por error.
         String extractedUrl = extractBaseUrl(serverUrl.trim());
 
         // OWASP A02: Cryptographic Failures. Bloquear credenciales en texto plano sobre HTTP
@@ -125,23 +91,10 @@ public class NextCloudSyncService {
 
         this.serverUrl = extractedUrl;
         this.username = username.trim();
-        // Codificar username para paths de URL (@ → %40, espacios → %20, etc.)
         this.usernameEncoded = encodeUrlSegment(this.username);
         this.password = password;
     }
 
-    /**
-     * Extrae la URL base (esquema + host + puerto) de una URL completa,
-     * descartando cualquier path, parámetros o fragmento.
-     *
-     * Si la URL no es válida según el estándar URI, intenta extraer la base
-     * eliminando paths conocidos de NextCloud ("/remote.php" o "/nextcloud") o
-     * la barra final.
-     *
-     * @param url URL completa de la que extraer la base.
-     * @return URL base (esquema + host + puerto) o la URL original si no se
-     * puede procesar.
-     */
     private static String extractBaseUrl(String url) {
         try {
             java.net.URI uri = new java.net.URI(url);
@@ -152,7 +105,6 @@ public class NextCloudSyncService {
             }
             return base;
         } catch (java.net.URISyntaxException e) {
-            // Si la URL no es válida, eliminar al menos la barra final y rutas conocidas
             String s = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
             int idx = s.indexOf("/remote.php");
             if (idx == -1) {
@@ -162,36 +114,14 @@ public class NextCloudSyncService {
         }
     }
 
-    /**
-     * Codifica un segmento de path de URL según el estándar RFC 3986. Convierte
-     * caracteres especiales (como espacios, '@', '/', etc.) en su
-     * representación porcentual (p.ej., '@' → "%40", espacio → "%20").
-     *
-     * @param segment Segmento de URL a codificar (p.ej., nombre de archivo,
-     * parámetro).
-     * @return Segmento codificado según RFC 3986, o el segmento original si
-     * ocurre un error.
-     */
     private static String encodeUrlSegment(String segment) {
         try {
-            // URLEncoder usa codificación de formulario (+) — reemplazamos por %20
-            return java.net.URLEncoder.encode(segment, java.nio.charset.StandardCharsets.UTF_8)
-                    .replace("+", "%20");
+            return new java.net.URI(null, null, segment, null).getRawPath();
         } catch (Exception e) {
             return segment;
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Métodos privados de utilidad
-    // ─────────────────────────────────────────────────────────────────────────
-    /**
-     * Detecta y cachea la URL base WebDAV correcta probando los candidatos.
-     *
-     * @param sardine Cliente Sardine ya inicializado con credenciales.
-     * @return URL base WebDAV con barra final.
-     * @throws IOException si ninguno de los candidatos responde correctamente.
-     */
     private String resolverDavBase(Sardine sardine) throws IOException {
         if (davBaseUrl != null) {
             return davBaseUrl;
@@ -217,53 +147,22 @@ public class NextCloudSyncService {
                 + "  · " + serverUrl + DAV_CANDIDATES[1]);
     }
 
-    /**
-     * Construye la URL de la carpeta remota para BiblioHouse. Añade el nombre
-     * de la carpeta "BiblioHouse/" a la URL base proporcionada.
-     *
-     * @param davBase URL base del servidor WebDAV.
-     * @return URL completa de la carpeta remota de BiblioHouse.
-     */
     private String buildRemoteFolderUrl(String davBase) {
         return davBase + "BiblioHouse/";
     }
 
-    /**
-     * Construye la URL completa de un archivo remoto en BiblioHouse. Combina la
-     * URL base, la carpeta de BiblioHouse y el nombre del archivo.
-     *
-     * @param davBase URL base del servidor WebDAV.
-     * @param fileName nombre del archivo a añadir a la URL.
-     * @return URL completa del archivo remoto.
-     */
     private String buildRemoteFileUrl(String davBase, String fileName) {
         return buildRemoteFolderUrl(davBase) + fileName;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // API pública
-    // ─────────────────────────────────────────────────────────────────────────
-    /**
-     * Verifica que las credenciales son correctas y que el servidor es
-     * accesible.
-     *
-     * @return {@code true} si la conexión es correcta, {@code false} en caso
-     * contrario.
-     */
     public boolean testConexion() {
         return testConexionConMensaje() == null;
     }
 
-    /**
-     * Verifica la conexión y devuelve un mensaje de error descriptivo si falla.
-     *
-     * @return {@code null} si la conexión es correcta, o un String con el
-     * error.
-     */
     public String testConexionConMensaje() {
         Sardine sardine = SardineFactory.begin(username, password);
         try {
-            davBaseUrl = null; // forzar re-detección en cada test
+            davBaseUrl = null;
             resolverDavBase(sardine);
             LOGGER.log(Level.INFO, "Test de conexión NextCloud exitoso: {0}", davBaseUrl);
             return null;
@@ -279,14 +178,6 @@ public class NextCloudSyncService {
         }
     }
 
-    /**
-     * Sube los archivos JSON de la base de datos local al servidor NextCloud.
-     * Detecta el endpoint WebDAV automáticamente y crea la carpeta
-     * {@code BiblioHouse/} si no existe.
-     *
-     * @param localDir Ruta al directorio local del usuario.
-     * @throws IOException si se produce un error de red o de E/S.
-     */
     public void subirBaseDatos(String localDir) throws IOException {
         Sardine sardine = SardineFactory.begin(username, password);
         try {
@@ -298,78 +189,68 @@ public class NextCloudSyncService {
             crearDirectorioSiNoExiste(sardine, remoteFolderUrl);
             crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
 
-            // 2. Sincronizar archivos JSON (Se suben siempre porque cambian constantemente)
+            // 2. Sincronizar archivos JSON 
             for (String fileName : DB_FILES) {
                 File localFile = new File(localDir, fileName);
-                if (localFile.exists()) {
+                if (localFile.exists() && localFile.length() > 0) {
                     String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                    // Usamos put con InputStream para archivos que podrían ser algo más grandes
-                    try (InputStream fis = new FileInputStream(localFile)) {
-                        sardine.put(remoteFileUrl, fis, "application/json");
-                    }
+
+                    // FIX NEXTCLOUD: Usamos readAllBytes() en vez de InputStream.
+                    // Al cargar el byte[], Sardine le envía a NextCloud el Content-Length exacto. 
+                    // Si usamos InputStream, envía datos "chunked" y el servidor lo aborta silenciosamente.
+                    byte[] fileData = Files.readAllBytes(localFile.toPath());
+                    sardine.put(remoteFileUrl, fileData, "application/json");
                     LOGGER.log(Level.INFO, "JSON sincronizado: {0}", fileName);
                 }
             }
 
             // 3. Sincronización INCREMENTAL de portadas
-            // Usamos la carpeta "covers" que es la estándar que definimos
             File carpetaLocalCovers = new File(localDir, "covers");
             if (carpetaLocalCovers.exists() && carpetaLocalCovers.isDirectory()) {
                 File[] portadas = carpetaLocalCovers.listFiles();
                 if (portadas != null) {
-                    // Listamos la nube una sola vez para comparar
                     List<DavResource> resources = sardine.list(remoteCoversUrl);
                     Set<String> nombresEnRemoto = resources.stream()
+                            .filter(r -> r.getName() != null)
                             .map(DavResource::getName)
                             .collect(Collectors.toSet());
 
                     for (File portada : portadas) {
-                        // Solo subimos si es archivo, no es oculto y NO está ya en la nube
                         if (portada.isFile() && !portada.getName().startsWith(".") && !nombresEnRemoto.contains(portada.getName())) {
                             String remoteFileUrl = remoteCoversUrl + portada.getName();
-                            try (InputStream fis = new FileInputStream(portada)) {
-                                sardine.put(remoteFileUrl, fis, "image/jpeg");
-                            }
+
+                            // FIX NEXTCLOUD: También se protegen las imágenes enviando el Content-Length
+                            byte[] imgData = Files.readAllBytes(portada.toPath());
+                            sardine.put(remoteFileUrl, imgData, "image/jpeg");
+
                             LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", portada.getName());
                         }
                     }
                 }
             }
+        } catch (IOException e) {
+            // Protección contra errores silenciosos sin mensaje de Apache HTTP (EOFException, SocketException...)
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            throw new IOException("Error de red con NextCloud: " + msg, e);
         } finally {
-            sardine.shutdown();
+            try {
+                sardine.shutdown();
+            } catch (IOException ignored) {
+            }
         }
     }
 
-    /**
-     * Crea un directorio remoto si no existe, evitando errores 405 (Method Not
-     * Allowed) que algunos servidores devuelven cuando el directorio ya existe.
-     *
-     * Este método es útil para garantizar que la estructura de directorios
-     * remotos esté disponible antes de realizar operaciones de subida de
-     * archivos, sin que fallen las operaciones si el directorio ya existe.
-     *
-     * @param sardine Cliente Sardine para interactuar con el servidor WebDAV.
-     * @param url URL del directorio remoto a crear/verificar.
-     */
     private void crearDirectorioSiNoExiste(Sardine sardine, String url) {
         try {
             if (!sardine.exists(url)) {
                 sardine.createDirectory(url);
             }
         } catch (IOException e) {
-            // Algunos servidores devuelven 405 si el directorio ya existe
             LOGGER.log(Level.WARNING, "No se pudo crear/verificar directorio remoto ({0}): {1}",
                     new Object[]{url, e.getMessage()});
         }
     }
 
-    /**
-     * Descarga los archivos JSON desde NextCloud y sobreescribe los locales.
-     * Crea un backup {@code .bak} de cada archivo antes de sobreescribirlo.
-     *
-     * @param localDir Ruta al directorio local del usuario.
-     * @throws IOException si se produce un error de red o de E/S.
-     */
     public void descargarBaseDatos(String localDir) throws IOException {
         Sardine sardine = SardineFactory.begin(username, password);
         try {
@@ -398,6 +279,42 @@ public class NextCloudSyncService {
                     LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
                 }
             }
+            // 4. Sincronización INCREMENTAL de portadas (Descarga)
+            String remoteCoversUrl = buildRemoteFolderUrl(davBase) + "covers/";
+            File carpetaLocalCovers = new File(localDir, "covers");
+
+            if (!carpetaLocalCovers.exists()) {
+                carpetaLocalCovers.mkdirs();
+            }
+
+            if (sardine.exists(remoteCoversUrl)) {
+                List<DavResource> remoteCovers = sardine.list(remoteCoversUrl);
+                for (DavResource res : remoteCovers) {
+                    // Ignoramos el propio directorio
+                    if (res.isDirectory()) {
+                        continue;
+                    }
+
+                    String coverName = res.getName();
+                    File localCover = new File(carpetaLocalCovers, coverName);
+
+                    // Solo descargamos si no la tenemos en local
+                    if (!localCover.exists()) {
+                        String fileUrl = remoteCoversUrl + coverName;
+                        try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localCover)) {
+                            byte[] buffer = new byte[8192];
+                            int bytesRead;
+                            while ((bytesRead = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, bytesRead);
+                            }
+                            LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            throw new IOException("Error al descargar desde NextCloud: " + msg, e);
         } finally {
             try {
                 sardine.shutdown();
@@ -405,5 +322,4 @@ public class NextCloudSyncService {
             }
         }
     }
-
 }

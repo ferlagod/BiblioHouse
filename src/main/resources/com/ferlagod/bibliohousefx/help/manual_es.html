@@ -1,427 +1,494 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Manual de Usuario Integral - BiblioHouse</title>
-        <style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario Integral - BiblioHouse</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --heading-color: #0d6efd;
+            --h2-color: #343a40;
+            --h3-color: #495057;
+            --box-bg: #ffffff;
+            --box-shadow: rgba(0, 0, 0, 0.1);
+            --code-bg: #e9ecef;
+            --border-color: #dee2e6;
+            --link-color: #0d6efd;
+            --table-header: #e9ecef;
+            --alert-bg: #cce5ff;
+            --alert-text: #004085;
+            --alert-border: #b8daff;
+        }
+
+        /* Solución de problemas de contraste en tema oscuro */
+        @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #f8f9fa;
-                --text-color: #212529;
-                --heading-color: #0d6efd;
-                --h2-color: #343a40;
-                --h3-color: #495057;
-                --box-bg: #ffffff;
-                --box-shadow: rgba(0,0,0,0.1);
-                --code-bg: #e9ecef;
-                --border-color: #dee2e6;
-                --link-color: #0d6efd;
-                --table-header: #e9ecef;
-                --alert-bg: #cce5ff;
-                --alert-text: #004085;
-                --alert-border: #b8daff;
+                --bg-color: #212529;
+                --text-color: #f8f9fa;
+                --heading-color: #6ea8fe;
+                --h2-color: #e9ecef;
+                --h3-color: #ced4da;
+                --box-bg: #343a40;
+                --box-shadow: rgba(0, 0, 0, 0.5);
+                --code-bg: #495057;
+                --border-color: #495057;
+                --link-color: #6ea8fe;
+                --table-header: #495057;
+                --alert-bg: #004085;
+                --alert-text: #cce5ff;
+                --alert-border: #0056b3;
             }
 
-            /* Solución de problemas de contraste en tema oscuro */
-            @media (prefers-color-scheme: dark) {
-                :root {
-                    --bg-color: #212529;
-                    --text-color: #f8f9fa;
-                    --heading-color: #6ea8fe;
-                    --h2-color: #e9ecef;
-                    --h3-color: #ced4da;
-                    --box-bg: #343a40;
-                    --box-shadow: rgba(0,0,0,0.5);
-                    --code-bg: #495057;
-                    --border-color: #495057;
-                    --link-color: #6ea8fe;
-                    --table-header: #495057;
-                    --alert-bg: #004085;
-                    --alert-text: #cce5ff;
-                    --alert-border: #0056b3;
-                }
-                /* Reducir brillo de capturas para no deslumbrar (contraste accesible) */
-                img {
-                    filter: brightness(0.85) contrast(1.1);
-                }
-            }
-
-            body {
-                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-                line-height: 1.6;
-                color: var(--text-color);
-                background-color: var(--bg-color);
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 30px 20px;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            h1 {
-                color: var(--heading-color);
-                border-bottom: 2px solid var(--heading-color);
-                padding-bottom: 10px;
-                font-size: 2.5rem;
-            }
-
-            h2 {
-                color: var(--h2-color);
-                margin-top: 40px;
-                border-left: 5px solid var(--heading-color);
-                padding-left: 15px;
-                font-size: 1.8rem;
-            }
-
-            h3 {
-                color: var(--h3-color);
-                margin-top: 25px;
-            }
-
-            a {
-                color: var(--link-color);
-                text-decoration: none;
-                font-weight: 500;
-            }
-
-            a:hover {
-                text-decoration: underline;
-            }
-
-            .feature-box {
-                background: var(--box-bg);
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px var(--box-shadow);
-                margin-bottom: 25px;
-                border: 1px solid var(--border-color);
-            }
-
-            code, kbd {
-                background: var(--code-bg);
-                padding: 3px 6px;
-                border-radius: 4px;
-                font-family: ui-monospace, 'Cascadia Code', monospace;
-                font-size: 0.9em;
-            }
-
-            kbd {
-                border: 1px solid var(--border-color);
-                box-shadow: 0 2px 0 var(--border-color);
-                font-weight: bold;
-            }
-
+            /* Reducir brillo de capturas para no deslumbrar (contraste accesible) */
             img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px var(--box-shadow);
-                margin: 20px auto;
-                display: block;
-                border: 1px solid var(--border-color);
+                filter: brightness(0.85) contrast(1.1);
             }
+        }
 
-            .image-caption {
-                text-align: center;
-                font-size: 0.9em;
-                color: var(--h3-color);
-                margin-top: -10px;
-                margin-bottom: 20px;
-                font-style: italic;
-            }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background: var(--box-bg);
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 5px var(--box-shadow);
-            }
+        h1 {
+            color: var(--heading-color);
+            border-bottom: 2px solid var(--heading-color);
+            padding-bottom: 10px;
+            font-size: 2.5rem;
+        }
 
-            th, td {
-                border: 1px solid var(--border-color);
-                padding: 12px;
-                text-align: left;
-            }
+        h2 {
+            color: var(--h2-color);
+            margin-top: 40px;
+            border-left: 5px solid var(--heading-color);
+            padding-left: 15px;
+            font-size: 1.8rem;
+        }
 
-            th {
-                background: var(--table-header);
-                font-weight: 600;
-            }
+        h3 {
+            color: var(--h3-color);
+            margin-top: 25px;
+        }
 
-            nav ul {
-                list-style: none;
-                padding: 20px;
-                background: var(--box-bg);
-                border-radius: 8px;
-                box-shadow: 0 2px 5px var(--box-shadow);
-                border: 1px solid var(--border-color);
-            }
+        a {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
 
-            nav li {
-                margin-bottom: 10px;
-            }
+        a:hover {
+            text-decoration: underline;
+        }
 
-            .alert {
-                padding: 15px;
-                margin: 20px 0;
-                border: 1px solid var(--alert-border);
-                border-radius: 6px;
-                background-color: var(--alert-bg);
-                color: var(--alert-text);
-            }
+        .feature-box {
+            background: var(--box-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px var(--box-shadow);
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
 
-            .step-list {
-                counter-reset: custom-counter;
-                list-style: none;
-                padding-left: 0;
-            }
+        code,
+        kbd {
+            background: var(--code-bg);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, 'Cascadia Code', monospace;
+            font-size: 0.9em;
+        }
 
-            .step-list li {
-                counter-increment: custom-counter;
-                margin-bottom: 15px;
-                padding-left: 35px;
-                position: relative;
-            }
+        kbd {
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 0 var(--border-color);
+            font-weight: bold;
+        }
 
-            .step-list li::before {
-                content: counter(custom-counter);
-                position: absolute;
-                left: 0;
-                top: 0;
-                background: var(--heading-color);
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.8em;
-                font-weight: bold;
-            }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--box-shadow);
+            margin: 20px auto;
+            display: block;
+            border: 1px solid var(--border-color);
+        }
 
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                border: 0;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Manual de Usuario - BiblioHouse</h1>
+        .image-caption {
+            text-align: center;
+            font-size: 0.9em;
+            color: var(--h3-color);
+            margin-top: -10px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
 
-        <div class="alert">
-            <strong>Nota de Accesibilidad:</strong> Este manual soporta navegación por teclado interactiva (usa <kbd>Tab</kbd>). Todas las imágenes poseen descripciones alternativas (alt-text) para lectores de pantalla. El sistema de tema dinámico garantiza un ratio de contraste WCAG óptimo de 4.5:1 tanto en modo claro como oscuro.
-        </div>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: var(--box-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px var(--box-shadow);
+        }
 
-        <nav aria-label="Índice de contenidos">
-            <h2>Índice</h2>
-            <ul>
-                <li><a href="#introduccion">1. Introducción rápida</a></li>
-                <li><a href="#primeros-pasos">2. Primeros pasos (Registro y Onboarding)</a></li>
-                <li><a href="#navegacion">3. Navegación y Estructura</a></li>
-                <li><a href="#funcionalidades">4. Funcionalidades Principales (100% Pantallas)</a></li>
-                <li><a href="#configuracion">5. Configuración e Idiomas</a></li>
-                <li><a href="#gestion-datos">6. Gestión de Datos</a></li>
-                <li><a href="#solucion-problemas">7. Solución de Problemas Comunes (Troubleshooting)</a></li>
-                <li><a href="#funciones-avanzadas">8. Funciones Avanzadas</a></li>
-                <li><a href="#glosario">9. Glosario de términos</a></li>
-                <li><a href="#contacto">10. Contacto y Soporte</a></li>
-            </ul>
-        </nav>
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
 
-        <h2 id="introduccion">1. Introducción rápida</h2>
-        <div class="feature-box">
-            <p><strong>Qué hace la app:</strong> BiblioHouse es tu gestor de biblioteca local definitivo. Organiza libros físicos y digitales, gestiona a quién se los prestas y controla qué volúmenes te faltan en tus sagas favoritas, todo desde una interfaz moderna sin subir tus datos a la nube.</p>
-            <p><strong>Para quién es:</strong> Diseñado desde cero para lectores novatos y bibliotecarios avanzados. No requiere conocimientos técnicos previos.</p>
-            <p><strong>Requisitos mínimos:</strong> Windows, macOS o Linux moderno. Java 21+ instalado. 500 MB de disco. Resolución de pantalla 1024x768.</p>
-            <p><strong>Idiomas (100% Soportados):</strong> Castellano (es), English (en), Català (ca), Português (pt), Galego (gl), Euskara (eu). Puedes cambiarlo desde <em>Configuración</em> > <em>General</em> en cualquier momento.</p>
-        </div>
+        th {
+            background: var(--table-header);
+            font-weight: 600;
+        }
 
-        <h2 id="primeros-pasos">2. Primeros pasos (Registro y Onboarding)</h2>
-        <p><em>Tiempo estimado: 2 minutos</em></p>
+        nav ul {
+            list-style: none;
+            padding: 20px;
+            background: var(--box-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px var(--box-shadow);
+            border: 1px solid var(--border-color);
+        }
 
-        <h3>Pantalla de Splash y Carga</h3>
-        <p>Al hacer doble clic en el icono de BiblioHouse, verás una ventana de carga (Splash Screen) con el logo de la aplicación. Esto indica que la base de datos se está inicializando.</p>
+        nav li {
+            margin-bottom: 10px;
+        }
 
-        <h3>Registro e Inicio de Sesión</h3>
-        <p>La seguridad de tu colección es prioritaria. En el primer uso, deberás crear una cuenta de usuario local:</p>
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid var(--alert-border);
+            border-radius: 6px;
+            background-color: var(--alert-bg);
+            color: var(--alert-text);
+        }
+
+        .step-list {
+            counter-reset: custom-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .step-list li {
+            counter-increment: custom-counter;
+            margin-bottom: 15px;
+            padding-left: 35px;
+            position: relative;
+        }
+
+        .step-list li::before {
+            content: counter(custom-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--heading-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Manual de Usuario - BiblioHouse</h1>
+
+    <div class="alert">
+        <strong>Nota de Accesibilidad:</strong> Este manual soporta navegación por teclado interactiva (usa
+        <kbd>Tab</kbd>). Todas las imágenes poseen descripciones alternativas (alt-text) para lectores de pantalla. El
+        sistema de tema dinámico garantiza un ratio de contraste WCAG óptimo de 4.5:1 tanto en modo claro como oscuro.
+    </div>
+
+    <nav aria-label="Índice de contenidos">
+        <h2>Índice</h2>
+        <ul>
+            <li><a href="#introduccion">1. Introducción rápida</a></li>
+            <li><a href="#primeros-pasos">2. Primeros pasos (Registro y Onboarding)</a></li>
+            <li><a href="#navegacion">3. Navegación y Estructura</a></li>
+            <li><a href="#funcionalidades">4. Funcionalidades Principales (100% Pantallas)</a></li>
+            <li><a href="#configuracion">5. Configuración e Idiomas</a></li>
+            <li><a href="#gestion-datos">6. Gestión de Datos</a></li>
+            <li><a href="#solucion-problemas">7. Solución de Problemas Comunes (Troubleshooting)</a></li>
+            <li><a href="#funciones-avanzadas">8. Funciones Avanzadas</a></li>
+            <li><a href="#glosario">9. Glosario de términos</a></li>
+            <li><a href="#contacto">10. Contacto y Soporte</a></li>
+        </ul>
+    </nav>
+
+    <h2 id="introduccion">1. Introducción rápida</h2>
+    <div class="feature-box">
+        <p><strong>Qué hace la app:</strong> BiblioHouse es tu gestor de biblioteca local definitivo. Organiza libros
+            físicos y digitales, gestiona a quién se los prestas y controla qué volúmenes te faltan en tus sagas
+            favoritas, todo desde una interfaz moderna sin subir tus datos a la nube.</p>
+        <p><strong>Para quién es:</strong> Diseñado desde cero para lectores novatos y bibliotecarios avanzados. No
+            requiere conocimientos técnicos previos.</p>
+        <p><strong>Requisitos mínimos:</strong> Windows, macOS o Linux moderno. Java 21+ instalado. 500 MB de disco.
+            Resolución de pantalla 1024x768.</p>
+        <p><strong>Idiomas (100% Soportados):</strong> Castellano (es), English (en), Català (ca), Português (pt),
+            Galego (gl), Euskara (eu). Puedes cambiarlo desde <em>Configuración</em> > <em>General</em> en cualquier
+            momento.</p>
+    </div>
+
+    <h2 id="primeros-pasos">2. Primeros pasos (Registro y Onboarding)</h2>
+    <p><em>Tiempo estimado: 2 minutos</em></p>
+
+    <h3>Pantalla de Splash y Carga</h3>
+    <p>Al hacer doble clic en el icono de BiblioHouse, verás una ventana de carga (Splash Screen) con el logo de la
+        aplicación. Esto indica que la base de datos se está inicializando.</p>
+
+    <h3>Registro e Inicio de Sesión</h3>
+    <p>La seguridad de tu colección es prioritaria. En el primer uso, deberás crear una cuenta de usuario local:</p>
+    <ul class="step-list">
+        <li>En la pantalla de Login, haz clic en el enlace inferior <strong>"Crear una cuenta nueva"</strong>.</li>
+        <li>Introduce tu <strong>Nombre de Usuario</strong>, <strong>Contraseña</strong> y repite la contraseña. Haz
+            clic en <em>Registrar</em>.</li>
+        <li>La aplicación te devolverá al inicio de sesión. Ingresa tus datos recién creados y pulsa
+            <strong>Siguiente</strong>.
+        </li>
+    </ul>
+
+    <h3>Asistente de Bienvenida (Onboarding)</h3>
+    <p>La primera vez que entres, el asistente "Welcome" te dará un recorrido rápido en 3 diapositivas. Haz clic en el
+        botón azul de "Siguiente" hasta llegar a "¡Empezar!".</p>
+
+    <h2 id="navegacion">3. Navegación y Estructura</h2>
+    <p>El diseño se divide en tres áreas fundamentales:</p>
+    <ul>
+        <li><strong>Barra Lateral Izquierda (Navegación):</strong> Contiene todos los módulos principales (Inicio, Mis
+            Libros, Sagas, Deseos, Historial, Préstamos, Estadísticas, Configuración). Para ir de un sitio a otro,
+            simplemente haz clic en el icono correspondiente.</li>
+        <li><strong>Panel Central (Área de Trabajo):</strong> Donde interactúas con los datos (listas, formularios,
+            gráficos).</li>
+        <li><strong>Barra Superior (Herramientas):</strong> Dependiendo del módulo, aquí encontrarás los botones de
+            "Añadir", "Editar", "Eliminar" y la barra de "Búsqueda".</li>
+    </ul>
+
+    <h2 id="funcionalidades">4. Funcionalidades Principales (100% Pantallas)</h2>
+    <p>Explicación exhaustiva de todas las pantallas, botones y sus efectos.</p>
+
+    <div class="feature-box">
+        <h3>Módulo 1: Inicio (Dashboard)</h3>
+        <p><strong>Propósito:</strong> Ofrecerte un resumen visual rápido.</p>
+        <p><strong>Controles:</strong> No hay botones interactivos aquí; solo tarjetas que resumen cuántos libros tienes
+            y qué has leído este año.</p>
+        <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png"
+            alt="Pantalla de inicio mostrando tarjetas de resumen de libros totales, leídos y pendientes." />
+    </div>
+
+    <div class="feature-box">
+        <h3>Módulo 2: Mis Libros (Inventario Principal)</h3>
+        <p><strong>Propósito:</strong> Gestionar el CRUD completo (Crear, Leer, Actualizar, Borrar) de tu colección.</p>
+        <p><strong>Flujo para añadir un libro nuevo:</strong></p>
         <ul class="step-list">
-            <li>En la pantalla de Login, haz clic en el enlace inferior <strong>"Crear una cuenta nueva"</strong>.</li>
-            <li>Introduce tu <strong>Nombre de Usuario</strong>, <strong>Contraseña</strong> y repite la contraseña. Haz clic en <em>Registrar</em>.</li>
-            <li>La aplicación te devolverá al inicio de sesión. Ingresa tus datos recién creados y pulsa <strong>Siguiente</strong>.</li>
+            <li>Haz clic en el botón superior izquierdo <strong>"+ Nuevo Libro"</strong>.</li>
+            <li>Se abre la <em>Pantalla de Edición</em>. En la casilla "ISBN", teclea el número del código de barras
+                (ej. 9788445000663).</li>
+            <li>Haz clic en la <strong>Lupa</strong> al lado del ISBN. Aparecerá la pantalla de <em>Resultados de
+                    Búsqueda Externa</em>.</li>
+            <li>La app buscará en OpenLibrary, Google Books e Inventaire. Haz clic en el resultado que prefieras y dale
+                a "Importar".</li>
+            <li>Los datos y la portada se rellenarán solos. Finalmente, haz clic en el botón azul inferior de
+                <strong>Guardar</strong>.
+            </li>
         </ul>
+        <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png"
+            alt="Tabla con el listado de libros. Barra de herramientas superior con botones de Añadir, Editar y Borrar." />
+    </div>
 
-        <h3>Asistente de Bienvenida (Onboarding)</h3>
-        <p>La primera vez que entres, el asistente "Welcome" te dará un recorrido rápido en 3 diapositivas. Haz clic en el botón azul de "Siguiente" hasta llegar a "¡Empezar!".</p>
+    <div class="feature-box">
+        <h3>Módulo 3: Ficha de Lectura y Edición de Metadatos</h3>
+        <p>Cuando haces doble clic en un libro en "Mis Libros", accedes a la <strong>Ficha de Detalle</strong>. Es un
+            modo "Solo Lectura" para leer sinopsis sin borrar datos por accidente.</p>
+        <p>Para cambiar datos (Ej. "Estado de lectura" a "Leído"), debes hacer clic derecho en el libro de la tabla y
+            elegir <strong>"Editar"</strong> (o pulsar el botón del lápiz arriba). En la <em>Pantalla de Edición</em>
+            puedes cambiar el título, autor, calificarlo por estrellas (1 a 5) y añadir reseñas.</p>
+        <img src="https://imgur.com/lzqMfU5.png"
+            alt="Formulario de edición de libro. Muestra campo para título, autor, botón para cambiar portada y estrellas de calificación." />
+    </div>
 
-        <h2 id="navegacion">3. Navegación y Estructura</h2>
-        <p>El diseño se divide en tres áreas fundamentales:</p>
-        <ul>
-            <li><strong>Barra Lateral Izquierda (Navegación):</strong> Contiene todos los módulos principales (Inicio, Mis Libros, Sagas, Deseos, Historial, Préstamos, Estadísticas, Configuración). Para ir de un sitio a otro, simplemente haz clic en el icono correspondiente.</li>
-            <li><strong>Panel Central (Área de Trabajo):</strong> Donde interactúas con los datos (listas, formularios, gráficos).</li>
-            <li><strong>Barra Superior (Herramientas):</strong> Dependiendo del módulo, aquí encontrarás los botones de "Añadir", "Editar", "Eliminar" y la barra de "Búsqueda".</li>
-        </ul>
-
-        <h2 id="funcionalidades">4. Funcionalidades Principales (100% Pantallas)</h2>
-        <p>Explicación exhaustiva de todas las pantallas, botones y sus efectos.</p>
-
-        <div class="feature-box">
-            <h3>Módulo 1: Inicio (Dashboard)</h3>
-            <p><strong>Propósito:</strong> Ofrecerte un resumen visual rápido.</p>
-            <p><strong>Controles:</strong> No hay botones interactivos aquí; solo tarjetas que resumen cuántos libros tienes y qué has leído este año.</p>
-            <img src="https://imgur.com/epqwThR.png" alt="Pantalla de inicio mostrando tarjetas de resumen de libros totales, leídos y pendientes." />
-        </div>
-
-        <div class="feature-box">
-            <h3>Módulo 2: Mis Libros (Inventario Principal)</h3>
-            <p><strong>Propósito:</strong> Gestionar el CRUD completo (Crear, Leer, Actualizar, Borrar) de tu colección.</p>
-            <p><strong>Flujo para añadir un libro nuevo:</strong></p>
-            <ul class="step-list">
-                <li>Haz clic en el botón superior izquierdo <strong>"+ Nuevo Libro"</strong>.</li>
-                <li>Se abre la <em>Pantalla de Edición</em>. En la casilla "ISBN", teclea el número del código de barras (ej. 9788445000663).</li>
-                <li>Haz clic en la <strong>Lupa</strong> al lado del ISBN. Aparecerá la pantalla de <em>Resultados de Búsqueda Externa</em>.</li>
-                <li>La app buscará en OpenLibrary, Google Books e Inventaire. Haz clic en el resultado que prefieras y dale a "Importar".</li>
-                <li>Los datos y la portada se rellenarán solos. Finalmente, haz clic en el botón azul inferior de <strong>Guardar</strong>.</li>
-            </ul>
-            <img src="https://imgur.com/Z4XDE7D.png" alt="Tabla con el listado de libros. Barra de herramientas superior con botones de Añadir, Editar y Borrar." />
-        </div>
-
-        <div class="feature-box">
-            <h3>Módulo 3: Ficha de Lectura y Edición de Metadatos</h3>
-            <p>Cuando haces doble clic en un libro en "Mis Libros", accedes a la <strong>Ficha de Detalle</strong>. Es un modo "Solo Lectura" para leer sinopsis sin borrar datos por accidente.</p>
-            <p>Para cambiar datos (Ej. "Estado de lectura" a "Leído"), debes hacer clic derecho en el libro de la tabla y elegir <strong>"Editar"</strong> (o pulsar el botón del lápiz arriba). En la <em>Pantalla de Edición</em> puedes cambiar el título, autor, calificarlo por estrellas (1 a 5) y añadir reseñas.</p>
-            <img src="https://imgur.com/lzqMfU5.png" alt="Formulario de edición de libro. Muestra campo para título, autor, botón para cambiar portada y estrellas de calificación." />
-        </div>
-
-        <div class="feature-box">
-            <h3>Módulo 4: Gestor de Sagas</h3>
-            <p><strong>Propósito:</strong> Agrupar libros que pertenecen a una misma colección.</p>
-            <ul class="step-list">
-                <li>Navega a "Sagas" en el menú izquierdo.</li>
-                <li>Haz clic en el botón <strong>"+ Nueva Saga"</strong>. Ponle un nombre (ej. "Dune").</li>
-                <li>Selecciona libros del panel derecho para añadirlos a la saga. Si te falta el Tomo 2, la app mostrará "Tomo 2 Faltante" en rojo vibrante.</li>
-            </ul>
-        </div>
-
-        <div class="feature-box">
-            <h3>Módulo 5: Gestión de Socios y Préstamos</h3>
-            <p><strong>Propósito:</strong> Saber a quién le has dejado tus libros y generar sus carnets.</p>
-            <ul class="step-list">
-                <li>Navega a "Socios" o "Préstamos".</li>
-                <li>Haz clic en <strong>Añadir Socio</strong>. Introduce el nombre de tu amigo (Ej. Carlos).</li>
-                <li>Para registrar un préstamo: Ve a "Mis Libros", haz clic derecho en un libro -> "Prestar a...", elige a Carlos.</li>
-                <li><strong>Exportar PDF:</strong> Desde "Socios", haz clic en "Generar Carnet PDF" para crear un documento imprimible con código QR.</li>
-            </ul>
-        </div>
-
-        <div class="feature-box">
-            <h3>Módulo 6: Escáner Masivo y Asignar Estanterías</h3>
-            <p><strong>Escáner (Cámara Web):</strong> Haz clic en el menú superior `Herramientas` > `Escáner por cámara`. Muestra el código de barras físico del libro a tu webcam. La app emitirá un pitido verde y lo guardará instantáneamente en tu biblioteca.</p>
-            <p><strong>Estanterías Físicas:</strong> Haz clic derecho en libros > `Ubicación`. Aquí indicas "Salón, Balda 3". Esto te ayuda a encontrar el libro real en tu casa.</p>
-            <p><strong>Duplicados:</strong> `Herramientas` > `Buscar Duplicados`. La app rastrea ISBN idénticos y te permite unificarlos pulsando en "Combinar".</p>
-        </div>
-
-        <h2 id="configuracion">5. Configuración e Idiomas</h2>
-        <p>Accede mediante el ícono del engranaje abajo a la izquierda. Se divide en pestañas:</p>
-        <ul>
-            <li><strong>General:</strong> Cambia el idioma entre es/en/ca/pt/gl/eu. El cambio se aplica instantáneamente.</li>
-            <li><strong>Apariencia (Contraste Oscuro):</strong> Puedes seleccionar "Automático", "Light" o "Dark". 
-                <br><em>Nota Técnica de Accesibilidad:</em> Al forzar el modo "Dark", el motor gráfico reemplaza las variables de color CSS. Si sufres de astigmatismo, el modo Dark de BiblioHouse usa un fondo `#212529` (gris profundo) en vez de negro puro (`#000000`), evitando el efecto "halo" al leer textos blancos.</li>
-            <li><strong>Avanzado:</strong> Exportación de base de datos completa.</li>
-        </ul>
-        <img src="https://imgur.com/yMDZZog.png" alt="Pantalla de ajustes con opciones de apariencia, temas, y selecciones de idioma." />
-
-        <h2 id="gestion-datos">6. Gestión de Datos</h2>
-        <p>La búsqueda se realiza en la barra superior de "Mis Libros". Escribe "Tolkien" y la tabla filtrará automáticamente. Haz clic en las cabeceras (ej. "Año") para ordenar ascendente o descendente.</p>
-        <p>Para exportar, ve a `Archivo` > `Exportar` y selecciona formato CSV para Excel, o JSON para realizar un volcado de seguridad. Importar funciona igual (`Archivo` > `Importar CSV`).</p>
-
-        <h2 id="solucion-problemas">7. Solución de Problemas Comunes (Troubleshooting)</h2>
-        <p>Esta tabla cubre el 90% de los incidentes reales reportados por usuarios.</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>SÍNTOMA / PROBLEMA</th>
-                    <th>CAUSA PROBABLE</th>
-                    <th>SOLUCIÓN PASO A PASO</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Olvidé mi contraseña local de la app.</strong></td>
-                    <td>Al ser local y privada, no hay servidor de recuperación.</td>
-                    <td>Borra el archivo oculto <code>users.json</code> en la carpeta de instalación de BiblioHouse. Tendrás que registrar un usuario nuevo pero no perderás tus libros.</td>
-                </tr>
-                <tr>
-                    <td><strong>Buscador de ISBN se queda cargando (Rueda infinita)</strong></td>
-                    <td>Servidores de OpenLibrary colapsados o sin internet.</td>
-                    <td>Cancela la acción pulsando la X. Verifica tu Wifi. Alternativamente, teclea el título del libro a mano e ignora la lupa automática.</td>
-                </tr>
-                <tr>
-                    <td><strong>El escáner de cámara muestra pantalla negra</strong></td>
-                    <td>Windows/Mac bloquea el acceso de la app a la cámara por privacidad.</td>
-                    <td>Ve a la configuración de tu Sistema Operativo -> Privacidad -> Cámara, y permite el acceso a Java/BiblioHouse.</td>
-                </tr>
-                <tr>
-                    <td><strong>"Error al exportar PDF" en los carnets de Socios</strong></td>
-                    <td>La carpeta de destino (Documentos) requiere permisos de administrador.</td>
-                    <td>Ejecuta BiblioHouse como Administrador o exporta el PDF al "Escritorio" en su lugar.</td>
-                </tr>
-                <tr>
-                    <td><strong>Modo Oscuro ilegible (letras negras sobre fondo oscuro)</strong></td>
-                    <td>El sistema operativo está forzando un tema de "Alto Contraste" sobre la aplicación.</td>
-                    <td>Ve a Configuración de BiblioHouse > Apariencia. Cambia de "Automático" a "Light" temporalmente. Reinicia la app y prueba "Dark" nativo.</td>
-                </tr>
-                <tr>
-                    <td><strong>Algunos botones aparecen cortados en Euskera/Gallego</strong></td>
-                    <td>Textos más largos que la caja original del diseño FXML.</td>
-                    <td>Arrastra el borde de la ventana de BiblioHouse para maximizarla, la aplicación es totalmente "Responsive" (se adapta al ancho).</td>
-                </tr>
-                <tr>
-                    <td><strong>Faltan Portadas (Solo aparece un libro genérico gris)</strong></td>
-                    <td>Internet falló durante la descarga de la imagen en segundo plano.</td>
-                    <td>Ve al menú <em>Herramientas</em> superior -> Selecciona <strong>"Buscar portadas faltantes"</strong>. El sistema barrerá todos los huecos grises e intentará descargarlos de nuevo.</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2 id="funciones-avanzadas">8. Funciones Avanzadas (Para Power-Users)</h2>
+    <div class="feature-box">
+        <h3>Módulo 4: Gestor de Sagas</h3>
+        <p><strong>Propósito:</strong> Agrupar libros que pertenecen a una misma colección.</p>
         <ul class="step-list">
-            <li><strong>Atajos Rápidos:</strong> Usa <kbd>Ctrl</kbd>+<kbd>N</kbd> (Añadir Libro), <kbd>Ctrl</kbd>+<kbd>F</kbd> (Buscar), <kbd>Supr</kbd> (Borrar libro seleccionado).</li>
-            <li><strong>Drag & Drop Visual:</strong> Estando en la pestaña de Edición, puedes buscar una foto en tu navegador web de Google Chrome, hacer clic, arrastrarla y soltarla físicamente sobre el hueco de la portada en BiblioHouse.</li>
-            <li><strong>Modo Ráfaga (Barcode):</strong> Si usas un escáner láser USB "pistola", sitúa el cursor en el buscador rápido. Lee un libro; al pitar, pulsa <kbd>Enter</kbd>. Puedes catalogar 30 libros por minuto.</li>
+            <li>Navega a "Sagas" en el menú izquierdo.</li>
+            <li>Haz clic en el botón <strong>"+ Nueva Saga"</strong>. Ponle un nombre (ej. "Dune").</li>
+            <li>Selecciona libros del panel derecho para añadirlos a la saga. Si te falta el Tomo 2, la app mostrará
+                "Tomo 2 Faltante" en rojo vibrante.</li>
         </ul>
+    </div>
 
-        <h2 id="glosario">9. Glosario de términos</h2>
+    <div class="feature-box">
+        <h3>Módulo 5: Gestión de Socios y Préstamos</h3>
+        <p><strong>Propósito:</strong> Saber a quién le has dejado tus libros y generar sus carnets.</p>
+        <ul class="step-list">
+            <li>Navega a "Socios" o "Préstamos".</li>
+            <li>Haz clic en <strong>Añadir Socio</strong>. Introduce el nombre de tu amigo (Ej. Carlos).</li>
+            <li>Para registrar un préstamo: Ve a "Mis Libros", haz clic derecho en un libro -> "Prestar a...", elige a
+                Carlos.</li>
+            <li><strong>Exportar PDF:</strong> Desde "Socios", haz clic en "Generar Carnet PDF" para crear un documento
+                imprimible con código QR.</li>
+        </ul>
+    </div>
+
+    <div class="feature-box">
+        <h3>Módulo 6: Escáner Masivo y Asignar Estanterías</h3>
+        <p><strong>Escáner (Cámara Web):</strong> Haz clic en el menú superior `Herramientas` > `Escáner por cámara`.
+            Muestra el código de barras físico del libro a tu webcam. La app emitirá un pitido verde y lo guardará
+            instantáneamente en tu biblioteca.</p>
+        <p><strong>Estanterías Físicas:</strong> Haz clic derecho en libros > `Ubicación`. Aquí indicas "Salón, Balda
+            3". Esto te ayuda a encontrar el libro real en tu casa.</p>
+        <p><strong>Duplicados:</strong> `Herramientas` > `Buscar Duplicados`. La app rastrea ISBN idénticos y te permite
+            unificarlos pulsando en "Combinar".</p>
+    </div>
+
+    <h2 id="configuracion">5. Configuración e Idiomas</h2>
+    <p>Accede mediante el ícono del engranaje abajo a la izquierda. Se divide en pestañas:</p>
+    <ul>
+        <li><strong>General:</strong> Cambia el idioma entre es/en/ca/pt/gl/eu. El cambio se aplica instantáneamente.
+        </li>
+        <li><strong>Apariencia (Contraste Oscuro):</strong> Puedes seleccionar "Automático", "Light" o "Dark".
+            <br><em>Nota Técnica de Accesibilidad:</em> Al forzar el modo "Dark", el motor gráfico reemplaza las
+            variables de color CSS. Si sufres de astigmatismo, el modo Dark de BiblioHouse usa un fondo `#212529` (gris
+            profundo) en vez de negro puro (`#000000`), evitando el efecto "halo" al leer textos blancos.
+        </li>
+        <li><strong>Avanzado:</strong> Exportación de base de datos completa.</li>
+    </ul>
+    <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png"
+        alt="Pantalla de ajustes con opciones de apariencia, temas, y selecciones de idioma." />
+
+    <h2 id="gestion-datos">6. Gestión de Datos</h2>
+    <p>La búsqueda se realiza en la barra superior de "Mis Libros". Escribe "Tolkien" y la tabla filtrará
+        automáticamente. Haz clic en las cabeceras (ej. "Año") para ordenar ascendente o descendente.</p>
+    <p>Para exportar, ve a `Archivo` > `Exportar` y selecciona formato CSV para Excel, o JSON para realizar un volcado
+        de seguridad. Importar funciona igual (`Archivo` > `Importar CSV`).</p>
+
+    <h2 id="solucion-problemas">7. Solución de Problemas Comunes (Troubleshooting)</h2>
+    <p>Esta tabla cubre el 90% de los incidentes reales reportados por usuarios.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>SÍNTOMA / PROBLEMA</th>
+                <th>CAUSA PROBABLE</th>
+                <th>SOLUCIÓN PASO A PASO</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Olvidé mi contraseña local de la app.</strong></td>
+                <td>Al ser local y privada, no hay servidor de recuperación.</td>
+                <td>Borra el archivo oculto <code>users.json</code> en la carpeta de instalación de BiblioHouse. Tendrás
+                    que registrar un usuario nuevo pero no perderás tus libros.</td>
+            </tr>
+            <tr>
+                <td><strong>Buscador de ISBN se queda cargando (Rueda infinita)</strong></td>
+                <td>Servidores de OpenLibrary colapsados o sin internet.</td>
+                <td>Cancela la acción pulsando la X. Verifica tu Wifi. Alternativamente, teclea el título del libro a
+                    mano e ignora la lupa automática.</td>
+            </tr>
+            <tr>
+                <td><strong>El escáner de cámara muestra pantalla negra</strong></td>
+                <td>Windows/Mac bloquea el acceso de la app a la cámara por privacidad.</td>
+                <td>Ve a la configuración de tu Sistema Operativo -> Privacidad -> Cámara, y permite el acceso a
+                    Java/BiblioHouse.</td>
+            </tr>
+            <tr>
+                <td><strong>"Error al exportar PDF" en los carnets de Socios</strong></td>
+                <td>La carpeta de destino (Documentos) requiere permisos de administrador.</td>
+                <td>Ejecuta BiblioHouse como Administrador o exporta el PDF al "Escritorio" en su lugar.</td>
+            </tr>
+            <tr>
+                <td><strong>Modo Oscuro ilegible (letras negras sobre fondo oscuro)</strong></td>
+                <td>El sistema operativo está forzando un tema de "Alto Contraste" sobre la aplicación.</td>
+                <td>Ve a Configuración de BiblioHouse > Apariencia. Cambia de "Automático" a "Light" temporalmente.
+                    Reinicia la app y prueba "Dark" nativo.</td>
+            </tr>
+            <tr>
+                <td><strong>Algunos botones aparecen cortados en Euskera/Gallego</strong></td>
+                <td>Textos más largos que la caja original del diseño FXML.</td>
+                <td>Arrastra el borde de la ventana de BiblioHouse para maximizarla, la aplicación es totalmente
+                    "Responsive" (se adapta al ancho).</td>
+            </tr>
+            <tr>
+                <td><strong>Faltan Portadas (Solo aparece un libro genérico gris)</strong></td>
+                <td>Internet falló durante la descarga de la imagen en segundo plano.</td>
+                <td>Ve al menú <em>Herramientas</em> superior -> Selecciona <strong>"Buscar portadas
+                        faltantes"</strong>. El sistema barrerá todos los huecos grises e intentará descargarlos de
+                    nuevo.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 id="funciones-avanzadas">8. Funciones Avanzadas (Para Power-Users)</h2>
+    <ul class="step-list">
+        <li><strong>Atajos Rápidos:</strong> Usa <kbd>Ctrl</kbd>+<kbd>N</kbd> (Añadir Libro),
+            <kbd>Ctrl</kbd>+<kbd>F</kbd> (Buscar), <kbd>Supr</kbd> (Borrar libro seleccionado).
+        </li>
+        <li><strong>Drag & Drop Visual:</strong> Estando en la pestaña de Edición, puedes buscar una foto en tu
+            navegador web de Google Chrome, hacer clic, arrastrarla y soltarla físicamente sobre el hueco de la portada
+            en BiblioHouse.</li>
+        <li><strong>Modo Ráfaga (Barcode):</strong> Si usas un escáner láser USB "pistola", sitúa el cursor en el
+            buscador rápido. Lee un libro; al pitar, pulsa <kbd>Enter</kbd>. Puedes catalogar 30 libros por minuto.</li>
+    </ul>
+
+    <h2 id="glosario">9. Glosario de términos</h2>
+    <ul>
+        <li><strong>Onboarding:</strong> Proceso de asistencia paso a paso para usuarios nuevos.</li>
+        <li><strong>CRUD:</strong> Operaciones básicas: Crear, Leer, Actualizar (Update) y Borrar (Delete).</li>
+        <li><strong>ISBN:</strong> Número Internacional Normalizado del Libro de 13 dígitos encima del código de barras.
+        </li>
+        <li><strong>OpenLibrary / Inventaire:</strong> Bases de datos públicas mundiales que la app usa para
+            autocompletar metadatos gratis.</li>
+    </ul>
+
+    <h2 id="contacto">10. Contacto y Soporte</h2>
+    <div class="feature-box">
+        <p><strong>Qué información facilitar:</strong> Si un error de la tabla anterior no se resuelve, indica siempre
+            si usas Windows o Mac, la versión de Java instalada y cómo reproducir el fallo.</p>
+        <p><strong>Canales Oficiales:</strong></p>
         <ul>
-            <li><strong>Onboarding:</strong> Proceso de asistencia paso a paso para usuarios nuevos.</li>
-            <li><strong>CRUD:</strong> Operaciones básicas: Crear, Leer, Actualizar (Update) y Borrar (Delete).</li>
-            <li><strong>ISBN:</strong> Número Internacional Normalizado del Libro de 13 dígitos encima del código de barras.</li>
-            <li><strong>OpenLibrary / Inventaire:</strong> Bases de datos públicas mundiales que la app usa para autocompletar metadatos gratis.</li>
+            <li><strong>Soporte Técnico (Bugs):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a>
+            </li>
+            <li><strong>Foro y Consultas:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a>
+            </li>
         </ul>
+    </div>
 
-        <h2 id="contacto">10. Contacto y Soporte</h2>
-        <div class="feature-box">
-            <p><strong>Qué información facilitar:</strong> Si un error de la tabla anterior no se resuelve, indica siempre si usas Windows o Mac, la versión de Java instalada y cómo reproducir el fallo.</p>
-            <p><strong>Canales Oficiales:</strong></p>
-            <ul>
-                <li><strong>Soporte Técnico (Bugs):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a></li>
-                <li><strong>Foro y Consultas:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a></li>
-            </ul>
-        </div>
+    <hr>
+    <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
+        <em>BiblioHouse v1.7 - Desarrollado por ferlagod. Manual adaptado garantizando 100% de cobertura y
+            accesibilidad.</em>
+    </p>
 
-        <hr>
-        <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.7 - Desarrollado por ferlagod. Manual adaptado garantizando 100% de cobertura y accesibilidad.</em>
-        </p>
+</body>
 
-    </body>
 </html>

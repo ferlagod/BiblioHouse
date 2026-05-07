@@ -33,15 +33,15 @@
 
 | Inicio | Pantalla Principal|
 |:---:|:---:|
-| ![Imgur](https://imgur.com/epqwThR.png) | ![Imgur](https://imgur.com/Z4XDE7D.png) |
+| ![Imgur](https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png) | ![Imgur](https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png) |
 
 | Visor de Libros | Edición |
 |:---:|:---:|
-| ![Imgur](https://imgur.com/4xCIIOT.png) | ![Imgur](https://imgur.com/lzqMfU5.png) |
+| ![Imgur](https://i.postimg.cc/ZqkMZ5DX/Captura-de-pantalla-2026-05-02-a-las-14-10-19.png) | ![Imgur](https://i.postimg.cc/QMLysdnP/Captura-de-pantalla-2026-05-02-a-las-14-10-41.png) |
 
 | Configuración | Manual de Usuario|
 |:---:|:---:|
-| ![Imgur](https://imgur.com/yMDZZog.png) | ![Imgur](https://imgur.com/0zcYolj.png)|
+| ![Imgur](https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png) | ![Imgur](https://i.postimg.cc/d0MxvVxt/Captura-de-pantalla-2026-05-06-a-las-15-45-09.png)|
 
 *(Nota: Capturas de las nuevas vistas de Lista de Deseos y Gestor de Sagas en camino)*
 
@@ -55,7 +55,7 @@
 
 1. Clona este repositorio en tu máquina local:
    ```bash
-   git clone https://ruta-a-tu-repositorio/BiblioHouse.git
+   git clone https://forjalibre.eu/ferlagod/BiblioHouse.git
    cd BiblioHouse
    ```
 2. Descarga las dependencias y compila el proyecto usando Maven:

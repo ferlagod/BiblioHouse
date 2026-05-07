@@ -47,3 +47,10 @@ users/
 *.msi
 *.deb
 *.rpm
+
+
+# Pruebas locales temporales
+TestSearch.java
+
+# Configuraciones específicas del IDE (NetBeans)
+nb-configuration.xml
