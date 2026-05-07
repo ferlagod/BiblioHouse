@@ -562,37 +562,6 @@ public class PrimaryController implements Initializable {
 
         checkOverdueLoans();
 
-        // 5. Lógica para pantalla completa / Maximizado en Linux
-        Platform.runLater(() -> {
-            if (lblEstado.getScene() != null && lblEstado.getScene().getWindow() != null) {
-                Stage stage = (Stage) lblEstado.getScene().getWindow();
-
-                boolean iniciarMaximizado = Boolean.parseBoolean(preferencias.getOrDefault("maximized", "true"));
-
-                if (iniciarMaximizado) {
-                    // Intento 1: Vía estándar nativa
-                    stage.setMaximized(true);
-
-                    // Intento 2: Fuerza bruta asíncrona para gestores de ventanas de Linux
-                    // Retrasamos la ejecución 150 milisegundos para darle tiempo al SO a asimilar la escena
-                    javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
-                    delay.setOnFinished(e -> {
-                        stage.setMaximized(true); // Insistimos
-
-                        // Si el SO ignoró el comando, fijamos las dimensiones a la fuerza usando los límites de la pantalla
-                        javafx.geometry.Rectangle2D bounds = javafx.stage.Screen.getPrimary().getVisualBounds();
-                        if (stage.getWidth() < bounds.getWidth() * 0.9) {
-                            stage.setX(bounds.getMinX());
-                            stage.setY(bounds.getMinY());
-                            stage.setWidth(bounds.getWidth());
-                            stage.setHeight(bounds.getHeight());
-                        }
-                    });
-                    delay.play();
-                }
-            }
-        });
-
         // 6. Actualizaciones en segundo plano
         com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
             Platform.runLater(() -> notificar(

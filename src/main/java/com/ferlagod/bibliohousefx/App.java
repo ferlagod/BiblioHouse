@@ -90,7 +90,8 @@ public class App extends Application {
     }
 
     /**
-     * Devuelve el ResourceBundle actual para usar traducciones desde código Java.
+     * Devuelve el ResourceBundle actual para usar traducciones desde código
+     * Java.
      *
      * @return el ResourceBundle activo.
      */
@@ -111,7 +112,7 @@ public class App extends Application {
         com.bibliohouse.logic.ConfiguracionLogs.setup();
         // Cargar preferencias del usuario
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-        
+
         // Aplicar el tema moderno de AtlantaFX
         String savedTheme = prefs.get("theme", "Claro (Primer Light)");
         if (savedTheme.equals("Oscuro (Primer Dark)")) {
@@ -156,7 +157,7 @@ public class App extends Application {
             Parent root = loader.load();
             root.setOpacity(0.0);
             scene.setRoot(root);
-            
+
             javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(600), root);
             fadeIn.setFromValue(0.0);
             fadeIn.setToValue(1.0);
@@ -196,13 +197,13 @@ public class App extends Application {
         // 1. Preparar el efecto Fade-In (arranque suave)
         root.setOpacity(0);
 
-        // 2. MOSTRAR LA VENTANA PRIMERO
-        mainStage.show();
-
-        // 3. LEER Y APLICAR MAXIMIZADO DESPUÉS DE MOSTRAR
+        // 2. LEER Y APLICAR MAXIMIZADO ANTES DE MOSTRAR (Vital para Linux)
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         boolean isMaximized = Boolean.parseBoolean(prefs.get("maximized", "true"));
         mainStage.setMaximized(isMaximized);
+
+        // 3. MOSTRAR LA VENTANA (Ahora el SO ya sabe que debe nacer maximizada)
+        mainStage.show();
 
         // 4. Ejecutar la transición
         javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(400), root);

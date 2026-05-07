@@ -199,6 +199,7 @@ public class EditarLibroController {
         txtEditorial.setText(libro.getEditorial());
         txtGenero.setText(libro.getGenero());
         txtIsbn.setText(libro.getIsbn());
+        txtResena.setText(libro.getReseña() != null ? libro.getReseña() : "");
 
         // Serie y orden
         if (libro.getSerie() != null) {
@@ -369,6 +370,8 @@ public class EditarLibroController {
 
         // Guardar estanterías
         libro.setEstanterias(new ArrayList<>(modeloEstanterias));
+        
+        libro.setReseña(txtResena.getText());
 
         if (this.rutaUsuario != null && !this.rutaUsuario.isEmpty()) {
             rutaPortadaActual = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
