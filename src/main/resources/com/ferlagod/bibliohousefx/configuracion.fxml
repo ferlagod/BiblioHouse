@@ -71,7 +71,7 @@
                             <children>
                                 <VBox spacing="5.0">
                                     <Label style="-fx-font-weight: bold;" text="%config.file.location" />
-                                    <Label style="-fx-font-size: 11px; -fx-text-fill: -color-text-muted;" text="%config.db.path" />
+                                    <Label style="-fx-font-size: 11px; fx-text-fill: -color-fg-muted;" text="%config.db.path" />
                                     <HBox spacing="10.0">
                                         <children>
                                             <TextField fx:id="txtRutaDatos" editable="false" HBox.hgrow="ALWAYS" />
@@ -106,7 +106,7 @@
                             <children>
                                 <VBox spacing="8.0">
                                     <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="%config.sync.nextcloud.title" />
-                                    <Label style="-fx-font-size: 11px; -fx-text-fill: -color-text-muted;" text="%config.sync.desc" wrapText="true" />
+                                    <Label style="-fx-font-size: 11px; fx-text-fill: -color-fg-muted;" text="%config.sync.desc" wrapText="true" />
                                 </VBox>
                                 <Separator />
                                 <VBox spacing="8.0">

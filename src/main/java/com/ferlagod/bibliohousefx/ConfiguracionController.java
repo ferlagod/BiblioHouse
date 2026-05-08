@@ -118,23 +118,32 @@ public class ConfiguracionController {
         if (txtNextcloudUser != null) {
             txtNextcloudUser.setText(savedPrefs.getOrDefault("nextcloud.user", ""));
         }
+
+        // --- INICIO BLOQUE CORREGIDO ---
         if (txtNextcloudPass != null) {
             Preferences ncPrefs = Preferences.userRoot().node(NC_PREFS_NODE);
-            String pass = ncPrefs.get(NC_PREF_PASS, "");
+            String passEncriptada = ncPrefs.get(NC_PREF_PASS, "");
+            String passLimpia = "";
 
-            // Migración silenciosa: si la contraseña aún está en el JSON antiguo, la movemos
-            if (pass.isEmpty()) {
+            if (!passEncriptada.isEmpty()) {
+                // AQUI ESTA LA CLAVE: Desencriptar antes de ponerla en la interfaz
+                passLimpia = com.bibliohouse.utils.SeguridadUtil.desencriptar(passEncriptada);
+            } else {
+                // Migración silenciosa desde el antiguo JSON
                 String legacyPass = savedPrefs.getOrDefault("nextcloud.password", "");
                 if (!legacyPass.isEmpty()) {
-                    ncPrefs.put(NC_PREF_PASS, legacyPass);
+                    passLimpia = legacyPass;
+                    ncPrefs.put(NC_PREF_PASS, com.bibliohouse.utils.SeguridadUtil.encriptar(legacyPass));
                     savedPrefs.remove("nextcloud.password");
                     jsonManager.guardarPreferencias(savedPrefs);
-                    pass = legacyPass;
                     LOGGER.log(Level.INFO, "Contraseña de NextCloud migrada al llavero del sistema.");
                 }
             }
-            txtNextcloudPass.setText(pass);
+
+            // Ponemos la contraseña legible en el campo
+            txtNextcloudPass.setText(passLimpia);
         }
+        // --- FIN BLOQUE CORREGIDO ---
 
         // Configurar el ComboBox de Idioma
         comboIdioma.getItems().setAll("Español", "English", "Català", "Galego", "Euskara", "Português");

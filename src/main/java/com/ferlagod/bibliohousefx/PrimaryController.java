@@ -1359,7 +1359,7 @@ public class PrimaryController implements Initializable {
         }
 
         // ======================================================================
-        // NUEVO: SECUESTRAR LA PORTADA PARA GUARDARLA EN LOCAL (MODO OFFLINE)
+        // SECUESTRAR LA PORTADA PARA GUARDARLA EN LOCAL (MODO OFFLINE)
         // ======================================================================
         String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(
                 nuevoLibro.getPortadaURL(),

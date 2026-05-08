@@ -91,3 +91,8 @@
     -fx-vgap: 5px;                 /* Menos espacio vertical entre campos */
     -fx-hgap: 10px;
 }
+
+/* Silenciar bug de ClassCastException en text-buttons de AtlantaFX con JavaFX 21 */
+.button.text-button {
+    -fx-border-color: transparent;
+}
