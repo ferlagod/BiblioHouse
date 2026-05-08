@@ -78,9 +78,8 @@
 .text-field, .password-field, .combo-box, .date-picker {
     -fx-font-size: 12px;           /* Fuente un poco más pequeña que el resto */
     -fx-padding: 2px 6px;          /* Padding mínimo */
-    -fx-min-height: 24px;          /* Fuerza una altura baja */
-    -fx-pref-height: 26px;         /* Altura preferida ajustada */
 }
+
 
 /* Reducir también el tamaño de los iconos o botones internos (como el del DatePicker) */
 .combo-box .arrow-button, .date-picker .arrow-button {
