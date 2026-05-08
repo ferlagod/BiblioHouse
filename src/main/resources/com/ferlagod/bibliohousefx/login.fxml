@@ -31,12 +31,12 @@
             <VBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 20 0 10 0;">
                 <children>
                     <VBox spacing="5.0">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;" text="%login.user" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.user" />
                         <TextField fx:id="txtLoginUser" onAction="#actionLogin" promptText="%login.user.placeholder" styleClass="google-text-field" />
                     </VBox>
                
                     <VBox spacing="5.0">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;" text="%login.password" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.password" />
                         <PasswordField fx:id="txtLoginPass" onAction="#actionLogin" promptText="%login.password.placeholder" styleClass="google-text-field" />
                     </VBox>
                
@@ -52,7 +52,7 @@
             </HBox>
          
             <HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
-                <Label text="%login.no_account" style="-fx-text-fill: -color-text-muted;" />
+                <Label text="%login.no_account" style="-fx-text-fill: -color-fg-muted;" />
                 <Hyperlink onAction="#mostrarRegistro" styleClass="hyperlink" text="%login.create_account" />
             </HBox>
         </children>
@@ -72,17 +72,17 @@
             <VBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 10 0 10 0;">
                 <children>
                     <VBox spacing="5.0">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;" text="%login.register.user" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.register.user" />
                         <TextField fx:id="txtRegUser" styleClass="google-text-field" />
                     </VBox>
                
                     <VBox spacing="5.0">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;" text="%login.password" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.password" />
                         <PasswordField fx:id="txtRegPass" styleClass="google-text-field" />
                     </VBox>
                
                     <VBox spacing="5.0">
-                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;" text="%login.register.confirm_pass" />
+                        <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.register.confirm_pass" />
                         <PasswordField fx:id="txtRegPassConfirm" styleClass="google-text-field" />
                     </VBox>
 
@@ -98,7 +98,7 @@
             </HBox>
          
             <HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
-                <Label text="%login.have_account" style="-fx-text-fill: -color-text-muted;" />
+                <Label text="%login.have_account" style="-fx-text-fill: -color-fg-muted;" />
                 <Hyperlink onAction="#mostrarLogin" styleClass="hyperlink" text="%login.sign_in" />
             </HBox>
         </children>

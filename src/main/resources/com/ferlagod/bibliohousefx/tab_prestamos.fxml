@@ -23,11 +23,11 @@
             </padding>
             <children>
                 <VBox spacing="2.0">
-                    <Label style="-fx-font-size: 10px; -fx-text-fill: -color-text-muted;" text="%loans.book" />
+                    <Label style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;" text="%loans.book" />
                     <ComboBox fx:id="comboLibrosPrestamo" prefWidth="250.0" promptText="%loans.book.placeholder" />
                 </VBox>
                 <VBox spacing="2.0">
-                    <Label style="-fx-font-size: 10px; -fx-text-fill: -color-text-muted;" text="%loans.member" />
+                    <Label style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;" text="%loans.member" />
                     <ComboBox fx:id="comboSocios" prefWidth="200.0" promptText="%loans.member.placeholder" />
                 </VBox>
                 <Button onAction="#nuevoSocio" style="-fx-min-width: 30px;" text="+">

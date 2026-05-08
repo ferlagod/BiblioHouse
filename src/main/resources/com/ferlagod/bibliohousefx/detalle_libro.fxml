@@ -38,7 +38,7 @@
                                 <Font name="Segoe UI" size="24.0" />
                             </font>
                         </Label>
-                        <Label fx:id="lblAutor" text="%book.author.default" style="-fx-text-fill: -color-text-muted;">
+                        <Label fx:id="lblAutor" text="%book.author.default" style="-fx-text-fill: -color-fg-muted;">
                             <font>
                                 <Font size="16.0" />
                             </font>
@@ -61,23 +61,23 @@
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.publisher" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.publisher" />
                                 <Label fx:id="lblEditorial" text="-" GridPane.columnIndex="1" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.year" GridPane.rowIndex="1" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.year" GridPane.rowIndex="1" />
                                 <Label fx:id="lblAnio" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.genre" GridPane.rowIndex="2" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.genre" GridPane.rowIndex="2" />
                                 <Label fx:id="lblGenero" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.isbn" GridPane.rowIndex="3" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.isbn" GridPane.rowIndex="3" />
                                 <Label fx:id="lblIsbn" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                             </children>
                         </GridPane>
                   
                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                             <children>
-                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-text-muted;" text="%book.rating" />
+                                <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.rating" />
                                 <Label fx:id="lblEstrellas" style="-fx-text-fill: #fbbc04; -fx-font-size: 18px;" text="★★★★☆" />
                             </children>
                             <VBox.margin>

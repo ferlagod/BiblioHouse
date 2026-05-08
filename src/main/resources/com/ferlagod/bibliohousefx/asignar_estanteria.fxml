@@ -12,7 +12,7 @@
    
    <children>
       <Label styleClass="heading-text" text="%shelves.add" />
-      <Label style="-fx-text-fill: -color-text-muted;" text="%shelves.select" />
+      <Label style="-fx-text-fill: -color-fg-muted;" text="%shelves.select" />
       
       <ListView fx:id="listaEstanterias" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 4;" VBox.vgrow="ALWAYS" />
       

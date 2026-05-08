@@ -2419,7 +2419,7 @@ public class PrimaryController implements Initializable {
             lblVacio.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 16px; -fx-font-weight: bold;");
 
             Label lblSub = new Label("Prueba a cambiar el filtro de estantería\no añade libros nuevos desde «Gestionar Libros»");
-            lblSub.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 13px; -fx-text-alignment: center;");
+            lblSub.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 13px; -fx-text-alignment: center;");
             lblSub.setWrapText(true);
             lblSub.setMaxWidth(400);
             lblSub.setAlignment(javafx.geometry.Pos.CENTER);

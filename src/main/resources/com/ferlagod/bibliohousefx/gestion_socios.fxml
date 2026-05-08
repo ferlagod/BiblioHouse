@@ -46,7 +46,7 @@
          </children>
       </GridPane>
       
-      <Label text="%members.required" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px;" font="$x3" />
+      <Label text="%members.required" style="-fx-text-fill: -color-fg-muted; -fx-font-size: 10px;" font="$x3" />
       
       <HBox alignment="CENTER_RIGHT" spacing="10.0" VBox.vgrow="ALWAYS">
          <children>
