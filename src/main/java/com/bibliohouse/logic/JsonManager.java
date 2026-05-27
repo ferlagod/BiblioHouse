@@ -292,6 +292,15 @@ public class JsonManager {
                     java.nio.file.StandardCopyOption.ATOMIC_MOVE);
 
             LOGGER.log(Level.FINE, "Guardado atómico completado: {0}", path);
+        } catch (java.nio.file.AtomicMoveNotSupportedException amns) {
+            // Fallback: mover sin atomicidad en filesystems que no lo soportan (ej. NFS, red)
+            try {
+                java.nio.file.Files.move(archivoTemporal.toPath(), archivoFinal.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                LOGGER.log(Level.WARNING, "ATOMIC_MOVE no soportado para {0}, usando fallback.", path);
+            } catch (IOException fallbackEx) {
+                LOGGER.log(Level.SEVERE, "Error en fallback al renombrar archivo para " + tipoDato, fallbackEx);
+            }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al renombrar archivo temporal a final para " + tipoDato, e);
         }

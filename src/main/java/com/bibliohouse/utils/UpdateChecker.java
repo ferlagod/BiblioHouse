@@ -49,37 +49,34 @@ public class UpdateChecker {
      * encontrada.
      */
     public static void comprobarActualizaciones(java.util.function.Consumer<String> alEncontrarNueva) {
-        Thread hilo = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpClient client = HttpClient.newBuilder()
-                            .connectTimeout(java.time.Duration.ofSeconds(5))
-                            .build();
+        Thread hilo = new Thread(() -> {
+            try {
+                HttpClient client = HttpClient.newBuilder()
+                        .connectTimeout(java.time.Duration.ofSeconds(5))
+                        .build();
 
-                    HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create(API_URL))
-                            .header("Accept", "application/json")
-                            .GET()
-                            .build();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(API_URL))
+                        .header("Accept", "application/json")
+                        .GET()
+                        .build();
 
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-                    if (response.statusCode() == 200) {
-                        // Forgejo también devuelve "tag_name": "1.6" o "v1.6"
-                        Matcher matcher = Pattern.compile("\"tag_name\"\\s*:\\s*\"v?([0-9.]+)\"").matcher(response.body());
+                if (response.statusCode() == 200) {
+                    // Forgejo también devuelve "tag_name": "1.6" o "v1.6"
+                    Matcher matcher = Pattern.compile("\"tag_name\"\\s*:\\s*\"v?([0-9.]+)\"").matcher(response.body());
 
-                        if (matcher.find()) {
-                            String versionMasReciente = matcher.group(1);
+                    if (matcher.find()) {
+                        String versionMasReciente = matcher.group(1);
 
-                            if (esVersionMasReciente(VERSION_ACTUAL, versionMasReciente)) {
-                                Platform.runLater(() -> alEncontrarNueva.accept(versionMasReciente));
-                            }
+                        if (esVersionMasReciente(VERSION_ACTUAL, versionMasReciente)) {
+                            Platform.runLater(() -> alEncontrarNueva.accept(versionMasReciente));
                         }
                     }
-                } catch (IOException | InterruptedException e) {
-                    // Si falla la conexión, ignorar silenciosamente
                 }
+            } catch (IOException | InterruptedException e) {
+                // Si falla la conexión, ignorar silenciosamente
             }
         });
         hilo.setDaemon(true);
@@ -96,21 +93,26 @@ public class UpdateChecker {
      * contrario.
      */
     private static boolean esVersionMasReciente(String actual, String online) {
-        String[] actualParts = actual.split("\\.");
-        String[] onlineParts = online.split("\\.");
-        int length = Math.max(actualParts.length, onlineParts.length);
+        try {
+            String[] actualParts = actual.split("\\.");
+            String[] onlineParts = online.split("\\.");
+            int length = Math.max(actualParts.length, onlineParts.length);
 
-        for (int i = 0; i < length; i++) {
-            int actualPart = i < actualParts.length ? Integer.parseInt(actualParts[i]) : 0;
-            int onlinePart = i < onlineParts.length ? Integer.parseInt(onlineParts[i]) : 0;
+            for (int i = 0; i < length; i++) {
+                int actualPart = i < actualParts.length ? Integer.parseInt(actualParts[i]) : 0;
+                int onlinePart = i < onlineParts.length ? Integer.parseInt(onlineParts[i]) : 0;
 
-            if (actualPart < onlinePart) {
-                return true;
+                if (actualPart < onlinePart) {
+                    return true;
+                }
+                if (actualPart > onlinePart) {
+                    return false;
+                }
             }
-            if (actualPart > onlinePart) {
-                return false;
-            }
+            return false;
+        } catch (NumberFormatException e) {
+            // Tag malformado en la API (ej. "1.7-beta"), ignorar
+            return false;
         }
-        return false;
     }
 }

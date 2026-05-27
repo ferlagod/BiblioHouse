@@ -434,17 +434,23 @@ public class PrimaryController implements Initializable {
             });
         }
 
-        // Búsqueda incremental por Título
+        // Búsqueda incremental por Título (con debounce para evitar rebuilds excesivos)
         if (txtBusquedaLocal != null) {
-            txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+            PauseTransition filterDelayTitulo = new PauseTransition(Duration.millis(200));
+            filterDelayTitulo.setOnFinished(e -> actualizarFiltros());
+            txtBusquedaLocal.textProperty().addListener((observable, oldValue, newValue) -> filterDelayTitulo.playFromStart());
         }
 
         if (txtFiltroAutor != null) {
-            txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+            PauseTransition filterDelayAutor = new PauseTransition(Duration.millis(200));
+            filterDelayAutor.setOnFinished(e -> actualizarFiltros());
+            txtFiltroAutor.textProperty().addListener((observable, oldValue, newValue) -> filterDelayAutor.playFromStart());
         }
 
         if (txtFiltroISBN != null) {
-            txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> actualizarFiltros());
+            PauseTransition filterDelayISBN = new PauseTransition(Duration.millis(200));
+            filterDelayISBN.setOnFinished(e -> actualizarFiltros());
+            txtFiltroISBN.textProperty().addListener((observable, oldValue, newValue) -> filterDelayISBN.playFromStart());
         }
 
         if (cmbFiltroEstado != null) {
@@ -1427,11 +1433,16 @@ public class PrimaryController implements Initializable {
      * @param mensaje Mensaje a mostrar en la barra de estado.
      */
     private void guardarYNotificar(String mensaje) {
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+        guardarLibrosEnDisco();
         lblEstado.setText(mensaje);
         if (pestanaSagasController != null) {
             pestanaSagasController.initData(listaLibrosCompleta);
         }
+    }
+
+    /** Centraliza la copia defensiva y el guardado para evitar inconsistencias. */
+    private void guardarLibrosEnDisco() {
+        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
     }
 
     /**
@@ -2386,8 +2397,6 @@ public class PrimaryController implements Initializable {
             return;
         }
 
-        panelMisLibros.getChildren().clear();
-
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
         String busquedaRapida = txtBuscarMisLibros != null ? txtBuscarMisLibros.getText().toLowerCase().trim() : "";
 
@@ -2425,14 +2434,15 @@ public class PrimaryController implements Initializable {
             lblSub.setAlignment(javafx.geometry.Pos.CENTER);
 
             emptyState.getChildren().addAll(lblIcon, lblVacio, lblSub);
-            panelMisLibros.getChildren().add(emptyState);
+            panelMisLibros.getChildren().setAll(emptyState);
             return;
         }
 
-        // 4. Dibujar las tarjetas si hay resultados
-        for (Libro libro : librosMostrados) {
-            panelMisLibros.getChildren().add(crearTarjetaMisLibros(libro));
-        }
+        // 4. Dibujar las tarjetas (setAll = un solo layout pass vs clear+add = 2 passes)
+        List<javafx.scene.Node> tarjetas = librosMostrados.stream()
+                .map(this::crearTarjetaMisLibros)
+                .collect(Collectors.toList());
+        panelMisLibros.getChildren().setAll(tarjetas);
     }
 
     /**
@@ -2442,7 +2452,7 @@ public class PrimaryController implements Initializable {
         javafx.scene.layout.VBox tarjeta = new javafx.scene.layout.VBox(8);
         tarjeta.setAlignment(javafx.geometry.Pos.TOP_CENTER);
         tarjeta.setPrefWidth(140);
-        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
+        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
 
         // --- CLIC IZQUIERDO (DOBLE CLIC) ---
         tarjeta.setOnMouseClicked(e -> {
@@ -2494,7 +2504,7 @@ public class PrimaryController implements Initializable {
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(130);
         lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: -color-fg-default;");
 
         // 3. Añadimos el contenedor (que lleva imagen + badge) en vez de solo la imagen
         tarjeta.getChildren().addAll(contenedorPortada, lblTitulo);

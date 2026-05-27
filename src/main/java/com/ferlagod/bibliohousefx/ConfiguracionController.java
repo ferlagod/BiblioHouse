@@ -773,14 +773,14 @@ public class ConfiguracionController {
         try {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("win")) {
-                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+                new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
             } else if (os.contains("mac")) {
-                Runtime.getRuntime().exec("open " + url);
+                new ProcessBuilder("open", url).start();
             } else if (os.contains("nix") || os.contains("nux")) {
-                Runtime.getRuntime().exec(new String[]{"xdg-open", url});
+                new ProcessBuilder("xdg-open", url).start();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "No se pudo abrir el navegador para Liberapay", e);
         }
     }
 }

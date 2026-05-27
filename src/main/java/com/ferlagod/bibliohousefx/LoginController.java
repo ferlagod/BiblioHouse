@@ -232,25 +232,25 @@ public class LoginController {
 
             try (FileWriter writer = new FileWriter(authFile)) {
                 props.store(writer, "BiblioHouse User Auth");
-
-                // Inicializar estanterías básicas
-                inicializarDatosUsuario(userDir.getAbsolutePath());
-
-                // Mensaje de éxito
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Cuenta creada");
-                alert.setHeaderText(null);
-                alert.setContentText("¡Usuario creado con éxito! Ahora puedes iniciar sesión.");
-                alert.showAndWait();
-
-                // Volver al login automáticamente
-                mostrarLogin(null);
-                txtLoginUser.setText(user); // Rellenar usuario por comodidad
-
             } catch (IOException e) {
                 setError(lblRegError, "Error al guardar el usuario en disco.");
-                userDir.delete();
+                userDir.delete(); // Seguro porque aún no hay subdirectorios
+                return;
             }
+
+            // Inicializar DESPUÉS de que el auth file esté confirmado en disco
+            inicializarDatosUsuario(userDir.getAbsolutePath());
+
+            // Mensaje de éxito
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Cuenta creada");
+            alert.setHeaderText(null);
+            alert.setContentText("¡Usuario creado con éxito! Ahora puedes iniciar sesión.");
+            alert.showAndWait();
+
+            // Volver al login automáticamente
+            mostrarLogin(null);
+            txtLoginUser.setText(user); // Rellenar usuario por comodidad
         } else {
             setError(lblRegError, "No se pudo crear la carpeta del usuario.");
         }

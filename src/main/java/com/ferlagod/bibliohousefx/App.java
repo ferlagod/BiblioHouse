@@ -252,7 +252,8 @@ public class App extends Application {
     public void stop() throws Exception {
         LOGGER.info("[App] Deteniendo aplicación...");
         com.bibliohouse.utils.ImageLoader.shutdown();
+        // No llamar System.exit(0) — dejar que la JVM termine limpiamente.
+        // Los hilos daemon (syncScheduler, ImageLoader pool) mueren automáticamente.
         LOGGER.info("[App] Bye bye!");
-        System.exit(0);
     }
 }

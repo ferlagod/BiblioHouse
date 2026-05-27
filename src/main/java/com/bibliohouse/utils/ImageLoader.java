@@ -235,6 +235,20 @@ public class ImageLoader {
     private static void loadImageAsync(String uri, ImageView target, double w, double h, String memoryKey) {
         Image image = new Image(uri, w, h, true, true, true);
 
+        // Caso rápido: la imagen ya estaba lista al crearse (caché del SO)
+        if (image.getProgress() >= 1.0 && !image.isError()) {
+            stopSkeleton(target);
+            memoryCache.put(memoryKey, image);
+            target.setImage(image);
+            return;
+        }
+        if (image.isError()) {
+            stopSkeleton(target);
+            loadDefault(target, w, h);
+            return;
+        }
+
+        // Caso asíncrono: registrar listener solo si aún no está completa
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0) {
                 javafx.application.Platform.runLater(() -> {
@@ -249,13 +263,6 @@ public class ImageLoader {
                 });
             }
         });
-
-        // Caso especial: la imagen ya estaba lista al crearse
-        if (image.getProgress() >= 1.0 && !image.isError()) {
-            stopSkeleton(target);
-            memoryCache.put(memoryKey, image);
-            target.setImage(image);
-        }
     }
 
     /**
@@ -365,12 +372,13 @@ public class ImageLoader {
         int width = (w > 0) ? (int) w : 110;
         int height = (h > 0) ? (int) h : 160;
 
+        // Crear placeholder gris con buffer (O(1) vs antiguo O(w*h) por pixel)
         WritableImage placeholder = new WritableImage(width, height);
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                placeholder.getPixelWriter().setColor(x, y, Color.rgb(235, 235, 235));
-            }
-        }
+        int[] buffer = new int[width * height];
+        int gray = 0xFFEBEBEB; // ARGB for rgb(235,235,235)
+        java.util.Arrays.fill(buffer, gray);
+        placeholder.getPixelWriter().setPixels(0, 0, width, height,
+                javafx.scene.image.PixelFormat.getIntArgbInstance(), buffer, 0, width);
         target.setImage(placeholder);
 
         FadeTransition ft = new FadeTransition(Duration.millis(800), target);

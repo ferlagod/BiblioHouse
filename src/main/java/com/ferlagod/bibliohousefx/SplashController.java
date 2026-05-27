@@ -85,15 +85,10 @@ public class SplashController implements Initializable {
         SequentialTransition masterAnim = new SequentialTransition(logoAnim, fadeText);
         masterAnim.setOnFinished(e -> startLoadingTask());
 
-        // Iniciar animaciones con retraso inicial
-        Platform.runLater(() -> {
-            new java.util.Timer().schedule(new java.util.TimerTask() {
-                @Override
-                public void run() {
-                    Platform.runLater(masterAnim::play);
-                }
-            }, 200);
-        });
+        // Iniciar animaciones con retraso inicial (PauseTransition es FX-safe y no deja hilos huérfanos)
+        javafx.animation.PauseTransition startDelay = new javafx.animation.PauseTransition(Duration.millis(200));
+        startDelay.setOnFinished(ev -> masterAnim.play());
+        startDelay.play();
     }
 
     /**
