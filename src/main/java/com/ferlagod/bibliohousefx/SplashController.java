@@ -101,19 +101,36 @@ public class SplashController implements Initializable {
             protected Void call() throws Exception {
                 updateProgress(0, 100);
                 updateMessage("Comprobando integridad de base de datos...");
-                Thread.sleep(800);
+                // Trabajo real: verificar que la carpeta de datos existe
+                java.io.File dataDir = new java.io.File(
+                        System.getProperty("user.home") + java.io.File.separator + "BiblioHouse");
+                if (!dataDir.exists()) {
+                    dataDir.mkdirs();
+                }
 
                 updateProgress(40, 100);
-                updateMessage("Sincronizando con NextCloud...");
-                Thread.sleep(700);
+                updateMessage("Preparando recursos...");
+                // Trabajo real: pre-calentar el ResourceBundle para que el login cargue más rápido
+                try {
+                    java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
+                            App.getCurrentLocale());
+                } catch (Exception ignored) {
+                    // No crítico si falla
+                }
 
                 updateProgress(80, 100);
                 updateMessage("Cargando interfaz principal...");
-                Thread.sleep(500);
+                // Trabajo real: pre-cargar la imagen por defecto en la caché de ImageLoader
+                try {
+                    com.bibliohouse.utils.ImageLoader.preloadDefaultCover();
+                } catch (Exception ignored) {
+                    // No crítico si falla
+                }
 
                 updateProgress(100, 100);
                 updateMessage("Listo");
-                Thread.sleep(200);
+                // Pequeña pausa para que el usuario vea "Listo" antes de la transición
+                Thread.sleep(150);
                 return null;
             }
         };
@@ -130,6 +147,8 @@ public class SplashController implements Initializable {
             fadeOut.play();
         });
 
-        new Thread(task).start();
+        Thread splashThread = new Thread(task);
+        splashThread.setDaemon(true);
+        splashThread.start();
     }
 }

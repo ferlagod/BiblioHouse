@@ -361,7 +361,7 @@ public class PrimaryController implements Initializable {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 selected.setEstadoLectura("Pendiente");
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
                 lblEstado.setText("Estado actualizado: Pendiente — " + selected.getTitulo());
@@ -373,7 +373,7 @@ public class PrimaryController implements Initializable {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 selected.setEstadoLectura("Leyendo");
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
                 lblEstado.setText("Estado actualizado: Leyendo — " + selected.getTitulo());
@@ -385,7 +385,7 @@ public class PrimaryController implements Initializable {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 selected.setEstadoLectura("Leído");
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
                 lblEstado.setText("Estado actualizado: Leído — " + selected.getTitulo());
@@ -1600,7 +1600,7 @@ public class PrimaryController implements Initializable {
 
             if (controller.isGuardado()) {
                 tablaLibros.refresh();
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                guardarLibrosEnDisco();
                 cargarListaEstanterias();
                 actualizarFiltros();
                 actualizarPanelMisLibros();
@@ -1635,7 +1635,7 @@ public class PrimaryController implements Initializable {
         File file = fileChooser.showOpenDialog(tablaLibros.getScene().getWindow());
         if (file != null) {
             libroSeleccionado.setPortadaURL(file.getAbsolutePath());
-            jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+            guardarLibrosEnDisco();
             tablaLibros.refresh();
             mostrarAlerta("Éxito", "Portada actualizada.");
         }
@@ -2057,11 +2057,9 @@ public class PrimaryController implements Initializable {
     public void actualizarVistasPrestamo() {
         // Refrescar filtros de préstamos
         if (filteredPrestamos != null) {
-            filteredPrestamos.setPredicate(null);
             filteredPrestamos.setPredicate(p -> p.getFechaDevolucion() == null);
         }
         if (filteredHistory != null) {
-            filteredHistory.setPredicate(null);
             filteredHistory.setPredicate(p -> p.getFechaDevolucion() != null);
         }
         // Actualizar combo de libros disponibles
@@ -2116,7 +2114,7 @@ public class PrimaryController implements Initializable {
             stage.showAndWait();
 
             if (controller.isModified()) {
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                guardarLibrosEnDisco();
                 tablaLibros.refresh();
                 actualizarFiltros();
                 actualizarPanelMisLibros();
@@ -2174,7 +2172,7 @@ public class PrimaryController implements Initializable {
         libro.setPoseido(true);
         libro.setCantidad(1);
         listaLibrosCompleta.add(libro);
-        jsonManager.guardarLibros(new java.util.ArrayList<>(listaLibrosCompleta));
+        guardarLibrosEnDisco();
 
         // 3. Refrescar vistas
         tablaLibros.refresh();
@@ -2330,7 +2328,7 @@ public class PrimaryController implements Initializable {
 
         // 5. Qué hacer cuando termine con éxito
         task.setOnSucceeded(e -> {
-            jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+            guardarLibrosEnDisco();
             tablaLibros.refresh();
             actualizarPanelMisLibros();
             if (pestanaWishlistController != null) {

@@ -55,6 +55,14 @@ public class InventaireCliente {
     private static final String API_BASE_URL = "https://inventaire.io/api/search";
 
     /**
+     * Cliente HTTP compartido: reutiliza conexiones TCP (HTTP/2 multiplexing).
+     */
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    /**
      * Busca libros en Inventaire. Llama a la URL y parsea el JSON.
      *
      * @param terminoDeBusqueda El texto.
@@ -71,22 +79,16 @@ public class InventaireCliente {
 
             LOGGER.log(Level.INFO, "Realizando búsqueda en Inventaire.io: {0}", urlCompleta);
 
-            // Crear cliente HTTP con timeout de 30 segundos
-            HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.ALWAYS)
-                    .connectTimeout(Duration.ofSeconds(30))
-                    .build();
-
             // Crear petición HTTP con headers necesarios
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlCompleta))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(10))
                     .header("User-Agent", "BiblioHouse/1.0 (ferlagod@example.com)")
                     .header("Accept", "application/json")
                     .build();
 
             // Enviar petición y obtener respuesta
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             // Comprobar que la respuesta es OK (código 200)
             if (response.statusCode() != 200) {

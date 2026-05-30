@@ -110,6 +110,11 @@ public class JsonManager {
     private ScheduledFuture<?> pendingSyncFuture;
 
     /**
+     * Referencia al guardado de libros pendiente (debounce).
+     */
+    private ScheduledFuture<?> pendingSaveFuture;
+
+    /**
      * Establece la tarea de sincronización automática. Pasar {@code null}
      * desactiva la sincronización.
      *
@@ -368,6 +373,27 @@ public class JsonManager {
      */
     public void guardarLibros(List<Libro> libros) {
         guardarDatos(libros, databaseFilePath, "libros");
+    }
+
+    /**
+     * Guarda la lista de libros con debounce: toma una copia defensiva
+     * inmediatamente pero retrasa la escritura a disco 500ms. Si se llama
+     * de nuevo antes de que expire el plazo, el guardado anterior se cancela.
+     * Ideal para operaciones rápidas y repetitivas (cambio de estado, etc.).
+     *
+     * @param libros Lista de libros a guardar.
+     */
+    public void guardarLibrosDebounced(List<Libro> libros) {
+        // Copia defensiva inmediata (barata, O(n) punteros)
+        List<Libro> copia = new ArrayList<>(libros);
+        // Cancelar guardado pendiente si existe
+        if (pendingSaveFuture != null && !pendingSaveFuture.isDone()) {
+            pendingSaveFuture.cancel(false);
+        }
+        // Programar guardado real en 500ms
+        pendingSaveFuture = syncScheduler.schedule(
+                () -> guardarDatos(copia, databaseFilePath, "libros"),
+                500, TimeUnit.MILLISECONDS);
     }
 
     /**

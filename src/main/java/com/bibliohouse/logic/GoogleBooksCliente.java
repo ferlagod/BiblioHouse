@@ -47,6 +47,11 @@ public class GoogleBooksCliente {
 
     private static final Logger LOGGER = Logger.getLogger(GoogleBooksCliente.class.getName());
     private static final String API_BASE_URL = "https://www.googleapis.com/books/v1/volumes";
+    // Cliente HTTP compartido: reutiliza conexiones TCP (HTTP/2 multiplexing)
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     /**
      * Busca en Google. Devuelve una lista de libros.
@@ -70,22 +75,16 @@ public class GoogleBooksCliente {
 
             LOGGER.log(Level.INFO, "Realizando búsqueda en Google Books");
 
-            // Crear cliente HTTP
-            HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.ALWAYS)
-                    .connectTimeout(Duration.ofSeconds(30))
-                    .build();
-
             // Crear petición HTTP
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlCompleta))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(10))
                     .header("User-Agent", "BiblioHouse/1.0")
                     .header("Accept", "application/json")
                     .build();
 
             // Enviar petición y obtener respuesta
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
                 LOGGER.log(Level.WARNING, "La API de Google Books devolvió error: {0}", response.statusCode());

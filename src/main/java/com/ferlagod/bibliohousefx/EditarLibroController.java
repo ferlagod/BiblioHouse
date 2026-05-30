@@ -455,18 +455,21 @@ public class EditarLibroController {
 
         btnBuscarPortada.setDisable(true);
 
+        // Reutilizar BusquedaService en lugar de lógica duplicada
+        com.bibliohouse.logic.BusquedaService busquedaService = new com.bibliohouse.logic.BusquedaService();
+
         Thread searchThread = new Thread(() -> {
             try {
                 String urlFinal = "";
 
                 // 1. Primer intento: Buscar por ISBN (prioridad para edición exacta)
                 if (!isbn.isEmpty()) {
-                    urlFinal = buscarImagenEnApis(isbn);
+                    urlFinal = busquedaService.buscarImagenEnApisMasivo(isbn);
                 }
 
                 // 2. Segundo intento: Buscar por título si el ISBN no dio resultados
                 if (urlFinal.isEmpty() && !titulo.isEmpty()) {
-                    urlFinal = buscarImagenEnApis(titulo);
+                    urlFinal = busquedaService.buscarImagenEnApisMasivo(titulo);
                 }
 
                 final String portadaDefinitiva = urlFinal;
@@ -496,72 +499,6 @@ public class EditarLibroController {
 
         searchThread.setDaemon(true);
         searchThread.start();
-    }
-
-    /**
-     * Busca la portada de un libro en múltiples APIs de libros (Google Books,
-     * OpenLibrary, Inventaire) de forma concurrentes y devuelve la primera URL
-     * de portada válida encontrada.
-     *
-     * @param query Término de búsqueda (ISBN o título del libro).
-     * @return URL de la primera portada válida encontrada, o cadena vacía si no
-     * se encuentra ninguna.
-     */
-    private String buscarImagenEnApis(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return "";
-        }
-        try {
-            // Consultas asíncronas a las tres APIs con timeout de 3 segundos
-            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureGoogle = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.GoogleBooksCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureOpenLib = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.OpenLibraryCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            java.util.concurrent.CompletableFuture<java.util.List<com.bibliohouse.logic.Libro>> futureInventaire = java.util.concurrent.CompletableFuture
-                    .supplyAsync(() -> com.bibliohouse.logic.InventaireCliente.buscarLibros(query))
-                    .completeOnTimeout(new java.util.ArrayList<>(), 3, java.util.concurrent.TimeUnit.SECONDS)
-                    .exceptionally(ex -> new java.util.ArrayList<>());
-
-            // Esperar a que todas las consultas finalicen
-            java.util.concurrent.CompletableFuture.allOf(futureGoogle, futureOpenLib, futureInventaire).join();
-
-            // Prioridad 1: Google Books
-            if (futureGoogle.get() != null) {
-                for (com.bibliohouse.logic.Libro lib : futureGoogle.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
-                        return img;
-                    }
-                }
-            }
-            // Prioridad 2: OpenLibrary (con ajuste de tamaño)
-            if (futureOpenLib.get() != null) {
-                for (com.bibliohouse.logic.Libro lib : futureOpenLib.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover") && !img.contains("-S.jpg")) {
-                        return img.replace("-M.jpg", "-L.jpg"); // Preferir tamaño grande
-                    }
-                }
-            }
-            // Prioridad 3: Inventaire
-            if (futureInventaire.get() != null) {
-                for (com.bibliohouse.logic.Libro lib : futureInventaire.get()) {
-                    String img = lib.getPortadaURL();
-                    if (img != null && !img.trim().isEmpty() && !img.contains("default_cover")) {
-                        return img;
-                    }
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            // Si falla algo, devolvemos vacío para que intente el siguiente plan
-        }
-        return "";
     }
 
 }

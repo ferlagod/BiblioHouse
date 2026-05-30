@@ -53,6 +53,11 @@ public class OpenLibraryCliente {
     private static final String API_BASE_URL = "https://openlibrary.org/search.json";
     // Campos que solicitamos a la API para no traer datos innecesarios.
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i";
+    // Cliente HTTP compartido: reutiliza conexiones TCP (HTTP/2 multiplexing)
+    private static final HttpClient CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     /**
      * Busca libros en OpenLibrary. Si no encuentra nada, devuelve una lista
@@ -85,22 +90,16 @@ public class OpenLibraryCliente {
 
             LOGGER.log(Level.INFO, "Realizando búsqueda en OpenLibrary: {0}", urlCompleta);
 
-            // Crear cliente HTTP con timeout de 30 segundos
-            HttpClient client = HttpClient.newBuilder()
-                    .followRedirects(HttpClient.Redirect.ALWAYS)
-                    .connectTimeout(Duration.ofSeconds(30))
-                    .build();
-
             // Crear petición HTTP con headers necesarios
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlCompleta))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(10))
                     .header("User-Agent", "BiblioHouse/1.0 (ferlagod@example.com)")
                     .header("Accept", "application/json")
                     .build();
 
             // Enviar petición y obtener respuesta
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
             // Comprobar que la respuesta es OK (código 200)
             if (response.statusCode() != 200) {

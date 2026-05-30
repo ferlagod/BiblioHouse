@@ -50,7 +50,7 @@ public class ImageLoader {
     private static String cacheDir = null;
     private static final ExecutorService executor = Executors.newFixedThreadPool(8); // Pool reducido para no saturar IO
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
-    private static final int MAX_CACHE_SIZE = 60; // Optimizado para fluidez sin devorar RAM
+    private static final int MAX_CACHE_SIZE = 150; // Aumentado para evitar evictions al scrollear bibliotecas grandes
 
     // Caché en memoria (LRU) — envuelta en synchronizedMap para acceso seguro
     // desde el hilo FX y el ExecutorService simultáneamente.
@@ -103,6 +103,31 @@ public class ImageLoader {
         File dir = new File(cacheDir);
         if (!dir.exists()) {
             dir.mkdirs();
+        }
+    }
+
+    /**
+     * Pre-carga la imagen por defecto en la caché de memoria.
+     * Llamado durante el splash screen para que la primera vista de libros
+     * no tenga que cargar la imagen desde disco.
+     */
+    public static void preloadDefaultCover() {
+        try {
+            URL defaultUrl = ImageLoader.class.getResource(DEFAULT_IMAGE_PATH);
+            if (defaultUrl != null) {
+                String uri = defaultUrl.toExternalForm();
+                // Pre-cargar en los tamaños más comunes (tarjetas y edición)
+                for (String key : new String[]{"DEFAULT_150.0x220.0", "DEFAULT_300.0x450.0"}) {
+                    if (!memoryCache.containsKey(key)) {
+                        double w = key.contains("150") ? 150 : 300;
+                        double h = key.contains("220") ? 220 : 450;
+                        Image img = new Image(uri, w, h, true, true, false);
+                        memoryCache.put(key, img);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // No crítico: se cargará bajo demanda la primera vez que se necesite
         }
     }
 
