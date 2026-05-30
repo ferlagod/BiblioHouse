@@ -513,22 +513,12 @@ public class PrimaryController implements Initializable {
         com.bibliohouse.utils.ImageLoader.setCacheDir(coversPath);
 
         this.jsonManager = new JsonManager(userPath);
-        this.listaDeseos = jsonManager.cargarDeseos();
-        if (pestanaWishlistController != null) {
-            pestanaWishlistController.initData(this, jsonManager, listaDeseos, resources);
-        }
+        
+        // La carga de la lista de deseos la movemos a la tarea en segundo plano
+        // junto con la carga de libros para evitar bloquear la UI al inicio.
 
-        // 2. Cargar datos maestros
+        // 2. Cargar datos maestros (ahora es asíncrono)
         cargarDatos();
-
-        // IMPORTANTE: Configurar el callback de guardado para el gestor de sagas
-        if (pestanaSagasController != null) {
-            pestanaSagasController.initData(listaLibrosCompleta, () -> {
-                jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
-                tablaLibros.refresh();
-                actualizarFiltros();
-            });
-        }
 
         // 3. Sincronización NextCloud con seguridad mejorada
         this.preferencias = jsonManager.cargarPreferencias();
@@ -561,12 +551,12 @@ public class PrimaryController implements Initializable {
         aplicarPreferenciasGuardadas();
 
         if (resources != null) {
-            lblEstado.setText(java.text.MessageFormat.format(resources.getString("status.welcome"), username));
+            lblEstado.setText(java.text.MessageFormat.format(resources.getString("status.welcome"), username) + " (Cargando biblioteca...)");
         } else {
-            lblEstado.setText("Bienvenido, " + username);
+            lblEstado.setText("Bienvenido, " + username + " (Cargando biblioteca...)");
         }
 
-        checkOverdueLoans();
+        // checkOverdueLoans(); // Se movió dentro de cargarDatos() para que se ejecute al final de la carga
 
         // 6. Actualizaciones en segundo plano
         com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
@@ -791,53 +781,78 @@ public class PrimaryController implements Initializable {
      * JSON. Incluye libros, socios, préstamos y estanterías.
      */
     private void cargarDatos() {
-        // 1. Cargar la lista maestra de libros
-        List<Libro> libros = jsonManager.cargarLibros();
-        listaLibrosCompleta = FXCollections.observableArrayList(libros);
-        this.libroService = new LibroService(jsonManager, listaLibrosCompleta);
-
-        // 2. Inicializar las listas de filtrado/ordenación
-        filteredData = new FilteredList<>(listaLibrosCompleta, p -> true);
-        sortedData = new SortedList<>(filteredData);
-
-        // 3. Ordenación por defecto (Series), escucha cambios del usuario en la tabla
-        sortedData.setComparator(this::compareBySeries);
-        tablaLibros.comparatorProperty().addListener((obs, oldComp, newComp) -> {
-            if (newComp == null) {
-                sortedData.setComparator(this::compareBySeries);
-            } else {
-                sortedData.setComparator(newComp);
+        javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                // 1. Lectura I/O pesada en segundo plano
+                List<Libro> deseos = jsonManager.cargarDeseos();
+                List<Libro> libros = jsonManager.cargarLibros();
+                List<Socio> socios = jsonManager.cargarSocios();
+                List<Prestamo> prestamos = jsonManager.cargarPrestamos();
+                
+                // 2. Actualización de UI en el hilo principal
+                Platform.runLater(() -> {
+                    listaDeseos = deseos;
+                    if (pestanaWishlistController != null) {
+                        pestanaWishlistController.initData(PrimaryController.this, jsonManager, listaDeseos, resources);
+                    }
+                    
+                    listaLibrosCompleta = FXCollections.observableArrayList(libros);
+                    libroService = new LibroService(jsonManager, listaLibrosCompleta);
+            
+                    filteredData = new FilteredList<>(listaLibrosCompleta, p -> true);
+                    sortedData = new SortedList<>(filteredData);
+            
+                    sortedData.setComparator(PrimaryController.this::compareBySeries);
+                    tablaLibros.comparatorProperty().addListener((obs, oldComp, newComp) -> {
+                        if (newComp == null) {
+                            sortedData.setComparator(PrimaryController.this::compareBySeries);
+                        } else {
+                            sortedData.setComparator(newComp);
+                        }
+                    });
+            
+                    tablaLibros.setItems(sortedData);
+            
+                    listaSocios = FXCollections.observableArrayList(socios);
+            
+                    listaPrestamosCompleta = FXCollections.observableArrayList(prestamos);
+                    prestamoService = new com.bibliohouse.logic.PrestamoService(jsonManager, listaPrestamosCompleta, listaLibrosCompleta);
+            
+                    filteredPrestamos = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() == null);
+                    filteredHistory = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() != null);
+            
+                    if (pestanaPrestamosController != null) {
+                        pestanaPrestamosController.initData(PrimaryController.this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
+                    }
+                    if (pestanaHistorialController != null) {
+                        pestanaHistorialController.initData(PrimaryController.this, filteredHistory);
+                    }
+                    if (pestanaSagasController != null) {
+                        pestanaSagasController.initData(listaLibrosCompleta, () -> {
+                            jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+                            tablaLibros.refresh();
+                            actualizarFiltros();
+                        });
+                    }
+            
+                    cargarListaEstanterias();
+                    actualizarFiltros();
+                    
+                    if (resources != null) {
+                        lblEstado.setText(java.text.MessageFormat.format(resources.getString("status.welcome"), usuarioActual));
+                    } else {
+                        lblEstado.setText("Bienvenido, " + usuarioActual);
+                    }
+                    
+                    checkOverdueLoans();
+                });
+                return null;
             }
-        });
-
-        // 4. Asignar lista dinámica a la tabla
-        tablaLibros.setItems(sortedData);
-
-        // 5. Socios
-        List<Socio> socios = jsonManager.cargarSocios();
-        listaSocios = FXCollections.observableArrayList(socios);
-
-        // 6. Préstamos (CRÍTICO: inicializar antes de los sub-controladores)
-        List<Prestamo> prestamos = jsonManager.cargarPrestamos();
-        listaPrestamosCompleta = FXCollections.observableArrayList(prestamos);
-        this.prestamoService = new com.bibliohouse.logic.PrestamoService(jsonManager, listaPrestamosCompleta, listaLibrosCompleta);
-
-        // Préstamos activos (sin fecha de devolución)
-        filteredPrestamos = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() == null);
-        // Historial (con fecha de devolución)
-        filteredHistory = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() != null);
-
-        // 7. Inicializar sub-controladores de pestañas
-        if (pestanaPrestamosController != null) {
-            pestanaPrestamosController.initData(this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
-        }
-        if (pestanaHistorialController != null) {
-            pestanaHistorialController.initData(this, filteredHistory);
-        }
-
-        // 8. Estanterías laterales + filtros iniciales (CRÍTICO: sin esto el panel queda vacío)
-        cargarListaEstanterias();
-        actualizarFiltros();
+        };
+        Thread thread = new Thread(loadTask, "CargaDatosInicial");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     /**
@@ -1440,9 +1455,9 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    /** Centraliza la copia defensiva y el guardado para evitar inconsistencias. */
+    /** Centraliza la copia defensiva y el guardado para evitar inconsistencias. Usa debounce para evitar bloqueos. */
     private void guardarLibrosEnDisco() {
-        jsonManager.guardarLibros(new ArrayList<>(listaLibrosCompleta));
+        jsonManager.guardarLibrosDebounced(new ArrayList<>(listaLibrosCompleta));
     }
 
     /**
