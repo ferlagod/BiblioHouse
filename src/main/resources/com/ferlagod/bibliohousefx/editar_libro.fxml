@@ -19,14 +19,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Region?>
 
-<VBox minHeight="900.0" minWidth="900.0" prefHeight="900.0" prefWidth="900.0" spacing="15.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EditarLibroController">
+<VBox minHeight="900.0" minWidth="900.0" prefHeight="900.0" prefWidth="900.0" spacing="15.0" style="-fx-background-color: -color-bg-default;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.EditarLibroController">
    
     <children>
         <Label styleClass="heading-text" text="Editar detalles del libro" />
       
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
             <content>
-                <VBox spacing="20.0" style="-fx-background-color: white;">
+                <VBox spacing="20.0" style="-fx-background-color: -color-bg-default;">
                     <children>
                         <HBox spacing="30.0">
                             <children>
@@ -38,18 +38,18 @@
                                             </children>
                                         </VBox>
                                         <Button onAction="#cambiarPortada" styleClass="text-button" text="%book.cover.change" /> 
-                                        <Button fx:id="btnBuscarPortada" onAction="#buscarPortadaOnline" styleClass="google-button" text="%edit.search.cover" />
+                                        <Button fx:id="btnBuscarPortada" onAction="#buscarPortadaOnline" styleClass="accent" text="%edit.search.cover" />
                               
                                         <VBox alignment="CENTER_LEFT" spacing="5.0">
                                             <children>
-                                                <Label text="Estado de Lectura:" textFill="#5f6368" />
+                                                <Label text="Estado de Lectura:" style="-fx-text-fill: -color-fg-muted;" />
                                                 <ComboBox fx:id="cmbEstadoLectura" prefWidth="180.0" />
                                             </children>
                                         </VBox>
                               
                                         <VBox alignment="CENTER_LEFT" spacing="5.0">
                                             <children>
-                                                <Label text="Mi valoración:" textFill="#5f6368" />
+                                                <Label text="Mi valoración:" style="-fx-text-fill: -color-fg-muted;" />
                                                 <ComboBox fx:id="cmbCalificacion" prefWidth="180.0" />
                                             </children>
                                         </VBox>
@@ -81,28 +81,28 @@
                                             </rowConstraints>
                                             <children>
                                                 <Label text="Título:" />
-                                                <TextField fx:id="txtTitulo" styleClass="google-text-field" GridPane.columnIndex="1" />
+                                                <TextField fx:id="txtTitulo"  GridPane.columnIndex="1" />
                                     
                                                 <Label text="Autor:" GridPane.rowIndex="1" />
-                                                <TextField fx:id="txtAutor" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <TextField fx:id="txtAutor"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                     
                                                 <Label text="Editorial:" GridPane.rowIndex="2" />
-                                                <TextField fx:id="txtEditorial" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                <TextField fx:id="txtEditorial"  GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                     
                                                 <Label text="Género:" GridPane.rowIndex="3" />
-                                                <TextField fx:id="txtGenero" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                <TextField fx:id="txtGenero"  GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                     
                                                 <Label text="Año:" GridPane.rowIndex="4" />
-                                                <Spinner fx:id="spinnerAnio" editable="true" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                <Spinner fx:id="spinnerAnio" editable="true"  GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                     
                                                 <Label text="ISBN:" GridPane.rowIndex="5" />
-                                                <TextField fx:id="txtIsbn" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                <TextField fx:id="txtIsbn"  GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
                                                 <Label text="Serie/Saga:" GridPane.rowIndex="6" />
-                                                <TextField fx:id="txtSerie" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                                <TextField fx:id="txtSerie"  GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
                                                 <Label text="Orden:" GridPane.rowIndex="7" />
-                                                <TextField fx:id="txtOrden" promptText="Ej: 1.0, 2.5" styleClass="google-text-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                                <TextField fx:id="txtOrden" promptText="Ej: 1.0, 2.5"  GridPane.columnIndex="1" GridPane.rowIndex="7" />
                                             </children>
                                         </GridPane>
                               
@@ -119,7 +119,7 @@
                                         <Button onAction="#eliminarEstanteria" style="-fx-text-fill: -color-danger-fg;" styleClass="text-button" text="Eliminar seleccionada" />
                               
                                         <Label style="-fx-font-weight: bold;" text="Reseña personal" />
-                                        <TextArea fx:id="txtResena" prefHeight="100.0" wrapText="true" styleClass="google-text-field" />
+                                        <TextArea fx:id="txtResena" prefHeight="100.0" wrapText="true"  />
                                     </children>
                                 </VBox>
                             </children>
@@ -135,7 +135,7 @@
         <HBox alignment="CENTER_RIGHT" spacing="15.0">
             <children>
                 <Button cancelButton="true" onAction="#cancelar" styleClass="text-button" text="Cancelar" />
-                <Button defaultButton="true" onAction="#guardar" styleClass="google-button" text="Guardar Cambios" />
+                <Button defaultButton="true" onAction="#guardar" styleClass="accent" text="Guardar Cambios" />
             </children>
             <VBox.margin>
                 <Insets top="10.0" />

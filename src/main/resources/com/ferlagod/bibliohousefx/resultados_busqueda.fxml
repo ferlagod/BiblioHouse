@@ -26,7 +26,7 @@
          <children>
             <Button cancelButton="true" onAction="#cancelar" text="%config.cancel" />
             <Button onAction="#seleccionarParaDeseos" styleClass="text-button" style="-fx-border-color: -color-border; -fx-border-radius: 3px;" text="%search.results.add.wishlist" />
-            <Button defaultButton="true" onAction="#seleccionar" styleClass="google-button" text="%search.results.import" />
+            <Button defaultButton="true" onAction="#seleccionar" styleClass="accent" text="%search.results.import" />
          </children>
       </HBox>
    </children>

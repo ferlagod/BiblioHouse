@@ -203,7 +203,7 @@
 
         <HBox alignment="CENTER_RIGHT" style="-fx-padding: 15; -fx-border-color: -color-border-default transparent transparent transparent;">
             <children>
-                <Button cancelButton="true" defaultButton="true" onAction="#cerrar" styleClass="google-button" text="Cerrar" />
+                <Button cancelButton="true" defaultButton="true" onAction="#cerrar" styleClass="accent" text="Cerrar" />
             </children>
         </HBox>
       

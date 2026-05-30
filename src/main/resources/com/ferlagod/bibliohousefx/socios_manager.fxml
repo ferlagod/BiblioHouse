@@ -9,12 +9,12 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox minHeight="600.0" minWidth="700.0" prefHeight="600.0" prefWidth="700.0" spacing="15.0" style="-fx-background-color: white;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SociosManagerController">
+<VBox minHeight="600.0" minWidth="700.0" prefHeight="600.0" prefWidth="700.0" spacing="15.0" style="-fx-background-color: -color-bg-default;"  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SociosManagerController">
     <children>
         <Label styleClass="heading-text" text="Gestión de Socios" />
         <Separator />
         
-        <Label text="Lista de todos los socios registrados:" textFill="#5f6368" />
+        <Label text="Lista de todos los socios registrados:" style="-fx-text-fill: -color-fg-muted;" />
 
         <TableView fx:id="tablaSocios" VBox.vgrow="ALWAYS">
             <columns>

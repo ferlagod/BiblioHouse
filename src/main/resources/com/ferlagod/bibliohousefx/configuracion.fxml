@@ -125,7 +125,7 @@
                                 </HBox>
                                 <HBox spacing="10.0">
                                     <children>
-                                        <Button maxWidth="Infinity" onAction="#subirNextcloud" styleClass="google-button" text="%config.sync.upload" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="Infinity" onAction="#subirNextcloud" styleClass="accent" text="%config.sync.upload" HBox.hgrow="ALWAYS" />
                                         <Button maxWidth="Infinity" onAction="#descargarNextcloud" text="%config.sync.download" HBox.hgrow="ALWAYS" />
                                     </children>
                                 </HBox>
@@ -170,7 +170,7 @@
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <children>
                 <Button cancelButton="true" onAction="#cancelar" text="%config.cancel" />
-                <Button defaultButton="true" onAction="#guardarCambios" styleClass="google-button" text="%config.save" />
+                <Button defaultButton="true" onAction="#guardarCambios" styleClass="accent" text="%config.save" />
             </children>
             <padding>
                 <Insets top="10.0" />

@@ -17,7 +17,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
                 <Label maxWidth="Infinity" styleClass="heading-text" text="%wishlist.title" HBox.hgrow="ALWAYS" />
-                <Button onAction="#buscarLibroParaDeseos" styleClass="google-button" text="%wishlist.add.search" />
+                <Button onAction="#buscarLibroParaDeseos" styleClass="accent" text="%wishlist.add.search" />
             </children>
         </HBox>
         <Separator />

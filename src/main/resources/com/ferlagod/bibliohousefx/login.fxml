@@ -32,12 +32,12 @@
                 <children>
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.user" />
-                        <TextField fx:id="txtLoginUser" onAction="#actionLogin" promptText="%login.user.placeholder" styleClass="google-text-field" />
+                        <TextField fx:id="txtLoginUser" onAction="#actionLogin" promptText="%login.user.placeholder"  />
                     </VBox>
                
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.password" />
-                        <PasswordField fx:id="txtLoginPass" onAction="#actionLogin" promptText="%login.password.placeholder" styleClass="google-text-field" />
+                        <PasswordField fx:id="txtLoginPass" onAction="#actionLogin" promptText="%login.password.placeholder"  />
                     </VBox>
                
                     <Label fx:id="lblLoginError" styleClass="error-label" text="Error message" visible="false" />
@@ -47,7 +47,7 @@
             <HBox alignment="CENTER_RIGHT" spacing="20.0">
                 <children>
                     <Button onAction="#cerrarApp" styleClass="text-button" text="%menu.exit" />
-                    <Button defaultButton="true" onAction="#actionLogin" styleClass="google-button" text="%login.next" />
+                    <Button defaultButton="true" onAction="#actionLogin" styleClass="accent" text="%login.next" />
                 </children>
             </HBox>
          
@@ -73,17 +73,17 @@
                 <children>
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.register.user" />
-                        <TextField fx:id="txtRegUser" styleClass="google-text-field" />
+                        <TextField fx:id="txtRegUser"  />
                     </VBox>
                
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.password" />
-                        <PasswordField fx:id="txtRegPass" styleClass="google-text-field" />
+                        <PasswordField fx:id="txtRegPass"  />
                     </VBox>
                
                     <VBox spacing="5.0">
                         <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%login.register.confirm_pass" />
-                        <PasswordField fx:id="txtRegPassConfirm" styleClass="google-text-field" />
+                        <PasswordField fx:id="txtRegPassConfirm"  />
                     </VBox>
 
                     <Label fx:id="lblRegError" styleClass="error-label" text="Error message" visible="false" />
@@ -93,7 +93,7 @@
             <HBox alignment="CENTER_RIGHT" spacing="20.0">
                 <children>
                     <Button onAction="#mostrarLogin" styleClass="text-button" text="%login.back" />
-                    <Button onAction="#actionRegister" styleClass="google-button" text="%login.register" />
+                    <Button onAction="#actionRegister" styleClass="accent" text="%login.register" />
                 </children>
             </HBox>
          

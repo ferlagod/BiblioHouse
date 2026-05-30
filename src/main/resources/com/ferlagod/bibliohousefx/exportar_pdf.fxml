@@ -97,7 +97,7 @@
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
             <Button onAction="#limpiarFiltros" text="Limpiar Filtros" />
             <Button onAction="#cancelar" text="Cancelar" />
-            <Button fx:id="btnExportar" defaultButton="true" onAction="#exportarPDF" styleClass="google-button" text="Exportar PDF" />
+            <Button fx:id="btnExportar" defaultButton="true" onAction="#exportarPDF" styleClass="accent" text="Exportar PDF" />
         </HBox>
     </children>
 </VBox>

@@ -51,7 +51,7 @@
       <HBox alignment="CENTER_RIGHT" spacing="10.0" VBox.vgrow="ALWAYS">
          <children>
             <Button cancelButton="true" onAction="#cancelar" text="%config.cancel" />
-            <Button defaultButton="true" onAction="#guardar" styleClass="google-button" text="%members.save" />
+            <Button defaultButton="true" onAction="#guardar" styleClass="accent" text="%members.save" />
          </children>
          <padding>
             <Insets top="10.0" />

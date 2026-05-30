@@ -29,7 +29,7 @@
             </font>
         </Label>
         
-        <Label text="%about.version" textFill="#5f6368">
+        <Label text="%about.version" style="-fx-text-fill: -color-fg-muted;">
             <font>
                 <Font size="14.0" />
             </font>
@@ -41,8 +41,8 @@
             </VBox.margin>
         </Separator>
         
-        <Label text="%about.developed" textFill="#5f6368" />
-        <Label text="ferlagod" textFill="#202124">
+        <Label text="%about.developed" style="-fx-text-fill: -color-fg-muted;" />
+        <Label text="ferlagod" style="-fx-text-fill: -color-fg-default;">
             <font>
                 <Font name="System Bold" size="16.0" />
             </font>
@@ -50,12 +50,12 @@
         
         <HBox alignment="CENTER" spacing="5.0">
             <children>
-                <Label text="%about.contact" textFill="#5f6368" />
+                <Label text="%about.contact" style="-fx-text-fill: -color-fg-muted;" />
                 <Hyperlink onAction="#abrirEmail" text="info@bibliohouse.org" />
             </children>
         </HBox>
         
-        <Label text="%about.license" textFill="#5f6368">
+        <Label text="%about.license" style="-fx-text-fill: -color-fg-muted;">
             <font>
                 <Font size="11.0" />
             </font>

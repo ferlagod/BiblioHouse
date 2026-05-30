@@ -19,7 +19,7 @@
         <Label styleClass="subheading-text" text="%welcome.subtitle" wrapText="true" textAlignment="CENTER" />
         
         <VBox alignment="CENTER" spacing="15.0" style="-fx-padding: 20 0 0 0;">
-            <Button mnemonicParsing="false" onAction="#iniciarConRegistro" prefWidth="250.0" styleClass="google-button" text="%welcome.btn.register" />
+            <Button mnemonicParsing="false" onAction="#iniciarConRegistro" prefWidth="250.0" styleClass="accent" text="%welcome.btn.register" />
             <Button mnemonicParsing="false" onAction="#iniciarSinRegistro" prefWidth="250.0" styleClass="text-button" style="-fx-border-color: -color-border; -fx-border-radius: 3px;" text="%welcome.btn.guest" />         
         </VBox>
     </children>

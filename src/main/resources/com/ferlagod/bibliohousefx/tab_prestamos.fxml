@@ -37,7 +37,7 @@
                 </Button>
                 <Button onAction="#gestionarSocios" text="%loans.manage_members" />
                 <Separator orientation="VERTICAL" />
-                <Button onAction="#realizarPrestamo" styleClass="google-button" text="%loans.action" />
+                <Button onAction="#realizarPrestamo" styleClass="accent" text="%loans.action" />
             </children>
         </HBox>
         <TableView fx:id="tablaPrestamos" VBox.vgrow="ALWAYS">

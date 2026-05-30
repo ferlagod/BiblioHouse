@@ -100,7 +100,7 @@
             <children>
                 <Button onAction="#editarLibro" styleClass="text-button" text="%ctx.edit" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button cancelButton="true" onAction="#cerrar" styleClass="google-button" text="%btn.close" />
+                <Button cancelButton="true" onAction="#cerrar" styleClass="accent" text="%btn.close" />
             </children>
         </HBox>
     </children>
