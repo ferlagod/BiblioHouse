@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="800.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.ExportarWebController">
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
+
+    <!-- Título -->
+    <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="%web.export.title" />
+    <Separator />
+
+    <!-- Nombre de la biblioteca y agrupación -->
+    <GridPane hgap="15.0" vgap="12.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" minWidth="160.0" />
+            <ColumnConstraints hgrow="ALWAYS" />
+        </columnConstraints>
+        <Label text="%web.export.library_name" />
+        <TextField fx:id="txtNombreBiblioteca" promptText="Mi Biblioteca" GridPane.columnIndex="1" />
+
+        <Label text="%web.export.group_by" GridPane.rowIndex="1" />
+        <ComboBox fx:id="cmbAgrupacion" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+    </GridPane>
+    <Separator />
+
+    <!-- Filtros -->
+    <GridPane hgap="15.0" vgap="12.0">
+        <columnConstraints>
+            <ColumnConstraints hgrow="ALWAYS" />
+            <ColumnConstraints hgrow="ALWAYS" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints vgrow="ALWAYS" />
+        </rowConstraints>
+
+        <!-- Columna izquierda: Búsqueda + Autor + Estanterías -->
+        <VBox spacing="10.0">
+            <Label style="-fx-font-weight: bold;" text="%web.export.filter.search" />
+            <TextField fx:id="txtBuscar" promptText="%web.export.filter.search.placeholder" />
+            <Label style="-fx-font-weight: bold;" text="%web.export.filter.author" />
+            <TextField fx:id="txtAutor" promptText="%web.export.filter.author.placeholder" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label style="-fx-font-weight: bold;" text="%web.export.filter.year_from" />
+                <TextField fx:id="txtAnioDesde" prefWidth="80.0" />
+                <Label style="-fx-font-weight: bold;" text="%web.export.filter.year_to" />
+                <TextField fx:id="txtAnioHasta" prefWidth="80.0" />
+            </HBox>
+            <Label style="-fx-font-weight: bold;" text="%web.export.filter.status" />
+            <ComboBox fx:id="cmbEstadoLectura" maxWidth="1.7976931348623157E308" />
+        </VBox>
+
+        <!-- Columna derecha: Estanterías y Géneros -->
+        <VBox spacing="10.0" GridPane.columnIndex="1">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <CheckBox fx:id="chkTodasEstanterias" onAction="#toggleTodasEstanterias" selected="true" text="%web.export.filter.all_shelves" />
+            </HBox>
+            <ListView fx:id="listaEstanterias" prefHeight="100.0" />
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <CheckBox fx:id="chkTodosGeneros" onAction="#toggleTodosGeneros" selected="true" text="%web.export.filter.all_genres" />
+            </HBox>
+            <ListView fx:id="listaGeneros" prefHeight="100.0" />
+        </VBox>
+    </GridPane>
+
+    <Separator />
+
+    <!-- Contador y botones -->
+    <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <Label fx:id="lblContadorLibros" style="-fx-font-style: italic;" text="Libros que coinciden: 0" />
+        <Region HBox.hgrow="ALWAYS" />
+        <ProgressIndicator fx:id="progressIndicator" prefHeight="24.0" prefWidth="24.0" visible="false" />
+        <Button onAction="#limpiarFiltros" text="%web.export.clear" />
+        <Button onAction="#cancelar" text="%web.export.cancel" />
+        <Button fx:id="btnExportar" onAction="#exportarWeb" styleClass="accent" text="%web.export.export" />
+    </HBox>
+</VBox>

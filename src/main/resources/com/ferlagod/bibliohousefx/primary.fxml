@@ -44,6 +44,7 @@
                                 <MenuItem onAction="#importarDesdeCSV" text="%menu.import.csv" />
                                 <MenuItem onAction="#exportarBaseDatos" text="%menu.export" />
                                 <MenuItem onAction="#exportarPDF" text="%menu.export.pdf" />
+                                <MenuItem onAction="#exportarWeb" text="%menu.export.web" />
                                 <SeparatorMenuItem />
                                 <MenuItem accelerator="Shortcut+Q" onAction="#cerrarAplicacion" text="%menu.exit" />
                             </items>

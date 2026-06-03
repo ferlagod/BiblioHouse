@@ -1785,6 +1785,51 @@ public class PrimaryController implements Initializable {
     }
 
     /**
+     * Abre la ventana de exportación de catálogo web HTML. Permite filtrar
+     * libros y generar un catálogo estático con diseño Netflix.
+     *
+     * @param event El evento del menú.
+     */
+    @FXML
+    private void exportarWeb(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("exportar_web.fxml"));
+            loader.setResources(this.resources);
+            Parent root = loader.load();
+
+            ExportarWebController controller = loader.getController();
+
+            // Preparar datos: libros, estanterías y géneros
+            List<Libro> libros = new ArrayList<>(listaLibrosCompleta);
+            List<String> estanterias = jsonManager.cargarEstanterias();
+
+            // Extraer géneros únicos de los libros
+            List<String> generos = libros.stream()
+                    .map(Libro::getGenero)
+                    .filter(g -> g != null && !g.isEmpty())
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            controller.setDatos(libros, estanterias, generos);
+
+            Stage stage = new Stage();
+            stage.setTitle("Exportar Catálogo Web");
+            setScene(stage, root);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(tablaLibros.getScene().getWindow());
+
+            stage.setMinWidth(820);
+            stage.setMinHeight(720);
+
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo abrir la ventana de exportación web.\n" + e.getMessage());
+        }
+    }
+
+    /**
      * Cierra la aplicación de forma segura, guardando preferencias antes de
      * salir.
      *
