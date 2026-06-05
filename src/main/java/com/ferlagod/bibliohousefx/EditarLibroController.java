@@ -43,7 +43,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class EditarLibroController {
 
@@ -370,7 +370,7 @@ public class EditarLibroController {
 
         // Guardar estanterías
         libro.setEstanterias(new ArrayList<>(modeloEstanterias));
-        
+
         libro.setReseña(txtResena.getText());
 
         if (this.rutaUsuario != null && !this.rutaUsuario.isEmpty()) {

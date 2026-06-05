@@ -36,14 +36,13 @@ import javafx.scene.image.ImageView;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 /**
  * Clase para cargar imágenes de forma asíncrona con caché multinivel.
  *
  * * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class ImageLoader {
 
@@ -107,9 +106,9 @@ public class ImageLoader {
     }
 
     /**
-     * Pre-carga la imagen por defecto en la caché de memoria.
-     * Llamado durante el splash screen para que la primera vista de libros
-     * no tenga que cargar la imagen desde disco.
+     * Pre-carga la imagen por defecto en la caché de memoria. Llamado durante
+     * el splash screen para que la primera vista de libros no tenga que cargar
+     * la imagen desde disco.
      */
     public static void preloadDefaultCover() {
         try {

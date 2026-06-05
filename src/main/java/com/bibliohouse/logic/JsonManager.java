@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author Fernando Lago
- * @version 1.7
+ * @version 1.8
  *
  */
 public class JsonManager {
@@ -377,8 +377,8 @@ public class JsonManager {
 
     /**
      * Guarda la lista de libros con debounce: toma una copia defensiva
-     * inmediatamente pero retrasa la escritura a disco 500ms. Si se llama
-     * de nuevo antes de que expire el plazo, el guardado anterior se cancela.
+     * inmediatamente pero retrasa la escritura a disco 500ms. Si se llama de
+     * nuevo antes de que expire el plazo, el guardado anterior se cancela.
      * Ideal para operaciones rápidas y repetitivas (cambio de estado, etc.).
      *
      * @param libros Lista de libros a guardar.

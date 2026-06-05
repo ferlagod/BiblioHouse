@@ -1,495 +1,603 @@
 <!DOCTYPE html>
 <html lang="ca">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual d'Usuari Integral - BiblioHouse</title>
-    <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --text-color: #212529;
-            --heading-color: #0d6efd;
-            --h2-color: #343a40;
-            --h3-color: #495057;
-            --box-bg: #ffffff;
-            --box-shadow: rgba(0, 0, 0, 0.1);
-            --code-bg: #e9ecef;
-            --border-color: #dee2e6;
-            --link-color: #0d6efd;
-            --table-header: #e9ecef;
-            --alert-bg: #cce5ff;
-            --alert-text: #004085;
-            --alert-border: #b8daff;
-        }
-
-        @media (prefers-color-scheme: dark) {
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Manual d'Usuari - BiblioHouse</title>
+        <style>
             :root {
-                --bg-color: #212529;
-                --text-color: #f8f9fa;
-                --heading-color: #6ea8fe;
-                --h2-color: #e9ecef;
-                --h3-color: #ced4da;
-                --box-bg: #343a40;
-                --box-shadow: rgba(0, 0, 0, 0.5);
-                --code-bg: #495057;
-                --border-color: #495057;
-                --link-color: #6ea8fe;
-                --table-header: #495057;
-                --alert-bg: #004085;
-                --alert-text: #cce5ff;
-                --alert-border: #0056b3;
+                --bg-color: #f8f9fa;
+                --text-color: #212529;
+                --heading-color: #0d6efd;
+                --h2-color: #343a40;
+                --h3-color: #495057;
+                --box-bg: #ffffff;
+                --box-shadow: rgba(0, 0, 0, 0.1);
+                --code-bg: #e9ecef;
+                --border-color: #dee2e6;
+                --link-color: #0d6efd;
+                --table-header: #e9ecef;
+                --alert-bg: #cce5ff;
+                --alert-text: #004085;
+                --alert-border: #b8daff;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg-color: #212529;
+                    --text-color: #f8f9fa;
+                    --heading-color: #6ea8fe;
+                    --h2-color: #e9ecef;
+                    --h3-color: #ced4da;
+                    --box-bg: #343a40;
+                    --box-shadow: rgba(0, 0, 0, 0.5);
+                    --code-bg: #495057;
+                    --border-color: #495057;
+                    --link-color: #6ea8fe;
+                    --table-header: #495057;
+                    --alert-bg: #004085;
+                    --alert-text: #cce5ff;
+                    --alert-border: #0056b3;
+                }
+                img {
+                    filter: brightness(0.85) contrast(1.1);
+                }
+            }
+
+            body {
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                line-height: 1.6;
+                color: var(--text-color);
+                background-color: var(--bg-color);
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 30px 20px;
+                transition: background-color 0.3s, color 0.3s;
+            }
+
+            h1 {
+                color: var(--heading-color);
+                border-bottom: 2px solid var(--heading-color);
+                padding-bottom: 10px;
+                font-size: 2.5rem;
+            }
+            h2 {
+                color: var(--h2-color);
+                margin-top: 40px;
+                border-left: 5px solid var(--heading-color);
+                padding-left: 15px;
+                font-size: 1.8rem;
+            }
+            h3 {
+                color: var(--h3-color);
+                margin-top: 25px;
+            }
+
+            a {
+                color: var(--link-color);
+                text-decoration: none;
+                font-weight: 500;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+
+            .feature-box {
+                background: var(--box-bg);
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px var(--box-shadow);
+                margin-bottom: 25px;
+                border: 1px solid var(--border-color);
+            }
+
+            code, kbd {
+                background: var(--code-bg);
+                padding: 3px 6px;
+                border-radius: 4px;
+                font-family: ui-monospace, 'Cascadia Code', monospace;
+                font-size: 0.9em;
+            }
+
+            kbd {
+                border: 1px solid var(--border-color);
+                box-shadow: 0 2px 0 var(--border-color);
+                font-weight: bold;
             }
 
             img {
-                filter: brightness(0.85) contrast(1.1);
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px var(--box-shadow);
+                margin: 20px auto;
+                display: block;
+                border: 1px solid var(--border-color);
             }
-        }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px 20px;
-            transition: background-color 0.3s, color 0.3s;
-        }
+            .image-caption {
+                text-align: center;
+                font-size: 0.9em;
+                color: var(--h3-color);
+                margin-top: -10px;
+                margin-bottom: 20px;
+                font-style: italic;
+            }
 
-        h1 {
-            color: var(--heading-color);
-            border-bottom: 2px solid var(--heading-color);
-            padding-bottom: 10px;
-            font-size: 2.5rem;
-        }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                background: var(--box-bg);
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 2px 5px var(--box-shadow);
+            }
 
-        h2 {
-            color: var(--h2-color);
-            margin-top: 40px;
-            border-left: 5px solid var(--heading-color);
-            padding-left: 15px;
-            font-size: 1.8rem;
-        }
+            th, td {
+                border: 1px solid var(--border-color);
+                padding: 12px;
+                text-align: left;
+            }
 
-        h3 {
-            color: var(--h3-color);
-            margin-top: 25px;
-        }
+            th {
+                background: var(--table-header);
+                font-weight: 600;
+            }
 
-        a {
-            color: var(--link-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
+            nav ul {
+                list-style: none;
+                padding: 20px;
+                background: var(--box-bg);
+                border-radius: 8px;
+                box-shadow: 0 2px 5px var(--box-shadow);
+                border: 1px solid var(--border-color);
+            }
 
-        a:hover {
-            text-decoration: underline;
-        }
+            nav li {
+                margin-bottom: 10px;
+            }
 
-        .feature-box {
-            background: var(--box-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px var(--box-shadow);
-            margin-bottom: 25px;
-            border: 1px solid var(--border-color);
-        }
+            .alert {
+                padding: 15px;
+                margin: 20px 0;
+                border: 1px solid var(--alert-border);
+                border-radius: 6px;
+                background-color: var(--alert-bg);
+                color: var(--alert-text);
+            }
 
-        code,
-        kbd {
-            background: var(--code-bg);
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-family: ui-monospace, 'Cascadia Code', monospace;
-            font-size: 0.9em;
-        }
+            .step-list {
+                counter-reset: custom-counter;
+                list-style: none;
+                padding-left: 0;
+            }
 
-        kbd {
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 0 var(--border-color);
-            font-weight: bold;
-        }
+            .step-list li {
+                counter-increment: custom-counter;
+                margin-bottom: 15px;
+                padding-left: 35px;
+                position: relative;
+            }
 
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px var(--box-shadow);
-            margin: 20px auto;
-            display: block;
-            border: 1px solid var(--border-color);
-        }
+            .step-list li::before {
+                content: counter(custom-counter);
+                position: absolute;
+                left: 0;
+                top: 0;
+                background: var(--heading-color);
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8em;
+                font-weight: bold;
+            }
 
-        .image-caption {
-            text-align: center;
-            font-size: 0.9em;
-            color: var(--h3-color);
-            margin-top: -10px;
-            margin-bottom: 20px;
-            font-style: italic;
-        }
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                border: 0;
+            }
+        </style>
+    </head>
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background: var(--box-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 5px var(--box-shadow);
-        }
+    <body>
+        <h1>Manual d'Usuari - BiblioHouse</h1>
 
-        th,
-        td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: left;
-        }
+        <div class="alert">
+            <strong>Nota d'Accessibilitat:</strong> Aquest manual admet navegació interactiva per teclat (utilitza
+            <kbd>Tab</kbd>). totes les imatges tenen descripcions alternatives (text alternatiu) per a lectors de pantalla. El
+            sistema de tema dinàmic garanteix una relació de contrast WCAG òptima de 4,5:1 tant en mode clar com fosc.
+        </div>
 
-        th {
-            background: var(--table-header);
-            font-weight: 600;
-        }
+        <nav aria-label="Taula de Continguts">
+            <h2>Taula de Continguts</h2>
+            <ul>
+                <li><a href="#introduccio">1. Introducció ràpida</a></li>
+                <li><a href="#primers-passos">2. Primers passos (Benvinguda i Accés)</a></li>
+                <li><a href="#navegacio">3. Navegació i Estructura</a></li>
+                <li><a href="#funcionalitats">4. Funcionalitats Principals</a></li>
+                <li><a href="#configuracio">5. Configuració</a></li>
+                <li><a href="#gestio-dades">6. Gestió de Dades (Importar, Exportar i Còpia de Seguretat)</a></li>
+                <li><a href="#sincronitzacio">7. Sincronització amb NextCloud</a></li>
+                <li><a href="#resolucio-problemes">8. Resolució de Problemes Comuns</a></li>
+                <li><a href="#funcions-avancades">9. Funcions Avançades</a></li>
+                <li><a href="#glossari">10. Glossari de termes</a></li>
+                <li><a href="#contacte">11. Contacte i Suport</a></li>
+            </ul>
+        </nav>
 
-        nav ul {
-            list-style: none;
-            padding: 20px;
-            background: var(--box-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 5px var(--box-shadow);
-            border: 1px solid var(--border-color);
-        }
+        <h2 id="introduccio">1. Introducció ràpida</h2>
+        <div class="feature-box">
+            <p><strong>Què fa l'aplicació:</strong> BiblioHouse és el teu gestor de biblioteca personal definitiu. Organitza llibres físics i digitals, gestiona a qui els prestes, controla quins volums et falten de les teves sagues favorites, porta una llista de desitjos i sincronitza tot amb el teu servidor NextCloud, sense dependre del núvol de tercers.</p>
+            <p><strong>Per a qui és:</strong> Dissenyat des de zero per a lectors novells i bibliotecaris avançats. No requereix coneixements tècnics previs.</p>
+            <p><strong>Requisits mínims:</strong> Windows, macOS o Linux modern. Java 21+ instal·lat. 500 MB de disc. Resolució de pantalla 1024x768.</p>
+            <p><strong>Idiomes (100% Suportats):</strong> Castellà (es), Anglès (en), Català (ca), Portuguès (pt), Gallec (gl), Euskara (eu). Pots canviar-lo des del menú <em>Eines</em> &gt; <em>Idioma</em> o des de <em>Eines</em> &gt; <em>Configuració</em> &gt; pestanya <em>General</em>.</p>
+        </div>
 
-        nav li {
-            margin-bottom: 10px;
-        }
+        <h2 id="primers-passos">2. Primers passos (Benvinguda i Accés)</h2>
+        <p><em>Temps estimat: 2 minuts</em></p>
 
-        .alert {
-            padding: 15px;
-            margin: 20px 0;
-            border: 1px solid var(--alert-border);
-            border-radius: 6px;
-            background-color: var(--alert-bg);
-            color: var(--alert-text);
-        }
+        <h3>Pantalla de Splash i Càrrega</h3>
+        <p>En fer doble clic a la icona de BiblioHouse, veuràs una finestra de càrrega (Splash Screen) amb el logo de l'aplicació. Això indica que la base de dades s'està inicialitzant.</p>
 
-        .step-list {
-            counter-reset: custom-counter;
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .step-list li {
-            counter-increment: custom-counter;
-            margin-bottom: 15px;
-            padding-left: 35px;
-            position: relative;
-        }
-
-        .step-list li::before {
-            content: counter(custom-counter);
-            position: absolute;
-            left: 0;
-            top: 0;
-            background: var(--heading-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .tree {
-            font-family: monospace;
-            white-space: pre;
-            background: var(--code-bg);
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Manual d'Usuari - BiblioHouse</h1>
-
-    <div class="alert">
-        <strong>Nota d'Accessibilitat:</strong> Aquest manual suporta navegació per teclat interactiva (usa
-        <kbd>Tab</kbd>). Totes les imatges posseeixen descripcions alternatives (alt-text) per a lectors de pantalla. El
-        sistema de tema dinàmic garanteix una ràtio de contrast WCAG òptima de 4.5:1 tant en mode clar com fosc.
-    </div>
-
-    <nav aria-label="Índex de continguts">
-        <h2>Índex</h2>
+        <h3>Pantalla de Benvinguda</h3>
+        <p>Després de la càrrega, veuràs la pantalla de Benvinguda amb dues opcions:</p>
         <ul>
-            <li><a href="#introduccion">1. Introducció ràpida</a></li>
-            <li><a href="#primeros-pasos">2. Primers passos (Registre i Onboarding)</a></li>
-            <li><a href="#navegacion">3. Navegació i Estructura</a></li>
-            <li><a href="#funcionalidades">4. Funcionalitats Principals (100% Pantalles)</a></li>
-            <li><a href="#configuracion">5. Configuració i Idiomes</a></li>
-            <li><a href="#gestion-datos">6. Gestió de Dades</a></li>
-            <li><a href="#solucion-problemas">7. Solució de Problemes Comuns (Troubleshooting)</a></li>
-            <li><a href="#funciones-avanzadas">8. Funcions Avançades</a></li>
-            <li><a href="#glosario">9. Glossari de termes</a></li>
-            <li><a href="#contacto">10. Contacte i Suport</a></li>
+            <li><strong>Iniciar amb Registre:</strong> Et porta a la pantalla d'Inici de Sessió/Registre per crear un compte d'usuari local protegit amb contrasenya. Recomanat per protegir la teva col·lecció.</li>
+            <li><strong>Iniciar sense Registre (Mode Convidat):</strong> Entra directament sense contrasenya. Les dades es guarden al teu ordinador però seran accessibles per a qualsevol persona que utilitzi l'equip. Ideal per provar l'app ràpidament.</li>
         </ul>
-    </nav>
 
-    <h2 id="introduccion">1. Introducció ràpida</h2>
-    <div class="feature-box">
-        <p><strong>Què fa l'app:</strong> BiblioHouse és el teu gestor de biblioteca local definitiu. Organitza llibres
-            físics i digitals, gestiona a qui els prestes i controla quins volums et falten a les teves sagues
-            preferides, tot des d'una interfície moderna sense pujar les teves dades al núvol.</p>
-        <p><strong>Per a qui és:</strong> Dissenyat des de zero per a lectors novells i bibliotecaris avançats. No
-            requereix coneixements tècnics previs.</p>
-        <p><strong>Requisits mínims:</strong> Windows, macOS o Linux modern. Java 21+ instal·lat. 500 MB de disc.
-            Resolució de pantalla 1024x768.</p>
-        <p><strong>Idiomes (100% Suportats):</strong> Castellà (es), Anglès (en), Català (ca), Portuguès (pt), Gallec
-            (gl), Euskera (eu). Pots canviar-ho des de <em>Configuració</em> > <em>General</em> en qualsevol moment.</p>
-    </div>
-
-    <h2 id="primeros-pasos">2. Primers passos (Registre i Onboarding)</h2>
-    <p><em>Temps estimat: 2 minuts</em></p>
-
-    <h3>Pantalla de Splash i Càrrega</h3>
-    <p>En fer doble clic a la icona de BiblioHouse, veuràs una finestra de càrrega (Splash Screen) amb el logo de
-        l'aplicació. Això indica que la base de dades s'està inicialitzant.</p>
-
-    <h3>Registre i Inici de Sessió</h3>
-    <p>La seguretat de la teva col·lecció és prioritària. En el primer ús, hauràs de crear un compte d'usuari local:</p>
-    <ul class="step-list">
-        <li>A la pantalla de Login, fes clic a l'enllaç inferior <strong>"Crear un compte nou"</strong>.</li>
-        <li>Introdueix el teu <strong>Nom d'Usuari</strong>, <strong>Contrasenya</strong> i repeteix la contrasenya. Fes
-            clic a <em>Registrar</em>.</li>
-        <li>L'aplicació et retornarà a l'inici de sessió. Ingressa les teves dades recentment creades i prem
-            <strong>Següent</strong>.</li>
-    </ul>
-    <h3>Assistent de Benvinguda (Onboarding)</h3>
-    <p>La primera vegada que entris, l'assistent "Welcome" et farà un recorregut ràpid en 3 diapositives. Fes clic al
-        botó blau de "Següent" fins arribar a "Començar!".</p>
-
-    <h2 id="navegacion">3. Navegació i Estructura</h2>
-    <p>El disseny es divideix en tres àrees fonamentals:</p>
-    <ul>
-        <li><strong>Barra Lateral Esquerra (Navegació):</strong> Conté tots els mòduls principals (Inici, Els meus
-            Llibres, Sagues, Desitjos, Historial, Préstecs, Estadístiques, Configuració). Per anar d'un lloc a un altre,
-            simplement fes clic a la icona corresponent.</li>
-        <li><strong>Panell Central (Àrea de Treball):</strong> On interactues amb les dades (llistes, formularis,
-            gràfics).</li>
-        <li><strong>Barra Superior (Eines):</strong> Depenent del mòdul, aquí trobaràs els botons de "Afegir", "Editar",
-            "Eliminar" i la barra de "Cerca".</li>
-    </ul>
-
-    <h2 id="funcionalidades">4. Funcionalitats Principals (100% Pantalles)</h2>
-    <p>Explicació exhaustiva de totes les pantalles, botons i els seus efectes.</p>
-
-    <div class="feature-box">
-        <h3>Mòdul 1: Inici (Dashboard)</h3>
-        <p><strong>Propòsit:</strong> Oferir-te un resum visual ràpid.</p>
-        <p><strong>Controls:</strong> No hi ha botons interactius aquí; només targetes que resumeixen quants llibres
-            tens i què has llegit aquest any.</p>
-        <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png"
-            alt="Pantalla de inicio mostrando tarjetas de resumen de libros totales, leídos y pendientes." />
-    </div>
-
-    <div class="feature-box">
-        <h3>Mòdul 2: Els meus Llibres (Inventari Principal)</h3>
-        <p><strong>Propòsit:</strong> Gestionar el CRUD complet (Crear, Llegir, Actualitzar, Esborrar) de la teva
-            col·lecció.</p>
-        <p><strong>Flux per afegir un llibre nou:</strong></p>
+        <h3>Registre i Inici de Sessió</h3>
+        <p>Si tries "Iniciar amb Registre", arribaràs a la pantalla d'Inici de Sessió:</p>
         <ul class="step-list">
-            <li>Fes clic al botó superior esquerre <strong>"+ Nou Llibre"</strong>.</li>
-            <li>S'obre la <em>Pantalla d'Edició</em>. A la casella "ISBN", tecleja el número del codi de barres (ex.
-                9788445000663).</li>
-            <li>Fes clic a la <strong>Lupa</strong> al costat de l'ISBN. Apareixerà la pantalla de <em>Resultats de
-                    Cerca Externa</em>.</li>
-            <li>L'app buscarà a OpenLibrary, Google Books i Inventaire. Fes clic al resultat que prefereixis i dóna-li a
-                "Importar".</li>
-            <li>Les dades i la portada s'ompliran soles. Finalment, fes clic al botó blau inferior de
-                <strong>Guardar</strong>.</li>
+            <li>A la pantalla d'Inici de Sessió, fes clic a l'enllaç inferior <strong>"Crear compte"</strong>.</li>
+            <li>Introdueix el teu <strong>Nom d'Usuari</strong>, <strong>Contrasenya</strong> i confirma-la. Fes clic a <em>Registrar-se</em>.</li>
+            <li>L'aplicació et tornarà a l'inici de sessió. Introdueix les teves dades acabades de crear i prem <strong>Següent</strong>.</li>
         </ul>
-        <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png"
-            alt="Tabla con el listado de libros. Barra de herramientas superior con botones de Añadir, Editar y Borrar." />
-    </div>
+        <p>La propera vegada que obris l'app, se't demanarà el teu usuari i contrasenya directament.</p>
 
-    <div class="feature-box">
-        <h3>Mòdul 3: Fitxa de Lectura i Edició de Metadades</h3>
-        <p>Quan fas doble clic en un llibre a "Els meus Llibres", accedeixes a la <strong>Fitxa de Detall</strong>. És
-            un mode "Només Lectura" per llegir sinopsis sense esborrar dades per accident.</p>
-        <p>Per canviar dades (Ex. "Estat de lectura" a "Llegit"), has de fer clic dret al llibre de la taula i triar
-            <strong>"Editar"</strong> (o prémer el botó del llapis a dalt). A la <em>Pantalla d'Edició</em> pots canviar
-            el títol, autor, qualificar-lo per estrelles (1 a 5) i afegir ressenyes.</p>
-        <img src="https://imgur.com/lzqMfU5.png"
-            alt="Formulario de edición de libro. Muestra campo para título, autor, botón para cambiar portada y estrellas de calificación." />
-    </div>
-
-    <div class="feature-box">
-        <h3>Mòdul 4: Gestor de Sagues</h3>
-        <p><strong>Propòsit:</strong> Agrupar llibres que pertanyen a una mateixa col·lecció.</p>
-        <ul class="step-list">
-            <li>Navega a "Sagues" al menú esquerre.</li>
-            <li>Fes clic al botó <strong>"+ Nova Saga"</strong>. Posa-li un nom (ex. "Dune").</li>
-            <li>Selecciona llibres del panell dret per afegir-los a la saga. Si et falta el Tom 2, l'app mostrarà "Tom 2
-                Faltant" en vermell vibrant.</li>
-        </ul>
-    </div>
-
-    <div class="feature-box">
-        <h3>Mòdul 5: Gestió de Socis i Préstecs</h3>
-        <p><strong>Propòsit:</strong> Saber a qui li has deixat els teus llibres i generar els seus carnets.</p>
-        <ul class="step-list">
-            <li>Navega a "Socis" o "Préstecs".</li>
-            <li>Fes clic a <strong>Afegir Soci</strong>. Introdueix el nom del teu amic (Ex. Carlos).</li>
-            <li>Per registrar un préstec: Ves a "Els meus Llibres", fes clic dret en un llibre -> "Prestar a...", tria a
-                Carlos.</li>
-            <li><strong>Exportar PDF:</strong> Des de "Socis", fes clic a "Generar Carnet PDF" per crear un document
-                imprimible amb codi QR.</li>
-        </ul>
-    </div>
-
-    <div class="feature-box">
-        <h3>Mòdul 6: Escàner Massiu i Assignar Prestatgeries</h3>
-        <p><strong>Escàner (Càmera Web):</strong> Fes clic al menú superior `Eines` > `Escàner per càmera`. Mostra el
-            codi de barres físic del llibre a la teva webcam. L'app emetrà un xiulet verd i ho guardarà instantàniament
-            a la teva biblioteca.</p>
-        <p><strong>Prestatgeries Físiques:</strong> Fes clic dret a llibres > `Ubicació`. Aquí indiques "Saló, Lleixa
-            3". Això t'ajuda a trobar el llibre real a casa teva.</p>
-        <p><strong>Duplicats:</strong> `Eines` > `Buscar Duplicats`. L'app rastreja ISBN idèntics i et permet
-            unificar-los prement a "Combinar".</p>
-    </div>
-
-    <h2 id="configuracion">5. Configuració i Idiomes</h2>
-    <p>Accedeix mitjançant la icona de l'engranatge a baix a l'esquerra. Es divideix en pestanyes:</p>
-    <ul>
-        <li><strong>General:</strong> Canvia l'idioma entre es/en/ca/pt/gl/eu. El canvi s'aplica instantàniament.</li>
-        <li><strong>Aparença (Contrast Fosc):</strong> Pots seleccionar "Automàtic", "Light" o "Dark".
-            <br><em>Nota Tècnica d'Accessibilitat:</em> En forçar el mode "Dark", el motor gràfic reemplaça les
-            variables de color CSS. Si pateixes d'astigmatisme, el mode Dark de BiblioHouse usa un fons `#212529` (gris
-            profund) en comptes de negre pur (`#000000`), evitant l'efecte "halo" en llegir textos blancs.
-        </li>
-        <li><strong>Avançat:</strong> Exportació de base de dades completa.</li>
-    </ul>
-    <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png"
-        alt="Pantalla de ajustes con opciones de apariencia, temas, y selecciones de idioma." />
-
-    <h2 id="gestion-datos">6. Gestió de Dades</h2>
-    <p>La cerca es realitza a la barra superior de "Els meus Llibres". Escriu "Tolkien" i la taula es filtrarà
-        automàticament. Fes clic a les capçaleres (ex. "Any") per ordenar ascendent o descendent.</p>
-    <p>Per exportar, ves a `Arxiu` > `Exportar` i selecciona format CSV per a Excel, o JSON per fer un abocament de
-        seguretat. Importar funciona igual (`Arxiu` > `Importar CSV`).</p>
-
-    <h2 id="solucion-problemas">7. Solució de Problemes Comuns (Troubleshooting)</h2>
-    <p>Aquesta taula cobreix el 90% de les incidències reals reportades pels usuaris.</p>
-
-    <table>
-        <thead>
-            <tr>
-                <th>SÍMPTOMA / PROBLEMA</th>
-                <th>CAUSA PROBABLE</th>
-                <th>SOLUCIÓ PAS A PAS</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>He oblidat la meva contrasenya local de l'app.</strong></td>
-                <td>En ser local i privada, no hi ha servidor de recuperació.</td>
-                <td>Esborra l'arxiu ocult <code>users.json</code> a la carpeta d'instal·lació de BiblioHouse. Hauràs de
-                    registrar un usuari nou però no perdràs els teus llibres.</td>
-            </tr>
-            <tr>
-                <td><strong>El cercador d'ISBN es queda carregant (Roda infinita)</strong></td>
-                <td>Servidors d'OpenLibrary col·lapsats o sense internet.</td>
-                <td>Cancel·la l'acció prement la X. Verifica el teu Wifi. Alternativament, tecleja el títol del llibre a
-                    mà i ignora la lupa automàtica.</td>
-            </tr>
-            <tr>
-                <td><strong>L'escàner de càmera mostra pantalla negra</strong></td>
-                <td>Windows/Mac bloqueja l'accés de l'app a la càmera per privacitat.</td>
-                <td>Ves a la configuració del teu Sistema Operatiu -> Privacitat -> Càmera, i permet l'accés a
-                    Java/BiblioHouse.</td>
-            </tr>
-            <tr>
-                <td><strong>"Error a l'exportar PDF" als carnets de Socis</strong></td>
-                <td>La carpeta de destinació (Documents) requereix permisos d'administrador.</td>
-                <td>Executa BiblioHouse com a Administrador o exporta el PDF a l'"Escriptori" en el seu lloc.</td>
-            </tr>
-            <tr>
-                <td><strong>Mode Fosc il·legible (lletres negres sobre fons fosc)</strong></td>
-                <td>El sistema operatiu està forçant un tema d'"Alt Contrast" sobre l'aplicació.</td>
-                <td>Ves a Configuració de BiblioHouse > Aparença. Canvia d'"Automàtic" a "Light" temporalment. Reinicia
-                    l'app i prova "Dark" natiu.</td>
-            </tr>
-            <tr>
-                <td><strong>Alguns botons apareixen tallats en Euskera/Gallec</strong></td>
-                <td>Textos més llargs que la caixa original del disseny FXML.</td>
-                <td>Arrossega la vora de la finestra de BiblioHouse per maximitzar-la, l'aplicació és totalment
-                    "Responsive" (s'adapta a l'amplada).</td>
-            </tr>
-            <tr>
-                <td><strong>Falten Portades (Només apareix un llibre genèric gris)</strong></td>
-                <td>L'internet va fallar durant la descàrrega de la imatge en segon pla.</td>
-                <td>Ves al menú <em>Eines</em> superior -> Selecciona <strong>"Buscar portades faltants"</strong>. El
-                    sistema escombrarà tots els buits grisos i intentarà descarregar-los de nou.</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h2 id="funciones-avanzadas">8. Funcions Avançades (Per a Power-Users)</h2>
-    <ul class="step-list">
-        <li><strong>Dreceres Ràpides:</strong> Usa <kbd>Ctrl</kbd>+<kbd>N</kbd> (Afegir Llibre),
-            <kbd>Ctrl</kbd>+<kbd>F</kbd> (Buscar), <kbd>Supr</kbd> (Esborrar llibre seleccionat).</li>
-        <li><strong>Drag & Drop Visual:</strong> Estant a la pestanya d'Edició, pots buscar una foto al teu navegador
-            web Google Chrome, fer clic, arrossegar-la i deixar-la anar físicament sobre el forat de la portada a
-            BiblioHouse.</li>
-        <li><strong>Mode Ràfega (Barcode):</strong> Si uses un escàner làser USB "pistola", situa el cursor al cercador
-            ràpid. Llegeix un llibre; en xiular, prem <kbd>Enter</kbd>. Pots catalogar 30 llibres per minut.</li>
-    </ul>
-
-    <h2 id="glosario">9. Glossari de termes</h2>
-    <ul>
-        <li><strong>Onboarding:</strong> Procés d'assistència pas a pas per a usuaris nous.</li>
-        <li><strong>CRUD:</strong> Operacions bàsiques: Crear, Llegir, Actualitzar (Update) i Esborrar (Delete).</li>
-        <li><strong>ISBN:</strong> Número Internacional Normalitzat del Llibre de 13 dígits a sobre del codi de barres.
-        </li>
-        <li><strong>OpenLibrary / Inventaire:</strong> Bases de dades públiques mundials que l'app usa per autocompletar
-            metadades gratis.</li>
-    </ul>
-
-    <h2 id="contacto">10. Contacte i Suport</h2>
-    <div class="feature-box">
-        <p><strong>Quina informació facilitar:</strong> Si un error de la taula anterior no es resol, indica sempre si
-            uses Windows o Mac, la versió de Java instal·lada i com reproduir l'errada.</p>
-        <p><strong>Canals Oficials:</strong></p>
+        <h2 id="navegacio">3. Navegació i Estructura</h2>
+        <p>La finestra principal es divideix en aquestes àrees:</p>
         <ul>
-            <li><strong>Suport Tècnic (Bugs):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a>
+            <li><strong>Barra de Menús (Superior):</strong> Conté els menús <em>Fitxer</em>, <em>Eines</em> i <em>Ajuda</em>. Des d'aquí accedeixes a importar/exportar, buscar duplicats, configuració, idioma, estadístiques i aquest manual.</li>
+            <li><strong>Panell Lateral Esquerre — "Les Meves Prestatgeries":</strong> Mostra categories temàtiques (Novel·la, Ciència Ficció, Fantasia, etc.). En seleccionar una prestatgeria, la vista principal es filtra per mostrar només els llibres d'aquella categoria.</li>
+            <li><strong>Panell Central — Pestanyes:</strong> L'àrea de treball amb les següents pestanyes:
+                <ul>
+                    <li><strong>Els Meus Llibres:</strong> Galeria visual amb portades de la teva col·lecció.</li>
+                    <li><strong>Afegir / Gestionar:</strong> Buscar llibres a OpenLibrary, escanejar per càmera i afegir manualment.</li>
+                    <li><strong>Préstecs Actius:</strong> Registrar i controlar préstecs a socis.</li>
+                    <li><strong>Històric:</strong> Registre de tots els préstecs retornats.</li>
+                    <li><strong>Llista de Desitjos:</strong> Llibres que vols aconseguir.</li>
+                    <li><strong>Sagues:</strong> Agrupar llibres per col·leccions o sagues.</li>
+                </ul>
             </li>
-            <li><strong>Fòrum i Consultes:</strong> <a href="https://bibliohouse.org"
-                    target="_blank">bibliohouse.org</a></li>
+            <li><strong>Barra d'Estat (Inferior):</strong> Mostra missatges del sistema com "Benvingut, Joan" o el nombre de llibres filtrats.</li>
         </ul>
-    </div>
 
-    <hr>
-    <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-        <em>BiblioHouse v1.7 - Desenvolupat per ferlagod. Manual adaptat garantint 100% de cobertura i
-            accessibilitat.</em>
-    </p>
+        <h2 id="funcionalitats">4. Funcionalitats Principals</h2>
+        <p>Explicació exhaustiva de totes les pestanyes i les seves funcions.</p>
 
-</body>
+        <div class="feature-box">
+            <h3>Pestanya 1: Els Meus Llibres (Galeria de Portades)</h3>
+            <p><strong>Propòsit:</strong> Visualitzar tota la teva col·lecció de manera atractiva.</p>
+            <p><strong>Funcionament:</strong> Mostra totes les portades dels teus llibres en un panell tipus galeria. Utilitza la barra de cerca a la part superior dreta per filtrar per títol o autor. En seleccionar una prestatgeria del panell esquerre, la galeria es filtra automàticament.</p>
+            <p><strong>Menú contextual:</strong> Fes clic dret sobre qualsevol llibre per accedir a les opcions:</p>
+            <ul>
+                <li><strong>Prestar aquest llibre:</strong> Inicia un préstec ràpid.</li>
+                <li><strong>Editar detalls:</strong> Obre la pantalla d'edició completa.</li>
+                <li><strong>Canviar portada:</strong> Selecciona una imatge local com a portada.</li>
+                <li><strong>Marcar com a…:</strong> Canvia l'estat de lectura (📋 Pendents, 📖 Llegint, ✅ Llegit).</li>
+                <li><strong>Eliminar llibre:</strong> Esborra el llibre de la teva col·lecció.</li>
+            </ul>
+            <p><strong>Doble clic:</strong> En fer doble clic a un llibre s'obre la <strong>Fitxa de Detall</strong> en mode només lectura, on veus la portada, títol, autor, editorial, any, gènere, ISBN, valoració amb estrelles i la ressenya personal. Des d'allà, pots prémer "Editar detalls" per modificar el llibre.</p>
+            <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Galeria de portades de llibres amb panell lateral de prestatgeries." />
+        </div>
 
+        <div class="feature-box">
+            <h3>Pestanya 2: Afegir / Gestionar</h3>
+            <p><strong>Propòsit:</strong> Afegir nous llibres a la teva biblioteca de tres maneres diferents.</p>
+
+            <h3>Mètode 1: Cerca a OpenLibrary</h3>
+            <ul class="step-list">
+                <li>A la barra de cerca superior, escriu el títol o ISBN del llibre (ex. 9788445000663).</li>
+                <li>Prem el botó <strong>🔍</strong> o prem <kbd>Enter</kbd>.</li>
+                <li>Apareixerà la finestra de <em>Resultats de la Cerca</em> amb dades d'OpenLibrary, Google Books i Inventaire.</li>
+                <li>Fes clic al resultat que prefereixis i prem <strong>"Importar a la Biblioteca"</strong> o <strong>"Afegir a la Llista de Desitjos"</strong>.</li>
+            </ul>
+
+            <h3>Mètode 2: Escàner per Càmera Web</h3>
+            <p>Prem el botó <strong>📷</strong> (al costat de la barra de cerca). Mostra el codi de barres del llibre a la teva webcam. L'app el detectarà, emetrà un senyal acústic i el cercarà automàticament.</p>
+
+            <h3>Mètode 3: Afegir Manualment</h3>
+            <p>Al formulari inferior "Afegir manualment", omple els camps:</p>
+            <ul>
+                <li>Títol, Autor, Editorial, Gènere, ISBN, Any, Quantitat.</li>
+                <li>Sèrie/Saga i Ordre (per agrupar en col·leccions).</li>
+                <li>Selecciona una imatge de portada amb el botó "Seleccionar...".</li>
+                <li>Marca la casella "Ja el tinc (en propietat)" si possedeixes el llibre.</li>
+                <li>Prem <strong>"Afegir a la Biblioteca"</strong>.</li>
+            </ul>
+            <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png" alt="Pestanya Afegir/Gestionar amb formulari manual i barra de cerca OpenLibrary." />
+        </div>
+
+        <div class="feature-box">
+            <h3>Pantalla d'Edició de Llibre</h3>
+            <p>En prémer "Editar detalls" (des del menú contextual o la fitxa de detall), s'obre una finestra amb tots els camps del llibre:</p>
+            <ul>
+                <li><strong>Portada:</strong> Canvia la imatge amb "Canviar portada" (o arrossega una imatge des del navegador) i "Buscar en línia" per descarregar automàticament una portada.</li>
+                <li><strong>Estat de Lectura:</strong> Selecciona "Pendent", "Llegint" o "Llegit" al desplegable.</li>
+                <li><strong>Valoració:</strong> Puntua'l de 0 a 5 estrelles.</li>
+                <li><strong>Dades:</strong> Títol, Autor, Editorial, Gènere, Any, ISBN, Sèrie/Saga i Ordre.</li>
+                <li><strong>Prestatgeries:</strong> Afegeix o crea prestatgeries personalitzades i assigna-les al llibre.</li>
+                <li><strong>Ressenya personal:</strong> Escrivint les teves impressions sobre el llibre.</li>
+                <li><strong>"En propietat":</strong> Desmarca aquesta casella si encara no tens el llibre físicament.</li>
+            </ul>
+            <p>Prem <strong>Desar Canvis</strong> per confirmar o <strong>Cancel·lar</strong> per descartar.</p>
+            <img src="https://imgur.com/lzqMfU5.png" alt="Formulari d'edició de llibre amb portada, camps de dades, prestatgeries, valoració i ressenya." />
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya 3: Préstecs Actius</h3>
+            <p><strong>Propòsit:</strong> Registrar a qui li prestes els teus llibres i controlar les devolucions.</p>
+            <ul class="step-list">
+                <li>Selecciona un <strong>Llibre</strong> del desplegable "Llibre a prestar".</li>
+                <li>Selecciona un <strong>Soci</strong> del desplegable. Si no existeix, prem el botó <strong>"+"</strong> per crear un soci ràpid, o <strong>"Gestionar Socis"</strong> per obrir la gestió completa.</li>
+                <li>Prem <strong>"Fer Préstec"</strong>.</li>
+                <li>El préstec apareixerà a la taula inferior amb la data i la data estimada de devolució.</li>
+                <li>Per registrar la devolució, selecciona el préstec i prem <strong>"Marcar com a Retornat"</strong>. El préstec passará a la pestanya d'Històric.</li>
+            </ul>
+            <p><strong>Avís de préstecs vençuts:</strong> En iniciar l'app, si hi ha llibres amb préstecs que superen el límit de dies configurat, rebran un avís amb els llibres pendents de devolució.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya 4: Històric</h3>
+            <p><strong>Propòsit:</strong> Consultar el registre històric de tots els préstecs finalitzats.</p>
+            <p>Mostra una taula amb les columnes: Llibre, Soci, Data de Préstec i Data de Devolució.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya 5: Llista de Desitjos</h3>
+            <p><strong>Propòsit:</strong> Guardar llibres que vols aconseguir sense barrejar-los amb la teva col·lecció.</p>
+            <ul class="step-list">
+                <li>Prem <strong>"Buscar per afegir..."</strong> per buscar un llibre a OpenLibrary.</li>
+                <li>Als resultats de la cerca, prem <strong>"Afegir a la Llista de Desitjos"</strong> en lloc de "Importar".</li>
+                <li>Els llibres desitjats apareixen com a targetes a aquesta pestanya.</li>
+                <li>Quan aconsegueixis un llibre, fes clic dret i selecciona <strong>"Marcar com a Conseguit"</strong> per moure'l a la teva biblioteca principal.</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya 6: Sagues i Col·leccions</h3>
+            <p><strong>Propòsit:</strong> Agrupar llibres que pertanyen a una mateixa sèrie o col·lecció.</p>
+            <p>La pestanya té un panell dividit en dos:</p>
+            <ul>
+                <li><strong>Panell esquerre — "Les Meves Col·leccions":</strong> Llista de totes les teves sagues. Fes clic a una per veure els seus llibres.</li>
+                <li><strong>Panell dret:</strong> Galeria de portades dels llibres d'aquella saga, amb un resum informatiu.</li>
+            </ul>
+            <p><strong>Menú contextual a la llista de sagues:</strong></p>
+            <ul>
+                <li><strong>Reanomenar saga:</strong> Canvia el nom de la col·lecció.</li>
+                <li><strong>Eliminar saga (mantindre llibres):</strong> Esborra l'agrupació però conserva els llibres.</li>
+                <li><strong>Eliminar saga i els seus llibres:</strong> Esborra la saga i tots els seus llibres associats.</li>
+            </ul>
+            <p>Els llibres s'assignen a sagues automàticament en omplir el camp "Sèrie/Saga" en afegir o editar un llibre.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Gestió de Socis</h3>
+            <p><strong>Propòsit:</strong> Administrar les persones a qui prestes llibres.</p>
+            <p>Accedeix des de la pestanya Préstecs Actius &gt; botó <strong>"Gestionar Socis"</strong>.</p>
+            <ul>
+                <li>Veure la taula de tots els socis registrats (Nº Soci, Nom, Cognoms, DNI, Domicili).</li>
+                <li><strong>Editar Seleccionat:</strong> Modifica les dades d'un soci.</li>
+                <li><strong>Imprimir Carnets (PDF):</strong> Genera un document PDF imprimible amb els carnets de soci.</li>
+                <li><strong>Eliminar Soci:</strong> Esborra un soci de la base de dades.</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3>Estadístiques</h3>
+            <p><strong>Propòsit:</strong> Obtenir una anàlisi visual de la teva col·lecció.</p>
+            <p>Accedeix des del menú <em>Eines</em> &gt; <em>Estadístiques</em>. La finestra mostra:</p>
+            <ul>
+                <li><strong>Mètriques Clau:</strong> Total de llibres, Llibres llegits (amb percentatge), Autor més freqüent, Gènere principal, Valoració mitjana amb estrelles, Acabats aquest any i Taxa mitjana (llibres/mes).</li>
+                <li><strong>Gràfic de pastís:</strong> Distribució per Gèneres.</li>
+                <li><strong>Gràfic de barres:</strong> Top 10 Autors Més Freqüents.</li>
+                <li><strong>Gràfic de barres apilades:</strong> Estat de Lectura per Gènere.</li>
+            </ul>
+        </div>
+
+        <h2 id="configuracio">5. Configuració</h2>
+        <p>Accedeix mitjançant el menú <em>Eines</em> &gt; <em>Configuració</em>. Es divideix en quatre pestanyes:</p>
+
+        <div class="feature-box">
+            <h3>Pestanya General</h3>
+            <ul>
+                <li><strong>Preferències d'Usuari:</strong>
+                    <ul>
+                        <li>Demanar confirmació abans d'eliminar un llibre.</li>
+                        <li>Iniciar sempre a pantalla completa.</li>
+                        <li>Dies límit de préstec (per defecte 30).</li>
+                    </ul>
+                </li>
+                <li><strong>Aparença:</strong>
+                    <ul>
+                        <li><strong>Idioma:</strong> Canvia entre Castellà, Anglès, Català, Gallec, Euskara i Portuguès. El canvi s'aplica instantàniament sense reiniciar.</li>
+                        <li><strong>Tema Visual:</strong> Tria entre "Clar (Primer Light)" i "Fosc (Primer Dark)".<br />
+                            <em>Nota d'Accessibilitat:</em> El mode Fosc utilitza un fons gris profund (#212529) en lloc de negre pur (#000000), evitant l'efecte "halo" per a persones amb astigmatisme.</li>
+                    </ul>
+                </li>
+                <li><strong>Personalització:</strong> Canvia el nom de la teva biblioteca (apareixerà a la barra de títol).</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya Dades</h3>
+            <ul>
+                <li><strong>Ubicació dels fitxers:</strong> Mostra el camí de la base de dades local. Pots obrir la carpeta amb un clic.</li>
+                <li><strong>Exportar Còpia de Seguretat:</strong> Genera un fitxer ZIP amb totes les dades de la teva biblioteca (llibres, socis, portades, preferències).</li>
+                <li><strong>Zona de Perill:</strong>
+                    <ul>
+                        <li><strong>Esborrar TOTS els llibres:</strong> Buida la biblioteca (demana confirmació).</li>
+                        <li><strong>Restaurar de fàbrica:</strong> Elimina absolutament tot (llibres, socis, portades, credencials i configuracions). Requereix escriure "ESBORRAR" com a confirmació de seguretat. L'app es tancarà i, en tornar-la a obrir, estarà com si fos acabada d'instal·lar.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya Sincronització (NextCloud)</h3>
+            <p>Consulta la secció <a href="#sincronitzacio">7. Sincronització amb NextCloud</a> per a tots els detalls.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Pestanya Quant a</h3>
+            <p>Mostra el logo, la versió actual de BiblioHouse, l'autor i un enllaç per donar suport al projecte a Liberapay.</p>
+        </div>
+
+        <p>Recorda prémer <strong>"Desar Configuració"</strong> per aplicar els canvis o <strong>"Cancel·lar"</strong> per descartar-los.</p>
+        <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png" alt="Pantalla de configuració amb pestanyes General, Dades, Sincronització i Quant a." />
+
+        <h2 id="gestio-dades">6. Gestió de Dades (Importar, Exportar i Còpia de Seguretat)</h2>
+        <p>Totes les opcions d'importació i exportació estan al menú <em>Fitxer</em>:</p>
+        <ul>
+            <li><strong>Importar base de dades:</strong> Carrega un fitxer JSON de BiblioHouse exportat prèviament.</li>
+            <li><strong>Importar des de CSV:</strong> Importa llibres des d'un fitxer CSV (compatible amb Excel).</li>
+            <li><strong>Exportar:</strong> Exporta la teva biblioteca en format JSON per a còpia de seguretat.</li>
+            <li><strong>Exportar informe PDF:</strong> Genera un informe professional en PDF de la teva biblioteca amb filtres avançats (per títol, autor, prestatgeries, gèneres, rang d'anys i estat de lectura).</li>
+            <li><strong>Exportar Catàleg Web:</strong> Genera un fitxer HTML navegable del teu catàleg, ideal per compartir el teu catàleg a la web. Pots agrupar per gènere o per prestatgeria i aplicar filtres.</li>
+        </ul>
+        <p>La <strong>cerca local</strong> es realitza a la barra superior de la pestanya "Els Meus Llibres". Escrivint "Tolkien", la galeria es filtrarà automàticament amb un lleuger retard per no alentir l'escriptura.</p>
+
+        <h2 id="sincronitzacio">7. Sincronització amb NextCloud</h2>
+        <div class="feature-box">
+            <p><strong>Propòsit:</strong> Mantenir una còpia sincronitzada de la teva biblioteca al teu propi servidor NextCloud mitjançant WebDAV, sense dependre de serveis al núvol de tercers.</p>
+            <p>Accedeix des de <em>Eines</em> &gt; <em>Configuració</em> &gt; pestanya <em>Sincronització</em>.</p>
+            <ul class="step-list">
+                <li>Introdueix la <strong>URL del servidor</strong> (ex. <code>https://el-teu-nextcloud.exemple.com</code>).</li>
+                <li>Introdueix el teu <strong>Usuari</strong> de NextCloud.</li>
+                <li>Introdueix la <strong>Contrasenya d'aplicació</strong> (generada des d'Ajustos &gt; Seguretat al teu panell NextCloud). Aquesta contrasenya es guarda xifrada al llaç del sistema operatiu, mai en text pla.</li>
+                <li>Prem <strong>"Provar connexió"</strong> per verificar que les dades són correctes.</li>
+                <li><strong>"Sincronitzar ara (Pujar ↑)":</strong> Puja la teva base de dades local a NextCloud.</li>
+                <li><strong>"Restaurar des de NextCloud (Baixar ↓)":</strong> Baixa i sobrescriu les teves dades locals amb les de NextCloud (demana confirmació).</li>
+            </ul>
+            <p><strong>Auto-sincronització:</strong> Si NextCloud està configurat, l'app puja automàticament les teves dades cada vegada que realitzes canvis importants (afegir, editar o esborrar llibres).</p>
+        </div>
+
+        <h2 id="resolucio-problemes">8. Resolució de Problemes Comuns</h2>
+        <p>Aquesta taula cobreix el 90% dels incidents reals reportats per usuaris.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>SÍMPTOMA / PROBLEMA</th>
+                    <th>CAUSA PROBABLE</th>
+                    <th>SOLUCIÓ PAS A PAS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>He oblidat la meva contrasenya local de l'app.</strong></td>
+                    <td>Al ser local i privada, no hi ha servidor de recuperació.</td>
+                    <td>Esborra el fitxer ocult <code>users.json</code> a la carpeta d'instal·lació de BiblioHouse. Haures de registrar un usuari nou, però no perdràs els teus llibres. Alternativament, reobre l'app i tria "Iniciar sense Registre" per accedir en mode convidat.</td>
+                </tr>
+                <tr>
+                    <td><strong>El cercador d'ISBN es queda carregant (roda infinita)</strong></td>
+                    <td>Servidors d'OpenLibrary col·lapsats o sense internet.</td>
+                    <td>Cancel·la l'acció tancant la finestra de resultats. Verifica la teva connexió. Alternativament, escriu les dades del llibre a mà a la secció "Afegir manualment".</td>
+                </tr>
+                <tr>
+                    <td><strong>L'escàner de càmera mostra pantalla negra</strong></td>
+                    <td>El sistema operatiu bloqueja l'accés de l'app a la càmera per privacitat.</td>
+                    <td>Ves a la configuració del teu Sistema Operatiu &gt; Privacitat &gt; Càmera, i permet l'accés a Java/BiblioHouse.</td>
+                </tr>
+                <tr>
+                    <td><strong>"Error al exportar PDF" als carnets de Socis</strong></td>
+                    <td>La carpeta de destí requereix permisos d'administrador.</td>
+                    <td>Executa BiblioHouse com a Administrador o exporta el PDF a "Escriptori" en el seu lloc.</td>
+                </tr>
+                <tr>
+                    <td><strong>Mode Fosc il·legible (lletres negres sobre fons fosc)</strong></td>
+                    <td>El sistema operatiu està forçant un tema d'"Alt Contraste" sobre l'aplicació.</td>
+                    <td>Ves a <em>Eines</em> &gt; <em>Configuració</em> &gt; pestanya General. Canvia el Tema Visual a "Clar (Primer Light)" temporalment. Reinicia l'app i prova "Fosc (Primer Dark)" de nou.</td>
+                </tr>
+                <tr>
+                    <td><strong>Alguns botons apareixen tallats en Euskera/Gallec</strong></td>
+                    <td>Textos més llargs que la caixa original del disseny.</td>
+                    <td>Arrossega la vora de la finestra de BiblioHouse per maximitzar-la. L'aplicació és totalment "responsive" i s'adapta a l'amplada.</td>
+                </tr>
+                <tr>
+                    <td><strong>Falten Portades (Només apareix un llibre genèric gris)</strong></td>
+                    <td>Internet va fallar durant la descàrrega de la imatge en segon pla.</td>
+                    <td>Ves al menú <em>Eines</em> &gt; <strong>"Buscar portades faltants"</strong>. El sistema revisarà tots els llibres sense portada i intentarà descarregar-les de nou.</td>
+                </tr>
+                <tr>
+                    <td><strong>Error de connexió a NextCloud</strong></td>
+                    <td>URL incorrecta, usuari/contrasenya errònies, o el servidor no és accessible.</td>
+                    <td>Verifica la URL (ha d'incloure <code>https://</code>). Assegura't d'utilitzar una <em>contrasenya d'aplicació</em> generada des de NextCloud (Ajustos &gt; Seguretat), no la teva contrasenya normal. Prem "Provar connexió" per obtenir un diagnòstic detallat de l'error.</td>
+                </tr>
+                <tr>
+                    <td><strong>L'app detecta actualitzacions però no s'instal·len soles</strong></td>
+                    <td>BiblioHouse només avisa de versions noves; no s'actualitza automàticament.</td>
+                    <td>Visita <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a> i descarrega manualment l'última versió.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="funcions-avancades">9. Funcions Avançades (Per a Usuaris Avançats)</h2>
+        <ul class="step-list">
+            <li><strong>Dreceres de Teclat:</strong>
+                <ul>
+                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Anar a la pestanya "Afegir/Gestionar" i enfocar el camp de títol per afegir un llibre manualment.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Anar a la pestanya "Afegir/Gestionar" i enfocar la barra de cerca d'OpenLibrary.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Anar a la pestanya de Préstecs Actius.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>Q</kbd> / <kbd>⌘</kbd>+<kbd>Q</kbd> — Tancar l'aplicació.</li>
+                    <li><kbd>F1</kbd> — Obrir aquest Manual d'Usuari.</li>
+                </ul>
+            </li>
+            <li><strong>Arrossegar i Deixar anar Visual:</strong> Estant a la pantalla d'Edició d'un llibre, pots buscar una foto al teu navegador web, arrossegar-la i deixar-la físicament sobre la zona de la portada a BiblioHouse per canviar-la al moment.</li>
+            <li><strong>Mode Ràfega (Codi de Barres):</strong> Si utilitzes un escàner làser USB tipus "pistola", situa el cursor al cercador d'OpenLibrary. Llegeix un codi de barres; en detectar-lo, prem <kbd>Enter</kbd>. Pots catalogar desenes de llibres per minut.</li>
+            <li><strong>Buscar sagues faltants:</strong> Des del menú <em>Eines</em> &gt; <em>"Buscar sagues faltants en línia"</em>, l'app busca a bases de dades públiques si hi ha toms que et falten a les teves sagues i et suggereix quins aconseguir.</li>
+            <li><strong>Comprovació d'actualitzacions:</strong> En iniciar-se, BiblioHouse comprova silenciosament si hi ha una versió nova disponible i t'avisa amb un banner a la barra superior.</li>
+        </ul>
+
+        <h2 id="glossari">10. Glossari de termes</h2>
+        <ul>
+            <li><strong>CRUD:</strong> Operacions bàsiques: Crear, Llegir, Actualitzar (Update) i Esborrar (Delete).</li>
+            <li><strong>ISBN:</strong> Número Internacional Normalitzat del Llibre de 13 xifres. Es troba a sobre del codi de barres a la coberta posterior.</li>
+            <li><strong>OpenLibrary / Inventaire / Google Books:</strong> Bases de dades públiques globals que l'app utilitza per autocompletar metadades de llibres gratuïtament.</li>
+            <li><strong>NextCloud:</strong> Plataforma d'emmagatzematge al núvol autoallotjada. BiblioHouse l'utilitza per sincronitzar la teva biblioteca amb el teu propi servidor.</li>
+            <li><strong>WebDAV:</strong> Protocol d'accés remot a fitxers utilitzat per NextCloud per a la sincronització.</li>
+            <li><strong>Mode Convidat:</strong> Accés a l'app sense crear un compte amb contrasenya. Les dades es guarden localment sense protecció.</li>
+            <li><strong>Prestatgeria:</strong> Categoria temàtica (ex. Novel·la, Fantasia) utilitzada per organitzar i filtrar llibres.</li>
+            <li><strong>Saga/Col·lecció:</strong> Agrupació de llibres que pertanyen a una mateixa sèrie literària.</li>
+        </ul>
+
+        <h2 id="contacte">11. Contacte i Suport</h2>
+        <div class="feature-box">
+            <p><strong>Quina informació facilitar:</strong> Si un error de la taula anterior no es resol, indica sempre si utilitzes Windows, Mac o Linux, la versió de Java instal·lada (<code>java --version</code> al terminal) i com reproduir la fallada pas a pas.</p>
+            <p><strong>Canals Oficials:</strong></p>
+            <ul>
+                <li><strong>Suport Tècnic (Errors):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a></li>
+                <li><strong>Fòrum i Consultes:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a></li>
+                <li><strong>Donar suport al projecte:</strong> <a href="https://liberapay.com/ferlagod./" target="_blank">Liberapay</a></li>
+            </ul>
+        </div>
+
+        <hr>
+        <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
+            <em>BiblioHouse v1.8 - Desenvolupat per ferlagod. Manual adaptat garantint el 100% de cobertura i accessibilitat.</em>
+        </p>
+    </body>
 </html>

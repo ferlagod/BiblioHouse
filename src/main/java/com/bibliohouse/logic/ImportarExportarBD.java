@@ -35,7 +35,7 @@ import javafx.stage.Window;
  * opciones para añadir o reemplazar los datos existentes.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class ImportarExportarBD {
 

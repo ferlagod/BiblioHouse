@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * autobombo y pongo mi contacto.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class AcercaDeController {
 

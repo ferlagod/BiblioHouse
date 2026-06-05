@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Set;
@@ -39,7 +40,7 @@ import java.util.stream.Collectors;
  * incremental.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class NextCloudSyncService {
 
@@ -119,7 +120,7 @@ public class NextCloudSyncService {
     private static String encodeUrlSegment(String segment) {
         try {
             return new java.net.URI(null, null, segment, null).getRawPath();
-        } catch (Exception e) {
+        } catch (URISyntaxException e) {
             return segment;
         }
     }

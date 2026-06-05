@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter;
  * el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo devolvió).
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class Prestamo {
 

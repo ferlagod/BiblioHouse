@@ -42,7 +42,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * barras para facilitar el préstamo.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  *
  */
 public class CarnetGenerator {

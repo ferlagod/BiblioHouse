@@ -47,16 +47,20 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
  * Base64 data URIs para máxima portabilidad (un solo archivo sin dependencias).
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class ServicioExportarWeb {
 
     private static final Logger LOGGER = Logger.getLogger(ServicioExportarWeb.class.getName());
 
-    /** Ancho objetivo de las miniaturas incrustadas (px). */
+    /**
+     * Ancho objetivo de las miniaturas incrustadas (px).
+     */
     private static final int THUMBNAIL_WIDTH = 200;
 
-    /** Calidad JPEG para las miniaturas (0.0 - 1.0). */
+    /**
+     * Calidad JPEG para las miniaturas (0.0 - 1.0).
+     */
     private static final float JPEG_QUALITY = 0.70f;
 
     /**
@@ -263,8 +267,8 @@ public class ServicioExportarWeb {
     }
 
     /**
-     * Obtiene la portada del libro como una cadena Base64 data URI.
-     * Si no se puede leer la portada, devuelve un placeholder SVG.
+     * Obtiene la portada del libro como una cadena Base64 data URI. Si no se
+     * puede leer la portada, devuelve un placeholder SVG.
      */
     private String obtenerPortadaBase64(Libro libro) {
         String url = libro.getPortadaURL();
@@ -373,8 +377,12 @@ public class ServicioExportarWeb {
         // Ordenar por nombre de categoría, poniendo "Sin clasificar" al final
         return mapa.entrySet().stream()
                 .sorted((a, b) -> {
-                    if (a.getKey().isEmpty()) return 1;
-                    if (b.getKey().isEmpty()) return -1;
+                    if (a.getKey().isEmpty()) {
+                        return 1;
+                    }
+                    if (b.getKey().isEmpty()) {
+                        return -1;
+                    }
                     return a.getKey().compareToIgnoreCase(b.getKey());
                 })
                 .collect(Collectors.toMap(
@@ -779,7 +787,9 @@ public class ServicioExportarWeb {
      * Escapa caracteres especiales para HTML.
      */
     private String escapeHtml(String text) {
-        if (text == null) return "";
+        if (text == null) {
+            return "";
+        }
         return text.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -791,7 +801,9 @@ public class ServicioExportarWeb {
      * Escapa caracteres especiales para XML/SVG (incluye apóstrofe).
      */
     private String escapeXml(String text) {
-        if (text == null) return "";
+        if (text == null) {
+            return "";
+        }
         return text.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")

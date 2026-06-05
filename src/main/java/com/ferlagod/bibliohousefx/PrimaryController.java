@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -63,7 +62,7 @@ import org.controlsfx.control.NotificationPane;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class PrimaryController implements Initializable {
 
@@ -459,9 +458,7 @@ public class PrimaryController implements Initializable {
             cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
         }
 
-        // Row Factory para marcar préstamos vencidos movido a PrestamosController
-        // Buscador visual rápido en la pestaña Mis Libros
-        // En PrimaryController.java
+
         if (txtBuscarMisLibros != null) {
             searchDelay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
             searchDelay.setOnFinished(event -> actualizarPanelMisLibros());
@@ -513,9 +510,6 @@ public class PrimaryController implements Initializable {
         com.bibliohouse.utils.ImageLoader.setCacheDir(coversPath);
 
         this.jsonManager = new JsonManager(userPath);
-        
-        // La carga de la lista de deseos la movemos a la tarea en segundo plano
-        // junto con la carga de libros para evitar bloquear la UI al inicio.
 
         // 2. Cargar datos maestros (ahora es asíncrono)
         cargarDatos();
@@ -555,8 +549,6 @@ public class PrimaryController implements Initializable {
         } else {
             lblEstado.setText("Bienvenido, " + username + " (Cargando biblioteca...)");
         }
-
-        // checkOverdueLoans(); // Se movió dentro de cargarDatos() para que se ejecute al final de la carga
 
         // 6. Actualizaciones en segundo plano
         com.bibliohouse.utils.UpdateChecker.comprobarActualizaciones(versionNueva -> {
@@ -789,20 +781,20 @@ public class PrimaryController implements Initializable {
                 List<Libro> libros = jsonManager.cargarLibros();
                 List<Socio> socios = jsonManager.cargarSocios();
                 List<Prestamo> prestamos = jsonManager.cargarPrestamos();
-                
+
                 // 2. Actualización de UI en el hilo principal
                 Platform.runLater(() -> {
                     listaDeseos = deseos;
                     if (pestanaWishlistController != null) {
                         pestanaWishlistController.initData(PrimaryController.this, jsonManager, listaDeseos, resources);
                     }
-                    
+
                     listaLibrosCompleta = FXCollections.observableArrayList(libros);
                     libroService = new LibroService(jsonManager, listaLibrosCompleta);
-            
+
                     filteredData = new FilteredList<>(listaLibrosCompleta, p -> true);
                     sortedData = new SortedList<>(filteredData);
-            
+
                     sortedData.setComparator(PrimaryController.this::compareBySeries);
                     tablaLibros.comparatorProperty().addListener((obs, oldComp, newComp) -> {
                         if (newComp == null) {
@@ -811,17 +803,17 @@ public class PrimaryController implements Initializable {
                             sortedData.setComparator(newComp);
                         }
                     });
-            
+
                     tablaLibros.setItems(sortedData);
-            
+
                     listaSocios = FXCollections.observableArrayList(socios);
-            
+
                     listaPrestamosCompleta = FXCollections.observableArrayList(prestamos);
                     prestamoService = new com.bibliohouse.logic.PrestamoService(jsonManager, listaPrestamosCompleta, listaLibrosCompleta);
-            
+
                     filteredPrestamos = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() == null);
                     filteredHistory = new FilteredList<>(listaPrestamosCompleta, p -> p.getFechaDevolucion() != null);
-            
+
                     if (pestanaPrestamosController != null) {
                         pestanaPrestamosController.initData(PrimaryController.this, prestamoService, obtenerLibrosDisponibles(), listaSocios, filteredPrestamos, resources, dueDaysLimit);
                     }
@@ -835,16 +827,16 @@ public class PrimaryController implements Initializable {
                             actualizarFiltros();
                         });
                     }
-            
+
                     cargarListaEstanterias();
                     actualizarFiltros();
-                    
+
                     if (resources != null) {
                         lblEstado.setText(java.text.MessageFormat.format(resources.getString("status.welcome"), usuarioActual));
                     } else {
                         lblEstado.setText("Bienvenido, " + usuarioActual);
                     }
-                    
+
                     checkOverdueLoans();
                 });
                 return null;
@@ -1455,7 +1447,10 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    /** Centraliza la copia defensiva y el guardado para evitar inconsistencias. Usa debounce para evitar bloqueos. */
+    /**
+     * Centraliza la copia defensiva y el guardado para evitar inconsistencias.
+     * Usa debounce para evitar bloqueos.
+     */
     private void guardarLibrosEnDisco() {
         jsonManager.guardarLibrosDebounced(new ArrayList<>(listaLibrosCompleta));
     }
@@ -2222,6 +2217,7 @@ public class PrimaryController implements Initializable {
     // ==========================================
     /**
      * Mueve un libro de la lista de deseos a la biblioteca principal.
+     * @param libro libro de la biblioteca principal
      */
     public void moverDeseoABiblioteca(Libro libro) {
         // 1. Quitar de deseos

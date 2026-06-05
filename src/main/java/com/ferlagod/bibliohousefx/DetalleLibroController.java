@@ -36,12 +36,12 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class DetalleLibroController {
 
-    private static final java.util.logging.Logger LOGGER =
-            java.util.logging.Logger.getLogger(DetalleLibroController.class.getName());
+    private static final java.util.logging.Logger LOGGER
+            = java.util.logging.Logger.getLogger(DetalleLibroController.class.getName());
 
     @FXML
     private ImageView imgPortada;
@@ -112,17 +112,17 @@ public class DetalleLibroController {
             case "Leído":
                 lblEstadoLectura.setText("Leído");
                 lblEstadoLectura.setStyle(
-                    "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                        "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
                 break;
             case "Leyendo":
                 lblEstadoLectura.setText("Leyendo");
                 lblEstadoLectura.setStyle(
-                    "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                        "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
                 break;
             default:
                 lblEstadoLectura.setText("Pendiente");
                 lblEstadoLectura.setStyle(
-                    "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+                        "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
                 break;
         }
         lblEstadoLectura.setVisible(true);
@@ -177,7 +177,8 @@ public class DetalleLibroController {
     }
 
     /**
-     * Establece la ruta de datos del usuario, necesaria para guardar portadas localmente.
+     * Establece la ruta de datos del usuario, necesaria para guardar portadas
+     * localmente.
      *
      * @param rutaUsuario Ruta al directorio del usuario.
      */

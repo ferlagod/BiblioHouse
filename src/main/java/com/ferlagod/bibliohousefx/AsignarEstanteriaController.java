@@ -41,7 +41,7 @@ import java.util.Optional;
  * la marcha.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class AsignarEstanteriaController {
 

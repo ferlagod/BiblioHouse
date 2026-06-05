@@ -31,9 +31,9 @@ import javafx.scene.layout.VBox;
 /**
  * Controlador para la vista de la lista de deseos. Gestiona la interfaz y las
  * acciones de los libros que el usuario quiere guardar para el futuro.
- * 
+ *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class WishlistController {
 

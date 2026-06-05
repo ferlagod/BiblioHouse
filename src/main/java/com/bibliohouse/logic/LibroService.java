@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * cambios en disco.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class LibroService {
 

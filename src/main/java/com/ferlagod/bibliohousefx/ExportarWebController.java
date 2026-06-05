@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * agrupación antes de generar el archivo HTML estático.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class ExportarWebController {
 

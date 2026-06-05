@@ -29,7 +29,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class Libro {
 
@@ -347,8 +347,8 @@ public class Libro {
     }
 
     /**
-     * Indica si el libro ha sido marcado como leído.
-     * Derivado de {@link #estadoLectura} para mantener consistencia.
+     * Indica si el libro ha sido marcado como leído. Derivado de
+     * {@link #estadoLectura} para mantener consistencia.
      *
      * @return true si el estadoLectura es "Leído".
      */

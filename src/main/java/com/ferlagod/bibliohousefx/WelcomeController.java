@@ -37,12 +37,12 @@ import javafx.stage.Stage;
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
  * @author Fernando Lago Dávila
- * @version 1.7
+ * @version 1.8
  */
 public class WelcomeController {
 
-    private static final java.util.logging.Logger LOGGER =
-            java.util.logging.Logger.getLogger(WelcomeController.class.getName());
+    private static final java.util.logging.Logger LOGGER
+            = java.util.logging.Logger.getLogger(WelcomeController.class.getName());
 
     /**
      * Inicializa el controlador. Se llama automáticamente después de cargar el
