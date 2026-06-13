@@ -165,9 +165,15 @@ public class GoogleBooksCliente {
                         portadaUrl = portadaUrl.replace("http:", "https:");
                     }
                 }
+                
+                // Páginas
+                int paginasTotales = volumeInfo.optInt("pageCount", 0);
 
                 // Crear objeto Libro
                 Libro nuevoLibro = new Libro(titulo, autor, editorial, anio, genero, isbn, portadaUrl);
+                if (paginasTotales > 0) {
+                    nuevoLibro.setPaginasTotales(paginasTotales);
+                }
 
                 // Pasamos el limpiador automático de sagas
                 com.bibliohouse.utils.ProcesadorSagas.extraerSagaDeTitulo(nuevoLibro);

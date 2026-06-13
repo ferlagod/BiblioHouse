@@ -19,12 +19,14 @@ package com.ferlagod.bibliohousefx;
 
 import java.util.List;
 import com.bibliohouse.logic.Libro;
+import java.io.File;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
@@ -63,6 +65,29 @@ public class DetalleLibroController {
     private Label lblEstrellas;
     @FXML
     private TextArea txtResena;
+    @FXML
+    private Label lblBadgeDigital;
+    @FXML
+    private Label lblFormatoLabel;
+    @FXML
+    private Label lblFormato;
+    @FXML
+    private Label lblArchivoLabel;
+    @FXML
+    private Label lblArchivo;
+    @FXML
+    private Button btnLeerDigital;
+    
+    // --- DIARIO Y TRACKER ---
+    @FXML
+    private javafx.scene.control.TabPane tabPaneDetalles;
+    @FXML
+    private javafx.scene.control.Spinner<Integer> spinnerPaginaActual;
+    @FXML
+    private javafx.scene.control.Spinner<Integer> spinnerPaginasTotales;
+    @FXML
+    private javafx.scene.control.ListView<com.bibliohouse.logic.NotaLectura> listaDiario;
+    
     private List<String> listaGlobalEstanterias;
     private Libro libroActual;
     private String rutaUsuario;
@@ -133,6 +158,96 @@ public class DetalleLibroController {
 
         // Cargar imagen de portada
         cargarImagenPortada(libroActual.getPortadaURL());
+
+        // --- E-BOOK / DIGITAL ---
+        boolean digital = libroActual.isEsDigital();
+        if (lblBadgeDigital != null) {
+            lblBadgeDigital.setVisible(digital);
+            lblBadgeDigital.setManaged(digital);
+        }
+        if (lblFormatoLabel != null && lblFormato != null) {
+            lblFormatoLabel.setVisible(digital);
+            lblFormatoLabel.setManaged(digital);
+            lblFormato.setVisible(digital);
+            lblFormato.setManaged(digital);
+            if (digital && libroActual.getFormatoDigital() != null) {
+                lblFormato.setText(libroActual.getFormatoDigital());
+            }
+        }
+        if (lblArchivoLabel != null && lblArchivo != null) {
+            lblArchivoLabel.setVisible(digital);
+            lblArchivoLabel.setManaged(digital);
+            lblArchivo.setVisible(digital);
+            lblArchivo.setManaged(digital);
+            lblArchivo.setText(libroActual.getNombreArchivoDigital());
+        }
+        if (btnLeerDigital != null) {
+            btnLeerDigital.setVisible(digital);
+            btnLeerDigital.setManaged(digital);
+        }
+        
+        // --- SPINNERS TRACKER ---
+        if (spinnerPaginasTotales != null) {
+            spinnerPaginasTotales.setEditable(true);
+            spinnerPaginasTotales.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10000, libroActual.getPaginasTotales()));
+            spinnerPaginasTotales.valueProperty().addListener((obs, oldVal, newVal) -> {
+                libroActual.setPaginasTotales(newVal);
+                wasModified = true;
+            });
+        }
+        if (spinnerPaginaActual != null) {
+            spinnerPaginaActual.setEditable(true);
+            spinnerPaginaActual.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10000, libroActual.getPaginaActual()));
+            spinnerPaginaActual.valueProperty().addListener((obs, oldVal, newVal) -> {
+                libroActual.setPaginaActual(newVal);
+                wasModified = true;
+            });
+        }
+        
+        // --- DIARIO DE LECTURA ---
+        if (listaDiario != null) {
+            listaDiario.getItems().setAll(libroActual.getDiario());
+            listaDiario.setCellFactory(listView -> new javafx.scene.control.ListCell<com.bibliohouse.logic.NotaLectura>() {
+                @Override
+                protected void updateItem(com.bibliohouse.logic.NotaLectura nota, boolean empty) {
+                    super.updateItem(nota, empty);
+                    if (empty || nota == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        javafx.scene.layout.VBox celda = new javafx.scene.layout.VBox(5);
+                        celda.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-border-color: -color-border-default; -fx-border-radius: 8;");
+                        
+                        javafx.scene.layout.HBox cabecera = new javafx.scene.layout.HBox(10);
+                        Label lblTipo = new Label(nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA ? "📝 Cita" : "💡 Nota");
+                        lblTipo.setStyle("-fx-font-weight: bold; -fx-text-fill: -color-accent-fg;");
+                        
+                        Label lblPagina = new Label("Pág. " + nota.getPaginaReferencia());
+                        lblPagina.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
+                        
+                        String fechaSolo = nota.getFechaHora().split("T")[0];
+                        Label lblFecha = new Label(fechaSolo);
+                        lblFecha.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
+                        
+                        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+                        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                        
+                        cabecera.getChildren().addAll(lblTipo, lblPagina, spacer, lblFecha);
+                        
+                        Label lblTexto = new Label(nota.getTexto());
+                        lblTexto.setWrapText(true);
+                        
+                        if (nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA) {
+                            lblTexto.setStyle("-fx-font-style: italic; -fx-border-color: transparent transparent transparent -color-accent-fg; -fx-border-width: 0 0 0 3; -fx-padding: 0 0 0 8;");
+                        }
+                        
+                        celda.getChildren().addAll(cabecera, lblTexto);
+                        setGraphic(celda);
+                        setText(null);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -257,5 +372,96 @@ public class DetalleLibroController {
     private void cerrar(ActionEvent event) {
         Stage stage = (Stage) lblTitulo.getScene().getWindow();
         stage.close();
+    }
+
+    /**
+     * Abre el archivo digital enlazado con el lector por defecto del sistema.
+     *
+     * @param event El evento del botón Leer.
+     */
+    @FXML
+    private void abrirArchivoDigital(ActionEvent event) {
+        if (libroActual == null || libroActual.getRutaArchivoDigital() == null) {
+            return;
+        }
+
+        File archivo = new File(libroActual.getRutaArchivoDigital());
+        if (!archivo.exists()) {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.WARNING);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("El archivo ya no existe en la ruta guardada:\n" + archivo.getAbsolutePath());
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            java.awt.Desktop.getDesktop().open(archivo);
+        } catch (IOException e) {
+            LOGGER.log(java.util.logging.Level.WARNING,
+                    "No se pudo abrir el archivo digital", e);
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.WARNING);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("No se pudo abrir el archivo.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    private void abrirDialogoNuevaNota(ActionEvent event) {
+        javafx.scene.control.Dialog<com.bibliohouse.logic.NotaLectura> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Nueva Nota");
+        dialog.setHeaderText("Añadir al Diario de Lectura");
+
+        javafx.scene.control.ButtonType btnGuardar = new javafx.scene.control.ButtonType("Guardar", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(btnGuardar, javafx.scene.control.ButtonType.CANCEL);
+
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        javafx.scene.control.ComboBox<com.bibliohouse.logic.NotaLectura.TipoNota> cmbTipo = new javafx.scene.control.ComboBox<>();
+        cmbTipo.getItems().addAll(com.bibliohouse.logic.NotaLectura.TipoNota.values());
+        cmbTipo.setValue(com.bibliohouse.logic.NotaLectura.TipoNota.CITA);
+
+        javafx.scene.control.Spinner<Integer> spnPagina = new javafx.scene.control.Spinner<>(0, 10000, libroActual.getPaginaActual());
+        spnPagina.setEditable(true);
+
+        javafx.scene.control.TextArea txtContenido = new javafx.scene.control.TextArea();
+        txtContenido.setPromptText("Escribe aquí tu nota o cita...");
+        txtContenido.setPrefRowCount(4);
+        txtContenido.setWrapText(true);
+
+        grid.add(new Label("Tipo:"), 0, 0);
+        grid.add(cmbTipo, 1, 0);
+        grid.add(new Label("Página:"), 0, 1);
+        grid.add(spnPagina, 1, 1);
+        grid.add(new Label("Contenido:"), 0, 2);
+        grid.add(txtContenido, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == btnGuardar) {
+                return new com.bibliohouse.logic.NotaLectura(cmbTipo.getValue(), txtContenido.getText(), spnPagina.getValue());
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(nota -> {
+            libroActual.getDiario().add(nota);
+            libroActual.setPaginaActual(spnPagina.getValue());
+            if (spinnerPaginaActual != null) {
+                spinnerPaginaActual.getValueFactory().setValue(spnPagina.getValue());
+            }
+            if (listaDiario != null) {
+                listaDiario.getItems().setAll(libroActual.getDiario());
+            }
+            wasModified = true;
+        });
     }
 }

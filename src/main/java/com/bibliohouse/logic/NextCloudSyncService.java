@@ -248,6 +248,31 @@ public class NextCloudSyncService {
                     }
                 }
             }
+
+            // Sincronización incremental de ebooks
+            String remoteEbooksUrl = remoteFolderUrl + "ebooks/";
+            crearDirectorioSiNoExiste(sardine, remoteEbooksUrl);
+            
+            File carpetaLocalEbooks = new File(localDir, "ebooks");
+            if (carpetaLocalEbooks.exists() && carpetaLocalEbooks.isDirectory()) {
+                File[] ebooks = carpetaLocalEbooks.listFiles();
+                if (ebooks != null) {
+                    List<DavResource> resourcesEbooks = sardine.list(remoteEbooksUrl);
+                    Set<String> nombresEbooksEnRemoto = resourcesEbooks.stream()
+                            .filter(r -> r.getName() != null)
+                            .map(DavResource::getName)
+                            .collect(Collectors.toSet());
+
+                    for (File ebook : ebooks) {
+                        if (ebook.isFile() && !ebook.getName().startsWith(".") && !nombresEbooksEnRemoto.contains(ebook.getName())) {
+                            String remoteFileUrl = remoteEbooksUrl + ebook.getName();
+                            byte[] data = Files.readAllBytes(ebook.toPath());
+                            sardine.put(remoteFileUrl, data, "application/octet-stream");
+                            LOGGER.log(Level.INFO, "Nuevo ebook subido (incremental): {0}", ebook.getName());
+                        }
+                    }
+                }
+            }
         } catch (IOException e) {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             throw new IOException("Error de red con NextCloud: " + msg, e);
@@ -339,6 +364,38 @@ public class NextCloudSyncService {
                                 out.write(buffer, 0, bytesRead);
                             }
                             LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
+                        }
+                    }
+                }
+            }
+
+            // Sincronización incremental de ebooks (descarga)
+            String remoteEbooksUrl = buildRemoteFolderUrl(davBase) + "ebooks/";
+            File carpetaLocalEbooks = new File(localDir, "ebooks");
+
+            if (!carpetaLocalEbooks.exists()) {
+                carpetaLocalEbooks.mkdirs();
+            }
+
+            if (sardine.exists(remoteEbooksUrl)) {
+                List<DavResource> remoteEbooks = sardine.list(remoteEbooksUrl);
+                for (DavResource res : remoteEbooks) {
+                    if (res.isDirectory()) {
+                        continue;
+                    }
+
+                    String ebookName = res.getName();
+                    File localEbook = new File(carpetaLocalEbooks, ebookName);
+
+                    if (!localEbook.exists()) {
+                        String fileUrl = remoteEbooksUrl + ebookName;
+                        try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localEbook)) {
+                            byte[] buffer = new byte[8192];
+                            int bytesRead;
+                            while ((bytesRead = in.read(buffer)) != -1) {
+                                out.write(buffer, 0, bytesRead);
+                            }
+                            LOGGER.log(Level.INFO, "Ebook descargado desde NextCloud: {0}", ebookName);
                         }
                     }
                 }

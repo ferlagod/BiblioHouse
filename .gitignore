@@ -78,3 +78,5 @@ config.properties
 
 # Temporary/test scripts
 TestSearch.java
+make_epub.py
+test.epub

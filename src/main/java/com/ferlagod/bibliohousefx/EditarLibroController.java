@@ -20,6 +20,7 @@ package com.ferlagod.bibliohousefx;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import com.bibliohouse.logic.EbookMetadataService;
 import com.bibliohouse.logic.Libro;
 import java.util.concurrent.ExecutionException;
 import javafx.collections.FXCollections;
@@ -86,6 +87,11 @@ public class EditarLibroController {
     private String rutaUsuario;
     @FXML
     private javafx.scene.control.Button btnBuscarPortada;
+    @FXML
+    private javafx.scene.control.Label lblArchivoDigital;
+    @FXML
+    private javafx.scene.control.Button btnDesvincular;
+    private String rutaArchivoDigitalActual;
 
     /**
      * Configuración inicial de la ventana. Prepara los desplegables de
@@ -126,18 +132,33 @@ public class EditarLibroController {
                 // Cogemos solo el primer archivo, por si sueltan varios de golpe
                 File file = db.getFiles().get(0);
 
-                // Verificamos de forma sencilla si es una imagen por la extensión
-                String nombre = file.getName().toLowerCase();
-                if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png") || nombre.endsWith(".gif")) {
-                    try {
-                        rutaPortadaActual = file.getAbsolutePath();
+                // Verificamos si es un e-book
+                if (EbookMetadataService.esArchivoEbook(file)) {
+                    // Es un e-book: vincular el archivo y extraer portada si es posible
+                    rutaArchivoDigitalActual = file.getAbsolutePath();
+                    actualizarVistaArchivoDigital();
+
+                    // Intentar extraer portada del ebook
+                    Libro temp = EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
+                    if (temp != null && temp.getPortadaURL() != null && !temp.getPortadaURL().isEmpty()) {
+                        rutaPortadaActual = temp.getPortadaURL();
                         com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
-                        success = true;
-                    } catch (Exception e) {
-                        mostrarAlerta("Error", "No se pudo cargar la imagen soltada.");
                     }
+                    success = true;
                 } else {
-                    mostrarAlerta("Formato incorrecto", "Solo se aceptan archivos de imagen (.jpg, .png, .gif).");
+                    // Verificamos de forma sencilla si es una imagen por la extensión
+                    String nombre = file.getName().toLowerCase();
+                    if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png") || nombre.endsWith(".gif")) {
+                        try {
+                            rutaPortadaActual = file.getAbsolutePath();
+                            com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
+                            success = true;
+                        } catch (Exception e) {
+                            mostrarAlerta("Error", "No se pudo cargar la imagen soltada.");
+                        }
+                    } else {
+                        mostrarAlerta("Formato incorrecto", "Solo se aceptan archivos de imagen (.jpg, .png, .gif) o e-books (.epub, .pdf, .mobi).");
+                    }
                 }
             }
             event.setDropCompleted(success);
@@ -237,6 +258,10 @@ public class EditarLibroController {
 
         // Estado de posesión
         chkPoseido.setSelected(libro.isPoseido());
+
+        // Archivo digital
+        rutaArchivoDigitalActual = libro.getRutaArchivoDigital();
+        actualizarVistaArchivoDigital();
     }
 
     /**
@@ -379,6 +404,12 @@ public class EditarLibroController {
                     libro.getId(),
                     this.rutaUsuario
             );
+            
+            rutaArchivoDigitalActual = com.bibliohouse.logic.EbookMetadataService.hacerEbookLocalOffline(
+                    rutaArchivoDigitalActual,
+                    libro.getId(),
+                    this.rutaUsuario
+            );
         }
 
         // Guardar portada
@@ -386,6 +417,10 @@ public class EditarLibroController {
 
         // Guardar poseído
         libro.setPoseido(chkPoseido.isSelected());
+
+        // Guardar archivo digital
+        libro.setRutaArchivoDigital(rutaArchivoDigitalActual);
+        libro.setEsDigital(rutaArchivoDigitalActual != null && !rutaArchivoDigitalActual.isEmpty());
 
         guardado = true;
         cerrar();
@@ -499,6 +534,72 @@ public class EditarLibroController {
 
         searchThread.setDaemon(true);
         searchThread.start();
+    }
+
+    /**
+     * Abre un selector de archivos para adjuntar un e-book (EPUB, PDF, MOBI)
+     * al libro actual.
+     *
+     * @param event El evento de acción.
+     */
+    @FXML
+    private void adjuntarArchivoDigital(javafx.event.ActionEvent event) {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Adjuntar archivo digital");
+
+        fileChooser.getExtensionFilters().addAll(
+                new javafx.stage.FileChooser.ExtensionFilter("E-books", "*.epub", "*.pdf", "*.mobi"),
+                new javafx.stage.FileChooser.ExtensionFilter("Todos los archivos", "*.*"));
+
+        File file = fileChooser.showOpenDialog(txtTitulo.getScene().getWindow());
+
+        if (file != null && EbookMetadataService.esArchivoEbook(file)) {
+            rutaArchivoDigitalActual = file.getAbsolutePath();
+            actualizarVistaArchivoDigital();
+
+            // Si la portada está vacía, intentar extraerla del ebook
+            if (rutaPortadaActual == null || rutaPortadaActual.isEmpty()) {
+                com.bibliohouse.logic.Libro temp = EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
+                if (temp != null && temp.getPortadaURL() != null && !temp.getPortadaURL().isEmpty()) {
+                    rutaPortadaActual = temp.getPortadaURL();
+                    com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
+                }
+            }
+        }
+    }
+
+    /**
+     * Desvincula el archivo digital del libro actual.
+     *
+     * @param event El evento de acción.
+     */
+    @FXML
+    private void desvincularArchivo(javafx.event.ActionEvent event) {
+        rutaArchivoDigitalActual = null;
+        actualizarVistaArchivoDigital();
+    }
+
+    /**
+     * Actualiza la vista del archivo digital (label y botón desvincular).
+     */
+    private void actualizarVistaArchivoDigital() {
+        boolean tiene = rutaArchivoDigitalActual != null && !rutaArchivoDigitalActual.isEmpty();
+
+        if (lblArchivoDigital != null) {
+            if (tiene) {
+                File f = new File(rutaArchivoDigitalActual);
+                lblArchivoDigital.setText(f.getName());
+                lblArchivoDigital.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 12px;");
+            } else {
+                lblArchivoDigital.setText("Ninguno");
+                lblArchivoDigital.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 12px;");
+            }
+        }
+
+        if (btnDesvincular != null) {
+            btnDesvincular.setVisible(tiene);
+            btnDesvincular.setManaged(tiene);
+        }
     }
 
 }

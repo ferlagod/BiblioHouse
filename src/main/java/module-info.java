@@ -29,6 +29,7 @@ module com.ferlagod.bibliohousefx {
     requires java.logging;
     requires java.prefs;
     requires java.desktop;
+    requires java.xml;
 
     // 3. Librerías externas
     requires org.json;

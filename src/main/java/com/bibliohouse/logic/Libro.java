@@ -65,6 +65,17 @@ public class Libro {
     // double para permitir 1.5, 0.5, etc.
     private double ordenEnSerie;
 
+    // CAMPOS PARA E-BOOKS / ARCHIVOS DIGITALES
+    /** Ruta absoluta al archivo digital enlazado (EPUB, PDF, MOBI). Null si no tiene. */
+    private String rutaArchivoDigital;
+    /** True si el libro se considera "digital" (tiene archivo enlazado). */
+    private boolean esDigital = false;
+
+    // CAMPOS PARA READING TRACKER Y DIARIO
+    private int paginaActual = 0;
+    private int paginasTotales = 0;
+    private List<NotaLectura> diario = new ArrayList<>();
+
     /**
      * Constructor vacío.
      */
@@ -443,6 +454,100 @@ public class Libro {
      */
     public void setOrdenEnSerie(double ordenEnSerie) {
         this.ordenEnSerie = ordenEnSerie;
+    }
+
+    // --- E-BOOK / ARCHIVO DIGITAL ---
+
+    /**
+     * Obtiene la ruta absoluta del archivo digital enlazado.
+     *
+     * @return La ruta del archivo, o null si no tiene.
+     */
+    public String getRutaArchivoDigital() {
+        return rutaArchivoDigital;
+    }
+
+    /**
+     * Establece la ruta del archivo digital enlazado.
+     *
+     * @param rutaArchivoDigital Ruta absoluta al archivo (EPUB, PDF, MOBI).
+     */
+    public void setRutaArchivoDigital(String rutaArchivoDigital) {
+        this.rutaArchivoDigital = rutaArchivoDigital;
+    }
+
+    /**
+     * Indica si el libro es un e-book (tiene un archivo digital enlazado).
+     *
+     * @return true si es un libro digital.
+     */
+    public boolean isEsDigital() {
+        return esDigital;
+    }
+
+    /**
+     * Establece si el libro es digital.
+     *
+     * @param esDigital true para marcarlo como digital.
+     */
+    public void setEsDigital(boolean esDigital) {
+        this.esDigital = esDigital;
+    }
+
+    public int getPaginaActual() {
+        return paginaActual;
+    }
+
+    public void setPaginaActual(int paginaActual) {
+        this.paginaActual = paginaActual;
+    }
+
+    public int getPaginasTotales() {
+        return paginasTotales;
+    }
+
+    public void setPaginasTotales(int paginasTotales) {
+        this.paginasTotales = paginasTotales;
+    }
+
+    public List<NotaLectura> getDiario() {
+        if (diario == null) {
+            diario = new ArrayList<>();
+        }
+        return diario;
+    }
+
+    public void setDiario(List<NotaLectura> diario) {
+        this.diario = diario;
+    }
+
+    /**
+     * Obtiene el nombre del archivo digital enlazado (sin la ruta completa).
+     *
+     * @return El nombre del archivo (ej: "libro.epub") o null si no tiene.
+     */
+    public String getNombreArchivoDigital() {
+        if (rutaArchivoDigital == null || rutaArchivoDigital.isEmpty()) {
+            return null;
+        }
+        return new File(rutaArchivoDigital).getName();
+    }
+
+    /**
+     * Obtiene el formato del archivo digital en mayúsculas (EPUB, PDF, MOBI).
+     *
+     * @return El formato como String, o null si no tiene archivo.
+     */
+    public String getFormatoDigital() {
+        String nombre = getNombreArchivoDigital();
+        if (nombre == null) {
+            return null;
+        }
+        int punto = nombre.lastIndexOf('.');
+        if (punto >= 0 && punto < nombre.length() - 1) {
+            return nombre.substring(punto + 1).toUpperCase();
+        }
+        return null;
     }
 
     /**

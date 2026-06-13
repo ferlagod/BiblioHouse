@@ -97,6 +97,7 @@ public class PrimaryController implements Initializable {
     // --- CONSTANTES DE VISTA ---
     private static final String VISTA_TODOS = "Todos los libros";
     private static final String VISTA_DESEOS = "Lista de Deseos";
+    private static final String VISTA_DIGITAL = "E-books";
     private static final List<String> ESTANTERIAS_DEFAULT = List.of(
             "Novela", "Ciencia Ficción", "Fantasía", "Historia", "Tecnología",
             "Aventura", "Biografía", "Romántica", "Poesía", "Teatro", "Infantil", "Ensayo"
@@ -177,6 +178,17 @@ public class PrimaryController implements Initializable {
     private Label lblEstado;
     @FXML
     private ListView<String> listaEstanterias;
+    
+    // --- WIDGET RETO ANUAL ---
+    @FXML
+    private javafx.scene.layout.VBox widgetRetoAnual;
+    @FXML
+    private Label lblTituloReto;
+    @FXML
+    private javafx.scene.control.ProgressBar progresoReto;
+    @FXML
+    private Label lblEstadoReto;
+
     // --- IDIOMAS ---
     @FXML
     private ToggleGroup grupoIdioma;
@@ -269,6 +281,7 @@ public class PrimaryController implements Initializable {
             configurarContextMenu();
             configurarFiltros();
             configurarAtajosYEventos();
+            configurarDragAndDropPanelMisLibros();
 
             if (mainTabPane != null) {
                 mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
@@ -346,6 +359,25 @@ public class PrimaryController implements Initializable {
             }
         });
 
+        MenuItem itemLeer = new MenuItem("📖 Leer E-book");
+        itemLeer.setOnAction(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            if (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty()) {
+                File archivo = new File(selected.getRutaArchivoDigital());
+                if (archivo.exists()) {
+                    try {
+                        java.awt.Desktop.getDesktop().open(archivo);
+                    } catch (IOException ex) {
+                        mostrarAlerta("Error", "No se pudo abrir el archivo.");
+                    }
+                } else {
+                    mostrarAlerta("Error", "El archivo ya no existe en la ruta guardada:\n" + archivo.getAbsolutePath());
+                }
+            } else {
+                mostrarAlerta("Información", "Este libro no tiene un archivo digital asociado.");
+            }
+        });
+
         MenuItem itemEditar = new MenuItem(resources.getString("ctx.edit"));
         itemEditar.setOnAction(e -> editarLibroSeleccionado(null));
 
@@ -398,8 +430,17 @@ public class PrimaryController implements Initializable {
         itemEliminar.setStyle("-fx-text-fill: red;");
         itemEliminar.setOnAction(e -> eliminarLibro(null));
 
-        contextMenuLibros.getItems().addAll(itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
+        contextMenuLibros.getItems().addAll(itemLeer, new SeparatorMenuItem(), itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
                 menuEstado, new SeparatorMenuItem(), itemEliminar);
+        
+        contextMenuLibros.setOnShowing(e -> {
+            Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
+            boolean isEbook = (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty());
+            itemLeer.setVisible(isEbook);
+            // Hide the separator after itemLeer if itemLeer is not visible
+            contextMenuLibros.getItems().get(1).setVisible(isEbook);
+        });
+
         tablaLibros.setContextMenu(this.contextMenuLibros);
     }
 
@@ -1091,7 +1132,13 @@ public class PrimaryController implements Initializable {
             // --- FILTRO 1: Estantería y Propiedad ---
             if (categoriaSeleccionada != null) {
                 if (categoriaSeleccionada.equals(VISTA_DESEOS)) {
+                    // Filtro especial para lista de deseos (isPoseido = false)
                     if (libro.isPoseido()) {
+                        return false;
+                    }
+                } else if (categoriaSeleccionada.equals(VISTA_DIGITAL)) {
+                    // Filtro especial para E-books
+                    if (!libro.isPoseido() || !libro.isEsDigital()) {
                         return false;
                     }
                 } else {
@@ -1238,8 +1285,34 @@ public class PrimaryController implements Initializable {
         ObservableList<String> items = FXCollections.observableArrayList();
         items.add(VISTA_TODOS);
         items.add(VISTA_DESEOS);
+        items.add(VISTA_DIGITAL);
         items.addAll(estanterias);
         listaEstanterias.setItems(items);
+        
+        // Personalizamos la celda para añadir iconos
+        listaEstanterias.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(item);
+                    // Añadir iconos para opciones especiales
+                    if (item.equals(VISTA_TODOS)) {
+                        setGraphic(new Label("📚"));
+                    } else if (item.equals(VISTA_DESEOS)) {
+                        setGraphic(new Label("⭐"));
+                    } else if (item.equals(VISTA_DIGITAL)) {
+                        setGraphic(new Label("📱"));
+                    } else {
+                        setGraphic(new Label("📁"));
+                    }
+                }
+            }
+        });
+        
         listaEstanterias.getSelectionModel().select(0);
     }
 
@@ -2450,6 +2523,8 @@ public class PrimaryController implements Initializable {
         if (panelMisLibros == null || filteredData == null) {
             return;
         }
+        
+        actualizarRetoAnual();
 
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
         String busquedaRapida = txtBuscarMisLibros != null ? txtBuscarMisLibros.getText().toLowerCase().trim() : "";
@@ -2560,9 +2635,94 @@ public class PrimaryController implements Initializable {
         lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: -color-fg-default;");
 
-        // 3. Añadimos el contenedor (que lleva imagen + badge) en vez de solo la imagen
+        // Lógica del Badge Digital
+        if (libro.isEsDigital()) {
+            Label badgeDigital = new Label("📱");
+            badgeDigital.setStyle("-fx-background-color: #1565c0; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 3 6 3 6; -fx-background-radius: 12; -fx-font-size: 11px;");
+            badgeDigital.setStyle(badgeDigital.getStyle() + " -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);");
+            
+            // Alinear abajo a la izquierda con 5px de margen
+            javafx.scene.layout.StackPane.setAlignment(badgeDigital, javafx.geometry.Pos.BOTTOM_LEFT);
+            javafx.scene.layout.StackPane.setMargin(badgeDigital, new javafx.geometry.Insets(0, 0, 5, 5));
+            
+            contenedorPortada.getChildren().add(badgeDigital);
+        }
+
+        // Añadimos el contenedor (que lleva imagen + badge) en vez de solo la imagen
         tarjeta.getChildren().addAll(contenedorPortada, lblTitulo);
+
+        // Lógica de la barra de progreso (Reading Tracker)
+        if ("Leyendo".equalsIgnoreCase(estado) && libro.getPaginasTotales() > 0) {
+            double progreso = (double) libro.getPaginaActual() / libro.getPaginasTotales();
+            if (progreso > 1.0) progreso = 1.0;
+            if (progreso < 0.0) progreso = 0.0;
+            
+            javafx.scene.control.ProgressBar pBar = new javafx.scene.control.ProgressBar(progreso);
+            pBar.setPrefWidth(110);
+            pBar.setPrefHeight(6);
+            pBar.setStyle("-fx-accent: #ff9800;");
+            
+            // Etiqueta pequeñita
+            Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + " pág.");
+            lblProgreso.setStyle("-fx-font-size: 9px; -fx-text-fill: -color-fg-muted;");
+            
+            tarjeta.getChildren().addAll(pBar, lblProgreso);
+        }
+
         return tarjeta;
+    }
+
+    @FXML
+    private void configurarRetoAnual() {
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
+        dialog.setTitle("Reto de Lectura");
+        dialog.setHeaderText("Configurar Reto Anual");
+        dialog.setContentText("¿Cuántos libros te propones leer este año? (Pon 0 para desactivar)");
+        
+        String retoActualStr = preferencias.getOrDefault("reto_anual", "0");
+        dialog.getEditor().setText(retoActualStr);
+        
+        dialog.showAndWait().ifPresent(resultado -> {
+            try {
+                int reto = Integer.parseInt(resultado.trim());
+                preferencias.put("reto_anual", String.valueOf(reto));
+                jsonManager.guardarPreferencias(preferencias);
+                actualizarRetoAnual();
+            } catch (NumberFormatException ex) {
+                mostrarAlerta("Error", "Por favor introduce un número válido.");
+            }
+        });
+    }
+
+    private void actualizarRetoAnual() {
+        if (widgetRetoAnual == null) return;
+        
+        int reto = 0;
+        try {
+            reto = Integer.parseInt(preferencias.getOrDefault("reto_anual", "0"));
+        } catch (NumberFormatException e) {}
+        
+        if (reto <= 0) {
+            widgetRetoAnual.setVisible(false);
+            widgetRetoAnual.setManaged(false);
+            return;
+        }
+        
+        widgetRetoAnual.setVisible(true);
+        widgetRetoAnual.setManaged(true);
+        
+        int currentYear = java.time.LocalDate.now().getYear();
+        lblTituloReto.setText("Reto de Lectura " + currentYear);
+        
+        long librosLeidos = listaLibrosCompleta.stream()
+                .filter(l -> "Leído".equalsIgnoreCase(l.getEstadoLectura()))
+                .count();
+                
+        double progress = (double) librosLeidos / reto;
+        if (progress > 1.0) progress = 1.0;
+        
+        progresoReto.setProgress(progress);
+        lblEstadoReto.setText(librosLeidos + " de " + reto + " libros");
     }
 
     /**
@@ -2580,4 +2740,77 @@ public class PrimaryController implements Initializable {
         delay.setOnFinished(e -> notificationPane.hide());
         delay.play();
     }
+
+    /**
+     * Configura el panel Mis Libros para aceptar Drag & Drop de archivos de e-book.
+     */
+    private void configurarDragAndDropPanelMisLibros() {
+        if (panelMisLibros == null) {
+            return;
+        }
+
+        panelMisLibros.setOnDragOver(event -> {
+            if (event.getGestureSource() != panelMisLibros && event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(javafx.scene.input.TransferMode.COPY_OR_MOVE);
+                panelMisLibros.setStyle("-fx-background-color: -color-accent-subtle; -fx-border-color: -color-accent-emphasis; -fx-border-width: 2; -fx-border-style: dashed; -fx-border-radius: 8; -fx-background-radius: 8;");
+            }
+            event.consume();
+        });
+
+        panelMisLibros.setOnDragExited(event -> {
+            panelMisLibros.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
+            event.consume();
+        });
+
+        panelMisLibros.setOnDragDropped(event -> {
+            javafx.scene.input.Dragboard db = event.getDragboard();
+            boolean success = false;
+            
+            panelMisLibros.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
+            
+            if (db.hasFiles()) {
+                java.io.File file = db.getFiles().get(0);
+                
+                if (com.bibliohouse.logic.EbookMetadataService.esArchivoEbook(file)) {
+                    notificar("Importando e-book...");
+                    
+                    // Procesar en un hilo separado para no bloquear la UI
+                    Thread importThread = new Thread(() -> {
+                        Libro nuevoLibro = com.bibliohouse.logic.EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
+                        
+                        javafx.application.Platform.runLater(() -> {
+                            if (nuevoLibro != null) {
+                                // Evitar duplicados por título
+                                boolean existe = listaLibrosCompleta.stream()
+                                        .anyMatch(l -> l.getTitulo() != null && l.getTitulo().equalsIgnoreCase(nuevoLibro.getTitulo()));
+                                
+                                if (existe) {
+                                    mostrarAlerta("Libro duplicado", "Ya existe un libro con el título: " + nuevoLibro.getTitulo());
+                                } else {
+                                    nuevoLibro.setId(java.util.UUID.randomUUID().toString());
+                                    listaLibrosCompleta.add(nuevoLibro);
+                                    guardarLibrosEnDisco();
+                                    actualizarFiltros();
+                                    actualizarPanelMisLibros();
+                                    notificar("E-book importado: " + nuevoLibro.getTitulo());
+                                }
+                            } else {
+                                mostrarAlerta("Error de importación", "No se pudo extraer información del archivo: " + file.getName());
+                            }
+                        });
+                    });
+                    importThread.setDaemon(true);
+                    importThread.start();
+                    
+                    success = true;
+                } else {
+                    mostrarAlerta("Formato no soportado", "Solo puedes soltar archivos EPUB, PDF o MOBI aquí.");
+                }
+            }
+            
+            event.setDropCompleted(success);
+            event.consume();
+        });
+    }
+
 }

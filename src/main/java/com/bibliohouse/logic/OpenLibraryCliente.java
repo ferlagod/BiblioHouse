@@ -52,7 +52,7 @@ public class OpenLibraryCliente {
     // URL base de la API de OpenLibrary.
     private static final String API_BASE_URL = "https://openlibrary.org/search.json";
     // Campos que solicitamos a la API para no traer datos innecesarios.
-    private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i";
+    private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i,number_of_pages";
     // Cliente HTTP compartido: reutiliza conexiones TCP (HTTP/2 multiplexing)
     private static final HttpClient CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
@@ -182,9 +182,15 @@ public class OpenLibraryCliente {
                         portadaUrl = "https://covers.openlibrary.org/b/id/" + coverId + "-L.jpg";
                     }
                 }
+                
+                // Obtener número de páginas
+                int paginasTotales = doc.optInt("number_of_pages", 0);
 
                 // Crear objeto Libro
                 Libro nuevoLibro = new Libro(titulo, autor, editorial, anio, genero, isbn, portadaUrl);
+                if (paginasTotales > 0) {
+                    nuevoLibro.setPaginasTotales(paginasTotales);
+                }
 
                 // Pasamos el limpiador automático de sagas
                 com.bibliohouse.utils.ProcesadorSagas.extraerSagaDeTitulo(nuevoLibro);

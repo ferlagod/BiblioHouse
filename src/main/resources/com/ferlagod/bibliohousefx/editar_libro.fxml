@@ -61,6 +61,18 @@
                                                 <CheckBox fx:id="chkPoseido" text="En propiedad" />
                                             </children>
                                         </HBox>
+                                        
+                                        <Separator />
+                                        
+                                        <Label style="-fx-font-weight: bold;" text="Archivo digital" />
+                                        <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                            <children>
+                                                <Button onAction="#adjuntarArchivoDigital" text="📎 Adjuntar archivo..." />
+                                                <Label fx:id="lblArchivoDigital" text="Ninguno" style="-fx-text-fill: -color-fg-muted; -fx-font-size: 12px;" />
+                                            </children>
+                                        </HBox>
+                                        <Button fx:id="btnDesvincular" managed="false" visible="false" onAction="#desvincularArchivo" 
+                                                style="-fx-text-fill: -color-danger-fg;" styleClass="text-button" text="✕ Desvincular archivo" />
                                     </children>
                                 </VBox>
                         

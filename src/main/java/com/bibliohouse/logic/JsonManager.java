@@ -437,6 +437,7 @@ public class JsonManager {
         // --- FIN RUTINA DE MIGRACIÓN ---
 
         // 3. Procesamos la lista cargada para reparar rutas dinámicas
+        boolean migracionPaginas = false;
         for (Libro libro : libros) {
             if (libro.getEstanterias() == null) {
                 libro.setEstanterias(new ArrayList<>());
@@ -448,6 +449,29 @@ public class JsonManager {
                 File archivo = new File(url);
                 libro.setPortadaURL(carpetaCovers + File.separator + archivo.getName());
             }
+            
+            // Retrocompatibilidad: Si es un PDF digital pero no tiene número de páginas
+            if (libro.isEsDigital() && libro.getPaginasTotales() == 0 && libro.getRutaArchivoDigital() != null) {
+                if (libro.getRutaArchivoDigital().toLowerCase().endsWith(".pdf")) {
+                    File pdfFile = new File(libro.getRutaArchivoDigital());
+                    if (pdfFile.exists()) {
+                        try (org.apache.pdfbox.pdmodel.PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(pdfFile)) {
+                            int pags = pdf.getNumberOfPages();
+                            if (pags > 0) {
+                                libro.setPaginasTotales(pags);
+                                migracionPaginas = true;
+                            }
+                        } catch (Exception e) {
+                            LOGGER.log(Level.FINE, "No se pudo extraer el numero de paginas del PDF antiguo: " + libro.getTitulo());
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Si hemos extraído páginas de PDFs antiguos, guardamos el JSON para persistir los cambios
+        if (migracionPaginas) {
+            guardarLibros(libros);
         }
 
         return libros;
