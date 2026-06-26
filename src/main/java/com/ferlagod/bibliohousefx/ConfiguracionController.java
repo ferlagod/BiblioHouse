@@ -227,8 +227,16 @@ public class ConfiguracionController {
                     }
                 });
 
-        // Configurar el ComboBox de Tema
-        comboTema.getItems().setAll("Claro (Primer Light)", "Oscuro (Primer Dark)");
+        // Configurar el ComboBox de Tema (7 temas de AtlantaFX)
+        comboTema.getItems().setAll(
+                "Claro (Primer Light)",
+                "Oscuro (Primer Dark)",
+                "Nord Claro (Nord Light)",
+                "Nord Oscuro (Nord Dark)",
+                "Cupertino Claro (macOS Light)",
+                "Cupertino Oscuro (macOS Dark)",
+                "Dracula"
+        );
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         String savedTheme = prefs.get("theme", "Claro (Primer Light)");
         comboTema.getSelectionModel().select(savedTheme);
@@ -237,11 +245,7 @@ public class ConfiguracionController {
                 .addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
                     if (newVal != null) {
                         prefs.put("theme", newVal);
-                        if (newVal.equals("Oscuro (Primer Dark)")) {
-                            javafx.application.Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
-                        } else {
-                            javafx.application.Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
-                        }
+                        App.applyTheme(newVal);
                     }
                 });
 

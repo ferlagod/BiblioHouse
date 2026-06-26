@@ -100,6 +100,40 @@ public class App extends Application {
     }
 
     /**
+     * Aplica un tema visual de AtlantaFX a toda la aplicación.
+     * Centraliza la lógica para evitar duplicación entre App y ConfiguracionController.
+     *
+     * @param themeName Nombre del tema tal como aparece en el ComboBox de configuración.
+     */
+    public static void applyTheme(String themeName) {
+        String stylesheet;
+        switch (themeName) {
+            case "Oscuro (Primer Dark)":
+                stylesheet = new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
+                break;
+            case "Nord Claro (Nord Light)":
+                stylesheet = new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
+                break;
+            case "Nord Oscuro (Nord Dark)":
+                stylesheet = new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
+                break;
+            case "Cupertino Claro (macOS Light)":
+                stylesheet = new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+                break;
+            case "Cupertino Oscuro (macOS Dark)":
+                stylesheet = new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
+                break;
+            case "Dracula":
+                stylesheet = new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
+                break;
+            default: // "Claro (Primer Light)" u otro valor desconocido
+                stylesheet = new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+                break;
+        }
+        Application.setUserAgentStylesheet(stylesheet);
+    }
+
+    /**
      * Cargamos el login.
      *
      * @param stage La ventana principal (el escenario).
@@ -115,11 +149,7 @@ public class App extends Application {
 
         // Aplicar el tema moderno de AtlantaFX
         String savedTheme = prefs.get("theme", "Claro (Primer Light)");
-        if (savedTheme.equals("Oscuro (Primer Dark)")) {
-            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet());
-        } else {
-            Application.setUserAgentStylesheet(new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet());
-        }
+        applyTheme(savedTheme);
 
         // Cargar preferencia de idioma si existe (simplificado: por defecto es)
         String lang = prefs.get("language", "es");
