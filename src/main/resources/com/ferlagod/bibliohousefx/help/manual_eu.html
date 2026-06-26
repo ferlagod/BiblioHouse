@@ -270,7 +270,8 @@
         <p>Leihate nagusiak honako eremutan banatzen da:</p>
         <ul>
             <li><strong>Menu Barra (Goikoa):</strong> <em>Fitxategia</em>, <em>Tresnak</em> eta <em>Laguntza</em> menuak ditu. Hemendik inportatu/esportatu, bikoitzak bilatu, ezarpenak, hizkuntza, estatistikak eta gida hau atzitu dezakezu.</li>
-            <li><strong>Ezkerreko Alboko Panela — "Nire Apaletak":</strong> Gaiak (Eleberria, Zientzia Fikzioa, Fantasia, etab.) erakusten ditu. Apaleta bat hautatzean, ikuspegi nagusia filtratzen da, hautatutako kategoriako liburuak bakarrik erakusten.</li>
+            <li><strong>Ezkerreko Alboko Panela — "Nire Apaletak":</strong> Gaiak (Eleberria, Zientzia Fikzioa, Fantasía, etab.) eta kategoria birtualak ("E-books", "Nahien Zerrenda") erakusten ditu. Apaleta bat hautatzean, ikuspegi nagusia filtratzen da, hautatutako kategoriako liburuak bakarrik erakusten.
+                <br/><strong>Irakurketa Erronkaren Widgeta:</strong> Alboko panelaren behealdean aurrerapen barra duen widget bat agertzen da, Urteko Irakurketa Erronkan duzun aurrerapena erakusteko (ikusi <a href="#funtzioaurreratuak">9. Funtzio Aurreratuak</a> atala).</li>
             <li><strong>Erdiko Panela — Fitxak:</strong> Lan-eremua, honako fitxekin:
                 <ul>
                     <li><strong>Nire Liburuak:</strong> Zure bildumako azalak erakusten dituen galeria bisuala.</li>
@@ -300,6 +301,7 @@
                 <li><strong>Liburua ezabatu:</strong> Zure bildumatik liburua ezabatu.</li>
             </ul>
             <p><strong>Bikoitz klik:</strong> Liburu batean bikoitz klik eginez, <strong>Xehetasunen Txartela</strong> irekitzen da, irakurketarako moduan, azala, izenburua, egilea, argitaletxea, urtea, generoa, ISBN, izarretako balorazioa eta iritzia pertsona erakutsiz. Hemendik, "Xehetasunak editatu" sakatu dezakezu liburua aldatu ahal izateko.</p>
+            <p><strong>E-book-ak inportatu (Arrastatu eta Utzi):</strong> Arrastatu <strong>EPUB, PDF edo MOBI</strong> fitxategi bat zuzenean "Nire Liburuak" panelera. BiblioHousek automatikoki aterako ditu metadatuak (izenburua, egilea, azala) eta zure bildumari gehituko dio. Panela ertz urdin ez-jarraitu batez nabarmenduko da fitxategia utzi dezakezula adierazteko.</p>
             <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Liburu azalen galeria alboko apaleta panelekin." />
         </div>
 
@@ -433,8 +435,18 @@
                 <li><strong>Itxura:</strong>
                     <ul>
                         <li><strong>Hizkuntza:</strong> Gaztelania, Ingelesa, Katalana, Galegoa, Euskara eta Portugesa artean aldatu. Aldaketa berehala aplikatzen da, berriro hasieratu gabe.</li>
-                        <li><strong>Itxura Gaia:</strong> "Argia (Primer Light)" eta "Iluna (Primer Dark)" artean hautatu.<br />
-                            <em>Sarbidetasun Oharra:</em> Ilun moduak gris ilun sakon bat (#212529) erabiltzen du, beltz puru (#000000) ordez, astigmatismoa duten pertsonei "halo" efektua saihesteko.</li>
+                        <li><strong>Itxura Gaia:</strong> Aukeratu eskuragarri dauden 7 gaien artean:
+                            <ul>
+                                <li><strong>Argia (Primer Light):</strong> Gai argia lehenetsia, GitHub estiloa. Garbia eta profesionala.</li>
+                                <li><strong>Iluna (Primer Dark):</strong> Modu ilun profesionala kontraste handiarekin.</li>
+                                <li><strong>Nord Argia (Nord Light):</strong> Tono hotz urdin-grisak, Artikoko Nord paletan oinarritua. Ikusmen-nekea murrizten du.</li>
+                                <li><strong>Nord Iluna (Nord Dark):</strong> Urdin sakonak eta gris urdinxkak. Primer Dark baino leunagoa, gaueko saioetarako ezin hobea.</li>
+                                <li><strong>Cupertino Argia (macOS Light):</strong> Apple/macOS estetika. Mac sisteman integratzen da.</li>
+                                <li><strong>Cupertino Iluna (macOS Dark):</strong> macOS estiloko modu iluna gris fin landuekin.</li>
+                                <li><strong>Dracula:</strong> Gai ilun bizia arrosa, berde eta zian azentuekin. Garatzaileen artean ezaguna.</li>
+                            </ul>
+                            <em>Sarbidetasun Oharra:</em> Gai ilun guztiek beltz purua (#000000) saihesten dute, astigmatismoa duten pertsonei "halo" efektua murriztuz. Gaiaren aldaketa berehala aplikatzen da.
+                        </li>
                     </ul>
                 </li>
                 <li><strong>Pertsonalizazioa:</strong> Zure liburutegiaren izena aldatu (izenburu barran agertuko da).</li>
@@ -565,9 +577,12 @@
                     <li><kbd>F1</kbd> — Erabiltzaile Gida hau ireki.</li>
                 </ul>
             </li>
-            <li><strong>Arrastatu eta Utzi Bisuala:</strong> Liburuaren Editatzeko pantailan egotean, zure web nabigatzailean argazki bat bilatu, arrastatu eta BiblioHouse-ren azal eremuan utzi azala aldatu ahal izateko unean bertan.</li>
+            <li><strong>Arrastatu eta Utzi Bisuala (Azalak):</strong> Liburuaren Editatzeko pantailan egotean, zure web nabigatzailean argazki bat bilatu, arrastatu eta BiblioHouse-ren azal eremuan utzi azala aldatu ahal izateko unean bertan.</li>
+            <li><strong>E-book-ak Arrastatu eta Utzi:</strong> Arrastatu <strong>EPUB, PDF edo MOBI</strong> fitxategi bat zuzenean "Nire Liburuak" panelera. Aplikazioak automatikoki aterako ditu metadatuak (izenburua, egilea, txertatutako azala) eta zure bildumari gehituko dio. Panela ertz urdin ez-jarraitu batez nabarmenduko da gidatzeko.</li>
             <li><strong>Rafaga Modua (Barkodea):</strong> USB laser eskanner "pistola" bat erabiltzen baduzu, OpenLibrary bilatzailean kurtsorea jarri. Barkode bat irakurri; detektatzen denean, <kbd>Enter</kbd> sakatu. Minutuko liburu hamarkak kataloga ditzakezu.</li>
             <li><strong>Saga falta direnak bilatu:</strong> <em>Tresnak</em> menutik &gt; <em>"Saga falta direnak online bilatu"</em>, aplikazioak datu-base publikoetan zure sagetan falta zaizkien liburuak bilatuko ditu eta zein lortu sugestioak egingo dizu.</li>
+            <li><strong>Urteko Irakurketa Erronka:</strong> Ezkerreko alboko panelean, apalategien azpian, aurrerapen barra bat duen widget bat dago. Egin klik aurten zenbat liburu irakurri nahi dituzun konfiguratzeko. Aurrerapena automatikoki kalkulatzen da "Irakurria" gisa markatutako liburuetan oinarrituta. Jarri 0 erronka desgaitzeko.</li>
+            <li><strong>Bikoiztuak bilatu:</strong> <em>Tresnak</em> menutik &gt; <em>"Bikoiztuak bilatu"</em>, aplikazioak zure bilduma eskaneatuko du izenburuan edo ISBNan errepikatutako liburuen bila eta bikoiztuak modu kontrolatuan ezabatzeko aukera ematen dizu.</li>
             <li><strong>Eguneraketen konprobazioa:</strong> Aplikazioa hastean, BiblioHousek isilpean eguneraketa berri bat eskuragarri dagoen konprobatuko du eta goiko barran banner bat erakutsiko dizu.</li>
         </ul>
 
@@ -596,7 +611,7 @@
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.8 - ferlagod-ek garatua. Gida %100 estaldura eta sarbidetasuna bermatzen duena.</em>
+            <em>BiblioHouse v1.9 - ferlagod-ek garatua. Gida %100 estaldura eta sarbidetasuna bermatzen duena.</em>
         </p>
     </body>
 </html>

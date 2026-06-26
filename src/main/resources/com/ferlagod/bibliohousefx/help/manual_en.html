@@ -270,7 +270,8 @@
         <p>The main window is divided into these areas:</p>
         <ul>
             <li><strong>Menu Bar (Top):</strong> Contains the <em>File</em>, <em>Tools</em>, and <em>Help</em> menus. From here, you can import/export, find duplicates, access settings, change language, view statistics, and open this manual.</li>
-            <li><strong>Left Sidebar — "My Shelves":</strong> Displays thematic categories (Novel, Science Fiction, Fantasy, etc.). Selecting a shelf filters the main view to show only books from that category.</li>
+            <li><strong>Left Sidebar — "My Shelves":</strong> Displays thematic categories (Novel, Science Fiction, Fantasy, etc.) and virtual categories ("E-books", "Wishlist"). Selecting a shelf filters the main view to show only books from that category.
+                <br/><strong>Reading Challenge Widget:</strong> At the bottom of the sidebar, a widget with a progress bar shows your progress on the Annual Reading Challenge (see section <a href="#advanced">9. Advanced Features</a>).</li>
             <li><strong>Central Panel — Tabs:</strong> The workspace with the following tabs:
                 <ul>
                     <li><strong>My Books:</strong> Visual gallery with book covers from your collection.</li>
@@ -300,6 +301,7 @@
                 <li><strong>Delete Book:</strong> Remove the book from your collection.</li>
             </ul>
             <p><strong>Double Click:</strong> Double-clicking a book opens its <strong>Detail Card</strong> in read-only mode, showing the cover, title, author, publisher, year, genre, ISBN, star rating, and personal review. From there, you can click "Edit Details" to modify the book.</p>
+            <p><strong>Import E-books (Drag &amp; Drop):</strong> Drag an <strong>EPUB, PDF, or MOBI</strong> file directly onto the "My Books" panel. BiblioHouse will automatically extract the metadata (title, author, cover) and add it to your collection. The panel highlights with a dashed blue border to indicate you can drop the file.</p>
             <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Gallery of book covers with a sidebar of shelves." />
         </div>
 
@@ -433,8 +435,18 @@
                 <li><strong>Appearance:</strong>
                     <ul>
                         <li><strong>Language:</strong> Switch between Spanish, English, Catalan, Galician, Basque, and Portuguese. The change applies instantly without restarting.</li>
-                        <li><strong>Visual Theme:</strong> Choose between "Light (Primer Light)" and "Dark (Primer Dark)".<br />
-                            <em>Accessibility Note:</em> Dark mode uses a deep gray background (#212529) instead of pure black (#000000) to avoid the "halo" effect for people with astigmatism.</li>
+                        <li><strong>Visual Theme:</strong> Choose from 7 available themes:
+                            <ul>
+                                <li><strong>Light (Primer Light):</strong> Default light theme, GitHub style. Clean and professional.</li>
+                                <li><strong>Dark (Primer Dark):</strong> Professional dark mode with high contrast.</li>
+                                <li><strong>Nord Light:</strong> Cool blue-gray tones inspired by the Arctic Nord palette. Reduces eye strain.</li>
+                                <li><strong>Nord Dark:</strong> Deep blues and bluish grays. Softer than Primer Dark, ideal for night sessions.</li>
+                                <li><strong>Cupertino Light (macOS Light):</strong> Apple/macOS aesthetics. Integrates with the system on Mac.</li>
+                                <li><strong>Cupertino Dark (macOS Dark):</strong> macOS-style dark mode with refined grays.</li>
+                                <li><strong>Dracula:</strong> Vibrant dark theme with pink, green, and cyan accents. Popular among developers.</li>
+                            </ul>
+                            <em>Accessibility Note:</em> All dark themes avoid pure black (#000000), reducing the "halo" effect for people with astigmatism. Theme changes are applied instantly.
+                        </li>
                     </ul>
                 </li>
                 <li><strong>Personalization:</strong> Change your library's name (appears in the title bar).</li>
@@ -565,9 +577,12 @@
                     <li><kbd>F1</kbd> — Open this User Manual.</li>
                 </ul>
             </li>
-            <li><strong>Drag & Drop Visual:</strong> While in the Book Edit screen, you can search for a photo in your web browser, drag it, and drop it directly onto the cover area in BiblioHouse to change it instantly.</li>
+            <li><strong>Drag &amp; Drop Visual (Covers):</strong> While in the Book Edit screen, you can search for a photo in your web browser, drag it, and drop it directly onto the cover area in BiblioHouse to change it instantly.</li>
+            <li><strong>E-book Drag &amp; Drop:</strong> Drag an <strong>EPUB, PDF, or MOBI</strong> file directly onto the "My Books" panel. The app automatically extracts metadata (title, author, embedded cover) and adds it to your collection. The panel highlights with a dashed border to guide you.</li>
             <li><strong>Burst Mode (Barcode):</strong> If you use a USB laser scanner "gun," place the cursor in the OpenLibrary searcher. Scan a barcode; when detected, press <kbd>Enter</kbd>. You can catalog dozens of books per minute.</li>
             <li><strong>Find Missing Sagas:</strong> From the <em>Tools</em> menu &gt; <em>"Find Missing Sagas Online"</em>, the app searches public databases for missing volumes in your sagas and suggests which ones to get.</li>
+            <li><strong>Annual Reading Challenge:</strong> At the bottom of the left sidebar, below the shelves, there is a widget with a progress bar. Click on it to set how many books you aim to read this year. Progress is calculated automatically based on books marked as "Read". Set to 0 to disable the challenge.</li>
+            <li><strong>Find Duplicates:</strong> From the <em>Tools</em> menu &gt; <em>"Find Duplicates"</em>, the app scans your collection for repeated books by title or ISBN and lets you remove duplicates in a controlled way.</li>
             <li><strong>Update Check:</strong> On startup, BiblioHouse silently checks if a new version is available and notifies you with a banner in the top bar.</li>
         </ul>
 
@@ -596,7 +611,7 @@
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.8 - Developed by ferlagod. Manual adapted to ensure 100% coverage and accessibility.</em>
+            <em>BiblioHouse v1.9 - Developed by ferlagod. Manual adapted to ensure 100% coverage and accessibility.</em>
         </p>
     </body>
 </html>

@@ -271,7 +271,8 @@
         <p>A xanela principal divídese nestas áreas:</p>
         <ul>
             <li><strong>Barra de Menús (Superior):</strong> Contén os menús <em>Ficheiro</em>, <em>Ferramentas</em> e <em>Axuda</em>. Desde aquí accedes a importar/exportar, buscar duplicados, configuración, idioma, estatísticas e este manual.</li>
-            <li><strong>Panel Lateral Esquerdo — "As Miñas Estantearías":</strong> Mostra categorías temáticas (Novela, Ciencia Ficción, Fantasía, etc.). Ao seleccionar unha estantearía, a vista principal filtra para mostrar só os libros desa categoría.</li>
+            <li><strong>Panel Lateral Esquerdo — "As Miñas Estelearías":</strong> Mostra categorías temáticas (Novela, Ciencia Ficción, Fantasía, etc.) e categorías virtuais ("E-books", "Lista de Desexos"). Ao seleccionar unha estantelearía, a vista principal filtra para mostrar só os libros desa categoría.
+                <br/><strong>Widget de Reto de Lectura:</strong> Na parte inferior do panel lateral aparece un widget con barra de progreso que mostra o teu avance no Reto de Lectura Anual (ver sección <a href="#funcions-avanzadas">9. Funcións Avanzadas</a>).</li>
             <li><strong>Panel Central — Pestanas:</strong> A área de traballo con as seguintes pestanas:
                 <ul>
                     <li><strong>Os Meus Libros:</strong> Galería visual con portadas da túa colección.</li>
@@ -301,6 +302,7 @@
                 <li><strong>Eliminar libro:</strong> Borrar o libro da túa colección.</li>
             </ul>
             <p><strong>Dobre clic:</strong> Ao facer dobre clic nun libro ábrese a <strong>Ficha de Detalle</strong> en modo só lectura, onde ves a portada, título, autor, editorial, ano, xénero, ISBN, valoración con estrelas e a reseña persoal. Desde alí podes premer "Editar detalles" para modificar o libro.</p>
+            <p><strong>Importar E-books (Arrastar e Soltar):</strong> Arrastra un ficheiro <strong>EPUB, PDF ou MOBI</strong> directamente sobre o panel "Os Meus Libros". BiblioHouse extraerá automaticamente os metadatos (título, autor, portada) e engadirao á túa colección. O panel resaltarase cun bordo punteado azul para indicar que podes soltar o ficheiro.</p>
             <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Galería de portadas de libros con panel lateral de estantearías." />
         </div>
 
@@ -434,8 +436,18 @@
                 <li><strong>Aparencia:</strong>
                     <ul>
                         <li><strong>Idioma:</strong> Cambia entre Español, Inglés, Catalán, Galego, Euskara e Portugués. O cambio aplícase instantaneamente sen reiniciar.</li>
-                        <li><strong>Tema Visual:</strong> Elixe entre "Claro (Primer Light)" e "Escuro (Primer Dark)".<br />
-                            <em>Nota de Accesibilidade:</em> O modo Escuro usa un fondo gris profundo (#212529) en vez de negro puro (#000000), evitando o efecto "halo" para persoas con astigmatismo.</li>
+                        <li><strong>Tema Visual:</strong> Elixe entre 7 temas dispoñíbeis:
+                            <ul>
+                                <li><strong>Claro (Primer Light):</strong> Tema claro por defecto, estilo GitHub. Limpo e profesional.</li>
+                                <li><strong>Escuro (Primer Dark):</strong> Modo escuro profesional con alto contraste.</li>
+                                <li><strong>Nord Claro (Nord Light):</strong> Tons fríos azul-grisáceos, inspirado na paleta ártica Nord. Reduce a fatiga visual.</li>
+                                <li><strong>Nord Escuro (Nord Dark):</strong> Azuis profundos e grises azulados. Máis suave que Primer Dark, ideal para sesións nocturnas.</li>
+                                <li><strong>Cupertino Claro (macOS Light):</strong> Estética Apple/macOS. Integrase co sistema en Mac.</li>
+                                <li><strong>Cupertino Escuro (macOS Dark):</strong> Modo escuro estilo macOS con grises refinados.</li>
+                                <li><strong>Dracula:</strong> Tema escuro vibrante con acentos en rosa, verde e cian. Popular entre desenvolvedores.</li>
+                            </ul>
+                            <em>Nota de Accesibilidade:</em> Todos os temas escuros evitan o negro puro (#000000), reducindo o efecto "halo" para persoas con astigmatismo. O cambio de tema aplícase instantaneamente.
+                        </li>
                     </ul>
                 </li>
                 <li><strong>Personalización:</strong> Cambia o nome da túa biblioteca (aparecerá na barra de título).</li>
@@ -566,9 +578,12 @@
                     <li><kbd>F1</kbd> — Abrir este Manual de Usuario.</li>
                 </ul>
             </li>
-            <li><strong>Arrastar e Soltar Visual:</strong> Estando na pantalla de Edición dun libro, podes buscar unha foto no teu navegador web, arrastrala e soltala fisicamente sobre a zona da portada en BiblioHouse para cambiala ao instante.</li>
+            <li><strong>Arrastar e Soltar Visual (Portadas):</strong> Estando na pantalla de Edición dun libro, podes buscar unha foto no teu navegador web, arrastrala e soltala fisicamente sobre a zona da portada en BiblioHouse para cambiala ao instante.</li>
+            <li><strong>Arrastar e Soltar E-books:</strong> Arrastra un ficheiro <strong>EPUB, PDF ou MOBI</strong> directamente sobre o panel "Os Meus Libros". A app extrae automaticamente os metadatos (título, autor, portada incrustada) e engadirao á túa colección. O panel resáltase cun bordo punteado para guiarte.</li>
             <li><strong>Modo Rafaga (Código de Barras):</strong> Se usas un escáner láser USB tipo "pistola", sitúa o cursor no buscador de OpenLibrary. Lee un código de barras; ao detectalo, preme <kbd>Enter</kbd>. Podes catalogar decenas de libros por minuto.</li>
             <li><strong>Buscar sagas faltantes:</strong> Desde o menú <em>Ferramentas</em> &gt; <em>"Buscar sagas faltantes online"</em>, a app busca en bases de datos públicas se hai tomos que che faltan nas túas sagas e suxire cales conseguir.</li>
+            <li><strong>Reto de Lectura Anual:</strong> No panel lateral esquerdo, debaixo das estantearías, hai un widget con barra de progreso. Fai clic nel para configurar cantos libros te propós ler este ano. O progreso calcúlase automaticamente en base aos libros marcados como "Lido". Pon 0 para desactivar o reto.</li>
+            <li><strong>Buscar duplicados:</strong> Desde o menú <em>Ferramentas</em> &gt; <em>"Buscar duplicados"</em>, a app escanea a túa colección en busca de libros repetidos por título ou ISBN e permíteche eliminar os duplicados de forma controlada.</li>
             <li><strong>Comprobación de actualizacións:</strong> Ao iniciar, BiblioHouse comprova silenciosamente se hai unha versión nova dispoñíbel e notifícache cun banner na barra superior.</li>
         </ul>
 
@@ -597,7 +612,7 @@
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.8 - Desenvolvido por ferlagod. Manual adaptado garantindo 100% de cobertura e accesibilidade.</em>
+            <em>BiblioHouse v1.9 - Desenvolvido por ferlagod. Manual adaptado garantindo 100% de cobertura e accesibilidade.</em>
         </p>
     </body>
 </html>

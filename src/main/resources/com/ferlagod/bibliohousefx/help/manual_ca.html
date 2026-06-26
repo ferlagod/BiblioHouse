@@ -271,7 +271,8 @@
         <p>La finestra principal es divideix en aquestes àrees:</p>
         <ul>
             <li><strong>Barra de Menús (Superior):</strong> Conté els menús <em>Fitxer</em>, <em>Eines</em> i <em>Ajuda</em>. Des d'aquí accedeixes a importar/exportar, buscar duplicats, configuració, idioma, estadístiques i aquest manual.</li>
-            <li><strong>Panell Lateral Esquerre — "Les Meves Prestatgeries":</strong> Mostra categories temàtiques (Novel·la, Ciència Ficció, Fantasia, etc.). En seleccionar una prestatgeria, la vista principal es filtra per mostrar només els llibres d'aquella categoria.</li>
+            <li><strong>Panell Lateral Esquerre — "Les Meves Prestatgeries":</strong> Mostra categories temàtiques (Novel·la, Ciència Ficció, Fantasia, etc.) i categories virtuals ("E-books", "Llista de Desitjos"). En seleccionar una prestatgeria, la vista principal es filtra per mostrar només els llibres d'aquella categoria.
+                <br/><strong>Widget de Repte de Lectura:</strong> A la part inferior del panell lateral apareix un widget amb barra de progrés que mostra el teu avanç en el Repte de Lectura Anual (veure secció <a href="#funcions-avancades">9. Funcions Avançades</a>).</li>
             <li><strong>Panell Central — Pestanyes:</strong> L'àrea de treball amb les següents pestanyes:
                 <ul>
                     <li><strong>Els Meus Llibres:</strong> Galeria visual amb portades de la teva col·lecció.</li>
@@ -301,6 +302,7 @@
                 <li><strong>Eliminar llibre:</strong> Esborra el llibre de la teva col·lecció.</li>
             </ul>
             <p><strong>Doble clic:</strong> En fer doble clic a un llibre s'obre la <strong>Fitxa de Detall</strong> en mode només lectura, on veus la portada, títol, autor, editorial, any, gènere, ISBN, valoració amb estrelles i la ressenya personal. Des d'allà, pots prémer "Editar detalls" per modificar el llibre.</p>
+            <p><strong>Importar E-books (Arrossegar i Deixar anar):</strong> Arrossega un fitxer <strong>EPUB, PDF o MOBI</strong> directament sobre el panell "Els Meus Llibres". BiblioHouse extraurà automàticament les metadades (títol, autor, portada) i l'afegirà a la teva col·lecció. El panell es ressaltarà amb una vora puntejada blava per indicar que pots deixar-hi el fitxer.</p>
             <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Galeria de portades de llibres amb panell lateral de prestatgeries." />
         </div>
 
@@ -434,8 +436,18 @@
                 <li><strong>Aparença:</strong>
                     <ul>
                         <li><strong>Idioma:</strong> Canvia entre Castellà, Anglès, Català, Gallec, Euskara i Portuguès. El canvi s'aplica instantàniament sense reiniciar.</li>
-                        <li><strong>Tema Visual:</strong> Tria entre "Clar (Primer Light)" i "Fosc (Primer Dark)".<br />
-                            <em>Nota d'Accessibilitat:</em> El mode Fosc utilitza un fons gris profund (#212529) en lloc de negre pur (#000000), evitant l'efecte "halo" per a persones amb astigmatisme.</li>
+                        <li><strong>Tema Visual:</strong> Tria entre 7 temes disponibles:
+                            <ul>
+                                <li><strong>Clar (Primer Light):</strong> Tema clar per defecte, estil GitHub. Net i professional.</li>
+                                <li><strong>Fosc (Primer Dark):</strong> Mode fosc professional amb alt contrast.</li>
+                                <li><strong>Nord Clar (Nord Light):</strong> Tons freds blau-grisós, inspirat en la paleta àrtica Nord. Redueix la fatiga visual.</li>
+                                <li><strong>Nord Fosc (Nord Dark):</strong> Blaus profunds i grisos blavosos. Més suau que Primer Dark, ideal per a sessions nocturnes.</li>
+                                <li><strong>Cupertino Clar (macOS Light):</strong> Estètica Apple/macOS. S'integra amb el sistema a Mac.</li>
+                                <li><strong>Cupertino Fosc (macOS Dark):</strong> Mode fosc estil macOS amb grisos refinats.</li>
+                                <li><strong>Dracula:</strong> Tema fosc vibrant amb accents en rosa, verd i cian. Popular entre desenvolupadors.</li>
+                            </ul>
+                            <em>Nota d'Accessibilitat:</em> Tots els temes foscos eviten el negre pur (#000000), reduint l'efecte "halo" per a persones amb astigmatisme. El canvi de tema s'aplica instantàniament.
+                        </li>
                     </ul>
                 </li>
                 <li><strong>Personalització:</strong> Canvia el nom de la teva biblioteca (apareixerà a la barra de títol).</li>
@@ -566,9 +578,12 @@
                     <li><kbd>F1</kbd> — Obrir aquest Manual d'Usuari.</li>
                 </ul>
             </li>
-            <li><strong>Arrossegar i Deixar anar Visual:</strong> Estant a la pantalla d'Edició d'un llibre, pots buscar una foto al teu navegador web, arrossegar-la i deixar-la físicament sobre la zona de la portada a BiblioHouse per canviar-la al moment.</li>
+            <li><strong>Arrossegar i Deixar anar Visual (Portades):</strong> Estant a la pantalla d'Edició d'un llibre, pots buscar una foto al teu navegador web, arrossegar-la i deixar-la físicament sobre la zona de la portada a BiblioHouse per canviar-la al moment.</li>
+            <li><strong>Arrossegar i Deixar anar E-books:</strong> Arrossega un fitxer <strong>EPUB, PDF o MOBI</strong> directament sobre el panell "Els Meus Llibres". L'app extreu automàticament les metadades (títol, autor, portada incrustada) i l'afegeix a la teva col·lecció. El panell es ressalta amb una vora puntejada per guiar-te.</li>
             <li><strong>Mode Ràfega (Codi de Barres):</strong> Si utilitzes un escàner làser USB tipus "pistola", situa el cursor al cercador d'OpenLibrary. Llegeix un codi de barres; en detectar-lo, prem <kbd>Enter</kbd>. Pots catalogar desenes de llibres per minut.</li>
             <li><strong>Buscar sagues faltants:</strong> Des del menú <em>Eines</em> &gt; <em>"Buscar sagues faltants en línia"</em>, l'app busca a bases de dades públiques si hi ha toms que et falten a les teves sagues i et suggereix quins aconseguir.</li>
+            <li><strong>Repte de Lectura Anual:</strong> Al panell lateral esquerre, sota les prestatgeries, hi ha un widget amb barra de progrés. Fes-hi clic per configurar quants llibres et proposes llegir enguany. El progrés es calcula automàticament en base als llibres marcats com a "Llegit". Posa 0 per desactivar el repte.</li>
+            <li><strong>Buscar duplicats:</strong> Des del menú <em>Eines</em> &gt; <em>"Buscar duplicats"</em>, l'app escaneja la teva col·lecció en busca de llibres repetits per títol o ISBN i et permet eliminar els duplicats de manera controlada.</li>
             <li><strong>Comprovació d'actualitzacions:</strong> En iniciar-se, BiblioHouse comprova silenciosament si hi ha una versió nova disponible i t'avisa amb un banner a la barra superior.</li>
         </ul>
 
@@ -597,7 +612,7 @@
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.8 - Desenvolupat per ferlagod. Manual adaptat garantint el 100% de cobertura i accessibilitat.</em>
+            <em>BiblioHouse v1.9 - Desenvolupat per ferlagod. Manual adaptat garantint el 100% de cobertura i accessibilitat.</em>
         </p>
     </body>
 </html>
