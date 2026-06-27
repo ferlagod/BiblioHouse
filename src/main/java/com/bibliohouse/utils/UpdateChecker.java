@@ -39,7 +39,7 @@ public class UpdateChecker {
     // API de Forgejo para tu repositorio
     private static final String API_URL = "https://forjalibre.eu/api/v1/repos/ferlagod/BiblioHouse/releases/latest";
     // Versión actual de la aplicación. 
-    private static final String VERSION_ACTUAL = "1.8";
+    private static final String VERSION_ACTUAL = "1.9";
 
     /**
      * Comprueba si hay una versión más reciente de la aplicación.
