@@ -44,7 +44,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class EditarLibroController {
 
@@ -404,7 +404,7 @@ public class EditarLibroController {
                     libro.getId(),
                     this.rutaUsuario
             );
-            
+
             rutaArchivoDigitalActual = com.bibliohouse.logic.EbookMetadataService.hacerEbookLocalOffline(
                     rutaArchivoDigitalActual,
                     libro.getId(),
@@ -537,8 +537,8 @@ public class EditarLibroController {
     }
 
     /**
-     * Abre un selector de archivos para adjuntar un e-book (EPUB, PDF, MOBI)
-     * al libro actual.
+     * Abre un selector de archivos para adjuntar un e-book (EPUB, PDF, MOBI) al
+     * libro actual.
      *
      * @param event El evento de acción.
      */

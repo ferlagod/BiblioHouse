@@ -29,7 +29,7 @@ import java.util.List;
  * Funciona con CSVs de Goodreads, Bookwyrm y otros formatos genéricos.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ImportadorCSV {
 

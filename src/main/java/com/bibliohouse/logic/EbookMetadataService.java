@@ -30,12 +30,14 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Servicio para extraer metadatos y portadas de archivos de e-books (EPUB, PDF,
@@ -56,7 +58,8 @@ public class EbookMetadataService {
 
     /**
      * Copia el archivo del e-book a la carpeta local "ebooks" dentro del
-     * directorio de la base de datos del usuario, de forma similar a las portadas.
+     * directorio de la base de datos del usuario, de forma similar a las
+     * portadas.
      *
      * @param rutaOriginal Ruta original del archivo.
      * @param idLibro ID único del libro (usado para el nombre del archivo).
@@ -81,12 +84,17 @@ public class EbookMetadataService {
         // Extraer extensión original
         String name = archivoOrigen.getName().toLowerCase();
         String extension = "";
-        if (name.endsWith(".epub")) extension = ".epub";
-        else if (name.endsWith(".pdf")) extension = ".pdf";
-        else if (name.endsWith(".mobi")) extension = ".mobi";
-        else {
+        if (name.endsWith(".epub")) {
+            extension = ".epub";
+        } else if (name.endsWith(".pdf")) {
+            extension = ".pdf";
+        } else if (name.endsWith(".mobi")) {
+            extension = ".mobi";
+        } else {
             int lastDot = name.lastIndexOf(".");
-            if (lastDot > 0) extension = name.substring(lastDot);
+            if (lastDot > 0) {
+                extension = name.substring(lastDot);
+            }
         }
 
         File archivoDestino = new File(dirEbooks, idLibro + extension);
@@ -122,10 +130,10 @@ public class EbookMetadataService {
     }
 
     /**
-     * Crea un objeto Libro a partir de un archivo de e-book. Extrae metadatos
-     * y portada según el formato del archivo.
+     * Crea un objeto Libro a partir de un archivo de e-book. Extrae metadatos y
+     * portada según el formato del archivo.
      *
-     * @param archivo     El archivo EPUB, PDF o MOBI.
+     * @param archivo El archivo EPUB, PDF o MOBI.
      * @param rutaUsuario Ruta del directorio del usuario para guardar portadas.
      * @return Un nuevo Libro con los datos extraídos y marcado como digital.
      */
@@ -158,7 +166,6 @@ public class EbookMetadataService {
     }
 
     // ==================== EPUB ====================
-
     /**
      * Extrae metadatos y portada de un archivo EPUB. Un EPUB es un ZIP que
      * contiene un archivo OPF con metadatos Dublin Core y referencias a la
@@ -399,13 +406,12 @@ public class EbookMetadataService {
                             libro, rutaUsuario);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.log(Level.FINE, "No se pudo extraer portada del EPUB", e);
         }
     }
 
     // ==================== PDF ====================
-
     /**
      * Extrae la primera página de un PDF como portada y usa el nombre del
      * archivo como título.
@@ -451,7 +457,6 @@ public class EbookMetadataService {
     }
 
     // ==================== MOBI ====================
-
     /**
      * Para MOBI solo usamos el nombre del archivo como título (no hay librería
      * Java ligera estándar para parsear MOBI).
@@ -463,7 +468,6 @@ public class EbookMetadataService {
     }
 
     // ==================== UTILIDADES ====================
-
     /**
      * Parsea un InputStream XML a un Document DOM.
      */
@@ -475,7 +479,7 @@ public class EbookMetadataService {
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             return builder.parse(is);
-        } catch (Exception e) {
+        } catch (IOException | ParserConfigurationException | SAXException e) {
             LOGGER.log(Level.FINE, "Error parseando XML", e);
             return null;
         }

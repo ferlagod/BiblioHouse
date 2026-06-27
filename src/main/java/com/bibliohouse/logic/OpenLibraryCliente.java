@@ -43,7 +43,7 @@ import org.json.JSONObject;
  * devuelve los resultados como objetos Libro.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class OpenLibraryCliente {
 
@@ -182,7 +182,7 @@ public class OpenLibraryCliente {
                         portadaUrl = "https://covers.openlibrary.org/b/id/" + coverId + "-L.jpg";
                     }
                 }
-                
+
                 // Obtener número de páginas
                 int paginasTotales = doc.optInt("number_of_pages", 0);
 

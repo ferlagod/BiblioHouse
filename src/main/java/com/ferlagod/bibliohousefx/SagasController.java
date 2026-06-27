@@ -50,7 +50,7 @@ import javafx.scene.control.TextInputDialog;
  * resaltarlos en rojo.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class SagasController {
 
@@ -311,6 +311,10 @@ public class SagasController {
         private javafx.scene.control.Label nombre;
         private javafx.scene.control.Label info;
 
+        /**
+         * Constructor de la celda. Configura los márgenes, colores y tamaños de
+         * fuente.
+         */
         public SagaListCell() {
             setStyle("-fx-padding: 8 10; -fx-background-color: transparent;");
 

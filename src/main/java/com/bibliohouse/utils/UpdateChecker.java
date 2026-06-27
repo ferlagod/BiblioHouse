@@ -32,7 +32,7 @@ import javafx.application.Platform;
  * actual y notifica el resultado mediante un callback.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class UpdateChecker {
 

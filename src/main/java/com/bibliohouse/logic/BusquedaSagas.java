@@ -33,7 +33,7 @@ import javafx.scene.control.ProgressBar;
  * de usuario mediante callbacks al finalizar el proceso.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class BusquedaSagas {
 

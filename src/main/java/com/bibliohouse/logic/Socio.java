@@ -23,7 +23,7 @@ package com.bibliohouse.logic;
  * apellidos, DNI, etc.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class Socio {
 
@@ -34,20 +34,20 @@ public class Socio {
     private int numeroSocio; // Un número único para identificarlo 
 
     /**
-     * Constructor por defecto de la clase Socio.
+     * Constructor vacío. Nos sirve para crear un socio sin datos iniciales
+     * y poder ir llenándolos después poco a poco.
      */
     public Socio() {
     }
 
     /**
-     * Constructor para crear una nueva instancia de Socio con información
-     * personal y un número de socio.
+     * Constructor que nos permite crear un socio dándole todos sus datos de una sola vez.
      *
-     * @param nombre El nombre del socio.
-     * @param apellidos Los apellidos del socio.
-     * @param dni El DNI del socio.
-     * @param domicilio El domicilio del socio.
-     * @param numeroSocio El número de socio único.
+     * @param nombre El nombre de la persona.
+     * @param apellidos Los apellidos de la persona.
+     * @param dni El carné de identidad o documento del socio.
+     * @param domicilio La dirección donde vive.
+     * @param numeroSocio El número identificador único en nuestra biblioteca.
      */
     public Socio(String nombre, String apellidos, String dni, String domicilio, int numeroSocio) {
         this.nombre = nombre;
@@ -59,88 +59,89 @@ public class Socio {
 
     // ---GETTER Y SETTER---
     /**
-     * Obtiene el nombre del socio.
+     * Nos devuelve el nombre que tiene guardado este socio.
      *
-     * @return El nombre del socio.
+     * @return El nombre en formato texto.
      */
     public String getNombre() {
         return nombre;
     }
 
     /**
-     * Devuelve el nombre completo del socio juntando nombre y apellidos.
+     * Nos da el nombre completo del socio, juntando su nombre y sus apellidos
+     * con un espacio en el medio para que quede bonito.
      *
-     * @return El nombre + un espacio + apellidos.
+     * @return El texto con el nombre y los apellidos.
      */
     public String getNombreCompleto() {
         return nombre + " " + apellidos;
     }
 
     /**
-     * Establece el nombre del socio.
+     * Nos permite cambiar o guardar un nombre nuevo para el socio.
      *
-     * @param nombre El nombre a establecer para el socio.
+     * @param nombre El nombre que le queremos poner.
      */
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
     /**
-     * Obtiene los apellidos del socio.
+     * Nos devuelve los apellidos que tiene guardados el socio.
      *
-     * @return Los apellidos del socio.
+     * @return Los apellidos en formato texto.
      */
     public String getApellidos() {
         return apellidos;
     }
 
     /**
-     * Establece los apellidos del socio.
+     * Nos permite cambiar o guardar los apellidos del socio.
      *
-     * @param apellidos Los apellidos a establecer para el socio.
+     * @param apellidos Los apellidos que le queremos poner.
      */
     public void setApellidos(String apellidos) {
         this.apellidos = apellidos;
     }
 
     /**
-     * Obtiene el DNI del socio.
+     * Nos devuelve el DNI o documento del socio.
      *
-     * @return El DNI del socio.
+     * @return El DNI guardado.
      */
     public String getDni() {
         return dni;
     }
 
     /**
-     * Establece el DNI del socio.
+     * Sirve para cambiar o asignar el DNI del socio.
      *
-     * @param dni El DNI a establecer para el socio.
+     * @param dni El nuevo documento de identidad.
      */
     public void setDni(String dni) {
         this.dni = dni;
     }
 
     /**
-     * Obtiene el domicilio del socio.
+     * Nos dice dónde vive el socio (su dirección o domicilio).
      *
-     * @return El domicilio del socio.
+     * @return La dirección donde vive.
      */
     public String getDomicilio() {
         return domicilio;
     }
 
     /**
-     * Establece el domicilio del socio.
+     * Nos permite actualizar la dirección o domicilio del socio.
      *
-     * @param domicilio El domicilio a establecer para el socio.
+     * @param domicilio La nueva dirección donde va a vivir.
      */
     public void setDomicilio(String domicilio) {
         this.domicilio = domicilio;
     }
 
     /**
-     * Obtiene el número de socio.
+     * Nos devuelve el número único que identifica a este socio en la biblioteca.
      *
      * @return El número de socio.
      */
@@ -149,20 +150,19 @@ public class Socio {
     }
 
     /**
-     * Establece el número de socio.
+     * Sirve para asignarle un número único a este socio.
      *
-     * @param numeroSocio El número de socio a establecer.
+     * @param numeroSocio El numerito que le toca.
      */
     public void setNumeroSocio(int numeroSocio) {
         this.numeroSocio = numeroSocio;
     }
 
     /**
-     * Devuelve una representación en texto del socio con el formato "Nº -
-     * Nombre Apellidos".Este método es utilizado por los JComboBox para mostrar
-     * los socios.
+     * Nos devuelve una cadena de texto lista para mostrar en pantalla, por ejemplo
+     * en los desplegables (JComboBox). Queda algo así como "1 - Juan Pérez".
      *
-     * @return el numero de socio con nombre y apellidos
+     * @return Un texto combinando el número, el nombre y los apellidos.
      */
     @Override
     public String toString() {

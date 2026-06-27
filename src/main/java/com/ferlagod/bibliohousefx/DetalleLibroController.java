@@ -38,7 +38,7 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class DetalleLibroController {
 
@@ -77,7 +77,7 @@ public class DetalleLibroController {
     private Label lblArchivo;
     @FXML
     private Button btnLeerDigital;
-    
+
     // --- DIARIO Y TRACKER ---
     @FXML
     private javafx.scene.control.TabPane tabPaneDetalles;
@@ -87,7 +87,7 @@ public class DetalleLibroController {
     private javafx.scene.control.Spinner<Integer> spinnerPaginasTotales;
     @FXML
     private javafx.scene.control.ListView<com.bibliohouse.logic.NotaLectura> listaDiario;
-    
+
     private List<String> listaGlobalEstanterias;
     private Libro libroActual;
     private String rutaUsuario;
@@ -134,21 +134,21 @@ public class DetalleLibroController {
             estadoLectura = "Pendiente";
         }
         switch (estadoLectura) {
-            case "Leído":
+            case "Leído" -> {
                 lblEstadoLectura.setText("Leído");
                 lblEstadoLectura.setStyle(
                         "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-                break;
-            case "Leyendo":
+            }
+            case "Leyendo" -> {
                 lblEstadoLectura.setText("Leyendo");
                 lblEstadoLectura.setStyle(
                         "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-                break;
-            default:
+            }
+            default -> {
                 lblEstadoLectura.setText("Pendiente");
                 lblEstadoLectura.setStyle(
                         "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-                break;
+            }
         }
         lblEstadoLectura.setVisible(true);
 
@@ -185,7 +185,7 @@ public class DetalleLibroController {
             btnLeerDigital.setVisible(digital);
             btnLeerDigital.setManaged(digital);
         }
-        
+
         // --- SPINNERS TRACKER ---
         if (spinnerPaginasTotales != null) {
             spinnerPaginasTotales.setEditable(true);
@@ -203,7 +203,7 @@ public class DetalleLibroController {
                 wasModified = true;
             });
         }
-        
+
         // --- DIARIO DE LECTURA ---
         if (listaDiario != null) {
             listaDiario.getItems().setAll(libroActual.getDiario());
@@ -217,30 +217,30 @@ public class DetalleLibroController {
                     } else {
                         javafx.scene.layout.VBox celda = new javafx.scene.layout.VBox(5);
                         celda.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-border-color: -color-border-default; -fx-border-radius: 8;");
-                        
+
                         javafx.scene.layout.HBox cabecera = new javafx.scene.layout.HBox(10);
                         Label lblTipo = new Label(nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA ? "📝 Cita" : "💡 Nota");
                         lblTipo.setStyle("-fx-font-weight: bold; -fx-text-fill: -color-accent-fg;");
-                        
+
                         Label lblPagina = new Label("Pág. " + nota.getPaginaReferencia());
                         lblPagina.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
-                        
+
                         String fechaSolo = nota.getFechaHora().split("T")[0];
                         Label lblFecha = new Label(fechaSolo);
                         lblFecha.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
-                        
+
                         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
                         javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-                        
+
                         cabecera.getChildren().addAll(lblTipo, lblPagina, spacer, lblFecha);
-                        
+
                         Label lblTexto = new Label(nota.getTexto());
                         lblTexto.setWrapText(true);
-                        
+
                         if (nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA) {
                             lblTexto.setStyle("-fx-font-style: italic; -fx-border-color: transparent transparent transparent -color-accent-fg; -fx-border-width: 0 0 0 3; -fx-padding: 0 0 0 8;");
                         }
-                        
+
                         celda.getChildren().addAll(cabecera, lblTexto);
                         setGraphic(celda);
                         setText(null);

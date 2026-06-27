@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Clase TestIntegracionJsonManager.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 class TestIntegracionJsonManager {
 

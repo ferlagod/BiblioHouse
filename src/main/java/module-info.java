@@ -60,4 +60,5 @@ module com.ferlagod.bibliohousefx {
 
     exports com.bibliohouse.logic;
     exports com.bibliohouse.utils;
+    
 }

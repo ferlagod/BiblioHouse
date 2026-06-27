@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * incremental.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class NextCloudSyncService {
 
@@ -252,7 +252,7 @@ public class NextCloudSyncService {
             // Sincronización incremental de ebooks
             String remoteEbooksUrl = remoteFolderUrl + "ebooks/";
             crearDirectorioSiNoExiste(sardine, remoteEbooksUrl);
-            
+
             File carpetaLocalEbooks = new File(localDir, "ebooks");
             if (carpetaLocalEbooks.exists() && carpetaLocalEbooks.isDirectory()) {
                 File[] ebooks = carpetaLocalEbooks.listFiles();

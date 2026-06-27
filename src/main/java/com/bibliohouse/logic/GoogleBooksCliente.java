@@ -41,7 +41,7 @@ import org.json.JSONObject;
  * Cliente para conectar con Google Books. Si OpenLib no va, usamos esto.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class GoogleBooksCliente {
 
@@ -165,7 +165,7 @@ public class GoogleBooksCliente {
                         portadaUrl = portadaUrl.replace("http:", "https:");
                     }
                 }
-                
+
                 // Páginas
                 int paginasTotales = volumeInfo.optInt("pageCount", 0);
 

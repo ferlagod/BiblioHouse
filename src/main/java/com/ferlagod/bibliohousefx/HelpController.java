@@ -30,13 +30,19 @@ import javafx.scene.web.WebView;
  * con el contenido HTML correspondiente al idioma seleccionado.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class HelpController implements Initializable {
 
     @FXML
     private WebView webView;
 
+    /**
+     * Inicializa el controlador y carga el contenido de ayuda.
+     *
+     * @param url La ruta relativa al objeto raíz.
+     * @param rb Los recursos para localizar la raíz.
+     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (webView != null) {

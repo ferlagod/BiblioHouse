@@ -26,7 +26,7 @@ import java.util.prefs.Preferences;
  * Gestiona el idioma de la aplicación.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class LanguageManager {
 

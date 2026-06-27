@@ -29,7 +29,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class Libro {
 
@@ -66,9 +66,14 @@ public class Libro {
     private double ordenEnSerie;
 
     // CAMPOS PARA E-BOOKS / ARCHIVOS DIGITALES
-    /** Ruta absoluta al archivo digital enlazado (EPUB, PDF, MOBI). Null si no tiene. */
+    /**
+     * Ruta absoluta al archivo digital enlazado (EPUB, PDF, MOBI). Null si no
+     * tiene.
+     */
     private String rutaArchivoDigital;
-    /** True si el libro se considera "digital" (tiene archivo enlazado). */
+    /**
+     * True si el libro se considera "digital" (tiene archivo enlazado).
+     */
     private boolean esDigital = false;
 
     // CAMPOS PARA READING TRACKER Y DIARIO
@@ -77,7 +82,8 @@ public class Libro {
     private List<NotaLectura> diario = new ArrayList<>();
 
     /**
-     * Constructor vacío.
+     * Constructor vacío. Nos sirve para crear un libro sin datos y que el 
+     * programa no se enfade al cargar cosas. Ya le pone un ID aleatorio.
      */
     public Libro() {
         // Si no tiene ID, le inventamos uno aleatorio
@@ -87,17 +93,18 @@ public class Libro {
     }
 
     /**
-     * Constructor para crear el libro con todos los datos de golpe.
+     * Constructor para crear el libro con todos los datos de golpe, ideal 
+     * cuando ya sabemos todo sobre él.
      *
-     * @param titulo titulo del libro
-     * @param autor autor del libro
-     * @param editorial editorial al que pertenece el libro
-     * @param año año de publicación del libro
-     * @param genero género del libro
-     * @param isbn isbn del libro
-     * @param portadaURL portada del libro
-     * @param calificacion calificación dada al libro
-     * @param reseña reseña escrita por el usuario
+     * @param titulo El nombre del libro.
+     * @param autor Quien lo ha escrito.
+     * @param editorial La empresa que lo publica.
+     * @param año El año en el que salió.
+     * @param genero De qué va (ciencia ficción, novela...).
+     * @param isbn El código de barras o identificador internacional.
+     * @param portadaURL La ruta donde guardamos la imagen de la portada.
+     * @param calificacion Las estrellitas que le damos.
+     * @param reseña Lo que pensamos nosotros del libro.
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
             String portadaURL, int calificacion, String reseña) {
@@ -121,16 +128,16 @@ public class Libro {
     }
 
     /**
-     * Constructor más corto. Se utiliza cuando creamos el libro pero aún no lo
-     * hemos puntuado ni reseñado. Pone las estrellas a 0 por defecto.
+     * Constructor más cortito. Lo usamos cuando guardamos el libro pero 
+     * todavía no lo hemos leído ni puntuado. Nos pone las estrellas a 0.
      *
-     * @param titulo Nombre del libro.
-     * @param autor Nombre del escritor.
-     * @param editorial Nombre de la editorial.
-     * @param año Año de publicación.
-     * @param genero Género literario.
-     * @param isbn Código ISBN.
-     * @param portadaURL Link a la imagen.
+     * @param titulo El nombre del libro.
+     * @param autor Quien lo ha escrito.
+     * @param editorial La empresa que lo publica.
+     * @param año Año en el que salió.
+     * @param genero De qué va (ciencia ficción, novela...).
+     * @param isbn El código de barras.
+     * @param portadaURL Dónde está la imagen de la portada.
      */
     public Libro(String titulo, String autor, String editorial, String año, String genero, String isbn,
             String portadaURL) {
@@ -141,44 +148,44 @@ public class Libro {
 
     // --- Métodos Getter y Setter ---
     /**
-     * Obtiene el ID único interno del libro.
+     * Nos devuelve el ID único interno del libro. Ese código largo y raro.
      *
-     * @return El UUID como cadena de texto.
+     * @return El UUID (ID) en texto.
      */
     public String getId() {
         return id;
     }
 
     /**
-     * Establece el ID único interno del libro. NOTA: Este setter solo debe ser
-     * usado por GSON al cargar datos, no debe cambiarse manualmente.
+     * Sirve para cambiar el ID del libro. NOTA: ¡Cuidado! Normalmente 
+     * solo lo usa GSON al cargar, no lo toques a mano a menos que sepas qué haces.
      *
-     * @param id El ID a establecer.
+     * @param id El nuevo ID a guardar.
      */
     public void setId(String id) {
         this.id = id;
     }
 
     /**
-     * Devuelve el título del libro.
+     * Nos chiva el título del libro.
      *
-     * @return El título.
+     * @return El nombre del libro.
      */
     public String getTitulo() {
         return titulo;
     }
 
     /**
-     * Establece el título del libro.
+     * Nos permite cambiar el título del libro por si nos equivocamos.
      *
-     * @param titulo El nuevo título del libro.
+     * @param titulo El nuevo título.
      */
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
 
     /**
-     * Obtiene el autor del libro.
+     * Nos devuelve el nombre de la persona que escribió el libro.
      *
      * @return El autor del libro.
      */
@@ -187,7 +194,7 @@ public class Libro {
     }
 
     /**
-     * Establece el autor del libro.
+     * Nos permite guardar o corregir el nombre de quien lo ha escrito.
      *
      * @param autor El nuevo autor del libro.
      */
@@ -196,7 +203,7 @@ public class Libro {
     }
 
     /**
-     * Obtiene la editorial del libro.
+     * Nos da la empresa o editorial que lo publicó.
      *
      * @return La editorial del libro.
      */
@@ -205,7 +212,7 @@ public class Libro {
     }
 
     /**
-     * Establece la editorial del libro.
+     * Nos deja cambiar el nombre de la empresa o editorial.
      *
      * @param editorial La nueva editorial del libro.
      */
@@ -214,25 +221,25 @@ public class Libro {
     }
 
     /**
-     * Obtiene el año de publicación del libro.
+     * Nos chiva en qué año se publicó el libro.
      *
-     * @return El año de publicación del libro.
+     * @return El año de publicación.
      */
     public String getAño() {
         return anio;
     }
 
     /**
-     * Establece el año de publicación del libro.
+     * Nos sirve para actualizar el año en el que salió el libro.
      *
-     * @param año El nuevo año de publicación del libro.
+     * @param año El nuevo año.
      */
     public void setAño(String año) {
         this.anio = año;
     }
 
     /**
-     * Obtiene el género del libro.
+     * Nos devuelve de qué género es el libro (ej. Terror, Novela histórica).
      *
      * @return El género del libro.
      */
@@ -241,7 +248,7 @@ public class Libro {
     }
 
     /**
-     * Establece el género del libro.
+     * Sirve para guardar el género literario.
      *
      * @param genero El nuevo género del libro.
      */
@@ -250,7 +257,7 @@ public class Libro {
     }
 
     /**
-     * Obtiene el ISBN del libro.
+     * Nos da el código de barras o ISBN del libro. ¡Es como su DNI!
      *
      * @return El ISBN del libro.
      */
@@ -259,119 +266,120 @@ public class Libro {
     }
 
     /**
-     * Establece el ISBN del libro.
+     * Nos deja cambiar el ISBN si resulta que lo habíamos metido mal.
      *
-     * @param isbn El nuevo ISBN del libro.
+     * @param isbn El nuevo ISBN.
      */
     public void setIsbn(String isbn) {
         this.isbn = isbn;
     }
 
     /**
-     * Obtiene la URL de la portada del libro.
+     * Nos devuelve la ruta (URL o archivo) donde está guardada la foto de portada.
      *
-     * @return La URL de la portada del libro.
+     * @return La URL o ruta de la portada.
      */
     public String getPortadaURL() {
         return portadaURL;
     }
 
     /**
-     * Establece la URL de la portada del libro.
+     * Sirve para guardar dónde está la foto de la portada.
      *
-     * @param portadaURL La nueva URL de la portada del libro.
+     * @param portadaURL La nueva URL o ruta de la portada.
      */
     public void setPortadaURL(String portadaURL) {
         this.portadaURL = portadaURL;
     }
 
     /**
-     * Obtiene la calificación del libro.
+     * Nos dice cuántas estrellitas le hemos dado al libro.
      *
-     * @return La calificación del libro.
+     * @return La nota que le hemos puesto (calificación).
      */
     public int getCalificacion() {
         return calificacion;
     }
 
     /**
-     * Establece la calificación del libro.
+     * Nos permite puntuar el libro.
      *
-     * @param calificacion La calificación a establecer para el libro.
+     * @param calificacion Las estrellitas (ej. 1 al 5).
      */
     public void setCalificacion(int calificacion) {
         this.calificacion = calificacion;
     }
 
     /**
-     * Obtiene la reseña del libro.
+     * Nos devuelve todo el texto de la reseña que hayamos escrito sobre el libro.
      *
-     * @return La reseña del libro.
+     * @return Lo que pensamos del libro.
      */
     public String getReseña() {
         return resena;
     }
 
     /**
-     * Establece la reseña del libro.
+     * Sirve para que podamos escribir nuestra propia opinión o reseña.
      *
-     * @param reseña La reseña a establecer para el libro.
+     * @param reseña Todo lo que queramos decir sobre él.
      */
     public void setReseña(String reseña) {
         this.resena = reseña;
     }
 
     /**
-     * Obtiene la estanteria donde se encuentra el libro.
+     * Nos dice en qué estanterías virtuales hemos metido este libro.
+     * Un libro puede estar en varias.
      *
-     * @return La estanteria donde se encuentra el libro.
+     * @return Una lista con las estanterías.
      */
     public List<String> getEstanterias() {
         return estanterias;
     }
 
     /**
-     * Establece la estanterias disponibles.
+     * Nos permite decirle al libro en qué estanterías debe guardarse.
      *
-     * @param estanterias Las estanterías disponibles para los libros.
+     * @param estanterias Las nuevas estanterías.
      */
     public void setEstanterias(List<String> estanterias) {
         this.estanterias = estanterias;
     }
 
     /**
-     * Obtiene la cantidad de unidades del libro.
+     * Nos chiva cuántas copias iguales de este libro tenemos.
      *
-     * @return La caantidad de unidades de un libro.
+     * @return El número de copias.
      */
     public int getCantidad() {
         return cantidad;
     }
 
     /**
-     * Establece la cantidad de libros disponibles.
+     * Nos deja guardar si tenemos más de una copia de este mismo libro.
      *
-     * @param cantidad La cantidad disponibles de los libros.
+     * @param cantidad Las copias que tenemos.
      */
     public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
 
     /**
-     * Indica si el libro ha sido marcado como leído. Derivado de
-     * {@link #estadoLectura} para mantener consistencia.
+     * Nos dice con un 'verdadero' o 'falso' si ya hemos leído este libro.
+     * En realidad, mira si el "estadoLectura" es igual a "Leído".
      *
-     * @return true si el estadoLectura es "Leído".
+     * @return true si ya nos lo hemos acabado.
      */
     public boolean isLeido() {
         return "Leído".equals(this.estadoLectura);
     }
 
     /**
-     * Marca el libro como leído o no leído. Sincroniza con
-     * {@link #estadoLectura} para mantener compatibilidad con datos antiguos.
+     * Nos permite marcar a mano si ya nos hemos leído el libro o no.
+     * Si lo marcamos como leído, el programa lo sincroniza para que cuadre todo.
      *
-     * @param leido true para marcar como leído.
+     * @param leido true si ya lo hemos terminado.
      */
     public void setLeido(boolean leido) {
         this.leido = leido;
@@ -384,132 +392,176 @@ public class Libro {
         }
     }
 
+    /**
+     * Nos dice en qué estado se encuentra nuestra lectura (ej: 'Leído', 'Leyendo', 'Pendiente').
+     *
+     * @return El estado de lectura.
+     */
     public String getEstadoLectura() {
         return estadoLectura;
     }
 
+    /**
+     * Sirve para decirle al programa cómo va nuestra lectura y actualizar el estado.
+     *
+     * @param estadoLectura El nuevo estado (ej: 'Leído', 'Leyendo').
+     */
     public void setEstadoLectura(String estadoLectura) {
         this.estadoLectura = estadoLectura;
         // Sincronizar con el booleano leido
         this.leido = "Leído".equals(estadoLectura);
     }
 
+    /**
+     * Nos da el día exacto en el que por fin nos terminamos el libro.
+     *
+     * @return La fecha en la que lo acabamos.
+     */
     public LocalDate getFechaFinalizacion() {
         return fechaFinalizacion;
     }
 
+    /**
+     * Nos sirve para apuntar qué día nos hemos acabado el libro.
+     *
+     * @param fechaFinalizacion La fecha final.
+     */
     public void setFechaFinalizacion(LocalDate fechaFinalizacion) {
         this.fechaFinalizacion = fechaFinalizacion;
     }
 
     /**
-     * Comprueba si el libro es propiedad del usuario o si es un deseo.
+     * Nos chiva si este libro lo tenemos de verdad o si solo está en la lista de deseos.
      *
-     * @return true si el libro es poseído, false si es un deseo (wishlist).
+     * @return true si lo tenemos, false si es solo un deseo.
      */
     public boolean isPoseido() {
         return poseido;
     }
 
     /**
-     * Establece si el libro es poseído o un deseo.
+     * Nos permite marcar que ya hemos comprado el libro, o pasarlo a lista de deseos.
      *
-     * @param poseido true para marcar como poseído.
+     * @param poseido true si ya lo tenemos nosotros.
      */
     public void setPoseido(boolean poseido) {
         this.poseido = poseido;
     }
 
     /**
-     * Obtiene el nombre de la saga o serie a la que pertenece el libro.
+     * Nos dice el nombre de la saga o serie de libros a la que pertenece este.
      *
-     * @return El nombre de la serie, o null si no pertenece a ninguna.
+     * @return El nombre de la saga o null si es un libro suelto.
      */
     public String getSerie() {
         return serie;
     }
 
     /**
-     * Establece la serie a la que pertenece el libro.
+     * Sirve para meter el libro dentro de una saga concreta.
      *
-     * @param serie Nombre de la saga.
+     * @param serie El nombre de la serie o saga.
      */
     public void setSerie(String serie) {
         this.serie = serie;
     }
 
     /**
-     * Obtiene el orden de lectura dentro de la serie.
+     * Nos dice qué número de libro es dentro de su saga (por si es el 1, el 2 o el 2.5).
      *
-     * @return Número de orden (ej: 1.0, 2.5).
+     * @return El número en la serie.
      */
     public double getOrdenEnSerie() {
         return ordenEnSerie;
     }
 
     /**
-     * Establece el orden dentro de la serie.
+     * Nos deja guardar qué número de orden le toca dentro de la saga.
      *
-     * @param ordenEnSerie Número decimal de orden.
+     * @param ordenEnSerie El número decimal para el orden.
      */
     public void setOrdenEnSerie(double ordenEnSerie) {
         this.ordenEnSerie = ordenEnSerie;
     }
 
     // --- E-BOOK / ARCHIVO DIGITAL ---
-
     /**
-     * Obtiene la ruta absoluta del archivo digital enlazado.
+     * Nos devuelve la ruta en nuestro ordenador de dónde está guardado el archivo digital.
      *
-     * @return La ruta del archivo, o null si no tiene.
+     * @return La ruta del PDF, EPUB, etc., o null si no hay archivo.
      */
     public String getRutaArchivoDigital() {
         return rutaArchivoDigital;
     }
 
     /**
-     * Establece la ruta del archivo digital enlazado.
+     * Sirve para enlazar el libro con su archivo de ordenador (EPUB, PDF...).
      *
-     * @param rutaArchivoDigital Ruta absoluta al archivo (EPUB, PDF, MOBI).
+     * @param rutaArchivoDigital La ruta donde está el archivo guardado.
      */
     public void setRutaArchivoDigital(String rutaArchivoDigital) {
         this.rutaArchivoDigital = rutaArchivoDigital;
     }
 
     /**
-     * Indica si el libro es un e-book (tiene un archivo digital enlazado).
+     * Nos chiva si el libro es un e-book (tiene archivo) o es de papel normal.
      *
-     * @return true si es un libro digital.
+     * @return true si es digital.
      */
     public boolean isEsDigital() {
         return esDigital;
     }
 
     /**
-     * Establece si el libro es digital.
+     * Nos permite marcar que este libro lo tenemos en formato digital.
      *
-     * @param esDigital true para marcarlo como digital.
+     * @param esDigital true si es un e-book.
      */
     public void setEsDigital(boolean esDigital) {
         this.esDigital = esDigital;
     }
 
+    /**
+     * Nos dice por qué página vamos leyendo ahora mismo.
+     *
+     * @return La página en la que estamos.
+     */
     public int getPaginaActual() {
         return paginaActual;
     }
 
+    /**
+     * Sirve para apuntar o guardar por qué página del libro vamos.
+     *
+     * @param paginaActual El número de página actual.
+     */
     public void setPaginaActual(int paginaActual) {
         this.paginaActual = paginaActual;
     }
 
+    /**
+     * Nos dice cuántas páginas tiene en total el libro para calcular cuánto falta.
+     *
+     * @return El número total de páginas.
+     */
     public int getPaginasTotales() {
         return paginasTotales;
     }
 
+    /**
+     * Nos permite guardar cuántas páginas en total tiene el libro.
+     *
+     * @param paginasTotales Las páginas completas del libro.
+     */
     public void setPaginasTotales(int paginasTotales) {
         this.paginasTotales = paginasTotales;
     }
 
+    /**
+     * Nos devuelve todas las notas o citas que hayamos ido guardando mientras leíamos.
+     *
+     * @return Una lista con nuestras notas del diario.
+     */
     public List<NotaLectura> getDiario() {
         if (diario == null) {
             diario = new ArrayList<>();
@@ -517,14 +569,20 @@ public class Libro {
         return diario;
     }
 
+    /**
+     * Sirve para cambiar o guardar la lista entera de notas y citas del libro.
+     *
+     * @param diario La nueva lista de notas.
+     */
     public void setDiario(List<NotaLectura> diario) {
         this.diario = diario;
     }
 
     /**
-     * Obtiene el nombre del archivo digital enlazado (sin la ruta completa).
+     * Nos da solo el nombre suelto del archivo digital (ej: "harrypotter.epub"),
+     * quitándole toda la ruta larga e incómoda del disco duro.
      *
-     * @return El nombre del archivo (ej: "libro.epub") o null si no tiene.
+     * @return El nombre del archivo cortito o null si no hay.
      */
     public String getNombreArchivoDigital() {
         if (rutaArchivoDigital == null || rutaArchivoDigital.isEmpty()) {
@@ -534,9 +592,10 @@ public class Libro {
     }
 
     /**
-     * Obtiene el formato del archivo digital en mayúsculas (EPUB, PDF, MOBI).
+     * Nos dice qué tipo de archivo es el libro (por ejemplo EPUB, PDF) pero 
+     * puesto en letras mayúsculas para que quede bonito.
      *
-     * @return El formato como String, o null si no tiene archivo.
+     * @return El formato del archivo o null si no existe.
      */
     public String getFormatoDigital() {
         String nombre = getNombreArchivoDigital();
@@ -551,12 +610,11 @@ public class Libro {
     }
 
     /**
-     * Devuelve una representación en cadena de este objeto, mostrando
-     * únicamente el título. Este método está sobrescrito para adaptar la
-     * visualización en componentes como JComboBox, donde solo se requiere
-     * mostrar el título del objeto en lugar de la representación completa.
+     * Nos devuelve un texto súper simple para mostrar el libro en la pantalla
+     * (por ejemplo, en los desplegables). Como no queremos que salga algo feo,
+     * le decimos que devuelva solo el título del libro.
      *
-     * @return el título del objeto como cadena de texto.
+     * @return El título del libro.
      */
     @Override
     public String toString() {
@@ -565,11 +623,10 @@ public class Libro {
     }
 
     /**
-     * Obtiene el nombre del archivo de la portada a partir de su URL o ruta
-     * local.
+     * Nos saca solo el nombre del archivo de la portada que hemos puesto, 
+     * quitándole la ruta larga que tiene delante.
      *
-     * @return El nombre del archivo (ej: "portada.jpg") o null si la URL está
-     * vacía o es nula.
+     * @return El nombre del archivo de imagen (ej: "foto.jpg").
      */
     public String getNombreArchivoPortada() {
         if (portadaURL == null || portadaURL.isEmpty()) {

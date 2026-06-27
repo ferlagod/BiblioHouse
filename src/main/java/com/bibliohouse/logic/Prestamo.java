@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter;
  * el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo devolvió).
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class Prestamo {
 
@@ -47,20 +47,20 @@ public class Prestamo {
     private LocalDate fechaDevolucion;
 
     /**
-     * Constructor vacío. Lo necesita Gson para deserializar desde JSON.
+     * Constructor vacío. Lo usamos principalmente para que el programa pueda
+     * cargar los datos guardados sin volverse loco (Gson lo necesita).
      */
     public Prestamo() {
     }
 
     /**
-     * Crea un nuevo préstamo con todos los datos. Esto es para cuando ya tienes
-     * toda la información y quieres crear el préstamo de golpe.
+     * Crea un nuevo préstamo de golpe cuando ya tienes todos los datos sueltos.
      *
-     * @param isbnLibro El ISBN del libro que se presta.
+     * @param isbnLibro El ISBN del libro que prestamos.
      * @param tituloLibro El título del libro.
-     * @param numeroSocio El número de socio de quien se lleva el libro.
-     * @param nombreSocio El nombre de la persona.
-     * @param fechaPrestamo Cuándo se lo lleva.
+     * @param numeroSocio El número de carné de la persona.
+     * @param nombreSocio El nombre del que se lo lleva.
+     * @param fechaPrestamo El día en que se lo lleva.
      */
     public Prestamo(String isbnLibro, String tituloLibro, int numeroSocio, String nombreSocio,
             LocalDate fechaPrestamo) {
@@ -74,13 +74,11 @@ public class Prestamo {
     }
 
     /**
-     * Constructor que crea un préstamo recibiendo directamente los
-     * objetos.Extrae los datos automáticamente y pone la fecha de hoy.
+     * Constructor súper útil que crea un préstamo pasándole directamente el 
+     * Libro y el Socio. Él solito saca los datos de ambos y le pone la fecha de hoy.
      *
-     * * @param libro El objeto Libro a prestar.
-     *
-     * @param libro El objeto libro que se presta.
-     * @param socio El objeto Socio que lo recibe.
+     * @param libro El libro que le estamos prestando.
+     * @param socio La persona que se lo lleva a casa.
      */
     public Prestamo(Libro libro, Socio socio) {
         // Extraemos datos del Libro
@@ -100,25 +98,25 @@ public class Prestamo {
 
     // --- Getters y Setters ---
     /**
-     * Obtiene el identificador único del libro.
+     * Nos devuelve el identificador interno del libro que se prestó.
      *
-     * @return Cadena de texto que representa el ID del libro.
+     * @return El ID del libro en texto.
      */
     public String getLibroId() {
         return libroId;
     }
 
     /**
-     * Establece el identificador único del libro.
+     * Nos deja cambiar el identificador interno del libro.
      *
-     * @param libroId Nueva cadena de texto que será asignada como ID del libro.
+     * @param libroId El nuevo ID del libro.
      */
     public void setLibroId(String libroId) {
         this.libroId = libroId;
     }
 
     /**
-     * Obtiene el ISBN del libro prestado.
+     * Nos dice el ISBN del libro que hemos prestado.
      *
      * @return El ISBN del libro.
      */
@@ -127,7 +125,7 @@ public class Prestamo {
     }
 
     /**
-     * Obtiene el título del libro prestado.
+     * Nos dice cómo se llama el libro que hemos prestado.
      *
      * @return El título del libro.
      */
@@ -136,16 +134,16 @@ public class Prestamo {
     }
 
     /**
-     * Obtiene el numero de socio de la persona que realiza el préstamo.
+     * Nos dice el número del socio que tiene el libro ahora mismo.
      *
-     * @return El numero de socio de la persona.
+     * @return El número de socio.
      */
     public int getNumeroSocio() {
         return numeroSocio;
     }
 
     /**
-     * Obtiene el nombre de la persona que realiza el préstamo.
+     * Nos da el nombre de la persona que se llevó el libro a su casa.
      *
      * @return El nombre de la persona.
      */
@@ -154,19 +152,19 @@ public class Prestamo {
     }
 
     /**
-     * Obtiene la fecha en que se realizó el préstamo.
+     * Nos dice qué día exacto se llevó el libro.
      *
-     * @return La fecha de préstamo.
+     * @return La fecha en la que empezó el préstamo.
      */
     public LocalDate getFechaPrestamo() {
         return fechaPrestamo;
     }
 
     /**
-     * Obtiene la fecha de préstamo formateada como una cadena.
+     * Nos da la fecha del préstamo ya puesta bonita en texto (ej: 25/12/2026),
+     * para no tener que pelearnos con formatos nosotros.
      *
-     * @return La fecha de préstamo formateada como "dd/MM/yyyy", o una cadena
-     * vacía si la fecha es null.
+     * @return La fecha en texto lista para enseñar en pantalla.
      */
     public String getFechaPrestamoFormateada() {
         if (fechaPrestamo == null) {
@@ -176,19 +174,19 @@ public class Prestamo {
     }
 
     /**
-     * Obtiene la fecha de devolución del libro.
+     * Nos dice qué día nos devolvió el libro (si es que lo ha devuelto, si no, da null).
      *
-     * @return La fecha de devolución, o null si el libro no ha sido devuelto.
+     * @return La fecha de devolución, o null si aún lo tiene secuestrado.
      */
     public LocalDate getFechaDevolucion() {
         return fechaDevolucion;
     }
 
     /**
-     * Obtiene la fecha de devolución formateada como una cadena.
+     * Nos da la fecha de devolución en un texto bonito para enseñar en la pantalla.
+     * Si no lo ha devuelto todavía, nos devuelve la palabra "Pendiente".
      *
-     * @return La fecha de devolución formateada como "dd/MM/yyyy", o
-     * "Pendiente" si la fecha es null.
+     * @return La fecha bonita o el texto "Pendiente".
      */
     public String getFechaDevolucionFormateada() {
         if (fechaDevolucion == null) {
@@ -198,18 +196,18 @@ public class Prestamo {
     }
 
     /**
-     * Establece la fecha de devolución del libro.
+     * Sirve para apuntar qué día nos devolvió por fin el libro.
      *
-     * @param fechaDevolucion La fecha de devolución a establecer.
+     * @param fechaDevolucion El día que nos lo dio.
      */
     public void setFechaDevolucion(LocalDate fechaDevolucion) {
         this.fechaDevolucion = fechaDevolucion;
     }
 
     /**
-     * Verifica si el libro ha sido devuelto.
+     * Nos chiva con un verdadero o falso si el libro ya está devuelto o no.
      *
-     * @return true si el libro ha sido devuelto, false de lo contrario.
+     * @return true si ya lo tenemos nosotros, false si sigue por ahí prestado.
      */
     public boolean isDevuelto() {
         return fechaDevolucion != null;

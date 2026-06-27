@@ -47,7 +47,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
  * Base64 data URIs para máxima portabilidad (un solo archivo sin dependencias).
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ServicioExportarWeb {
 

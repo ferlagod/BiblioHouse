@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * libros por diversos criterios y exportarlos a PDF.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ExportarPDFController {
 

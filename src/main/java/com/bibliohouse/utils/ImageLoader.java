@@ -42,7 +42,7 @@ import javafx.util.Duration;
  * Clase para cargar imágenes de forma asíncrona con caché multinivel.
  *
  * * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ImageLoader {
 

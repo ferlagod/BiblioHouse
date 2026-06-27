@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * Utilidad para cargar configuración desde el archivo config.properties.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ConfigLoader {
 
@@ -67,7 +67,7 @@ public class ConfigLoader {
                     CONFIG_FILE);
         }
 
-        // Si falla, intentar cargar desde el classpath 
+        // Si falla, intentar cargar desde el classpath
         try (InputStream input = ConfigLoader.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
             if (input == null) {
                 LOGGER.log(Level.WARNING, "No se encontró el archivo de configuración: {0}", CONFIG_FILE);

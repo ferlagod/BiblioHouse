@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * información del sistema sin efectos secundarios.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class SystemInfoTest {
 

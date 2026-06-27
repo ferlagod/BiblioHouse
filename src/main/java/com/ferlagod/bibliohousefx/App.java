@@ -30,7 +30,7 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class App extends Application {
 
@@ -40,6 +40,12 @@ public class App extends Application {
     private static Scene scene;
     private static App instance;
 
+    /**
+     * El punto de entrada principal de la aplicación. Carga las librerías
+     * necesarias y arranca la interfaz gráfica.
+     *
+     * @param args Argumentos de la línea de comandos.
+     */
     public static void main(String[] args) {
         // Cargar librerías nativas de OpenCV AL INICIO para evitar conflictos
         try {
@@ -100,36 +106,23 @@ public class App extends Application {
     }
 
     /**
-     * Aplica un tema visual de AtlantaFX a toda la aplicación.
-     * Centraliza la lógica para evitar duplicación entre App y ConfiguracionController.
+     * Aplica un tema visual de AtlantaFX a toda la aplicación. Centraliza la
+     * lógica para evitar duplicación entre App y ConfiguracionController.
      *
-     * @param themeName Nombre del tema tal como aparece en el ComboBox de configuración.
+     * @param themeName Nombre del tema tal como aparece en el ComboBox de
+     * configuración.
      */
     public static void applyTheme(String themeName) {
         String stylesheet;
-        switch (themeName) {
-            case "Oscuro (Primer Dark)":
-                stylesheet = new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
-                break;
-            case "Nord Claro (Nord Light)":
-                stylesheet = new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
-                break;
-            case "Nord Oscuro (Nord Dark)":
-                stylesheet = new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
-                break;
-            case "Cupertino Claro (macOS Light)":
-                stylesheet = new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
-                break;
-            case "Cupertino Oscuro (macOS Dark)":
-                stylesheet = new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
-                break;
-            case "Dracula":
-                stylesheet = new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
-                break;
-            default: // "Claro (Primer Light)" u otro valor desconocido
-                stylesheet = new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
-                break;
-        }
+        stylesheet = switch (themeName) {
+            case "Oscuro (Primer Dark)" -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
+            case "Nord Claro (Nord Light)" -> new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
+            case "Nord Oscuro (Nord Dark)" -> new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
+            case "Cupertino Claro (macOS Light)" -> new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+            case "Cupertino Oscuro (macOS Dark)" -> new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
+            case "Dracula" -> new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
+            default -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+        }; // "Claro (Primer Light)" u otro valor desconocido
         Application.setUserAgentStylesheet(stylesheet);
     }
 

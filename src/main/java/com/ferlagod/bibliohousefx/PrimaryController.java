@@ -62,7 +62,7 @@ import org.controlsfx.control.NotificationPane;
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class PrimaryController implements Initializable {
 
@@ -178,7 +178,7 @@ public class PrimaryController implements Initializable {
     private Label lblEstado;
     @FXML
     private ListView<String> listaEstanterias;
-    
+
     // --- WIDGET RETO ANUAL ---
     @FXML
     private javafx.scene.layout.VBox widgetRetoAnual;
@@ -432,7 +432,7 @@ public class PrimaryController implements Initializable {
 
         contextMenuLibros.getItems().addAll(itemLeer, new SeparatorMenuItem(), itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
                 menuEstado, new SeparatorMenuItem(), itemEliminar);
-        
+
         contextMenuLibros.setOnShowing(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             boolean isEbook = (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty());
@@ -498,7 +498,6 @@ public class PrimaryController implements Initializable {
             cmbFiltroEstado.setValue("Todos");
             cmbFiltroEstado.valueProperty().addListener((obs, old, newVal) -> actualizarFiltros());
         }
-
 
         if (txtBuscarMisLibros != null) {
             searchDelay = new javafx.animation.PauseTransition(javafx.util.Duration.millis(250));
@@ -1044,6 +1043,12 @@ public class PrimaryController implements Initializable {
 
         // StringConverter para mostrar el nombre correctamente
         comboBox.setConverter(new javafx.util.StringConverter<T>() {
+            /**
+             * Convierte el objeto en texto para mostrarlo en el desplegable.
+             *
+             * @param object El objeto a mostrar.
+             * @return El texto correspondiente.
+             */
             @Override
             public String toString(T object) {
                 if (object == null) {
@@ -1052,6 +1057,13 @@ public class PrimaryController implements Initializable {
                 return displayFunc.apply(object);
             }
 
+            /**
+             * Convierte el texto de vuelta en el objeto original (útil para
+             * autocompletar o pegar texto).
+             *
+             * @param string El texto a buscar.
+             * @return El objeto correspondiente, o null si no se encuentra.
+             */
             @Override
             public T fromString(String string) {
                 // Seleccionar el item que coincida con el string
@@ -1222,9 +1234,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
-    // Método auxiliar para refrescar el desplegable de libros disponibles.
-    // Usa refrescarLibrosDisponibles() en lugar de initData() completo para
-    // no resetear el estado del formulario de préstamos.
+    /**
+     * Refresca el desplegable de libros disponibles en la pestaña de préstamos.
+     * Útil en lugar de llamar a initData() completo, para no resetear el estado
+     * del formulario de préstamos entero.
+     */
     public void actualizarComboLibrosDisponibles() {
         if (pestanaPrestamosController != null) {
             pestanaPrestamosController.refrescarLibrosDisponibles(obtenerLibrosDisponibles());
@@ -1288,7 +1302,7 @@ public class PrimaryController implements Initializable {
         items.add(VISTA_DIGITAL);
         items.addAll(estanterias);
         listaEstanterias.setItems(items);
-        
+
         // Personalizamos la celda para añadir iconos
         listaEstanterias.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
             @Override
@@ -1312,7 +1326,7 @@ public class PrimaryController implements Initializable {
                 }
             }
         });
-        
+
         listaEstanterias.getSelectionModel().select(0);
     }
 
@@ -2070,12 +2084,26 @@ public class PrimaryController implements Initializable {
     /**
      * Abre la ventana para registrar un nuevo socio.
      *
-     * @param event El evento del botón Nuevo Socio.
      */
     public void nuevoSocioPublic() {
         nuevoSocio(null);
     }
 
+    /**
+     * Abre una ventana modal para registrar un nuevo socio en el sistema.
+     *
+     * Este método carga la interfaz gráfica definida en
+     * {@code gestion_socios.fxml}, inicializa el controlador
+     * {@link GestionSociosController} con la lista actual de socios y muestra
+     * la ventana como un diálogo modal bloqueante.
+     *
+     * @param event el evento de acción .
+     *
+     * @throws IOException si falla la carga del archivo FXML
+     * {@code gestion_socios.fxml}, en cuyo caso se muestra una alerta de error
+     * crítico al usuario.
+     *
+     */
     @FXML
     private void nuevoSocio(ActionEvent event) {
         try {
@@ -2109,6 +2137,21 @@ public class PrimaryController implements Initializable {
         gestionarSocios(null);
     }
 
+    /**
+     * Abre una ventana modal para la gestión avanzada de la lista de socios.
+     *
+     * Este método carga la interfaz definida en {@code socios_manager.fxml} e
+     * inicializa el controlador {@link SociosManagerController} pasando la
+     * lista actual de socios, la instancia del gestor JSON
+     * ({@link JsonManager}) y una referencia al controlador actual.
+     *
+     * @param event el evento de acción.
+     *
+     * @throws IOException si ocurre un error al cargar el archivo FXML
+     * {@code socios_manager.fxml}, en cuyo caso se captura la excepción y se
+     * muestra una alerta de error crítico.
+     *
+     */
     @FXML
     private void gestionarSocios(ActionEvent event) {
         try {
@@ -2290,6 +2333,7 @@ public class PrimaryController implements Initializable {
     // ==========================================
     /**
      * Mueve un libro de la lista de deseos a la biblioteca principal.
+     *
      * @param libro libro de la biblioteca principal
      */
     public void moverDeseoABiblioteca(Libro libro) {
@@ -2523,7 +2567,7 @@ public class PrimaryController implements Initializable {
         if (panelMisLibros == null || filteredData == null) {
             return;
         }
-        
+
         actualizarRetoAnual();
 
         // 1. Obtener lo que el usuario ha escrito en el nuevo buscador
@@ -2640,11 +2684,11 @@ public class PrimaryController implements Initializable {
             Label badgeDigital = new Label("📱");
             badgeDigital.setStyle("-fx-background-color: #1565c0; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 3 6 3 6; -fx-background-radius: 12; -fx-font-size: 11px;");
             badgeDigital.setStyle(badgeDigital.getStyle() + " -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 3, 0, 0, 1);");
-            
+
             // Alinear abajo a la izquierda con 5px de margen
             javafx.scene.layout.StackPane.setAlignment(badgeDigital, javafx.geometry.Pos.BOTTOM_LEFT);
             javafx.scene.layout.StackPane.setMargin(badgeDigital, new javafx.geometry.Insets(0, 0, 5, 5));
-            
+
             contenedorPortada.getChildren().add(badgeDigital);
         }
 
@@ -2654,34 +2698,48 @@ public class PrimaryController implements Initializable {
         // Lógica de la barra de progreso (Reading Tracker)
         if ("Leyendo".equalsIgnoreCase(estado) && libro.getPaginasTotales() > 0) {
             double progreso = (double) libro.getPaginaActual() / libro.getPaginasTotales();
-            if (progreso > 1.0) progreso = 1.0;
-            if (progreso < 0.0) progreso = 0.0;
-            
+            if (progreso > 1.0) {
+                progreso = 1.0;
+            }
+            if (progreso < 0.0) {
+                progreso = 0.0;
+            }
+
             javafx.scene.control.ProgressBar pBar = new javafx.scene.control.ProgressBar(progreso);
             pBar.setPrefWidth(110);
             pBar.setPrefHeight(6);
             pBar.setStyle("-fx-accent: #ff9800;");
-            
+
             // Etiqueta pequeñita
             Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + " pág.");
             lblProgreso.setStyle("-fx-font-size: 9px; -fx-text-fill: -color-fg-muted;");
-            
+
             tarjeta.getChildren().addAll(pBar, lblProgreso);
         }
 
         return tarjeta;
     }
 
+    /**
+     * Abre un diálogo para que el usuario configure su objetivo anual de
+     * lectura.
+     *
+     * Muestra el valor actual guardado en las preferencias. Si el usuario
+     * introduce un número válido, se guarda en las preferencias, se persiste en
+     * el archivo JSON y se actualiza la interfaz del widget del reto. Si el
+     * valor es 0 o negativo, el reto se considera desactivado.
+     *
+     */
     @FXML
     private void configurarRetoAnual() {
         javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
         dialog.setTitle("Reto de Lectura");
         dialog.setHeaderText("Configurar Reto Anual");
         dialog.setContentText("¿Cuántos libros te propones leer este año? (Pon 0 para desactivar)");
-        
+
         String retoActualStr = preferencias.getOrDefault("reto_anual", "0");
         dialog.getEditor().setText(retoActualStr);
-        
+
         dialog.showAndWait().ifPresent(resultado -> {
             try {
                 int reto = Integer.parseInt(resultado.trim());
@@ -2694,33 +2752,47 @@ public class PrimaryController implements Initializable {
         });
     }
 
+    /**
+     * Actualiza la visibilidad y el estado de la barra de progreso del reto
+     * anual.
+     *
+     * Calcula el porcentaje de avance comparando los libros marcados como
+     * "Leído" en la lista completa contra el objetivo establecido en las
+     * preferencias.
+     *
+     */
     private void actualizarRetoAnual() {
-        if (widgetRetoAnual == null) return;
-        
+        if (widgetRetoAnual == null) {
+            return;
+        }
+
         int reto = 0;
         try {
             reto = Integer.parseInt(preferencias.getOrDefault("reto_anual", "0"));
-        } catch (NumberFormatException e) {}
-        
+        } catch (NumberFormatException e) {
+        }
+
         if (reto <= 0) {
             widgetRetoAnual.setVisible(false);
             widgetRetoAnual.setManaged(false);
             return;
         }
-        
+
         widgetRetoAnual.setVisible(true);
         widgetRetoAnual.setManaged(true);
-        
+
         int currentYear = java.time.LocalDate.now().getYear();
         lblTituloReto.setText("Reto de Lectura " + currentYear);
-        
+
         long librosLeidos = listaLibrosCompleta.stream()
                 .filter(l -> "Leído".equalsIgnoreCase(l.getEstadoLectura()))
                 .count();
-                
+
         double progress = (double) librosLeidos / reto;
-        if (progress > 1.0) progress = 1.0;
-        
+        if (progress > 1.0) {
+            progress = 1.0;
+        }
+
         progresoReto.setProgress(progress);
         lblEstadoReto.setText(librosLeidos + " de " + reto + " libros");
     }
@@ -2742,7 +2814,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Configura el panel Mis Libros para aceptar Drag & Drop de archivos de e-book.
+     * Configura el panel Mis Libros para aceptar Drag & Drop de archivos de
+     * e-book.
      */
     private void configurarDragAndDropPanelMisLibros() {
         if (panelMisLibros == null) {
@@ -2765,25 +2838,25 @@ public class PrimaryController implements Initializable {
         panelMisLibros.setOnDragDropped(event -> {
             javafx.scene.input.Dragboard db = event.getDragboard();
             boolean success = false;
-            
+
             panelMisLibros.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
-            
+
             if (db.hasFiles()) {
                 java.io.File file = db.getFiles().get(0);
-                
+
                 if (com.bibliohouse.logic.EbookMetadataService.esArchivoEbook(file)) {
                     notificar("Importando e-book...");
-                    
+
                     // Procesar en un hilo separado para no bloquear la UI
                     Thread importThread = new Thread(() -> {
                         Libro nuevoLibro = com.bibliohouse.logic.EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
-                        
+
                         javafx.application.Platform.runLater(() -> {
                             if (nuevoLibro != null) {
                                 // Evitar duplicados por título
                                 boolean existe = listaLibrosCompleta.stream()
                                         .anyMatch(l -> l.getTitulo() != null && l.getTitulo().equalsIgnoreCase(nuevoLibro.getTitulo()));
-                                
+
                                 if (existe) {
                                     mostrarAlerta("Libro duplicado", "Ya existe un libro con el título: " + nuevoLibro.getTitulo());
                                 } else {
@@ -2801,13 +2874,13 @@ public class PrimaryController implements Initializable {
                     });
                     importThread.setDaemon(true);
                     importThread.start();
-                    
+
                     success = true;
                 } else {
                     mostrarAlerta("Formato no soportado", "Solo puedes soltar archivos EPUB, PDF o MOBI aquí.");
                 }
             }
-            
+
             event.setDropCompleted(success);
             event.consume();
         });

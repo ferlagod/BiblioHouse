@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author Fernando Lago
- * @version 1.8
+ * @version 1.9
  *
  */
 public class JsonManager {
@@ -88,15 +88,15 @@ public class JsonManager {
      * Ejecutor programado para el debounce del auto-sync. Un único hilo daemon
      * compartido para toda la vida del gestor.
      */
-    private final ScheduledExecutorService syncScheduler
-            = Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "nextcloud-autosync");
-                t.setDaemon(true);
-                return t;
-            });
+    private final ScheduledExecutorService syncScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "nextcloud-autosync");
+        t.setDaemon(true);
+        return t;
+    });
 
     // El shutdown hook se registra una sola vez a nivel de clase, no por instancia,
-    // para evitar acumular hooks huérfanos cuando la UI se recarga (p.ej. al cambiar idioma).
+    // para evitar acumular hooks huérfanos cuando la UI se recarga (p.ej. al
+    // cambiar idioma).
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Noop: cada instancia es un daemon thread; la JVM los mata al salir.
@@ -143,7 +143,7 @@ public class JsonManager {
         /**
          * Convierte un String de JSON a una fecha LocalDate.
          *
-         * @param json El JSON con la fecha en formato String.
+         * @param json    El JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de la serialización.
          * @return La fecha parseada desde el String.
@@ -157,7 +157,7 @@ public class JsonManager {
         /**
          * Convierte un JsonPrimitive (String) a un objeto LocalDate.
          *
-         * @param json JSON con la fecha en formato String.
+         * @param json    JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de deserialización.
          * @return Objeto LocalDate parseado desde el String.
@@ -174,7 +174,7 @@ public class JsonManager {
      * Constructor de JsonManager.Recibe la ruta de datos del usuario.
      *
      * @param rutaDatosUsuario La ruta completa a la carpeta de datos del
-     * usuario actual.
+     *                         usuario actual.
      */
     public JsonManager(String rutaDatosUsuario) {
         if (rutaDatosUsuario == null || rutaDatosUsuario.isEmpty()) {
@@ -261,10 +261,10 @@ public class JsonManager {
      * Método genérico para guardar cualquier lista de objetos en un archivo
      * JSON.
      *
-     * @param lista La lista de objetos que queremos guardar.
-     * @param path La ruta del archivo donde se guardará.
+     * @param lista    La lista de objetos que queremos guardar.
+     * @param path     La ruta del archivo donde se guardará.
      * @param tipoDato Un String que describe qué tipo de datos estamos
-     * guardando.
+     *                 guardando.
      */
     private synchronized <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
         crearDirectorioUsuarioSiNoExiste();
@@ -298,7 +298,8 @@ public class JsonManager {
 
             LOGGER.log(Level.FINE, "Guardado atómico completado: {0}", path);
         } catch (java.nio.file.AtomicMoveNotSupportedException amns) {
-            // Fallback: mover sin atomicidad en filesystems que no lo soportan (ej. NFS, red)
+            // Fallback: mover sin atomicidad en filesystems que no lo soportan (ej. NFS,
+            // red)
             try {
                 java.nio.file.Files.move(archivoTemporal.toPath(), archivoFinal.toPath(),
                         java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -322,12 +323,12 @@ public class JsonManager {
     /**
      * Método genérico para cargar datos desde un archivo JSON.
      *
-     * @param path La ruta del archivo que queremos cargar.
+     * @param path      La ruta del archivo que queremos cargar.
      * @param tipoLista El tipo de la lista que esperamos.
-     * @param tipoDato Un String que describe qué tipo de datos estamos
-     * cargando.
+     * @param tipoDato  Un String que describe qué tipo de datos estamos
+     *                  cargando.
      * @return La lista de objetos cargados desde el archivo. Si hay error,
-     * devuelve una lista vacía.
+     *         devuelve una lista vacía.
      */
     private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
         File file = new File(path);
@@ -338,7 +339,7 @@ public class JsonManager {
             try (FileReader reader = new FileReader(file)) {
                 List<T> lista = gson.fromJson(reader, tipoLista);
                 if (lista != null) {
-                    LOGGER.log(Level.FINE, "Cargados {0} {1} desde {2}", new Object[]{lista.size(), tipoDato, path});
+                    LOGGER.log(Level.FINE, "Cargados {0} {1} desde {2}", new Object[] { lista.size(), tipoDato, path });
                     return lista;
                 }
             } catch (Exception e) {
@@ -352,7 +353,7 @@ public class JsonManager {
                 List<T> lista = gson.fromJson(reader, tipoLista);
                 if (lista != null) {
                     LOGGER.log(Level.WARNING, "RECUPERADO: Cargados {0} {1} desde BACKUP {2}",
-                            new Object[]{lista.size(), tipoDato, backupFile.getPath()});
+                            new Object[] { lista.size(), tipoDato, backupFile.getPath() });
                     return lista;
                 }
             } catch (Exception e) {
@@ -449,7 +450,7 @@ public class JsonManager {
                 File archivo = new File(url);
                 libro.setPortadaURL(carpetaCovers + File.separator + archivo.getName());
             }
-            
+
             // Retrocompatibilidad: Si es un PDF digital pero no tiene número de páginas
             if (libro.isEsDigital() && libro.getPaginasTotales() == 0 && libro.getRutaArchivoDigital() != null) {
                 if (libro.getRutaArchivoDigital().toLowerCase().endsWith(".pdf")) {
@@ -462,14 +463,16 @@ public class JsonManager {
                                 migracionPaginas = true;
                             }
                         } catch (Exception e) {
-                            LOGGER.log(Level.FINE, "No se pudo extraer el numero de paginas del PDF antiguo: " + libro.getTitulo());
+                            LOGGER.log(Level.FINE,
+                                    "No se pudo extraer el numero de paginas del PDF antiguo: " + libro.getTitulo());
                         }
                     }
                 }
             }
         }
-        
-        // Si hemos extraído páginas de PDFs antiguos, guardamos el JSON para persistir los cambios
+
+        // Si hemos extraído páginas de PDFs antiguos, guardamos el JSON para persistir
+        // los cambios
         if (migracionPaginas) {
             guardarLibros(libros);
         }
@@ -533,7 +536,7 @@ public class JsonManager {
      * Carga la lista de nombres de estanterías desde un archivo JSON.
      *
      * @return Una lista de Strings con las estanterías. Devuelve una lista
-     * vacía si no se encuentra el archivo.
+     *         vacía si no se encuentra el archivo.
      */
     public List<String> cargarEstanterias() {
         Type tipoLista = new TypeToken<ArrayList<String>>() {
@@ -598,7 +601,7 @@ public class JsonManager {
      * usuario (Exportar).
      *
      * @param archivo El archivo destino.
-     * @param libros La lista de libros a guardar.
+     * @param libros  La lista de libros a guardar.
      * @return true si se guardó correctamente, false si falló.
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {

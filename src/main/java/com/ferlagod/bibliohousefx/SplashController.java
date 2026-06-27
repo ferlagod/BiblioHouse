@@ -38,7 +38,7 @@ import java.util.ResourceBundle;
  * animaciones de entrada y la simulación de carga inicial.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class SplashController implements Initializable {
 

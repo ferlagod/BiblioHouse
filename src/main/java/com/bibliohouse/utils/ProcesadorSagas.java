@@ -22,8 +22,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Utilidad para el procesamiento y normalización de nombres de sagas y series
+ * literarias.
+ *
+ * Esta clase proporciona métodos estáticos para limpiar nombres de series
+ * eliminando prefijos comunes, números de volumen y símbolos de orden, así como
+ * para extraer información de saga incrustada en los títulos de los libros
+ * mediante expresiones regulares.
+ *
  * @autor Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ProcesadorSagas {
 

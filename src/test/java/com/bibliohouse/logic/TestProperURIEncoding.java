@@ -22,17 +22,18 @@ package com.bibliohouse.logic;
  * en una URI, especialmente cuando contiene caracteres especiales como '@'.
  * Este ejemplo muestra cómo usar la clase {@link java.net.URI} para codificar
  * correctamente el componente de ruta de una URI.
- * 
+ *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class TestProperURIEncoding {
 
     /**
-     * Método principal que ejecuta la prueba de codificación de URI.
-     * Toma un nombre de usuario con '@' y lo codifica para que sea válido en una URI.
+     * Método principal que ejecuta la prueba de codificación de URI. Toma un
+     * nombre de usuario con '@' y lo codifica para que sea válido en una URI.
      *
-     * @param args Argumentos de la línea de comandos (no se utilizan en este ejemplo).
+     * @param args Argumentos de la línea de comandos (no se utilizan en este
+     * ejemplo).
      * @throws Exception Si ocurre un error al crear la URI.
      */
     public static void main(String[] args) throws Exception {

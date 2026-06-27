@@ -16,14 +16,14 @@
  * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.logic;
+
 /**
  * Clase de prueba para comparar el análisis de URIs con caracteres especiales,
- * como el '@' en el nombre de usuario.
- * Muestra cómo el codificado (%40) y el carácter literal '@' afectan al resultado
- * de {@link java.net.URI#getPath()}.
- * 
- * @author Fernando Lago Dávila 
- * @version 1.8
+ * como el '@' en el nombre de usuario. Muestra cómo el codificado (%40) y el
+ * carácter literal '@' afectan al resultado de {@link java.net.URI#getPath()}.
+ *
+ * @author Fernando Lago Dávila
+ * @version 1.9
  */
 public class TestSardineURL {
 

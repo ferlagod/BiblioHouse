@@ -35,7 +35,7 @@ import javafx.stage.Window;
  * opciones para añadir o reemplazar los datos existentes.
  *
  * @author Fernando Lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class ImportarExportarBD {
 
@@ -44,8 +44,9 @@ public class ImportarExportarBD {
      * usuario. Muestra un diálogo para guardar el archivo y notifica el
      * resultado de la operación.
      *
-     * @param ownerWindow Ventana propietaria para el diálogo de guardado.
-     * @param jsonManager Gestor de persistencia para realizar la exportación.
+     * @param ownerWindow         Ventana propietaria para el diálogo de guardado.
+     * @param jsonManager         Gestor de persistencia para realizar la
+     *                            exportación.
      * @param listaLibrosCompleta Lista completa de libros a exportar.
      */
     public void exportarBaseDatos(Window ownerWindow, JsonManager jsonManager, List<Libro> listaLibrosCompleta) {
@@ -72,13 +73,15 @@ public class ImportarExportarBD {
      * los cambios y actualiza la interfaz de usuario si se proporciona un
      * callback.
      *
-     * @param ownerWindow Ventana propietaria para los diálogos.
-     * @param jsonManager Gestor de persistencia para realizar la importación.
+     * @param ownerWindow         Ventana propietaria para los diálogos.
+     * @param jsonManager         Gestor de persistencia para realizar la
+     *                            importación.
      * @param listaLibrosCompleta Lista observable de libros que se actualizará.
-     * @param onUpdateUI Callback opcional para actualizar la interfaz de
-     * usuario después de la importación.
+     * @param onUpdateUI          Callback opcional para actualizar la interfaz de
+     *                            usuario después de la importación.
      */
-    public void importarBaseDatos(Window ownerWindow, JsonManager jsonManager, ObservableList<Libro> listaLibrosCompleta, Runnable onUpdateUI) {
+    public void importarBaseDatos(Window ownerWindow, JsonManager jsonManager,
+            ObservableList<Libro> listaLibrosCompleta, Runnable onUpdateUI) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Importar Base de Datos");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("JSON", "*.json"));
@@ -122,7 +125,7 @@ public class ImportarExportarBD {
      * JavaFX para garantizar que se muestre correctamente incluso si se llama
      * desde otro hilo.
      *
-     * @param titulo Título de la alerta.
+     * @param titulo  Título de la alerta.
      * @param mensaje Contenido del mensaje a mostrar.
      */
     private void mostrarAlerta(String titulo, String mensaje) {

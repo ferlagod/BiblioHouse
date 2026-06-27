@@ -16,22 +16,24 @@
  * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.logic;
+
 /**
  * Clase de prueba para comparar el comportamiento de los métodos
- * {@link java.net.URI#toASCIIString()} y {@link java.net.URI#toString()}
- * en URIs con caracteres especiales como '@'.
- * También muestra cómo afecta el codificado (%40) al resultado de {@link java.net.URI#getPath()}.
- * 
+ * {@link java.net.URI#toASCIIString()} y {@link java.net.URI#toString()} en
+ * URIs con caracteres especiales como '@'. También muestra cómo afecta el
+ * codificado (%40) al resultado de {@link java.net.URI#getPath()}.
+ *
  * @author Fernando lago Dávila
- * @version 1.8
+ * @version 1.9
  */
 public class TestURIEncoding {
 
     /**
-     * Método principal que demuestra las diferencias entre:
-     * - {@code toASCIIString()}: Devuelve la URI con caracteres codificados (ej. %40).
-     * - {@code toString()}: Devuelve la URI en su forma original, si es posible.
-     * - {@code getPath()}: Extrae el componente de ruta, interpretando el '@' como separador de usuario.
+     * Método principal que demuestra las diferencias entre: -
+     * {@code toASCIIString()}: Devuelve la URI con caracteres codificados (ej.
+     * %40). - {@code toString()}: Devuelve la URI en su forma original, si es
+     * posible. - {@code getPath()}: Extrae el componente de ruta, interpretando
+     * el '@' como separador de usuario.
      *
      * @param args Argumentos de la línea de comandos (no se utilizan).
      * @throws Exception Si ocurre un error al crear las URIs.
