@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BiblioHouse EPUB Reader</title>
+  <script src="jszip.min.js"></script>
+  <script src="epub.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      font-family: sans-serif;
+      overflow: hidden; /* Let epubjs handle scrolling/pagination */
+    }
+    #viewer {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewer"></div>
+  <div id="errorLog" style="color: red; font-weight: bold; padding: 20px; z-index: 9999; position: absolute; top: 0; left: 0;"></div>
+
+  <script>
+    var book = null;
+    var rendition = null;
+
+    function logToHtml(msg) {
+        document.getElementById('errorLog').innerHTML += msg + "<br/>";
+        if (window.javaBridge) window.javaBridge.logError(msg);
+    }
+
+    function openEpubBase64(base64Data, startPercentage) {
+      try {
+        logToHtml("Iniciando carga de EPUB...");
+        var binaryString = window.atob(base64Data);
+        var bytes = new Uint8Array(binaryString.length);
+        for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        var arrayBuffer = bytes.buffer;
+        
+        logToHtml("ArrayBuffer creado. Instanciando ePub...");
+        book = ePub(arrayBuffer);
+        
+        logToHtml("Instancia creada. Renderizando...");
+        rendition = book.renderTo("viewer", {
+          width: "100%",
+          height: "100%",
+          spread: "none"
+        });
+
+        book.ready.then(function() {
+          logToHtml("Libro listo. Generando localizaciones...");
+          return book.locations.generate(1600);
+        }).then(function(locations) {
+          logToHtml("Localizaciones generadas. Mostrando página...");
+          if (startPercentage && startPercentage > 0) {
+            var cfi = book.locations.cfiFromPercentage(startPercentage / 100);
+            rendition.display(cfi);
+          } else {
+            rendition.display();
+          }
+          // Limpiar log si todo ha ido bien
+          document.getElementById('errorLog').innerHTML = "";
+        }).catch(function(err) {
+            logToHtml("Error en ready/locations: " + err);
+        });
+
+        rendition.on("relocated", function(location) {
+          var percent = book.locations.percentageFromCfi(location.start.cfi);
+          var percentageValue = Math.round(percent * 100);
+          
+          if (window.javaBridge) {
+            window.javaBridge.updateProgress(percentageValue);
+          }
+        });
+      } catch (err) {
+        logToHtml("Error abriendo EPUB (Excepción): " + err);
+      }
+    }
+
+    function nextPage() {
+      if (rendition) rendition.next();
+    }
+
+    function prevPage() {
+      if (rendition) rendition.prev();
+    }
+    
+    function setFontSize(sizeStr) {
+      if (rendition) {
+        rendition.themes.fontSize(sizeStr);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -365,10 +365,36 @@ public class PrimaryController implements Initializable {
             if (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty()) {
                 File archivo = new File(selected.getRutaArchivoDigital());
                 if (archivo.exists()) {
-                    try {
-                        java.awt.Desktop.getDesktop().open(archivo);
-                    } catch (IOException ex) {
-                        mostrarAlerta("Error", "No se pudo abrir el archivo.");
+                    if (archivo.getName().toLowerCase().endsWith(".epub")) {
+                        try {
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
+                            Parent root = loader.load();
+                            LectorDigitalController controller = loader.getController();
+                            controller.setLibro(selected);
+                            if (!"Leyendo".equals(selected.getEstadoLectura())) {
+                                selected.setEstadoLectura("Leyendo");
+                            }
+                            controller.setOnSyncRequested(() -> {
+                                guardarLibrosEnDisco();
+                                tablaLibros.refresh();
+                                actualizarPanelMisLibros();
+                            });
+                            Stage stage = new Stage();
+                            stage.setTitle("Lector: " + selected.getTitulo());
+                            stage.setScene(new Scene(root, 900, 700));
+                            stage.centerOnScreen();
+                            stage.initOwner(tablaLibros.getScene().getWindow());
+                            stage.show();
+                        } catch (Exception ex) {
+                            System.err.println("Error abriendo lector interno: " + ex);
+                            try { java.awt.Desktop.getDesktop().open(archivo); } catch(Exception ignored){}
+                        }
+                    } else {
+                        try {
+                            java.awt.Desktop.getDesktop().open(archivo);
+                        } catch (IOException ex) {
+                            mostrarAlerta("Error", "No se pudo abrir el archivo.");
+                        }
                     }
                 } else {
                     mostrarAlerta("Error", "El archivo ya no existe en la ruta guardada:\n" + archivo.getAbsolutePath());
@@ -2287,7 +2313,7 @@ public class PrimaryController implements Initializable {
             stage.setTitle("Detalles: " + libro.getTitulo());
             setScene(stage, root);
             stage.initOwner(tablaLibros.getScene().getWindow());
-            stage.setMaximized(true);
+            stage.centerOnScreen();
             stage.showAndWait();
 
             if (controller.isModified()) {

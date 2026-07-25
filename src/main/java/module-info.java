@@ -21,6 +21,7 @@ module com.ferlagod.bibliohousefx {
     requires javafx.fxml;
     requires transitive javafx.graphics;
     requires javafx.web;
+    requires jdk.jsobject;
     requires atlantafx.base;
     requires org.controlsfx.controls;
 

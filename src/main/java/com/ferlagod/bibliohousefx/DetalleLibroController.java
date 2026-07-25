@@ -77,6 +77,8 @@ public class DetalleLibroController {
     private Label lblArchivo;
     @FXML
     private Button btnLeerDigital;
+    @FXML
+    private Button btnConvertirDigital;
 
     // --- DIARIO Y TRACKER ---
     @FXML
@@ -196,6 +198,10 @@ public class DetalleLibroController {
         if (btnLeerDigital != null) {
             btnLeerDigital.setVisible(digital);
             btnLeerDigital.setManaged(digital);
+        }
+        if (btnConvertirDigital != null) {
+            btnConvertirDigital.setVisible(digital);
+            btnConvertirDigital.setManaged(digital);
         }
 
         // --- PROGRESO DE LECTURA ---
@@ -449,12 +455,48 @@ public class DetalleLibroController {
             alert.showAndWait();
             return;
         }
+        
+        if (archivo.getName().toLowerCase().endsWith(".epub")) {
+            // Abrir con lector interno
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
+                Parent root = loader.load();
+                LectorDigitalController controller = loader.getController();
+                controller.setLibro(libroActual);
+                
+                if (!"Leyendo".equals(libroActual.getEstadoLectura())) {
+                    libroActual.setEstadoLectura("Leyendo");
+                }
+                
+                controller.setOnSyncRequested(() -> {
+                    actualizarUIProgreso();
+                    if (onSyncRequested != null) {
+                        onSyncRequested.run();
+                    }
+                    wasModified = true;
+                });
+                
+                Stage stage = new Stage();
+                stage.setTitle("Lector: " + libroActual.getTitulo());
+                stage.setScene(new Scene(root, 900, 700));
+                stage.centerOnScreen();
+                stage.initOwner(lblTitulo.getScene().getWindow());
+                stage.show();
+            } catch (Exception e) {
+                LOGGER.log(java.util.logging.Level.WARNING, "Error al abrir lector interno", e);
+                // fallback a externo
+                abrirExterno(archivo);
+            }
+        } else {
+            abrirExterno(archivo);
+        }
+    }
 
+    private void abrirExterno(File archivo) {
         try {
             java.awt.Desktop.getDesktop().open(archivo);
         } catch (IOException e) {
-            LOGGER.log(java.util.logging.Level.WARNING,
-                    "No se pudo abrir el archivo digital", e);
+            LOGGER.log(java.util.logging.Level.WARNING, "No se pudo abrir el archivo digital", e);
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                     javafx.scene.control.Alert.AlertType.WARNING);
             alert.setTitle("Error");
@@ -462,6 +504,76 @@ public class DetalleLibroController {
             alert.setContentText("No se pudo abrir el archivo.");
             alert.showAndWait();
         }
+    }
+
+    @FXML
+    private void convertirFormato(ActionEvent event) {
+        if (libroActual == null || libroActual.getRutaArchivoDigital() == null) return;
+        
+        File archivoOrig = new File(libroActual.getRutaArchivoDigital());
+        if (!archivoOrig.exists()) return;
+        
+        String nombre = archivoOrig.getName().toLowerCase();
+        String targetExt = nombre.endsWith(".epub") ? "pdf" : "epub";
+        
+        javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Convertir Formato");
+        confirm.setHeaderText("Conversión usando Calibre");
+        confirm.setContentText("Vamos a intentar convertir el archivo a " + targetExt.toUpperCase() + ".\n" +
+                "Esto requiere que tengas Calibre instalado en tu ordenador y accesible ('ebook-convert' en el PATH).\n\n" +
+                "¿Deseas continuar?");
+                
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                realizarConversion(archivoOrig, targetExt);
+            }
+        });
+    }
+    
+    private void realizarConversion(File archivoOrig, String targetExt) {
+        javafx.concurrent.Task<File> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected File call() throws Exception {
+                String baseName = archivoOrig.getName();
+                int dotIndex = baseName.lastIndexOf('.');
+                if (dotIndex > 0) baseName = baseName.substring(0, dotIndex);
+                String targetName = baseName + "." + targetExt;
+                File targetFile = new File(archivoOrig.getParentFile(), targetName);
+                
+                ProcessBuilder pb = new ProcessBuilder("ebook-convert", archivoOrig.getAbsolutePath(), targetFile.getAbsolutePath());
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+                int exitCode = process.waitFor();
+                
+                if (exitCode != 0 || !targetFile.exists()) {
+                    throw new Exception("Error en la conversión. Salida del proceso: " + exitCode);
+                }
+                return targetFile;
+            }
+        };
+        
+        task.setOnSucceeded(e -> {
+            javafx.scene.control.Alert ok = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+            ok.setTitle("Éxito");
+            ok.setHeaderText(null);
+            ok.setContentText("Conversión completada. El archivo ha sido convertido a " + targetExt.toUpperCase());
+            ok.show();
+            
+            libroActual.setRutaArchivoDigital(task.getValue().getAbsolutePath());
+            wasModified = true;
+            if (onSyncRequested != null) onSyncRequested.run();
+            cargarDatos();
+        });
+        
+        task.setOnFailed(e -> {
+            javafx.scene.control.Alert err = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
+            err.setTitle("Error de Conversión");
+            err.setHeaderText("No pudimos realizar la conversión.");
+            err.setContentText("Asegúrate de tener Calibre instalado. Si ya lo tienes, el comando 'ebook-convert' no está en el PATH.\n\nDetalle: " + task.getException().getMessage());
+            err.show();
+        });
+        
+        new Thread(task).start();
     }
 
     @FXML
