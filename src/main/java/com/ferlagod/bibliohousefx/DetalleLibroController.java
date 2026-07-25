@@ -82,11 +82,23 @@ public class DetalleLibroController {
     @FXML
     private javafx.scene.control.TabPane tabPaneDetalles;
     @FXML
-    private javafx.scene.control.Spinner<Integer> spinnerPaginaActual;
+    private javafx.scene.layout.VBox boxProgreso;
     @FXML
-    private javafx.scene.control.Spinner<Integer> spinnerPaginasTotales;
+    private Label lblPorcentajeProgreso;
+    @FXML
+    private javafx.scene.control.ProgressBar progressBarLectura;
+    @FXML
+    private javafx.scene.control.TextField txtPaginaActual;
+    @FXML
+    private Label lblPaginasTotalesProgreso;
     @FXML
     private javafx.scene.control.ListView<com.bibliohouse.logic.NotaLectura> listaDiario;
+
+    private Runnable onSyncRequested;
+
+    public void setOnSyncRequested(Runnable onSyncRequested) {
+        this.onSyncRequested = onSyncRequested;
+    }
 
     private List<String> listaGlobalEstanterias;
     private Libro libroActual;
@@ -186,23 +198,8 @@ public class DetalleLibroController {
             btnLeerDigital.setManaged(digital);
         }
 
-        // --- SPINNERS TRACKER ---
-        if (spinnerPaginasTotales != null) {
-            spinnerPaginasTotales.setEditable(true);
-            spinnerPaginasTotales.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10000, libroActual.getPaginasTotales()));
-            spinnerPaginasTotales.valueProperty().addListener((obs, oldVal, newVal) -> {
-                libroActual.setPaginasTotales(newVal);
-                wasModified = true;
-            });
-        }
-        if (spinnerPaginaActual != null) {
-            spinnerPaginaActual.setEditable(true);
-            spinnerPaginaActual.setValueFactory(new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(0, 10000, libroActual.getPaginaActual()));
-            spinnerPaginaActual.valueProperty().addListener((obs, oldVal, newVal) -> {
-                libroActual.setPaginaActual(newVal);
-                wasModified = true;
-            });
-        }
+        // --- PROGRESO DE LECTURA ---
+        actualizarUIProgreso();
 
         // --- DIARIO DE LECTURA ---
         if (listaDiario != null) {
@@ -247,6 +244,63 @@ public class DetalleLibroController {
                     }
                 }
             });
+        }
+    }
+
+    private void actualizarUIProgreso() {
+        if (boxProgreso == null || libroActual == null) return;
+        
+        String estado = libroActual.getEstadoLectura();
+        if (estado == null || estado.isEmpty()) estado = "Pendiente";
+        
+        if (!"Leyendo".equalsIgnoreCase(estado)) {
+            boxProgreso.setOpacity(0.5);
+            progressBarLectura.setDisable(true);
+            txtPaginaActual.setDisable(true);
+        } else {
+            boxProgreso.setOpacity(1.0);
+            progressBarLectura.setDisable(false);
+            txtPaginaActual.setDisable(false);
+        }
+
+        int actual = libroActual.getPaginaActual();
+        int totales = libroActual.getPaginasTotales();
+        
+        double progreso = (totales > 0) ? (double) actual / totales : 0.0;
+        if (progreso > 1.0) progreso = 1.0;
+        if (progreso < 0.0) progreso = 0.0;
+        
+        progressBarLectura.setProgress(progreso);
+        
+        int porcentaje = (int) (progreso * 100);
+        lblPorcentajeProgreso.setText(porcentaje + "%");
+        
+        txtPaginaActual.setText(String.valueOf(actual));
+        lblPaginasTotalesProgreso.setText("de " + totales);
+    }
+
+    @FXML
+    private void actualizarProgresoRapido(ActionEvent event) {
+        if (txtPaginaActual == null || libroActual == null) return;
+        
+        try {
+            int nuevaPagina = Integer.parseInt(txtPaginaActual.getText().trim());
+            if (nuevaPagina < 0) nuevaPagina = 0;
+            if (nuevaPagina > libroActual.getPaginasTotales()) {
+                nuevaPagina = libroActual.getPaginasTotales();
+            }
+            
+            libroActual.setPaginaActual(nuevaPagina);
+            this.wasModified = true;
+            
+            actualizarUIProgreso();
+            
+            if (onSyncRequested != null) {
+                onSyncRequested.run();
+            }
+            
+        } catch (NumberFormatException e) {
+            txtPaginaActual.setText(String.valueOf(libroActual.getPaginaActual()));
         }
     }
 
@@ -455,13 +509,14 @@ public class DetalleLibroController {
         dialog.showAndWait().ifPresent(nota -> {
             libroActual.getDiario().add(nota);
             libroActual.setPaginaActual(spnPagina.getValue());
-            if (spinnerPaginaActual != null) {
-                spinnerPaginaActual.getValueFactory().setValue(spnPagina.getValue());
-            }
+            actualizarUIProgreso();
             if (listaDiario != null) {
                 listaDiario.getItems().setAll(libroActual.getDiario());
             }
             wasModified = true;
+            if (onSyncRequested != null) {
+                onSyncRequested.run();
+            }
         });
     }
 }

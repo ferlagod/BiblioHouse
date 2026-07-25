@@ -2276,6 +2276,12 @@ public class PrimaryController implements Initializable {
             controller.setLibro(libro);
             controller.setListaGlobalEstanterias(jsonManager.cargarEstanterias());
             controller.setRutaUsuario(this.rutaUsuario);
+            controller.setOnSyncRequested(() -> {
+                guardarLibrosEnDisco();
+                tablaLibros.refresh();
+                actualizarFiltros();
+                actualizarPanelMisLibros();
+            });
 
             Stage stage = new Stage();
             stage.setTitle("Detalles: " + libro.getTitulo());

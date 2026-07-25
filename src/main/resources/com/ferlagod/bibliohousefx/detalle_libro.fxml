@@ -95,6 +95,26 @@
                                 <Insets top="10.0" />
                             </VBox.margin>
                         </HBox>
+
+                        <VBox fx:id="boxProgreso" spacing="10.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: -color-border-default; -fx-border-radius: 8;">
+                            <VBox.margin>
+                                <Insets top="10.0" />
+                            </VBox.margin>
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <Label text="Progreso de Lectura" style="-fx-font-weight: bold;" />
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="lblPorcentajeProgreso" text="0%" style="-fx-text-fill: -color-fg-muted; -fx-font-weight: bold;" />
+                                </HBox>
+                                <javafx.scene.control.ProgressBar fx:id="progressBarLectura" progress="0.0" maxWidth="Infinity" prefHeight="10.0" style="-fx-accent: #ff9800;" />
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <Label text="Página:" />
+                                    <javafx.scene.control.TextField fx:id="txtPaginaActual" prefWidth="60.0" />
+                                    <Label fx:id="lblPaginasTotalesProgreso" text="de ?" style="-fx-text-fill: -color-fg-muted;" />
+                                    <Button text="Actualizar" onAction="#actualizarProgresoRapido" style="-fx-background-color: -color-accent-emphasis; -fx-text-fill: white;" />
+                                </HBox>
+                            </children>
+                        </VBox>
                     </children>
                 </VBox>
             </children>
@@ -115,13 +135,7 @@
                     <content>
                         <VBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
                             <children>
-                                <HBox spacing="10.0" alignment="CENTER_LEFT">
-                                    <Label text="Progreso:" style="-fx-font-weight: bold;" />
-                                    <javafx.scene.control.Spinner fx:id="spinnerPaginaActual" prefWidth="80" />
-                                    <Label text=" de " />
-                                    <javafx.scene.control.Spinner fx:id="spinnerPaginasTotales" prefWidth="80" />
-                                    <Label text=" pág." />
-                                    <Region HBox.hgrow="ALWAYS" />
+                                <HBox spacing="10.0" alignment="CENTER_RIGHT">
                                     <Button text="Añadir Nota" onAction="#abrirDialogoNuevaNota" />
                                 </HBox>
                                 <javafx.scene.control.ListView fx:id="listaDiario" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" />
