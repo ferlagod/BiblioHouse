@@ -37,8 +37,8 @@ import java.util.ResourceBundle;
  * Controlador para la pantalla de splash de la aplicación. Gestiona las
  * animaciones de entrada y la simulación de carga inicial.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class SplashController implements Initializable {
 

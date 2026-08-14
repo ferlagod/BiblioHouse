@@ -25,8 +25,8 @@ import java.util.UUID;
  * Aquí guardamos lo que escribimos, de qué página lo sacamos y la fecha en la que
  * lo hicimos. ¡Como tener un diario de lectura!
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class NotaLectura {
 

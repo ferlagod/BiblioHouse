@@ -31,14 +31,16 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 import java.util.*;
+import java.util.*;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.LanguageManager;
 
 /**
  * Controlador para la ventana de exportación de informes PDF. Permite filtrar
  * libros por diversos criterios y exportarlos a PDF.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ExportarPDFController {
 
@@ -84,9 +86,12 @@ public class ExportarPDFController {
         seleccionGeneros = new HashMap<>();
 
         // Configurar estados de lectura
-        cmbEstadoLectura.setItems(FXCollections.observableArrayList(
-                "Todos", "Leído", "Leyendo", "Pendiente"));
-        cmbEstadoLectura.setValue("Todos");
+        String txtTodos = LanguageManager.getString("export.status.all", "Todos");
+        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
+        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        cmbEstadoLectura.setItems(FXCollections.observableArrayList(txtTodos, txtLeido, txtLeyendo, txtPendiente));
+        cmbEstadoLectura.setValue(txtTodos);
 
         // Listeners para actualizar contador
         txtBuscar.textProperty().addListener((obs, old, newVal) -> actualizarContador());
@@ -214,7 +219,7 @@ public class ExportarPDFController {
      */
     private void actualizarContador() {
         List<Libro> librosFiltrados = aplicarFiltros();
-        lblContadorLibros.setText("Libros que coinciden con los filtros: " + librosFiltrados.size());
+        lblContadorLibros.setText(LanguageManager.getString("export.matching", "Libros que coinciden con los filtros: ") + librosFiltrados.size());
         btnExportar.setDisable(librosFiltrados.isEmpty());
     }
 
@@ -326,8 +331,10 @@ public class ExportarPDFController {
 
         // Filtro por estado de lectura
         String estadoSeleccionado = cmbEstadoLectura.getValue();
-        if (estadoSeleccionado != null && !estadoSeleccionado.equals("Todos")) {
-            String estadoLibro = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : "Pendiente";
+        String txtTodos = LanguageManager.getString("export.status.all", "Todos");
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        if (estadoSeleccionado != null && !estadoSeleccionado.equals(txtTodos)) {
+            String estadoLibro = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : txtPendiente;
             if (!estadoLibro.equals(estadoSeleccionado)) {
                 return false;
             }
@@ -345,7 +352,7 @@ public class ExportarPDFController {
         txtAutor.clear();
         txtAnioDesde.clear();
         txtAnioHasta.clear();
-        cmbEstadoLectura.setValue("Todos");
+        cmbEstadoLectura.setValue(LanguageManager.getString("export.status.all", "Todos"));
 
         chkTodasEstanterias.setSelected(true);
         toggleTodasEstanterias(null);
@@ -373,17 +380,18 @@ public class ExportarPDFController {
         List<Libro> librosFiltrados = aplicarFiltros();
 
         if (librosFiltrados.isEmpty()) {
-            mostrarAlerta("No hay libros", "No hay libros que coincidan con los filtros seleccionados.",
+            mostrarAlerta(LanguageManager.getString("export.empty.title", "No hay libros"),
+                    LanguageManager.getString("export.empty.content", "No hay libros que coincidan con los filtros seleccionados."),
                     Alert.AlertType.WARNING);
             return;
         }
 
         // Mostrar diálogo para seleccionar ubicación del archivo
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Informe PDF");
-        fileChooser.setInitialFileName("informe_biblioteca.pdf");
+        fileChooser.setTitle(LanguageManager.getString("export.pdf.save.title", "Guardar Informe PDF"));
+        fileChooser.setInitialFileName(LanguageManager.getString("export.pdf.save.default", "informe_biblioteca.pdf"));
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
+                new FileChooser.ExtensionFilter(LanguageManager.getString("export.pdf.save.pdf", "Archivos PDF"), "*.pdf"));
 
         Stage stage = (Stage) btnExportar.getScene().getWindow();
         File archivoDestino = fileChooser.showSaveDialog(stage);
@@ -420,14 +428,14 @@ public class ExportarPDFController {
                 btnExportar.setDisable(false);
 
                 if (exito) {
-                    mostrarAlerta("Exportación exitosa",
-                            "El informe PDF se ha generado correctamente en:\n"
-                            + finalDestino.getAbsolutePath(),
+                    String formatExito = LanguageManager.getString("export.pdf.success.content", "El informe PDF se ha generado correctamente en:\n%s");
+                    mostrarAlerta(LanguageManager.getString("export.pdf.success.title", "Exportación exitosa"),
+                            String.format(formatExito, finalDestino.getAbsolutePath()),
                             Alert.AlertType.INFORMATION);
                     stage.close();
                 } else {
-                    mostrarAlerta("Error al exportar",
-                            "Hubo un error al generar el archivo PDF. Revise los logs para más detalles.",
+                    mostrarAlerta(LanguageManager.getString("export.pdf.error.title", "Error al exportar"),
+                            LanguageManager.getString("export.pdf.error.content", "Hubo un error al generar el archivo PDF. Revise los logs para más detalles."),
                             Alert.AlertType.ERROR);
                 }
             });
@@ -443,11 +451,11 @@ public class ExportarPDFController {
         StringBuilder sb = new StringBuilder();
 
         if (!txtBuscar.getText().trim().isEmpty()) {
-            sb.append("Búsqueda: ").append(txtBuscar.getText().trim()).append("\n");
+            sb.append(LanguageManager.getString("export.filter.search", "Búsqueda: ")).append(txtBuscar.getText().trim()).append("\n");
         }
 
         if (!txtAutor.getText().trim().isEmpty()) {
-            sb.append("Autor: ").append(txtAutor.getText().trim()).append("\n");
+            sb.append(LanguageManager.getString("export.filter.author", "Autor: ")).append(txtAutor.getText().trim()).append("\n");
         }
 
         if (!chkTodasEstanterias.isSelected()) {
@@ -456,7 +464,7 @@ public class ExportarPDFController {
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toList());
             if (!estanteriasSeleccionadas.isEmpty()) {
-                sb.append("Estanterías: ").append(String.join(", ", estanteriasSeleccionadas)).append("\n");
+                sb.append(LanguageManager.getString("export.filter.shelves", "Estanterías: ")).append(String.join(", ", estanteriasSeleccionadas)).append("\n");
             }
         }
 
@@ -466,27 +474,27 @@ public class ExportarPDFController {
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toList());
             if (!generosSeleccionados.isEmpty()) {
-                sb.append("Géneros: ").append(String.join(", ", generosSeleccionados)).append("\n");
+                sb.append(LanguageManager.getString("export.filter.genres", "Géneros: ")).append(String.join(", ", generosSeleccionados)).append("\n");
             }
         }
 
         if (!txtAnioDesde.getText().trim().isEmpty() || !txtAnioHasta.getText().trim().isEmpty()) {
-            sb.append("Años: ");
+            sb.append(LanguageManager.getString("export.filter.years", "Años: "));
             if (!txtAnioDesde.getText().trim().isEmpty()) {
-                sb.append("desde ").append(txtAnioDesde.getText().trim());
+                sb.append(LanguageManager.getString("export.filter.years.from", "desde ")).append(txtAnioDesde.getText().trim());
             }
             if (!txtAnioHasta.getText().trim().isEmpty()) {
                 if (!txtAnioDesde.getText().trim().isEmpty()) {
                     sb.append(" ");
                 }
-                sb.append("hasta ").append(txtAnioHasta.getText().trim());
+                sb.append(LanguageManager.getString("export.filter.years.to", "hasta ")).append(txtAnioHasta.getText().trim());
             }
             sb.append("\n");
         }
 
         String estadoSeleccionado = cmbEstadoLectura.getValue();
-        if (estadoSeleccionado != null && !estadoSeleccionado.equals("Todos")) {
-            sb.append("Estado de lectura: ").append(estadoSeleccionado).append("\n");
+        if (estadoSeleccionado != null && !estadoSeleccionado.equals(LanguageManager.getString("export.status.all", "Todos"))) {
+            sb.append(LanguageManager.getString("export.filter.status", "Estado de lectura: ")).append(estadoSeleccionado).append("\n");
         }
 
         return sb.toString().trim();

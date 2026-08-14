@@ -25,8 +25,8 @@ import java.util.prefs.Preferences;
 /**
  * Gestiona el idioma de la aplicación.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class LanguageManager {
 
@@ -56,13 +56,21 @@ public class LanguageManager {
      */
     private static void cargarIdioma(Locale locale) {
         try {
-            bundle = ResourceBundle.getBundle("com.bibliohouse.lang.messages", locale);
+            bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", locale);
         } catch (MissingResourceException e) {
-            System.err.println("No se encontró el archivo de idioma para " + locale + ". Usando inglés como fallback.");
-            bundle = ResourceBundle.getBundle("com.bibliohouse.lang.messages", Locale.ENGLISH);
-
+            // Fallback al inglés si no encuentra el idioma
+            bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", Locale.ENGLISH);
         }
 
+    }
+
+    /**
+     * Obtiene el ResourceBundle actual.
+     * 
+     * @return El ResourceBundle cargado.
+     */
+    public static ResourceBundle getBundle() {
+        return bundle;
     }
 
     /**

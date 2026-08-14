@@ -53,8 +53,8 @@ import javafx.stage.Stage;
  * Controlador para la ventana de configuración. Permite cambiar opciones como
  * el tema, la ruta de datos, etc.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ConfiguracionController {
 
@@ -343,7 +343,7 @@ public class ConfiguracionController {
         }
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("Probando conexión, por favor espera..."); // Queda mejor que "..."
+        lblNextcloudStatus.setText(resources.getString("config.sync.test.loading"));
 
         Task<String> task = new Task<>() {
             @Override
@@ -360,16 +360,16 @@ public class ConfiguracionController {
                 lblNextcloudStatus.setText(resources.getString("config.sync.status.ok"));
 
                 // Mostrar alerta de éxito
-                mostrarAlerta("Conexión Exitosa", "Se ha conectado correctamente con tu servidor NextCloud.");
+                mostrarAlerta(resources.getString("config.sync.test.success.title"), resources.getString("config.sync.test.success.content"));
             } else {
                 // Hay un error de autenticación, URL, etc.
                 lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
-                lblNextcloudStatus.setText("Error en la conexión.");
-
+                lblNextcloudStatus.setText(resources.getString("config.sync.test.error"));
+                
                 // Mostrar alerta de ERROR
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error de conexión");
-                alert.setHeaderText("No se pudo conectar a NextCloud");
+                alert.setTitle(resources.getString("config.sync.test.error.title"));
+                alert.setHeaderText(resources.getString("config.sync.test.error.header"));
                 alert.setContentText(error);
                 alert.showAndWait();
             }
@@ -378,11 +378,11 @@ public class ConfiguracionController {
         task.setOnFailed(e -> {
             // Error crítico del hilo o del programa
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
-            lblNextcloudStatus.setText("Fallo crítico en la prueba.");
+            lblNextcloudStatus.setText(resources.getString("config.sync.test.critical"));
 
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Fallo de conexión");
-            alert.setHeaderText("Ocurrió un error inesperado al probar la conexión");
+            alert.setTitle(resources.getString("config.sync.test.critical.title"));
+            alert.setHeaderText(resources.getString("config.sync.test.critical.header"));
             alert.setContentText(task.getException().getMessage());
             alert.showAndWait();
         });
@@ -408,7 +408,7 @@ public class ConfiguracionController {
         String localDir = jsonManager.getRutaDatosUsuario();
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("Subiendo datos, por favor espera...");
+        lblNextcloudStatus.setText(resources.getString("config.sync.upload.loading"));
 
         Task<Void> task = new Task<>() {
             @Override
@@ -423,7 +423,7 @@ public class ConfiguracionController {
             lblNextcloudStatus.setText(resources.getString("config.sync.upload.success"));
 
             // Mostrar alerta de ÉXITO
-            mostrarAlerta("Subida Exitosa", "Tu biblioteca se ha guardado correctamente en NextCloud.");
+            mostrarAlerta(resources.getString("config.sync.upload.success.title"), resources.getString("config.sync.upload.success.content"));
         });
 
         task.setOnFailed(e -> {
@@ -433,8 +433,8 @@ public class ConfiguracionController {
 
             // Mostrar alerta de ERROR
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error al subir");
-            alert.setHeaderText("No se pudo subir la base de datos a NextCloud");
+            alert.setTitle(resources.getString("config.sync.upload.error.title"));
+            alert.setHeaderText(resources.getString("config.sync.upload.error.header"));
             alert.setContentText(task.getException().getMessage());
             alert.showAndWait();
         });
@@ -472,7 +472,7 @@ public class ConfiguracionController {
         String localDir = jsonManager.getRutaDatosUsuario();
 
         lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
-        lblNextcloudStatus.setText("Descargando datos, por favor espera...");
+        lblNextcloudStatus.setText(resources.getString("config.sync.download.loading"));
 
         Task<Void> task = new Task<>() {
             @Override
@@ -490,7 +490,7 @@ public class ConfiguracionController {
             mainController.initData(mainController.getUsuarioActual(), mainController.getRutaUsuario());
 
             // Mostrar alerta de ÉXITO
-            mostrarAlerta("Descarga Exitosa", "La biblioteca local se ha actualizado con los datos de NextCloud.");
+            mostrarAlerta(resources.getString("config.sync.download.success.title"), resources.getString("config.sync.download.success.content"));
         });
 
         task.setOnFailed(e -> {
@@ -500,8 +500,8 @@ public class ConfiguracionController {
 
             // Mostrar alerta de ERROR
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error al descargar");
-            alert.setHeaderText("No se pudo descargar la base de datos de NextCloud");
+            alert.setTitle(resources.getString("config.sync.download.error.title"));
+            alert.setHeaderText(resources.getString("config.sync.download.error.header"));
             alert.setContentText(task.getException().getMessage());
             alert.showAndWait();
         });
@@ -521,7 +521,7 @@ public class ConfiguracionController {
                 || txtNextcloudPass.getText().isBlank()) {
             lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
             lblNextcloudStatus.setText(MessageFormat.format(
-                    resources.getString("config.sync.status.error"), "Rellena URL, usuario y contraseña."));
+                    resources.getString("config.sync.status.error"), resources.getString("config.sync.validation.error")));
             return false;
         }
         return true;
@@ -588,7 +588,7 @@ public class ConfiguracionController {
         if (destZip != null) {
             File sourceDir = new File(txtRutaDatos.getText());
             if (!sourceDir.exists() || !sourceDir.isDirectory()) {
-                mostrarAlerta("Error", "No se encuentra la carpeta de datos para hacer backup.");
+                mostrarAlerta(resources.getString("config.alert.error.title"), resources.getString("config.backup.error.folder"));
                 return;
             }
 
@@ -612,11 +612,11 @@ public class ConfiguracionController {
 
                 String msg = java.text.MessageFormat.format(resources.getString("config.backup.success"),
                         destZip.getName());
-                mostrarAlerta("Backup", msg);
+                mostrarAlerta(resources.getString("config.backup.button"), msg);
 
             } catch (IOException e) {
                 String msg = java.text.MessageFormat.format(resources.getString("config.backup.error"), e.getMessage());
-                mostrarAlerta("Error", msg);
+                mostrarAlerta(resources.getString("config.alert.error.title"), msg);
             }
         }
     }
@@ -654,16 +654,16 @@ public class ConfiguracionController {
     private void restaurarFabrica(ActionEvent event) {
         // Pedimos confirmación de seguridad escribiendo "BORRAR"
         TextInputDialog confirmDialog = new TextInputDialog();
-        confirmDialog.setTitle("Restaurar a Fábrica");
-        confirmDialog.setHeaderText("¡PELIGRO! Borrado total del sistema.");
-        confirmDialog.setContentText("Esta acción eliminará TODOS los libros, socios, portadas y configuraciones.\nNo se puede deshacer.\n\nEscribe 'BORRAR' para confirmar:");
+        confirmDialog.setTitle(resources.getString("config.reset.title"));
+        confirmDialog.setHeaderText(resources.getString("config.reset.header"));
+        confirmDialog.setContentText(resources.getString("config.reset.content"));
 
         Optional<String> result = confirmDialog.showAndWait();
         if (result.isPresent()) {
-            if (result.get().trim().equalsIgnoreCase("BORRAR")) {
+            if (result.get().trim().equalsIgnoreCase(resources.getString("config.reset.keyword"))) {
                 ejecutarBorradoDeFabrica();
             } else {
-                mostrarAlerta("Cancelado", "Palabra de seguridad incorrecta. Operación cancelada.");
+                mostrarAlerta(resources.getString("config.reset.cancel.title"), resources.getString("config.reset.cancel.content"));
             }
         }
     }
@@ -696,9 +696,9 @@ public class ConfiguracionController {
 
             // 4. Mostrar aviso y cerrar la app
             Alert info = new Alert(Alert.AlertType.INFORMATION);
-            info.setTitle("Restauración Completa");
-            info.setHeaderText("Sistema restaurado a valores de fábrica");
-            info.setContentText("Todos los datos han sido eliminados.\nLa aplicación se cerrará ahora. La próxima vez que la abras, estará como recién instalada.");
+            info.setTitle(resources.getString("config.reset.success.title"));
+            info.setHeaderText(resources.getString("config.reset.success.header"));
+            info.setContentText(resources.getString("config.reset.success.content"));
             info.showAndWait();
 
             Platform.exit(); // Cerrar interfaz de JavaFX
@@ -706,7 +706,7 @@ public class ConfiguracionController {
 
         } catch (BackingStoreException e) {
             LOGGER.log(Level.SEVERE, "Error durante la restauración a fábrica", e);
-            mostrarAlerta("Error Crítico", "Ocurrió un error al intentar borrar los datos: " + e.getMessage());
+            mostrarAlerta(resources.getString("config.alert.error.title"), resources.getString("config.reset.error.content") + " " + e.getMessage());
         }
     }
 

@@ -22,8 +22,8 @@ package com.bibliohouse.logic;
  * como el '@' en el nombre de usuario. Muestra cómo el codificado (%40) y el
  * carácter literal '@' afectan al resultado de {@link java.net.URI#getPath()}.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class TestSardineURL {
 

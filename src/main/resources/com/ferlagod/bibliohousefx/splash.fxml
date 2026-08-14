@@ -25,7 +25,7 @@
         <VBox fx:id="textContainer" alignment="CENTER" spacing="8.0" opacity="0.0">
             <children>
                 <Label text="BiblioHouse" styleClass="heading-text" />
-                <Label fx:id="lblStatus" text="Inicializando..." styleClass="subheading-text" />
+                <Label fx:id="lblStatus" text="%splash.status" styleClass="subheading-text" />
                 <ProgressBar fx:id="progressBar" progress="0.0" prefWidth="160.0">
                     <VBox.margin>
                         <Insets top="20.0" />

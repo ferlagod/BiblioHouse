@@ -32,8 +32,8 @@ import java.util.logging.Logger;
  * Controlador de la pantallita "Acerca de". Aquí es donde hago un poco de
  * autobombo y pongo mi contacto.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class AcercaDeController {
 
@@ -59,7 +59,7 @@ public class AcercaDeController {
     @FXML
     private void abrirEmail() {
         try {
-            Desktop.getDesktop().mail(new URI("mailto:info@bibliohouse.org"));
+            Desktop.getDesktop().mail(new URI("mailto:info@ferlagod.eu"));
         } catch (IOException | URISyntaxException e) {
             LOGGER.log(Level.WARNING, "No se pudo abrir el cliente de correo.", e);
         }

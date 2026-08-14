@@ -53,8 +53,8 @@ import java.util.logging.Logger;
  * archivos JSON. Usa la librería Gson para manejar la serialización y
  * deserialización de objetos.
  *
- * @author Fernando Lago
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  *
  */
 public class JsonManager {

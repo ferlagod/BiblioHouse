@@ -13,13 +13,13 @@
     <top>
         <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: -color-bg-subtle; -fx-padding: 10; -fx-border-color: -color-border-default; -fx-border-width: 0 0 1 0;">
             <children>
-                <Label fx:id="lblTituloLector" text="Título del Libro" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+                <Label fx:id="lblTituloLector" text="%book.title.default" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button text="A- (Menos)" onAction="#disminuirLetra" />
-                <Button text="A+ (Más)" onAction="#aumentarLetra" />
+                <Button text="%reader.font.decrease" onAction="#disminuirLetra" />
+                <Button text="%reader.font.increase" onAction="#aumentarLetra" />
                 <Label text="|" style="-fx-text-fill: -color-fg-muted;"/>
-                <Button text="Anterior" onAction="#paginaAnterior" />
-                <Button text="Siguiente" onAction="#paginaSiguiente" />
+                <Button text="%reader.prev" onAction="#paginaAnterior" />
+                <Button text="%reader.next" onAction="#paginaSiguiente" />
             </children>
         </HBox>
     </top>
@@ -29,7 +29,7 @@
     <bottom>
         <HBox alignment="CENTER" style="-fx-background-color: -color-bg-default; -fx-padding: 5; -fx-border-color: -color-border-default; -fx-border-width: 1 0 0 0;">
             <children>
-                <Label fx:id="lblProgreso" text="Progreso: 0%" style="-fx-text-fill: -color-fg-muted;"/>
+                <Label fx:id="lblProgreso" text="%reader.progress.default" style="-fx-text-fill: -color-fg-muted;"/>
             </children>
         </HBox>
     </bottom>

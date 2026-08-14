@@ -41,8 +41,8 @@ import javafx.stage.Stage;
  * Aquí controlamos quien entra y quien no. Gestiona el login y el registro de
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class LoginController {
 

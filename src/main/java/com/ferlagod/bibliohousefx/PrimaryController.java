@@ -61,8 +61,8 @@ import org.controlsfx.control.NotificationPane;
  * Este es el controlador principal. Aquí manejo la tabla de libros, los
  * préstamos y todo eso. Es como el cerebro de la pantalla principal.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class PrimaryController implements Initializable {
 
@@ -274,7 +274,7 @@ public class PrimaryController implements Initializable {
             configurarColumnasLibros();
 
             // Placeholder para la tabla de libros principal
-            Label placeholderLibros = new Label("La tabla está vacía. Añade libros o cambia los filtros.");
+            Label placeholderLibros = new Label(resources.getString("main.table.empty"));
             placeholderLibros.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
             tablaLibros.setPlaceholder(placeholderLibros);
 
@@ -321,9 +321,9 @@ public class PrimaryController implements Initializable {
             LOGGER.log(Level.SEVERE, "[PrimaryController] Error CRÍTICO en initialize", e);
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error de Inicialización");
-                alert.setHeaderText("Fallo al iniciar la pantalla principal");
-                alert.setContentText("Ocurrió un error inesperado al configurar la vista: " + e.getMessage());
+                alert.setTitle(resources.getString("main.error.init.title"));
+                alert.setHeaderText(resources.getString("main.error.init.header"));
+                alert.setContentText(resources.getString("main.error.init.content") + e.getMessage());
                 alert.showAndWait();
             });
         }
@@ -351,7 +351,7 @@ public class PrimaryController implements Initializable {
     private void configurarContextMenu() {
         this.contextMenuLibros = new ContextMenu();
 
-        MenuItem itemPrestar = new MenuItem("Prestar este libro");
+        MenuItem itemPrestar = new MenuItem(resources.getString("ctx.loan"));
         itemPrestar.setOnAction(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -359,7 +359,7 @@ public class PrimaryController implements Initializable {
             }
         });
 
-        MenuItem itemLeer = new MenuItem("📖 Leer E-book");
+        MenuItem itemLeer = new MenuItem(resources.getString("ctx.read"));
         itemLeer.setOnAction(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty()) {
@@ -368,6 +368,7 @@ public class PrimaryController implements Initializable {
                     if (archivo.getName().toLowerCase().endsWith(".epub")) {
                         try {
                             FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
+                            loader.setResources(resources);
                             Parent root = loader.load();
                             LectorDigitalController controller = loader.getController();
                             controller.setLibro(selected);
@@ -397,10 +398,10 @@ public class PrimaryController implements Initializable {
                         }
                     }
                 } else {
-                    mostrarAlerta("Error", "El archivo ya no existe en la ruta guardada:\n" + archivo.getAbsolutePath());
+                    mostrarAlerta(resources.getString("config.alert.error.title"), resources.getString("detail.error.file_missing") + archivo.getAbsolutePath());
                 }
             } else {
-                mostrarAlerta("Información", "Este libro no tiene un archivo digital asociado.");
+                mostrarAlerta(resources.getString("config.alert.info.title"), resources.getString("main.error.no_ebook"));
             }
         });
 
@@ -411,9 +412,9 @@ public class PrimaryController implements Initializable {
         itemPortada.setOnAction(e -> cambiarPortadaDesdePrincipal(null));
 
         // --- SUBMENÚ: MARCAR ESTADO DE LECTURA ---
-        Menu menuEstado = new Menu("Marcar como...");
+        Menu menuEstado = new Menu(resources.getString("ctx.mark_as"));
 
-        MenuItem itemPendiente = new MenuItem("📋 Pendiente");
+        MenuItem itemPendiente = new MenuItem(resources.getString("ctx.mark.pending"));
         itemPendiente.setOnAction(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -421,11 +422,11 @@ public class PrimaryController implements Initializable {
                 jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
-                lblEstado.setText("Estado actualizado: Pendiente — " + selected.getTitulo());
+                lblEstado.setText(resources.getString("main.status.updated.pending") + selected.getTitulo());
             }
         });
 
-        MenuItem itemLeyendo = new MenuItem("📖 Leyendo");
+        MenuItem itemLeyendo = new MenuItem(resources.getString("ctx.mark.reading"));
         itemLeyendo.setOnAction(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -433,11 +434,11 @@ public class PrimaryController implements Initializable {
                 jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
-                lblEstado.setText("Estado actualizado: Leyendo — " + selected.getTitulo());
+                lblEstado.setText(resources.getString("main.status.updated.reading") + selected.getTitulo());
             }
         });
 
-        MenuItem itemLeido = new MenuItem("✅ Leído");
+        MenuItem itemLeido = new MenuItem(resources.getString("ctx.mark.read"));
         itemLeido.setOnAction(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -445,7 +446,7 @@ public class PrimaryController implements Initializable {
                 jsonManager.guardarLibrosDebounced(listaLibrosCompleta);
                 tablaLibros.refresh();
                 actualizarPanelMisLibros();
-                lblEstado.setText("Estado actualizado: Leído — " + selected.getTitulo());
+                lblEstado.setText(resources.getString("main.status.updated.read") + selected.getTitulo());
             }
         });
 
@@ -456,15 +457,22 @@ public class PrimaryController implements Initializable {
         itemEliminar.setStyle("-fx-text-fill: red;");
         itemEliminar.setOnAction(e -> eliminarLibro(null));
 
+        MenuItem itemEtiquetas = new MenuItem(resources.getString("ctx.label"));
+        itemEtiquetas.setOnAction(e -> generarEtiquetaFisica(null));
+
         contextMenuLibros.getItems().addAll(itemLeer, new SeparatorMenuItem(), itemPrestar, new SeparatorMenuItem(), itemEditar, itemPortada,
-                menuEstado, new SeparatorMenuItem(), itemEliminar);
+                menuEstado, new SeparatorMenuItem(), itemEtiquetas, new SeparatorMenuItem(), itemEliminar);
 
         contextMenuLibros.setOnShowing(e -> {
             Libro selected = tablaLibros.getSelectionModel().getSelectedItem();
             boolean isEbook = (selected != null && selected.isEsDigital() && selected.getRutaArchivoDigital() != null && !selected.getRutaArchivoDigital().isEmpty());
+            boolean isPhysical = (selected != null && !selected.isEsDigital());
+            
             itemLeer.setVisible(isEbook);
             // Hide the separator after itemLeer if itemLeer is not visible
             contextMenuLibros.getItems().get(1).setVisible(isEbook);
+
+            itemEtiquetas.setVisible(isPhysical);
         });
 
         tablaLibros.setContextMenu(this.contextMenuLibros);
@@ -624,9 +632,28 @@ public class PrimaryController implements Initializable {
         });
     }
 
+    // --- ALERTA PRÉSTAMOS ---
+    @FXML
+    private javafx.scene.layout.HBox bannerPrestamos;
+    @FXML
+    private Label lblTextoBannerPrestamos;
+
     /**
-     * Comprueba los préstamos activos y notifica si hay vencidos (más de
-     * DUE_DAYS_LIMIT).
+     * Navega automáticamente a la pestaña de Préstamos.
+     * Utilizado principalmente desde el banner de alerta de préstamos vencidos.
+     *
+     * @param event El evento del botón "Revisar".
+     */
+    @FXML
+    private void irAPrestamos(javafx.event.ActionEvent event) {
+        if (tabPrestamos != null) {
+            mainTabPane.getSelectionModel().select(tabPrestamos);
+        }
+    }
+
+    /**
+     * Comprueba los préstamos activos y muestra un banner integrado si hay vencidos
+     * (más de dueDaysLimit). El banner se muestra en la parte superior del BorderPane.
      */
     private void checkOverdueLoans() {
         if (prestamoService == null) {
@@ -634,45 +661,23 @@ public class PrimaryController implements Initializable {
         }
         List<Prestamo> overdueLoans = prestamoService.obtenerPrestamosVencidos(dueDaysLimit);
 
-        if (!overdueLoans.isEmpty()) {
-            javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
-            delay.setOnFinished(e -> {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Se han detectado ").append(overdueLoans.size()).append(" préstamos vencidos:\n\n");
-
-                overdueLoans.stream().limit(5).forEach(p -> {
-                    long daysOverdue = prestamoService.calcularDiasRetraso(p, dueDaysLimit);
-                    sb.append("• ").append(p.getTituloLibro()).append(" (Socio #").append(p.getNumeroSocio())
-                            .append("): ").append(daysOverdue).append(" días de retraso.\n");
-                });
-
-                if (overdueLoans.size() > 5) {
-                    sb.append("\n... y ").append(overdueLoans.size() - 5)
-                            .append(" más. Consulta la pestaña 'Préstamos'.");
+        javafx.application.Platform.runLater(() -> {
+            if (!overdueLoans.isEmpty()) {
+                bannerPrestamos.setVisible(true);
+                bannerPrestamos.setManaged(true);
+                bannerPrestamos.setMouseTransparent(false); // permite interacción con el botón "Revisar"
+                if (overdueLoans.size() == 1) {
+                    Prestamo p = overdueLoans.get(0);
+                    lblTextoBannerPrestamos.setText("El libro '" + p.getTituloLibro() + "' prestado a " + p.getNombreSocio() + " está " + prestamoService.calcularDiasRetraso(p, dueDaysLimit) + " días retrasado.");
+                } else {
+                    lblTextoBannerPrestamos.setText("Tienes " + overdueLoans.size() + " libros pendientes de devolución cuyo plazo ha vencido.");
                 }
-
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                if (tablaLibros.getScene() != null && tablaLibros.getScene().getWindow() != null) {
-                    alert.initOwner(tablaLibros.getScene().getWindow());
-                }
-                alert.setTitle("⚠️ ATENCIÓN: Préstamos Vencidos");
-                alert.setHeaderText("¡Tienes libros pendientes de devolución!");
-                alert.setContentText(sb.toString());
-
-                ButtonType viewLoansButton = new ButtonType("Ver Préstamos", ButtonBar.ButtonData.OK_DONE);
-                ButtonType dismissButton = new ButtonType("Aceptar", ButtonBar.ButtonData.CANCEL_CLOSE);
-                alert.getButtonTypes().setAll(viewLoansButton, dismissButton);
-
-                Optional<ButtonType> result = alert.showAndWait();
-
-                if (result.isPresent() && result.get() == viewLoansButton) {
-                    if (tabPrestamos != null) {
-                        mainTabPane.getSelectionModel().select(tabPrestamos);
-                    }
-                }
-            });
-            delay.play();
-        }
+            } else {
+                bannerPrestamos.setVisible(false);
+                bannerPrestamos.setManaged(false);
+                bannerPrestamos.setMouseTransparent(true); // nunca intercepta eventos cuando está oculto
+            }
+        });
     }
 
     /**
@@ -790,6 +795,49 @@ public class PrimaryController implements Initializable {
 
         } catch (IOException e) {
             mostrarAlerta("Error", "No se pudo cambiar el idioma correctamente.");
+        }
+    }
+
+    /**
+     * Extrae los libros físicos de la selección actual en la tabla y llama
+     * al servicio de etiquetas para generar un PDF con los códigos QR.
+     * Muestra diálogos para informar al usuario de cualquier eventualidad.
+     *
+     * @param event El evento desencadenado por el menú contextual.
+     */
+    @FXML
+    private void generarEtiquetaFisica(ActionEvent event) {
+        List<Libro> seleccionados = tablaLibros.getSelectionModel().getSelectedItems();
+        if (seleccionados == null || seleccionados.isEmpty()) {
+            mostrarAlerta("Sin selección", "Selecciona al menos un libro para generar su etiqueta.");
+            return;
+        }
+
+        // Filtrar solo los físicos
+        List<Libro> fisicos = seleccionados.stream().filter(l -> !l.isEsDigital()).collect(Collectors.toList());
+        
+        if (fisicos.isEmpty()) {
+            mostrarAlerta("Sin libros físicos", "Los libros seleccionados son digitales. Las etiquetas solo se generan para libros físicos.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Etiquetas PDF");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo PDF", "*.pdf"));
+        fileChooser.setInitialFileName("Etiquetas_BiblioHouse.pdf");
+        
+        File file = fileChooser.showSaveDialog(tablaLibros.getScene().getWindow());
+        if (file != null) {
+            try {
+                com.bibliohouse.logic.ServicioEtiquetasFisicas.generarEtiquetasPDF(fisicos, file);
+                notificar("PDF con etiquetas generado con éxito.");
+                // Intentar abrir el PDF
+                try {
+                    java.awt.Desktop.getDesktop().open(file);
+                } catch (Exception ignored) {}
+            } catch (Exception e) {
+                mostrarAlerta("Error", "Hubo un problema al generar el PDF: " + e.getMessage());
+            }
         }
     }
 
@@ -1315,6 +1363,10 @@ public class PrimaryController implements Initializable {
         if (listaEstanterias == null) {
             return;
         }
+
+        // Preservar selección actual antes de recargar
+        String seleccionActual = listaEstanterias.getSelectionModel().getSelectedItem();
+
         List<String> estanterias = jsonManager.cargarEstanterias();
 
         if (estanterias == null || estanterias.isEmpty()) {
@@ -1353,8 +1405,14 @@ public class PrimaryController implements Initializable {
             }
         });
 
-        listaEstanterias.getSelectionModel().select(0);
+        // Restaurar selección previa o ir a "Todos" por defecto
+        if (seleccionActual != null && items.contains(seleccionActual)) {
+            listaEstanterias.getSelectionModel().select(seleccionActual);
+        } else {
+            listaEstanterias.getSelectionModel().select(0);
+        }
     }
+
 
     /**
      * Permite seleccionar manualmente una imagen de portada desde el sistema de
@@ -2591,9 +2649,51 @@ public class PrimaryController implements Initializable {
         });
     }
 
+    private java.util.Comparator<Libro> currentComparator = java.util.Comparator.comparing(
+            l -> l.getTitulo() != null ? l.getTitulo() : "",
+            String::compareToIgnoreCase);
+
+    @FXML
+    private void ordenarPorTituloAZ() {
+        currentComparator = java.util.Comparator.comparing(l -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase);
+        actualizarPanelMisLibros();
+    }
+    
+    @FXML
+    private void ordenarPorTituloZA() {
+        currentComparator = java.util.Comparator.comparing((Libro l) -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase).reversed();
+        actualizarPanelMisLibros();
+    }
+    
+    @FXML
+    private void ordenarPorAutor() {
+        currentComparator = java.util.Comparator.comparing((Libro l) -> l.getAutor() != null ? l.getAutor() : "", String::compareToIgnoreCase);
+        actualizarPanelMisLibros();
+    }
+    
+    @FXML
+    private void ordenarPorAnio() {
+        currentComparator = (l1, l2) -> {
+            String a1 = l1.getAño() != null ? l1.getAño() : "";
+            String a2 = l2.getAño() != null ? l2.getAño() : "";
+            return a2.compareTo(a1); // Descendente
+        };
+        actualizarPanelMisLibros();
+    }
+    
+    @FXML
+    private void ordenarPorReciente() {
+        currentComparator = (l1, l2) -> {
+            int i1 = listaLibrosCompleta.indexOf(l1);
+            int i2 = listaLibrosCompleta.indexOf(l2);
+            return Integer.compare(i2, i1); // Descendente
+        };
+        actualizarPanelMisLibros();
+    }
+
     /**
-     * Dibuja la cuadrícula de libros en la pestaña principal, ordenados de la A
-     * a la Z. Respeta los filtros del menú lateral y de búsqueda.
+     * Dibuja la cuadrícula de libros en la pestaña principal, ordenados según la selección. 
+     * Respeta los filtros del menú lateral y de búsqueda.
      */
     private void actualizarPanelMisLibros() {
         if (panelMisLibros == null || filteredData == null) {
@@ -2615,9 +2715,7 @@ public class PrimaryController implements Initializable {
                     boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(busquedaRapida);
                     return tituloCoincide || autorCoincide;
                 })
-                .sorted(java.util.Comparator.comparing(
-                        l -> l.getTitulo() != null ? l.getTitulo() : "",
-                        String::compareToIgnoreCase))
+                .sorted(currentComparator)
                 .collect(Collectors.toList());
 
         // 3. Comprobar si está vacío ANTES de dibujar
@@ -2659,26 +2757,43 @@ public class PrimaryController implements Initializable {
         tarjeta.setPrefWidth(140);
         tarjeta.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-cursor: hand;");
 
-        // --- CLIC IZQUIERDO (DOBLE CLIC) ---
+        // --- CLIC (SIMPLE Y DOBLE) ---
         tarjeta.setOnMouseClicked(e -> {
-            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && e.getClickCount() == 2) {
-                mostrarDetalleLibro(libro);
+            if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                // Seleccionar en tabla para que el menú contextual funcione
+                tablaLibros.getSelectionModel().select(libro);
+                if (e.getClickCount() == 2) {
+                    mostrarDetalleLibro(libro);
+                }
+                e.consume();
+            } else if (e.getButton() == javafx.scene.input.MouseButton.SECONDARY) {
+                // Botón derecho: mostrar menú contextual directamente
+                tablaLibros.getSelectionModel().select(libro);
+                if (contextMenuLibros != null) {
+                    contextMenuLibros.show(tarjeta, e.getScreenX(), e.getScreenY());
+                }
+                e.consume();
             }
         });
 
-        // --- CLIC DERECHO (MENÚ CONTEXTUAL) ---
+        // --- CLIC DERECHO (MENÚ CONTEXTUAL vía evento nativo del sistema) ---
         tarjeta.setOnContextMenuRequested(e -> {
             tablaLibros.getSelectionModel().select(libro);
             if (contextMenuLibros != null) {
                 contextMenuLibros.show(tarjeta, e.getScreenX(), e.getScreenY());
             }
+            e.consume();
         });
 
         javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
+        // Los nodos hijo deben pasar los eventos de ratón al VBox padre
+        img.setMouseTransparent(true);
         com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
 
         // 1. Contenedor para apilar el badge sobre la imagen
         javafx.scene.layout.StackPane contenedorPortada = new javafx.scene.layout.StackPane(img);
+        // El StackPane tampoco debe interceptar eventos
+        contenedorPortada.setMouseTransparent(true);
 
         // 2. Lógica del Badge de estado
         String estado = libro.getEstadoLectura();
@@ -2710,6 +2825,7 @@ public class PrimaryController implements Initializable {
         lblTitulo.setMaxWidth(130);
         lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: -color-fg-default;");
+        lblTitulo.setMouseTransparent(true);
 
         // Lógica del Badge Digital
         if (libro.isEsDigital()) {
@@ -2741,16 +2857,19 @@ public class PrimaryController implements Initializable {
             pBar.setPrefWidth(110);
             pBar.setPrefHeight(6);
             pBar.setStyle("-fx-accent: #ff9800;");
+            pBar.setMouseTransparent(true);
 
             // Etiqueta pequeñita
             Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + " pág.");
             lblProgreso.setStyle("-fx-font-size: 9px; -fx-text-fill: -color-fg-muted;");
+            lblProgreso.setMouseTransparent(true);
 
             tarjeta.getChildren().addAll(pBar, lblProgreso);
         }
 
         return tarjeta;
     }
+
 
     /**
      * Abre un diálogo para que el usuario configure su objetivo anual de

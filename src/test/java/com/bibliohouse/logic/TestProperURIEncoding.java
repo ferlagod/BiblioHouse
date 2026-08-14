@@ -23,8 +23,8 @@ package com.bibliohouse.logic;
  * Este ejemplo muestra cómo usar la clase {@link java.net.URI} para codificar
  * correctamente el componente de ruta de una URI.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class TestProperURIEncoding {
 

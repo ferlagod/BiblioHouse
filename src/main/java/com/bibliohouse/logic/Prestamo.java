@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter;
  * Esto representa un préstamo de libro a alguien. Aquí guardamos quién se llevó
  * el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo devolvió).
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class Prestamo {
 

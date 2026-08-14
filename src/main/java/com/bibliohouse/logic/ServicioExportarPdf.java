@@ -40,10 +40,13 @@ import java.util.stream.Collectors;
  * quedan bastante profesionales, con estadísticas, agrupación por estanterías y
  * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ServicioExportarPdf {
+
+    private final PDFont BOLD_FONT = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+    private final PDFont NORMAL_FONT = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 
     private static final Logger LOGGER = Logger.getLogger(ServicioExportarPdf.class.getName());
 
@@ -81,22 +84,22 @@ public class ServicioExportarPdf {
 
                 // Título principal
                 yPosition = agregarTexto(contentStream, "INFORME DE BIBLIOTECA", MARGIN, yPosition,
-                        new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), FONT_SIZE_TITLE);
+                        BOLD_FONT, FONT_SIZE_TITLE);
                 yPosition -= LEADING;
 
                 // Fecha de generación
                 String fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
                 yPosition = agregarTexto(contentStream, "Fecha de generación: " + fecha, MARGIN, yPosition,
-                        new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_NORMAL);
+                        NORMAL_FONT, FONT_SIZE_NORMAL);
                 yPosition -= SECTION_SPACING;
 
                 // Criterios de filtro si existen
                 if (criteriosFiltro != null && !criteriosFiltro.isEmpty()) {
                     yPosition = agregarTexto(contentStream, "Filtros aplicados:", MARGIN, yPosition,
-                            new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), FONT_SIZE_SUBHEADING);
+                            BOLD_FONT, FONT_SIZE_SUBHEADING);
                     yPosition -= LEADING / 2;
                     yPosition = agregarTextoMultilinea(contentStream, criteriosFiltro, MARGIN + 10, yPosition,
-                            new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_SMALL,
+                            NORMAL_FONT, FONT_SIZE_SMALL,
                             firstPage.getMediaBox().getWidth() - 2 * MARGIN - 10);
                     yPosition -= SECTION_SPACING;
                 }
@@ -133,12 +136,12 @@ public class ServicioExportarPdf {
             float yPosition, float pageWidth) throws IOException {
         // Título de sección
         yPosition = agregarTexto(contentStream, "ESTADÍSTICAS GENERALES", MARGIN, yPosition,
-                new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), FONT_SIZE_HEADING);
+                BOLD_FONT, FONT_SIZE_HEADING);
         yPosition -= LEADING;
 
         // Total de libros
         yPosition = agregarTexto(contentStream, "Total de libros: " + libros.size(), MARGIN + 10, yPosition,
-                new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_NORMAL);
+                NORMAL_FONT, FONT_SIZE_NORMAL);
         yPosition -= LEADING / 2;
 
         // Estadísticas por estado de lectura
@@ -149,12 +152,12 @@ public class ServicioExportarPdf {
         }
 
         yPosition = agregarTexto(contentStream, "Por estado de lectura:", MARGIN + 10, yPosition,
-                new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_NORMAL);
+                NORMAL_FONT, FONT_SIZE_NORMAL);
         yPosition -= LEADING / 2;
 
         for (Map.Entry<String, Long> entry : porEstado.entrySet()) {
             yPosition = agregarTexto(contentStream, "  - " + entry.getKey() + ": " + entry.getValue(),
-                    MARGIN + 20, yPosition, new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_SMALL);
+                    MARGIN + 20, yPosition, NORMAL_FONT, FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
 
@@ -170,7 +173,7 @@ public class ServicioExportarPdf {
         }
 
         yPosition = agregarTexto(contentStream, "Por género (top 5):", MARGIN + 10, yPosition,
-                new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_NORMAL);
+                NORMAL_FONT, FONT_SIZE_NORMAL);
         yPosition -= LEADING / 2;
 
         // Mostrar solo los top 5 géneros
@@ -181,7 +184,7 @@ public class ServicioExportarPdf {
 
         for (Map.Entry<String, Long> entry : topGeneros) {
             yPosition = agregarTexto(contentStream, "  - " + entry.getKey() + ": " + entry.getValue(),
-                    MARGIN + 20, yPosition, new PDType1Font(Standard14Fonts.FontName.HELVETICA),
+                    MARGIN + 20, yPosition, NORMAL_FONT,
                     FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
@@ -211,44 +214,35 @@ public class ServicioExportarPdf {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
+            try {
                 float yPosition = page.getMediaBox().getHeight() - MARGIN;
 
                 // Título de la estantería
                 String tituloEstanteria = estanteria.isEmpty() ? "SIN ESTANTERÍA" : estanteria.toUpperCase();
                 yPosition = agregarTexto(contentStream, tituloEstanteria, MARGIN, yPosition,
-                        new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), FONT_SIZE_HEADING);
+                        BOLD_FONT, FONT_SIZE_HEADING);
                 yPosition -= LEADING;
 
                 yPosition = agregarTexto(contentStream, libros.size() + " libro(s)", MARGIN, yPosition,
-                        new PDType1Font(Standard14Fonts.FontName.HELVETICA), FONT_SIZE_SMALL);
+                        NORMAL_FONT, FONT_SIZE_SMALL);
                 yPosition -= SECTION_SPACING;
 
                 // Agregar cada libro
                 for (Libro libro : libros) {
                     // Verificar si necesitamos una nueva página
                     if (yPosition < MARGIN + 100) {
-                        contentStream.close();
+                        contentStream.close(); // Cerramos la página actual
                         page = new PDPage(PDRectangle.A4);
                         document.addPage(page);
-                        try (PDPageContentStream newStream = new PDPageContentStream(document, page)) {
-                            yPosition = page.getMediaBox().getHeight() - MARGIN;
-
-                            // Continuar con el nuevo stream
-                            yPosition = agregarLibro(newStream, libro, yPosition, page.getMediaBox().getWidth());
-                        }
-
-                        // Crear nuevo stream para el siguiente libro
-                        if (libros.indexOf(libro) < libros.size() - 1) {
-                            page = new PDPage(PDRectangle.A4);
-                            document.addPage(page);
-                            yPosition = page.getMediaBox().getHeight() - MARGIN;
-                        }
-                        break;
-                    } else {
-                        yPosition = agregarLibro(contentStream, libro, yPosition, page.getMediaBox().getWidth());
+                        contentStream = new PDPageContentStream(document, page); // Abrimos nueva página
+                        yPosition = page.getMediaBox().getHeight() - MARGIN;
                     }
+                    
+                    yPosition = agregarLibro(contentStream, libro, yPosition, page.getMediaBox().getWidth());
                 }
+            } finally {
+                contentStream.close();
             }
         }
     }
@@ -266,18 +260,18 @@ public class ServicioExportarPdf {
     private float agregarLibro(PDPageContentStream contentStream, Libro libro, float yPosition, float pageWidth)
             throws IOException {
 
-        PDFont boldFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-        PDFont normalFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+        
+        
 
         // Título del libro
         String titulo = libro.getTitulo() != null ? libro.getTitulo() : "Sin título";
-        yPosition = agregarTexto(contentStream, "• " + titulo, MARGIN + 10, yPosition, boldFont, FONT_SIZE_SUBHEADING);
+        yPosition = agregarTexto(contentStream, "• " + titulo, MARGIN + 10, yPosition, BOLD_FONT, FONT_SIZE_SUBHEADING);
         yPosition -= LEADING / 2;
 
         // Autor
         if (libro.getAutor() != null && !libro.getAutor().isEmpty()) {
             yPosition = agregarTexto(contentStream, "  Autor: " + libro.getAutor(), MARGIN + 15, yPosition,
-                    normalFont, FONT_SIZE_SMALL);
+                    NORMAL_FONT, FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
 
@@ -291,21 +285,21 @@ public class ServicioExportarPdf {
         }
         if (!editorialAnio.isEmpty()) {
             yPosition = agregarTexto(contentStream, "  " + editorialAnio, MARGIN + 15, yPosition,
-                    normalFont, FONT_SIZE_SMALL);
+                    NORMAL_FONT, FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
 
         // Género
         if (libro.getGenero() != null && !libro.getGenero().isEmpty()) {
             yPosition = agregarTexto(contentStream, "  Género: " + libro.getGenero(), MARGIN + 15, yPosition,
-                    normalFont, FONT_SIZE_SMALL);
+                    NORMAL_FONT, FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
 
         // ISBN
         if (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
             yPosition = agregarTexto(contentStream, "  ISBN: " + libro.getIsbn(), MARGIN + 15, yPosition,
-                    normalFont, FONT_SIZE_SMALL);
+                    NORMAL_FONT, FONT_SIZE_SMALL);
             yPosition -= LEADING / 2;
         }
 
@@ -314,7 +308,7 @@ public class ServicioExportarPdf {
         String estado = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : "Pendiente";
         cantidadEstado += " | Estado: " + estado;
         yPosition = agregarTexto(contentStream, "  " + cantidadEstado, MARGIN + 15, yPosition,
-                normalFont, FONT_SIZE_SMALL);
+                NORMAL_FONT, FONT_SIZE_SMALL);
         yPosition -= LEADING / 2;
 
         // Espaciado entre libros

@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * mediante expresiones regulares.
  *
  * @autor Fernando Lago Dávila
- * @version 1.9
+ * @version 2.0
  */
 public class ProcesadorSagas {
 

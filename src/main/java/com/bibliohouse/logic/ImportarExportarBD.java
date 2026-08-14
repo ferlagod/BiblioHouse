@@ -34,8 +34,8 @@ import javafx.stage.Window;
  * de libros en formato JSON. Proporciona diálogos para seleccionar archivos y
  * opciones para añadir o reemplazar los datos existentes.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ImportarExportarBD {
 

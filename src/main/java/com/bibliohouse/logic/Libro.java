@@ -28,8 +28,8 @@ import java.util.UUID;
  * Esta clase es como una ficha para cada libro. Aquí guardamos el título, autor
  * y todo eso.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class Libro {
 
@@ -59,6 +59,9 @@ public class Libro {
     private LocalDate fechaFinalizacion;
     // Si es falso, es un libro deseado (wishlist)
     private boolean poseido = true;
+
+    // CAMPOS PARA UBICACIÓN FÍSICA
+    private String ubicacionFisica;
 
     // CAMPOS PARA SERIES/SAGAS
     private String serie;
@@ -634,5 +637,23 @@ public class Libro {
         }
         File f = new File(portadaURL);
         return f.getName();
+    }
+
+    /**
+     * Nos dice dónde está guardado exactamente este libro en papel (ej: "Salón, Estante 3").
+     *
+     * @return La ubicación física o null.
+     */
+    public String getUbicacionFisica() {
+        return ubicacionFisica;
+    }
+
+    /**
+     * Sirve para guardar la posición exacta física de nuestro libro impreso.
+     *
+     * @param ubicacionFisica El lugar de la casa o caja.
+     */
+    public void setUbicacionFisica(String ubicacionFisica) {
+        this.ubicacionFisica = ubicacionFisica;
     }
 }

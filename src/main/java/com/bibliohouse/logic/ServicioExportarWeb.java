@@ -46,8 +46,8 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
  * diseño tipo galería Netflix. Las portadas de los libros se incrustan como
  * Base64 data URIs para máxima portabilidad (un solo archivo sin dependencias).
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ServicioExportarWeb {
 
@@ -178,7 +178,7 @@ public class ServicioExportarWeb {
 
         // Footer
         html.append("<footer>\n");
-        html.append("  <p>Generado con <a href=\"https://bibliohouse.org\" target=\"_blank\" rel=\"noopener\">BiblioHouse</a> · Software Libre bajo licencia GPL v3</p>\n");
+        html.append("  <p>Generado con <a href=\"https://ferlagod.eu\" target=\"_blank\" rel=\"noopener\">BiblioHouse</a> · Software Libre bajo licencia GPL v3</p>\n");
         html.append("</footer>\n");
 
         // JavaScript

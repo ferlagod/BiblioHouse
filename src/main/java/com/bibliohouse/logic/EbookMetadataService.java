@@ -44,8 +44,8 @@ import org.xml.sax.SAXException;
  * MOBI). Utiliza APIs estándar de Java (ZIP + XML) para EPUB y PDFBox para PDF.
  * No requiere dependencias externas adicionales.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class EbookMetadataService {
 

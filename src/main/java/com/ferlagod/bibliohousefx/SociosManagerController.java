@@ -41,8 +41,8 @@ import javafx.stage.FileChooser;
  * Controlador para la gestión general de la lista de socios. Muestra la tabla
  * de socios y permite añadir, editar o eliminarlos.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class SociosManagerController {
 

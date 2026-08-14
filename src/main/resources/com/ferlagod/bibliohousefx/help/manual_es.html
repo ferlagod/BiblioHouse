@@ -235,22 +235,24 @@
                 <li><a href="#primeros-pasos">2. Primeros pasos (Bienvenida y Acceso)</a></li>
                 <li><a href="#navegacion">3. Navegación y Estructura</a></li>
                 <li><a href="#funcionalidades">4. Funcionalidades Principales</a></li>
-                <li><a href="#configuracion">5. Configuración</a></li>
-                <li><a href="#gestion-datos">6. Gestión de Datos (Importar, Exportar y Backup)</a></li>
-                <li><a href="#sincronizacion">7. Sincronización con NextCloud</a></li>
-                <li><a href="#solucion-problemas">8. Solución de Problemas Comunes (Troubleshooting)</a></li>
-                <li><a href="#funciones-avanzadas">9. Funciones Avanzadas</a></li>
-                <li><a href="#glosario">10. Glosario de términos</a></li>
-                <li><a href="#contacto">11. Contacto y Soporte</a></li>
+                <li><a href="#lector-ebooks">5. Lector de E-books Incorporado</a></li>
+                <li><a href="#diario-lectura">6. Diario de Lectura y Ubicaciones</a></li>
+                <li><a href="#configuracion">7. Configuración</a></li>
+                <li><a href="#gestion-datos">8. Gestión de Datos (Importar, Exportar y Backup)</a></li>
+                <li><a href="#sincronizacion">9. Sincronización con NextCloud</a></li>
+                <li><a href="#solucion-problemas">10. Solución de Problemas Comunes (Troubleshooting)</a></li>
+                <li><a href="#funciones-avanzadas">11. Funciones Avanzadas</a></li>
+                <li><a href="#glosario">12. Glosario de términos</a></li>
+                <li><a href="#contacto">13. Contacto y Soporte</a></li>
             </ul>
         </nav>
 
         <h2 id="introduccion">1. Introducción rápida</h2>
         <div class="feature-box">
             <p><strong>Qué hace la app:</strong> BiblioHouse es tu gestor de biblioteca personal definitivo. Organiza libros
-                físicos y digitales, gestiona a quién se los prestas, controla qué volúmenes te faltan en tus sagas
-                favoritas, lleva una lista de deseos y sincroniza todo con tu servidor NextCloud, sin depender de la nube de
-                terceros.</p>
+                físicos y digitales, lee tus e-books nativamente, gestiona a quién se los prestas (con alertas de retraso),
+                controla qué volúmenes te faltan en tus sagas favoritas, escribe tu propio diario de lectura, localiza la estantería exacta de cada libro 
+                y sincroniza todo con tu servidor NextCloud, sin depender de la nube de terceros.</p>
             <p><strong>Para quién es:</strong> Diseñado desde cero para lectores novatos y bibliotecarios avanzados. No
                 requiere conocimientos técnicos previos.</p>
             <p><strong>Requisitos mínimos:</strong> Windows, macOS o Linux moderno. Java 21+ instalado. 500 MB de disco.
@@ -299,7 +301,7 @@
                 estantería, la vista principal se filtra para mostrar solo los libros de esa categoría.
                 <br/><strong>Widget de Reto de Lectura:</strong> En la parte inferior del panel lateral aparece un widget
                 con barra de progreso que muestra tu avance en el Reto de Lectura Anual (ver sección
-                <a href="#funciones-avanzadas">9. Funciones Avanzadas</a>).</li>
+                <a href="#funciones-avanzadas">Funciones Avanzadas</a>).</li>
             <li><strong>Panel Central — Pestañas:</strong> El área de trabajo con las siguientes pestañas:
                 <ul>
                     <li><strong>Mis Libros:</strong> Galería visual con portadas de tu colección.</li>
@@ -326,21 +328,20 @@
                 izquierdo, la galería se filtra automáticamente.</p>
             <p><strong>Menú contextual:</strong> Haz clic derecho sobre cualquier libro para acceder a las opciones:</p>
             <ul>
+                <li><strong>📖 Leer E-book:</strong> Abre el archivo EPUB con el lector integrado nativo de BiblioHouse (solo para libros digitales).</li>
                 <li><strong>Prestar este libro:</strong> Inicia un préstamo rápido.</li>
                 <li><strong>Editar detalles:</strong> Abre la pantalla de edición completa.</li>
                 <li><strong>Cambiar portada:</strong> Seleccionar una imagen local como portada.</li>
                 <li><strong>Marcar como…:</strong> Cambiar el estado de lectura (📋 Pendiente, 📖 Leyendo, ✅ Leído).</li>
+                <li><strong>🖨️ Generar Etiqueta QR (PDF):</strong> Crea un PDF con un código QR que enlaza a los detalles de tu libro (solo para libros físicos).</li>
                 <li><strong>Eliminar libro:</strong> Borrar el libro de tu colección.</li>
             </ul>
             <p><strong>Doble clic:</strong> Al hacer doble clic en un libro se abre la <strong>Ficha de Detalle</strong> en
-                modo solo lectura, donde ves la portada, título, autor, editorial, año, género, ISBN, valoración con
-                estrellas y la reseña personal. Desde ahí puedes pulsar "Editar detalles" para modificar el libro.</p>
+                modo solo lectura. En ella verás la portada, datos básicos y el nuevo <em>Diario de Lectura</em>.</p>
             <p><strong>Importar E-books (Drag &amp; Drop):</strong> Arrastra un archivo <strong>EPUB, PDF o MOBI</strong>
                 directamente sobre el panel de "Mis Libros". BiblioHouse extraerá automáticamente los metadatos (título,
                 autor, portada) y lo añadirá a tu colección. El panel se resaltará con un borde punteado azul para indicar
                 que puedes soltar el archivo.</p>
-            <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png"
-                 alt="Galería de portadas de libros con panel lateral de estanterías." />
         </div>
 
         <div class="feature-box">
@@ -362,225 +363,139 @@
                 webcam. La app lo detectará, emitirá un pitido y lo buscará automáticamente.</p>
 
             <h3>Método 3: Añadir Manualmente</h3>
-            <p>En el formulario inferior "Añadir manualmente", rellena los campos:</p>
-            <ul>
-                <li>Título, Autor, Editorial, Género, ISBN, Año, Cantidad.</li>
-                <li>Serie/Saga y Orden (para agrupar en colecciones).</li>
-                <li>Selecciona una imagen de portada con el botón "Seleccionar...".</li>
-                <li>Marca la casilla "Ya lo tengo (en propiedad)" si posees el libro.</li>
-                <li>Pulsa <strong>"Añadir a Biblioteca"</strong>.</li>
-            </ul>
-            <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png"
-                 alt="Pestaña de Añadir/Gestionar con formulario manual y barra de búsqueda OpenLibrary." />
+            <p>En el formulario inferior "Añadir manualmente", rellena los campos (Título, Autor, etc.), elige la portada y las 
+                ubicaciones exactas. Luego pulsa <strong>"Añadir a Biblioteca"</strong>.</p>
         </div>
 
         <div class="feature-box">
             <h3>Pantalla de Edición de Libro</h3>
-            <p>Al pulsar "Editar detalles" (desde el menú contextual o la ficha de detalle), se abre una ventana con todos
-                los campos del libro:</p>
+            <p>Al pulsar "Editar detalles", se abre una ventana con todos los campos del libro:</p>
             <ul>
-                <li><strong>Portada:</strong> Cambia la imagen con "Cambiar portada" (o arrastra una imagen desde el
-                    navegador) y "Buscar online" para descargar automáticamente una portada.</li>
-                <li><strong>Estado de Lectura:</strong> Selecciona "Pendiente", "Leyendo" o "Leído" en el desplegable.</li>
-                <li><strong>Valoración:</strong> Califícalo de 0 a 5 estrellas.</li>
-                <li><strong>Datos:</strong> Título, Autor, Editorial, Género, Año, ISBN, Serie/Saga y Orden.</li>
-                <li><strong>Estanterías:</strong> Añade o crea estanterías personalizadas y asígnalas al libro.</li>
-                <li><strong>Reseña personal:</strong> Escribe tus impresiones sobre el libro.</li>
-                <li><strong>"En propiedad":</strong> Desmarca esta casilla si aún no tienes el libro físicamente.</li>
+                <li><strong>Datos Generales:</strong> Título, Autor, Editorial, Género, Año, ISBN, Serie/Saga y Orden.</li>
+                <li><strong>Ubicación física:</strong> Ahora puedes especificar la estantería exacta y la balda en la que tienes el libro en tu casa.</li>
+                <li><strong>Estanterías Lógicas:</strong> Añade o crea estanterías temáticas (Fantasía, Novela...) y asígnalas.</li>
+                <li><strong>Digital / Formatos:</strong> Selecciona si tienes el libro en archivo EPUB o MOBI e integra el conversor usando Calibre.</li>
             </ul>
-            <p>Pulsa <strong>Guardar Cambios</strong> para confirmar o <strong>Cancelar</strong> para descartar.</p>
-            <img src="https://imgur.com/lzqMfU5.png"
-                 alt="Formulario de edición de libro con portada, campos de datos, estanterías, valoración y reseña." />
+            <p>Pulsa <strong>Guardar Cambios</strong> para confirmar.</p>
         </div>
 
         <div class="feature-box">
-            <h3>Pestaña 3: Préstamos Activos</h3>
+            <h3>Pestaña 3: Préstamos Activos (Préstamos Inteligentes)</h3>
             <p><strong>Propósito:</strong> Registrar a quién le prestas tus libros y controlar devoluciones.</p>
+            <p>BiblioHouse cuenta con <strong>Alertas Inteligentes</strong>: Si inicias la app o vas a la pestaña principal y tienes préstamos que se han excedido en su fecha límite (por defecto, más de 30 días), la app mostrará un banner de aviso inmediato (ej. <em>"Tienes 2 libros pendientes de devolución cuyo plazo ha vencido"</em>).</p>
             <ul class="step-list">
-                <li>Selecciona un <strong>Libro</strong> del desplegable "Libro a prestar".</li>
-                <li>Selecciona un <strong>Socio</strong> del desplegable. Si no existe, pulsa el botón <strong>"+"</strong>
-                    para crear un socio rápido, o <strong>"Gestionar Socios"</strong> para abrir la gestión completa.</li>
+                <li>Selecciona un <strong>Libro</strong> y un <strong>Socio</strong> del desplegable.</li>
                 <li>Pulsa <strong>"Realizar Préstamo"</strong>.</li>
-                <li>El préstamo aparecerá en la tabla inferior con la fecha y la fecha estimada de devolución.</li>
                 <li>Para registrar la devolución, selecciona el préstamo y pulsa <strong>"Marcar como Devuelto"</strong>. El
                     préstamo pasará a la pestaña de Historial.</li>
             </ul>
-            <p><strong>Aviso de préstamos vencidos:</strong> Al iniciar la app, si hay libros con préstamos que superan el
-                límite de días configurado, recibirás un aviso con los libros pendientes de devolución.</p>
         </div>
 
         <div class="feature-box">
             <h3>Pestaña 4: Historial</h3>
-            <p><strong>Propósito:</strong> Consultar el registro histórico de todos los préstamos finalizados.</p>
-            <p>Muestra una tabla con las columnas: Libro, Socio, Fecha de Préstamo y Fecha de Devolución.</p>
+            <p><strong>Propósito:</strong> Consultar el registro histórico de todos los préstamos finalizados, con sus respectivas fechas de inicio y devolución.</p>
         </div>
 
         <div class="feature-box">
             <h3>Pestaña 5: Lista de Deseos</h3>
-            <p><strong>Propósito:</strong> Guardar libros que quieres conseguir sin mezclarlos con tu colección.</p>
-            <ul class="step-list">
-                <li>Pulsa <strong>"Buscar para añadir..."</strong> para buscar un libro en OpenLibrary.</li>
-                <li>En los resultados de búsqueda, pulsa <strong>"Añadir a Deseos"</strong> en vez de "Importar".</li>
-                <li>Los libros deseados aparecen como tarjetas en esta pestaña.</li>
-                <li>Cuando consigas un libro, haz clic derecho y selecciona <strong>"Marcar como conseguido"</strong> para
-                    moverlo a tu biblioteca principal.</li>
-            </ul>
+            <p><strong>Propósito:</strong> Guardar libros que quieres conseguir sin mezclarlos con tu colección principal. Cuando los consigas, haz clic derecho en ellos y selecciona "Marcar como conseguido".</p>
         </div>
 
         <div class="feature-box">
             <h3>Pestaña 6: Sagas y Colecciones</h3>
             <p><strong>Propósito:</strong> Agrupar libros que pertenecen a una misma serie o colección.</p>
-            <p>La pestaña tiene un panel dividido en dos:</p>
-            <ul>
-                <li><strong>Panel izquierdo — "Mis Colecciones":</strong> Lista de todas tus sagas. Haz clic en una para ver
-                    sus libros.</li>
-                <li><strong>Panel derecho:</strong> Galería de portadas de los libros de esa saga, con un resumen
-                    informativo.</li>
-            </ul>
-            <p><strong>Menú contextual en la lista de sagas:</strong></p>
-            <ul>
-                <li><strong>Renombrar saga:</strong> Cambia el nombre de la colección.</li>
-                <li><strong>Eliminar saga (mantener libros):</strong> Borra la agrupación pero conserva los libros.</li>
-                <li><strong>Eliminar saga y sus libros:</strong> Borra la saga y todos sus libros asociados.</li>
-            </ul>
-            <p>Los libros se asignan a sagas automáticamente al rellenar el campo "Serie/Saga" al añadir o editar un
-                libro.</p>
+            <p>La pestaña tiene un panel dividido en dos: "Mis Colecciones" a la izquierda, y los tomos de la saga a la derecha.</p>
+            <p><strong>Menú contextual:</strong> Al hacer clic en un libro específico dentro de una saga, ahora puedes seleccionar <em>"Desvincular libro de la saga"</em> para sacarlo de la colección sin eliminar el libro de tu base de datos principal.</p>
+            <p><strong>Aviso de Tomos faltantes:</strong> Si BiblioHouse detecta que tienes el Tomo 1 y el Tomo 3 de una saga, te avisará con una tarjeta temporal de "Falta el Tomo 2" para que sepas que tu colección está incompleta.</p>
         </div>
 
         <div class="feature-box">
             <h3>Gestión de Socios</h3>
-            <p><strong>Propósito:</strong> Administrar a las personas a quienes prestas libros.</p>
-            <p>Accede desde la pestaña Préstamos Activos &gt; botón <strong>"Gestionar Socios"</strong>.</p>
-            <ul>
-                <li>Ver la tabla de todos los socios registrados (Nº Socio, Nombre, Apellidos, DNI, Domicilio).</li>
-                <li><strong>Editar Seleccionado:</strong> Modifica los datos de un socio.</li>
-                <li><strong>Imprimir Carnets (PDF):</strong> Genera un documento PDF imprimible con los carnets de socio.
-                </li>
-                <li><strong>Eliminar Socio:</strong> Borra un socio de la base de datos.</li>
-            </ul>
+            <p>Accede desde la pestaña Préstamos Activos &gt; botón <strong>"Gestionar Socios"</strong>. Puedes crear, editar y generar un PDF con los carnets de cada socio registrado.</p>
         </div>
 
         <div class="feature-box">
             <h3>Estadísticas</h3>
-            <p><strong>Propósito:</strong> Obtener un análisis visual de tu colección.</p>
-            <p>Accede desde el menú <em>Herramientas</em> &gt; <em>Estadísticas</em>. La ventana muestra:</p>
+            <p>Accede desde el menú <em>Herramientas</em> &gt; <em>Estadísticas</em>. Disfruta de un análisis gráfico avanzado con tu progreso anual, gráfico de tarta por géneros y top 10 autores.</p>
+        </div>
+        
+        <h2 id="lector-ebooks">5. Lector de E-books Incorporado</h2>
+        <div class="feature-box">
+            <p>BiblioHouse incluye ahora un <strong>Lector de archivos EPUB completamente nativo</strong>, diseñado para que no necesites salir de la app para leer.</p>
             <ul>
-                <li><strong>Métricas Clave:</strong> Total de libros, Libros leídos (con porcentaje), Autor más frecuente,
-                    Género principal, Valoración media con estrellas, Terminados este año y Tasa promedio (libros/mes).</li>
-                <li><strong>Gráfico de tarta:</strong> Distribución por Géneros.</li>
-                <li><strong>Gráfico de barras:</strong> Top 10 Autores Más Frecuentes.</li>
-                <li><strong>Gráfico de barras apiladas:</strong> Estado de Lectura por Género.</li>
+                <li>Para abrirlo, haz clic derecho sobre un libro digital en "Mis Libros" y selecciona <strong>"📖 Leer E-book"</strong>.</li>
+                <li><strong>Sincronización de progreso:</strong> La aplicación guardará automáticamente el porcentaje de lectura por donde vayas, de manera que la próxima vez que lo abras o sincronices con Nextcloud, continuarás exactamente por la misma página.</li>
+                <li>Si el libro estaba como "Pendiente", la app cambiará su estado automáticamente a "Leyendo".</li>
+                <li>Cuenta con un diseño limpio, similar al de los e-readers comerciales, optimizando los márgenes y colores para la lectura.</li>
+            </ul>
+        </div>
+        
+        <h2 id="diario-lectura">6. Diario de Lectura y Ubicaciones Exactas</h2>
+        <div class="feature-box">
+            <p>BiblioHouse transforma la experiencia de catalogación en una verdadera bitácora de lectura personal:</p>
+            <ul>
+                <li><strong>Diario de Lectura:</strong> Al hacer doble clic en un libro (Ficha de Detalle), encontrarás una sección en el panel lateral para añadir <strong>Notas</strong> y <strong>Citas</strong> literales (con su número de página respectivo). Perfecto para apuntar reflexiones mientras lees o destacar pasajes memorables.</li>
+                <li><strong>Gestión Física Avanzada:</strong> ¿Tienes cajas en el trastero y no sabes dónde está tu ejemplar de *El Señor de los Anillos*? Usa el campo "Ubicación" (ej. "Estantería del Salón, Balda 3"). </li>
+                <li><strong>Etiquetas de códigos QR:</strong> Haz clic derecho en el libro > "Generar Etiqueta QR (PDF)". Imprime estas etiquetas para pegarlas en el lomo o interior de tus libros físicos y escanea el código con el móvil para ver todos los detalles de la obra.</li>
             </ul>
         </div>
 
-        <h2 id="configuracion">5. Configuración</h2>
+        <h2 id="configuracion">7. Configuración</h2>
         <p>Accede mediante el menú <em>Herramientas</em> &gt; <em>Configuración</em>. Se divide en cuatro pestañas:</p>
 
         <div class="feature-box">
             <h3>Pestaña General</h3>
             <ul>
-                <li><strong>Preferencias de Usuario:</strong>
+                <li><strong>Preferencias de Usuario:</strong> Pedir confirmación antes de eliminar, Días límite de préstamo (por defecto 30), etc.</li>
+                <li><strong>Apariencia e Idiomas:</strong>
                     <ul>
-                        <li>Pedir confirmación antes de eliminar un libro.</li>
-                        <li>Iniciar siempre a pantalla completa.</li>
-                        <li>Días límite de préstamo (por defecto 30).</li>
-                    </ul>
-                </li>
-                <li><strong>Apariencia:</strong>
-                    <ul>
-                        <li><strong>Idioma:</strong> Cambia entre Español, English, Català, Galego, Euskara y Português. El
-                            cambio se aplica instantáneamente sin reiniciar.</li>
-                        <li><strong>Tema Visual:</strong> Elige entre 7 temas disponibles:
+                        <li><strong>Idioma:</strong> Castellano, English, Català, Galego, Euskara y Português. Las traducciones han sido integradas en toda la interfaz sin necesidad de reiniciar la app.</li>
+                        <li><strong>Tema Visual:</strong>
                             <ul>
-                                <li><strong>Claro (Primer Light):</strong> Tema claro por defecto, estilo GitHub. Limpio y profesional.</li>
-                                <li><strong>Oscuro (Primer Dark):</strong> Modo oscuro profesional con alto contraste.</li>
-                                <li><strong>Nord Claro (Nord Light):</strong> Tonos fríos azul-grisáceos, inspirado en la paleta ártica Nord. Reduce la fatiga visual.</li>
-                                <li><strong>Nord Oscuro (Nord Dark):</strong> Azules profundos y grises azulados. Más suave que Primer Dark, ideal para sesiones nocturnas.</li>
-                                <li><strong>Cupertino Claro (macOS Light):</strong> Estética Apple/macOS. Se integra con el sistema en Mac.</li>
-                                <li><strong>Cupertino Oscuro (macOS Dark):</strong> Modo oscuro estilo macOS con grises refinados.</li>
-                                <li><strong>Dracula:</strong> Tema oscuro vibrante con acentos en rosa, verde y cian. Popular entre desarrolladores.</li>
+                                <li><strong>Claro/Oscuro (Primer):</strong> Tema clásico estilo GitHub.</li>
+                                <li><strong>Nord Claro/Oscuro:</strong> Tonos fríos y árticos que reducen la fatiga visual.</li>
+                                <li><strong>Cupertino Claro/Oscuro:</strong> Estética fluida similar a macOS.</li>
+                                <li><strong>Dracula:</strong> Tema oscuro vibrante con acentos en cian y rosa, amado por programadores.</li>
                             </ul>
-                            <em>Nota de Accesibilidad:</em> Todos los temas oscuros evitan el negro puro (#000000), reduciendo
-                            el efecto "halo" para personas con astigmatismo. El cambio de tema se aplica instantáneamente.
                         </li>
                     </ul>
-                </li>
-                <li><strong>Personalización:</strong> Cambia el nombre de tu biblioteca (aparecerá en la barra de título).
                 </li>
             </ul>
         </div>
 
         <div class="feature-box">
             <h3>Pestaña Datos</h3>
-            <ul>
-                <li><strong>Ubicación de archivos:</strong> Muestra la ruta de la base de datos local. Puedes abrir la
-                    carpeta con un clic.</li>
-                <li><strong>Exportar Copia de Seguridad:</strong> Genera un archivo ZIP con todos los datos de tu biblioteca
-                    (libros, socios, portadas, preferencias).</li>
-                <li><strong>Zona de Peligro:</strong>
-                    <ul>
-                        <li><strong>Borrar TODOS los libros:</strong> Vacía la biblioteca (pide confirmación).</li>
-                        <li><strong>Restaurar de fábrica:</strong> Elimina absolutamente todo (libros, socios, portadas,
-                            credenciales y configuraciones). Requiere escribir "BORRAR" como confirmación de seguridad. La
-                            app se cerrará y, al volver a abrirla, estará como recién instalada.</li>
-                    </ul>
-                </li>
-            </ul>
+            <p>Aquí puedes consultar la <strong>ubicación local</strong> de los archivos y realizar una copia de seguridad en formato ZIP. En la <strong>Zona de Peligro</strong> puedes limpiar tu base de datos o hacer un borrado total (Restaurar de fábrica).</p>
         </div>
 
         <div class="feature-box">
             <h3>Pestaña Sincronización (NextCloud)</h3>
-            <p>Consulta la sección <a href="#sincronizacion">7. Sincronización con NextCloud</a> para todos los detalles.
-            </p>
+            <p>Configura tu servidor privado NextCloud. Esta opción también <strong>sincroniza tus portadas y notas automáticamente</strong> en segundo plano cada vez que realizas un cambio.</p>
         </div>
 
-        <div class="feature-box">
-            <h3>Pestaña Acerca de</h3>
-            <p>Muestra el logo, la versión actual de BiblioHouse, el autor y un enlace para apoyar el proyecto en Liberapay.
-            </p>
-        </div>
-
-        <p>Recuerda pulsar <strong>"Guardar Configuración"</strong> para aplicar los cambios o
-            <strong>"Cancelar"</strong> para descartarlos.</p>
-        <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png"
-             alt="Pantalla de configuración con pestañas General, Datos, Sincronización y Acerca de." />
-
-        <h2 id="gestion-datos">6. Gestión de Datos (Importar, Exportar y Backup)</h2>
+        <h2 id="gestion-datos">8. Gestión de Datos (Importar, Exportar y Backup)</h2>
         <p>Todas las opciones de importación y exportación están en el menú <em>Archivo</em>:</p>
         <ul>
             <li><strong>Importar base de datos:</strong> Carga un archivo JSON de BiblioHouse exportado previamente.</li>
-            <li><strong>Importar desde CSV:</strong> Importa libros desde un fichero CSV (compatible con Excel).</li>
-            <li><strong>Exportar:</strong> Exporta tu biblioteca en formato JSON para volcado de seguridad.</li>
-            <li><strong>Exportar informe PDF:</strong> Genera un informe profesional en PDF de tu biblioteca con filtros
-                avanzados (por título, autor, estanterías, géneros, rango de años y estado de lectura).</li>
-            <li><strong>Exportar Catálogo Web:</strong> Genera un archivo HTML navegable de tu colección, ideal para
-                compartir tu catálogo en la web. Puedes agrupar por género o por estantería y aplicar filtros.</li>
+            <li><strong>Importar desde CSV:</strong> Importa libros masivamente usando plantillas CSV.</li>
+            <li><strong>Exportar Informe PDF:</strong> Genera reportes profesionales aplicando múltiples filtros cruzados (Géneros, años, estanterías).</li>
+            <li><strong>Exportar Catálogo Web (HTML):</strong> Genera una página web con toda tu colección y sus portadas incrustadas (ideal para enviar a tus amigos por WhatsApp o Telegram).</li>
         </ul>
-        <p>La <strong>búsqueda local</strong> se realiza en la barra superior de la pestaña "Mis Libros". Escribe "Tolkien"
-            y la galería se filtrará automáticamente con un ligero retardo para no ralentizar la escritura.</p>
 
-        <h2 id="sincronizacion">7. Sincronización con NextCloud</h2>
+        <h2 id="sincronizacion">9. Sincronización con NextCloud</h2>
         <div class="feature-box">
-            <p><strong>Propósito:</strong> Mantener una copia sincronizada de tu biblioteca en tu propio servidor NextCloud
-                vía WebDAV, sin depender de servicios en la nube de terceros.</p>
+            <p><strong>Propósito:</strong> Mantener una copia sincronizada de tu biblioteca (con tus e-books y portadas) en tu propio servidor NextCloud
+                vía WebDAV.</p>
             <p>Accede desde <em>Herramientas</em> &gt; <em>Configuración</em> &gt; pestaña <em>Sincronización</em>.</p>
             <ul class="step-list">
                 <li>Introduce la <strong>URL del servidor</strong> (ej.
                     <code>https://tu-nextcloud.ejemplo.com</code>).</li>
-                <li>Introduce tu <strong>Usuario</strong> de NextCloud.</li>
-                <li>Introduce la <strong>Contraseña de aplicación</strong> (generada desde Ajustes &gt; Seguridad en tu
-                    panel NextCloud). Esta contraseña se guarda cifrada en el llavero del sistema operativo, nunca en texto
-                    plano.</li>
-                <li>Pulsa <strong>"Probar conexión"</strong> para verificar que los datos son correctos.</li>
-                <li><strong>"Sincronizar ahora (subir ↑)":</strong> Sube tu base de datos local a NextCloud.</li>
-                <li><strong>"Restaurar desde NextCloud (bajar ↓)":</strong> Descarga y sobrescribe tus datos locales con
-                    los de NextCloud (pide confirmación).</li>
+                <li>Introduce tu <strong>Usuario</strong> de NextCloud y tu <strong>Contraseña de aplicación</strong> (generada en los ajustes de seguridad de Nextcloud, nunca introduzcas tu clave principal de Nextcloud aquí).</li>
+                <li>Pulsa <strong>"Probar conexión"</strong> y luego usa las opciones manuales para subir o bajar datos si es la primera vez.</li>
             </ul>
-            <p><strong>Auto-sincronización:</strong> Si NextCloud está configurado, la app sube automáticamente tus datos
-                cada vez que realizas cambios importantes (añadir, editar o borrar libros).</p>
         </div>
 
-        <h2 id="solucion-problemas">8. Solución de Problemas Comunes (Troubleshooting)</h2>
+        <h2 id="solucion-problemas">10. Solución de Problemas Comunes (Troubleshooting)</h2>
         <p>Esta tabla cubre el 90% de los incidentes reales reportados por usuarios.</p>
 
         <table>
@@ -595,127 +510,66 @@
                 <tr>
                     <td><strong>Olvidé mi contraseña local de la app.</strong></td>
                     <td>Al ser local y privada, no hay servidor de recuperación.</td>
-                    <td>Borra el archivo oculto <code>users.json</code> en la carpeta de instalación de BiblioHouse. Tendrás
-                        que registrar un usuario nuevo pero no perderás tus libros. Alternativamente, reabre la app y elige
-                        "Iniciar sin Registro" para acceder en modo invitado.</td>
+                    <td>Borra el archivo oculto <code>users.json</code> en la carpeta de instalación de BiblioHouse para forzar un nuevo registro (no se perderán tus libros).</td>
                 </tr>
                 <tr>
-                    <td><strong>Buscador de ISBN se queda cargando (Rueda infinita)</strong></td>
-                    <td>Servidores de OpenLibrary colapsados o sin internet.</td>
-                    <td>Cancela la acción cerrando la ventana de resultados. Verifica tu conexión. Alternativamente, teclea
-                        los datos del libro a mano en la sección "Añadir manualmente".</td>
+                    <td><strong>Buscador de ISBN se queda cargando</strong></td>
+                    <td>Servidores de OpenLibrary colapsados.</td>
+                    <td>Cancela la búsqueda y añade el libro manualmente.</td>
                 </tr>
                 <tr>
-                    <td><strong>El escáner de cámara muestra pantalla negra</strong></td>
-                    <td>El sistema operativo bloquea el acceso de la app a la cámara por privacidad.</td>
-                    <td>Ve a la configuración de tu Sistema Operativo &gt; Privacidad &gt; Cámara, y permite el acceso a
-                        Java/BiblioHouse.</td>
+                    <td><strong>Error de conversión a EPUB</strong></td>
+                    <td>El programa no encuentra el ejecutable de Calibre.</td>
+                    <td>Instala Calibre en tu PC y asegúrate de que esté incluido en las variables del sistema (PATH).</td>
                 </tr>
                 <tr>
-                    <td><strong>"Error al exportar PDF" en los carnets de Socios</strong></td>
+                    <td><strong>"Error al exportar PDF"</strong></td>
                     <td>La carpeta de destino requiere permisos de administrador.</td>
-                    <td>Ejecuta BiblioHouse como Administrador o exporta el PDF al "Escritorio" en su lugar.</td>
+                    <td>Guarda el informe o carnet directamente en el "Escritorio" en su lugar.</td>
                 </tr>
                 <tr>
-                    <td><strong>Modo Oscuro ilegible (letras negras sobre fondo oscuro)</strong></td>
-                    <td>El sistema operativo está forzando un tema de "Alto Contraste" sobre la aplicación.</td>
-                    <td>Ve a <em>Herramientas</em> &gt; <em>Configuración</em> &gt; pestaña General. Cambia el Tema Visual
-                        a "Claro (Primer Light)" temporalmente. Reinicia la app y prueba "Oscuro (Primer Dark)" de nuevo.
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Algunos botones aparecen cortados en Euskera/Gallego</strong></td>
-                    <td>Textos más largos que la caja original del diseño.</td>
-                    <td>Arrastra el borde de la ventana de BiblioHouse para maximizarla. La aplicación es totalmente
-                        "responsive" y se adapta al ancho.</td>
-                </tr>
-                <tr>
-                    <td><strong>Faltan Portadas (Solo aparece un libro genérico gris)</strong></td>
-                    <td>Internet falló durante la descarga de la imagen en segundo plano.</td>
-                    <td>Ve al menú <em>Herramientas</em> &gt; <strong>"Buscar portadas faltantes"</strong>. El sistema
-                        revisará todos los libros sin portada e intentará descargarlas de nuevo.</td>
-                </tr>
-                <tr>
-                    <td><strong>Error de conexión a NextCloud</strong></td>
-                    <td>URL incorrecta, usuario/contraseña erróneos, o el servidor no es accesible.</td>
-                    <td>Verifica la URL (debe incluir <code>https://</code>). Asegúrate de usar una <em>contraseña de
-                            aplicación</em> generada desde NextCloud (Ajustes &gt; Seguridad), no tu contraseña normal. Pulsa
-                        "Probar conexión" para obtener un diagnóstico detallado del error.</td>
-                </tr>
-                <tr>
-                    <td><strong>La app detecta actualizaciones pero no se instalan solas</strong></td>
-                    <td>BiblioHouse solo avisa de versiones nuevas; no se actualiza automáticamente.</td>
-                    <td>Visita <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a> y descarga la última
-                        versión manualmente.</td>
+                    <td><strong>Faltan Portadas</strong></td>
+                    <td>Internet falló durante la descarga.</td>
+                    <td>Ve al menú <em>Herramientas</em> &gt; <strong>"Buscar portadas faltantes"</strong>.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2 id="funciones-avanzadas">9. Funciones Avanzadas (Para Power-Users)</h2>
+        <h2 id="funciones-avanzadas">11. Funciones Avanzadas (Para Power-Users)</h2>
         <ul class="step-list">
             <li><strong>Atajos de Teclado:</strong>
                 <ul>
-                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Ir a la pestaña "Añadir/Gestionar" y
-                        enfocar el campo de título para añadir un libro manualmente.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Ir a la pestaña "Añadir/Gestionar" y
-                        enfocar la barra de búsqueda de OpenLibrary.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Ir a la pestaña de Préstamos Activos.
-                    </li>
-                    <li><kbd>Ctrl</kbd>+<kbd>Q</kbd> / <kbd>⌘</kbd>+<kbd>Q</kbd> — Cerrar la aplicación.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Ir a "Añadir/Gestionar".</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Buscar en OpenLibrary.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Pestaña de Préstamos Activos.</li>
                     <li><kbd>F1</kbd> — Abrir este Manual de Usuario.</li>
                 </ul>
             </li>
-            <li><strong>Drag &amp; Drop Visual (Portadas):</strong> Estando en la pantalla de Edición de un libro, puedes
-                buscar una foto en tu navegador web, arrastrarla y soltarla físicamente sobre la zona de la portada en
-                BiblioHouse para cambiarla al instante.</li>
-            <li><strong>Drag &amp; Drop de E-books:</strong> Arrastra un archivo <strong>EPUB, PDF o MOBI</strong>
-                directamente sobre el panel "Mis Libros". La app extrae automáticamente los metadatos (título, autor,
-                portada embebida) y lo añade a tu colección. El panel se resalta con un borde punteado para guiarte.</li>
-            <li><strong>Modo Ráfaga (Barcode):</strong> Si usas un escáner láser USB tipo "pistola", sitúa el cursor en el
-                buscador de OpenLibrary. Lee un código de barras; al detectarlo, pulsa <kbd>Enter</kbd>. Puedes catalogar
+            <li><strong>Drag &amp; Drop Visual (Portadas):</strong> Arrastra imágenes de internet directamente encima de la miniatura de tu libro.</li>
+            <li><strong>Modo Ráfaga (Barcode):</strong> Con un escáner láser USB enfoca el campo ISBN. Puedes catalogar
                 decenas de libros por minuto.</li>
-            <li><strong>Buscar sagas faltantes:</strong> Desde el menú <em>Herramientas</em> &gt; <em>"Buscar sagas
-                    faltantes online"</em>, la app busca en bases de datos públicas si hay tomos que te faltan en tus sagas y
-                te sugiere cuáles conseguir.</li>
-            <li><strong>Reto de Lectura Anual:</strong> En el panel lateral izquierdo, debajo de las estanterías, hay un
-                widget con barra de progreso. Haz clic en él para configurar cuántos libros te propones leer este año. El
-                progreso se calcula automáticamente en base a los libros marcados como "Leído". Pon 0 para desactivar el
-                reto.</li>
-            <li><strong>Buscar duplicados:</strong> Desde el menú <em>Herramientas</em> &gt; <em>"Buscar duplicados"</em>,
-                la app escanea tu colección en busca de libros repetidos por título o ISBN y te permite eliminar los
-                duplicados de forma controlada.</li>
-            <li><strong>Comprobación de actualizaciones:</strong> Al iniciar, BiblioHouse comprueba silenciosamente si hay
-                una versión nueva disponible y te notifica con un banner en la barra superior.</li>
+            <li><strong>Reto de Lectura Anual:</strong> En el panel lateral, puedes configurar cuántos libros deseas leer este año, la app recalcula tu progreso con cada libro que marques como "Leído".</li>
         </ul>
 
-        <h2 id="glosario">10. Glosario de términos</h2>
+        <h2 id="glosario">12. Glosario de términos</h2>
         <ul>
-            <li><strong>CRUD:</strong> Operaciones básicas: Crear, Leer, Actualizar (Update) y Borrar (Delete).</li>
-            <li><strong>ISBN:</strong> Número Internacional Normalizado del Libro de 13 dígitos. Se encuentra encima del
-                código de barras en la contraportada.</li>
-            <li><strong>OpenLibrary / Inventaire / Google Books:</strong> Bases de datos públicas mundiales que la app usa
-                para autocompletar metadatos de libros gratuitamente.</li>
-            <li><strong>NextCloud:</strong> Plataforma de almacenamiento en la nube autohospedada. BiblioHouse la usa para
-                sincronizar tu biblioteca con tu propio servidor.</li>
-            <li><strong>WebDAV:</strong> Protocolo de acceso remoto a archivos usado por NextCloud para la sincronización.
-            </li>
-            <li><strong>Modo Invitado:</strong> Acceso a la app sin crear una cuenta con contraseña. Los datos se guardan
-                localmente sin protección.</li>
-            <li><strong>Estantería:</strong> Categoría temática (ej. Novela, Fantasía) usada para organizar y filtrar libros.
-            </li>
+            <li><strong>ISBN:</strong> Número Internacional Normalizado del Libro de 13 dígitos.</li>
+            <li><strong>OpenLibrary:</strong> Base de datos pública usada para importar metadatos gratuitamente.</li>
+            <li><strong>NextCloud:</strong> Nube privada para sincronizar tus datos de BiblioHouse de manera segura.</li>
+            <li><strong>EPUB:</strong> Formato abierto universal de lectura para libros electrónicos.</li>
             <li><strong>Saga/Colección:</strong> Agrupación de libros que pertenecen a una misma serie literaria.</li>
         </ul>
 
-        <h2 id="contacto">11. Contacto y Soporte</h2>
+        <h2 id="contacto">13. Contacto y Soporte</h2>
         <div class="feature-box">
-            <p><strong>Qué información facilitar:</strong> Si un error de la tabla anterior no se resuelve, indica siempre
-                si usas Windows, Mac o Linux, la versión de Java instalada (<code>java --version</code> en terminal) y cómo
+            <p><strong>Qué información facilitar:</strong> Indica siempre
+                si usas Windows, Mac o Linux, la versión de Java instalada (<code>java --version</code>) y cómo
                 reproducir el fallo paso a paso.</p>
             <p><strong>Canales Oficiales:</strong></p>
             <ul>
-                <li><strong>Soporte Técnico (Bugs):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a>
+                <li><strong>Soporte Técnico (Bugs):</strong> <a href="mailto:proyectos@oniros.eu">proyectos@oniros.eu</a>
                 </li>
-                <li><strong>Foro y Consultas:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a>
+                <li><strong>Foro y Consultas:</strong> <a href="https://ferlagod.eu" target="_blank">bferlagod.eu</a>
                 </li>
                 <li><strong>Apoyar el proyecto:</strong> <a href="https://liberapay.com/ferlagod./"
                                                             target="_blank">Liberapay</a></li>
@@ -724,8 +578,8 @@
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.9 - Desarrollado por ferlagod. Manual adaptado garantizando 100% de cobertura y
-                accesibilidad.</em>
+            <em>BiblioHouse v2.0 - Desarrollado por ferlagod. Manual adaptado garantizando 100% de cobertura y
+                accesibilidad en 6 idiomas.</em>
         </p>
 
     </body>

@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
  * Servicio encargado de gestionar las operaciones de préstamos, devoluciones y
  * comprobación de vencimientos.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class PrestamoService {
 

@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Erabiltzaile Gida - BiblioHouse</title>
+        <title>Erabiltzailearen Eskuliburu Integrala - BiblioHouse</title>
         <style>
             :root {
                 --bg-color: #f8f9fa;
@@ -40,578 +40,366 @@
                     --alert-text: #cce5ff;
                     --alert-border: #0056b3;
                 }
+
                 img {
                     filter: brightness(0.85) contrast(1.1);
                 }
             }
 
-            body {
-                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-                line-height: 1.6;
-                color: var(--text-color);
-                background-color: var(--bg-color);
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 30px 20px;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            h1 {
-                color: var(--heading-color);
-                border-bottom: 2px solid var(--heading-color);
-                padding-bottom: 10px;
-                font-size: 2.5rem;
-            }
-            h2 {
-                color: var(--h2-color);
-                margin-top: 40px;
-                border-left: 5px solid var(--heading-color);
-                padding-left: 15px;
-                font-size: 1.8rem;
-            }
-            h3 {
-                color: var(--h3-color);
-                margin-top: 25px;
-            }
-
-            a {
-                color: var(--link-color);
-                text-decoration: none;
-                font-weight: 500;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-
-            .feature-box {
-                background: var(--box-bg);
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px var(--box-shadow);
-                margin-bottom: 25px;
-                border: 1px solid var(--border-color);
-            }
-
-            code, kbd {
-                background: var(--code-bg);
-                padding: 3px 6px;
-                border-radius: 4px;
-                font-family: ui-monospace, 'Cascadia Code', monospace;
-                font-size: 0.9em;
-            }
-
-            kbd {
-                border: 1px solid var(--border-color);
-                box-shadow: 0 2px 0 var(--border-color);
-                font-weight: bold;
-            }
-
-            img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px var(--box-shadow);
-                margin: 20px auto;
-                display: block;
-                border: 1px solid var(--border-color);
-            }
-
-            .image-caption {
-                text-align: center;
-                font-size: 0.9em;
-                color: var(--h3-color);
-                margin-top: -10px;
-                margin-bottom: 20px;
-                font-style: italic;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background: var(--box-bg);
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 5px var(--box-shadow);
-            }
-
-            th, td {
-                border: 1px solid var(--border-color);
-                padding: 12px;
-                text-align: left;
-            }
-
-            th {
-                background: var(--table-header);
-                font-weight: 600;
-            }
-
-            nav ul {
-                list-style: none;
-                padding: 20px;
-                background: var(--box-bg);
-                border-radius: 8px;
-                box-shadow: 0 2px 5px var(--box-shadow);
-                border: 1px solid var(--border-color);
-            }
-
-            nav li {
-                margin-bottom: 10px;
-            }
-
-            .alert {
-                padding: 15px;
-                margin: 20px 0;
-                border: 1px solid var(--alert-border);
-                border-radius: 6px;
-                background-color: var(--alert-bg);
-                color: var(--alert-text);
-            }
-
-            .step-list {
-                counter-reset: custom-counter;
-                list-style: none;
-                padding-left: 0;
-            }
-
-            .step-list li {
-                counter-increment: custom-counter;
-                margin-bottom: 15px;
-                padding-left: 35px;
-                position: relative;
-            }
-
-            .step-list li::before {
-                content: counter(custom-counter);
-                position: absolute;
-                left: 0;
-                top: 0;
-                background: var(--heading-color);
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.8em;
-                font-weight: bold;
-            }
-
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                border: 0;
-            }
+            body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.6; color: var(--text-color); background-color: var(--bg-color); max-width: 1000px; margin: 0 auto; padding: 30px 20px; transition: background-color 0.3s, color 0.3s; }
+            h1 { color: var(--heading-color); border-bottom: 2px solid var(--heading-color); padding-bottom: 10px; font-size: 2.5rem; }
+            h2 { color: var(--h2-color); margin-top: 40px; border-left: 5px solid var(--heading-color); padding-left: 15px; font-size: 1.8rem; }
+            h3 { color: var(--h3-color); margin-top: 25px; }
+            a { color: var(--link-color); text-decoration: none; font-weight: 500; }
+            a:hover { text-decoration: underline; }
+            .feature-box { background: var(--box-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px var(--box-shadow); margin-bottom: 25px; border: 1px solid var(--border-color); }
+            code, kbd { background: var(--code-bg); padding: 3px 6px; border-radius: 4px; font-family: ui-monospace, 'Cascadia Code', monospace; font-size: 0.9em; }
+            kbd { border: 1px solid var(--border-color); box-shadow: 0 2px 0 var(--border-color); font-weight: bold; }
+            img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px var(--box-shadow); margin: 20px auto; display: block; border: 1px solid var(--border-color); }
+            .image-caption { text-align: center; font-size: 0.9em; color: var(--h3-color); margin-top: -10px; margin-bottom: 20px; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; background: var(--box-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px var(--box-shadow); }
+            th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+            th { background: var(--table-header); font-weight: 600; }
+            nav ul { list-style: none; padding: 20px; background: var(--box-bg); border-radius: 8px; box-shadow: 0 2px 5px var(--box-shadow); border: 1px solid var(--border-color); }
+            nav li { margin-bottom: 10px; }
+            .alert { padding: 15px; margin: 20px 0; border: 1px solid var(--alert-border); border-radius: 6px; background-color: var(--alert-bg); color: var(--alert-text); }
+            .step-list { counter-reset: custom-counter; list-style: none; padding-left: 0; }
+            .step-list li { counter-increment: custom-counter; margin-bottom: 15px; padding-left: 35px; position: relative; }
+            .step-list li::before { content: counter(custom-counter); position: absolute; left: 0; top: 0; background: var(--heading-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; }
+            .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
         </style>
     </head>
 
     <body>
-        <h1>Erabiltzaile Gida - BiblioHouse</h1>
+        <h1>Erabiltzailearen Eskuliburua - BiblioHouse</h1>
 
         <div class="alert">
-            <strong>Sarbidetasun Oharra:</strong> Gida honek teklatu bidezko nabigazio interaktiboa onartzen du (erabili
-            <kbd>Tab</kbd>). Irudi guztiek deskribapen alternatiboak dituzte (alt-text) pantaila-irakurleentzat. Tema dinámicoak WCAG kontraste-ratio optimoa (4,5:1) bermatzen du, argi eta ilun moduetan.
+            <strong>Irisgarritasun Oharra:</strong> Eskuliburu honek teklatuaren nabigazio interaktiboa onartzen du (erabili
+            <kbd>Tab</kbd>). Irudi guztiek deskribapen alternatiboak (alt-text) dituzte pantaila irakurgailuetarako.
+            Gai dinamikoaren sistemak 4.5:1 kontraste erlazio optimoa bermatzen du modu argian zein ilunean.
         </div>
 
-        <nav aria-label="Eduki Taula">
-            <h2>Eduki Taula</h2>
+        <nav aria-label="Edukiaren aurkibidea">
+            <h2>Aurkibidea</h2>
             <ul>
-                <li><a href="#sarrera">1. Sarrera Azkarra</a></li>
-                <li><a href="#lehen-urratsak">2. Lehen Urratsak (Ongietorria eta Sarbidea)</a></li>
-                <li><a href="#nabigazioa">3. Nabigazioa eta Egitura</a></li>
-                <li><a href="#funtzioak">4. Funtzio Nagusiak</a></li>
-                <li><a href="#ezarpenak">5. Ezarpenak</a></li>
-                <li><a href="#datuen-kudeaketa">6. Datuen Kudeaketa (Inportatu, Esportatu eta Babeskopia)</a></li>
-                <li><a href="#sinkronizazioa">7. NextCloud-ekin Sinkronizazioa</a></li>
-                <li><a href="#araztak">8. Arazo Ohikoen Konponbidea</a></li>
-                <li><a href="#funtzioaurreratuak">9. Funtzio Aurreratuak</a></li>
-                <li><a href="#glosarioa">10. Terminoen Glosarioa</a></li>
-                <li><a href="#harremana">11. Harremana eta Laguntza</a></li>
+                <li><a href="#introduccion">1. Sarrera azkarra</a></li>
+                <li><a href="#primeros-pasos">2. Lehen urratsak (Ongietorria eta Sarbidea)</a></li>
+                <li><a href="#navegacion">3. Nabigazioa eta Egitura</a></li>
+                <li><a href="#funcionalidades">4. Funtzionalitate Nagusiak</a></li>
+                <li><a href="#lector-ebooks">5. E-book Irakurgailu Txertatua</a></li>
+                <li><a href="#diario-lectura">6. Irakurketa Egunkaria eta Kokapenak</a></li>
+                <li><a href="#configuracion">7. Ezarpenak</a></li>
+                <li><a href="#gestion-datos">8. Datuen Kudeaketa (Inportatu, Esportatu eta Babeskopia)</a></li>
+                <li><a href="#sincronizacion">9. NextCloud-ekin sinkronizatzea</a></li>
+                <li><a href="#solucion-problemas">10. Arazoen Konponbidea (Troubleshooting)</a></li>
+                <li><a href="#funciones-avanzadas">11. Funtzio Aurreratuak</a></li>
+                <li><a href="#glosario">12. Glosarioa</a></li>
+                <li><a href="#contacto">13. Kontaktua eta Laguntza</a></li>
             </ul>
         </nav>
 
-        <h2 id="sarrera">1. Sarrera Azkarra</h2>
+        <h2 id="introduccion">1. Sarrera azkarra</h2>
         <div class="feature-box">
-            <p><strong>Zer egiten du app-ak:</strong> BiblioHouse zure liburutegi pertsonala kudeatzeko tresna definitiboa da. Liburu fisikoak eta digitalak antolatu, nori maileguratzen dizkion kontrolatu, zure saga gogokoenek falta zaizkien bolumenak jarraituka, nahien zerrenda bat izan eta dena zure NextCloud zerbitzarian sinkronizatu, hirugarrenen hodeian mendekotuta egotea saihestuz.</p>
-            <p><strong>Norentzat da:</strong> Hasiberri irakurleentzat eta liburuzale aurreratuentzat diseinatua, hasieratik. Aurretik tekniko ezjakintasuna eskatzen ez duena.</p>
-            <p><strong>Gutxieneko eskaerak:</strong> Windows, macOS edo Linux modernoak. Java 21+ instalatua. 500 MB disko. Pantailaren bereizmena 1024x768.</p>
-            <p><strong>Euskaratuak 100%:</strong> Gaztelania (es), Ingelesa (en), Katalana (ca), Portugesa (pt), Galegoa (gl), Euskara (eu). Alda dezakezu <em>Tresnak</em> &gt; <em>Hizkuntza</em> menutik edo <em>Tresnak</em> &gt; <em>Ezarpenak</em> &gt; <em>Orokorra</em> fitxatik.</p>
+            <p><strong>Aplikazioak zer egiten duen:</strong> BiblioHouse zure liburutegi pertsonalaren kudeatzaile definitiboa da. Liburu fisikoak zein digitalak antolatu, e-book-ak natiboki irakurri, maileguak kudeatu (atzerapen-abisuekin), saga gogokoenetan falta zaizkizun liburukiak kontrolatu, zure irakurketa-egunkari propioa idatzi, liburu bakoitzaren apal zehatza kokatu eta dena zure NextCloud zerbitzariarekin sinkronizatu hirugarrenen hodeien menpe egon gabe.</p>
+            <p><strong>Norentzat da:</strong> Hutsetik diseinatua irakurle hasiberrientzat zein liburuzain aurreratuentzat. Ez da ezagutza teknikorik behar.</p>
+            <p><strong>Gutxieneko baldintzak:</strong> Windows, macOS edo Linux modernoa. Java 21+ instalatuta. 500 MB diskoan.
+                Pantailaren bereizmena 1024x768.</p>
+            <p><strong>Hizkuntzak (100% Onartuak):</strong> Gaztelania (es), Ingelesa (en), Katalana (ca), Portugesa (pt),
+                Galegoa (gl), Euskara (eu). <em>Tresnak</em> &gt; <em>Hizkuntza</em> menuan alda dezakezu edo 
+                <em>Tresnak</em> &gt; <em>Ezarpenak</em> &gt; <em>Orokorra</em> fitxan.</p>
         </div>
 
-        <h2 id="lehen-urratsak">2. Lehen Urratsak (Ongietorria eta Sarbidea)</h2>
-        <p><em>Denbora estimatua: 2 minutu</em></p>
+        <h2 id="primeros-pasos">2. Lehen urratsak (Ongietorria eta Sarbidea)</h2>
+        <p><em>Aurreikusitako denbora: 2 minutu</em></p>
 
-        <h3>Splash Pantaila eta Kargatze Pantaila</h3>
-        <p>BiblioHouse-ren ikonoan bikoitz klik eginez, aplikazioaren logoarekin kargatze pantaila (Splash Screen) ikusiko duzu. Horrek datu-basea hasieratzen ari dela adierazten du.</p>
+        <h3>Splash Pantaila eta Kargatzea</h3>
+        <p>BiblioHouse-ren ikonoan klik bikoitza egiterakoan, kargatzeko leiho bat (Splash Screen) ikusiko duzu aplikazioaren logotipoarekin. Honek datu-basea abiarazten ari dela adierazten du.</p>
 
-        <h3>Ongietorria Pantaila</h3>
-        <p>Kargatzearen ondoren, Ongietorria pantaila ikusiko duzu, bi aukerarekin:</p>
+        <h3>Ongietorri Pantaila</h3>
+        <p>Kargatu ondoren, Ongietorri pantaila ikusiko duzu bi aukerarekin:</p>
         <ul>
-            <li><strong>Erregistratuarekin Hasi:</strong> Saio hasiera/erregistratze pantailara eraman zaitz, pasahitzarekin babestutako erabiltzaile kontu lokala sortzeko. Gomendagarria zure bilduma babesteko.</li>
-            <li><strong>Erregistrorik gabe Hasi (Gonbidatu Modua):</strong> Zure pasahitzik gabe sartzen da. Datuak zure ordenagailuan gordetzen dira, baina ordenagailu horrekin lan egiten duen edozein pertsona sar dezake. Aplikazioa azkar probatu nahi baduzu, perfektua da.</li>
+            <li><strong>Erregistroarekin Hasi:</strong> Login/Erregistro pantailara eramango zaitu, pasahitzarekin babestutako tokiko erabiltzaile-kontu bat sortzeko. Zure bilduma babesteko gomendatua.</li>
+            <li><strong>Erregistrorik gabe Hasi (Gonbidatu Modua):</strong> Sartu zuzenean pasahitzik gabe. Datuak zure ordenagailuan gordetzen dira baina ekipoa erabiltzen duen edonorentzat eskuragarri egongo dira. Aplikazioa azkar probatzeko aproposa.</li>
         </ul>
 
-        <h3>Erregistratzea eta Saio Hasiera</h3>
-        <p>Baduzu "Erregistratuarekin Hasi" aukeratu, Saio Hasiera pantailara iritsiko zara:</p>
+        <h3>Erregistroa eta Saio-hasiera</h3>
+        <p>"Erregistroarekin Hasi" aukeratzen baduzu, Login pantailara iritsiko zara:</p>
         <ul class="step-list">
-            <li>Saio Hasiera pantailan, beheko <strong>"Kontua sortu"</strong> estekakari klik egin.</li>
-            <li>Zure <strong>Erabiltzaile-Izena</strong>, <strong>Pasahitza</strong> eta berretsi. <em>Erregistratu</em> botoian klik egin.</li>
-            <li>Aplikazioak saio hasierara itzuliko zait. Sartu zure datu berriak eta <strong>Hurrengoa</strong> sakatu.</li>
+            <li>Login pantailan, egin klik beheko <strong>"Kontua sortu"</strong> estekan.</li>
+            <li>Idatzi zure <strong>Erabiltzaile-izena</strong>, <strong>Pasahitza</strong> eta berretsi ezazu. Egin klik <em>Erregistratu</em> botoian.</li>
+            <li>Aplikazioak saio-hasierara itzuliko zaitu. Idatzi sortu berri dituzun datuak eta sakatu <strong>Hurrengoa</strong>.</li>
         </ul>
-        <p>Hurrengo aldiz aplikazioa irekitzen duzunean, zure erabiltzaile-izena eta pasahitza eskatuko dizute zuzenki.</p>
+        <p>Aplikazioa irekitzen duzun hurrengo aldian, zure erabiltzailea eta pasahitza eskatuko dizkizu zuzenean.</p>
 
-        <h2 id="nabigazioa">3. Nabigazioa eta Egitura</h2>
-        <p>Leihate nagusiak honako eremutan banatzen da:</p>
+        <h2 id="navegacion">3. Nabigazioa eta Egitura</h2>
+        <p>Leiho nagusia eremu hauetan banatzen da:</p>
         <ul>
-            <li><strong>Menu Barra (Goikoa):</strong> <em>Fitxategia</em>, <em>Tresnak</em> eta <em>Laguntza</em> menuak ditu. Hemendik inportatu/esportatu, bikoitzak bilatu, ezarpenak, hizkuntza, estatistikak eta gida hau atzitu dezakezu.</li>
-            <li><strong>Ezkerreko Alboko Panela — "Nire Apaletak":</strong> Gaiak (Eleberria, Zientzia Fikzioa, Fantasía, etab.) eta kategoria birtualak ("E-books", "Nahien Zerrenda") erakusten ditu. Apaleta bat hautatzean, ikuspegi nagusia filtratzen da, hautatutako kategoriako liburuak bakarrik erakusten.
-                <br/><strong>Irakurketa Erronkaren Widgeta:</strong> Alboko panelaren behealdean aurrerapen barra duen widget bat agertzen da, Urteko Irakurketa Erronkan duzun aurrerapena erakusteko (ikusi <a href="#funtzioaurreratuak">9. Funtzio Aurreratuak</a> atala).</li>
-            <li><strong>Erdiko Panela — Fitxak:</strong> Lan-eremua, honako fitxekin:
+            <li><strong>Menu-barra (Goian):</strong> <em>Fitxategia</em>, <em>Tresnak</em> eta <em>Laguntza</em> menuak ditu. Hemendik inportatu/esportatu, bikoiztuak, ezarpenak, hizkuntza, estatistikak eta eskuliburu honetara sar zaitezke.</li>
+            <li><strong>Ezkerreko alboko panela — "Nire Apalak":</strong> Gaikako kategoriak erakusten ditu (Eleberria, Zientzia Fikzioa, Fantasia, etab.) eta kategoria birtualak ("E-book-ak", "Desioen zerrenda"). Apal bat hautatzean, bista nagusia kategoria horretako liburuak soilik erakusteko iragazten da.
+                <br/><strong>Irakurketa Erronka Widget-a:</strong> Alboko panelaren behealdean Urteko Irakurketa Erronkan duzun aurrerapena erakusten duen aurrerapen-barra duen widget bat agertzen da (ikus <a href="#funciones-avanzadas">Funtzio Aurreratuak</a> atala).</li>
+            <li><strong>Erdiko panela — Fitxak:</strong> Lan-eremua fitxa hauekin:
                 <ul>
-                    <li><strong>Nire Liburuak:</strong> Zure bildumako azalak erakusten dituen galeria bisuala.</li>
-                    <li><strong>Gehi / Kudeatu:</strong> OpenLibrary-n liburuak bilatu, kamara bidez eskanatu eta eskuz gehitu.</li>
-                    <li><strong>Mailegu Aktiboak:</strong> Kideei maileguak erregistratu eta kontrolatu.</li>
-                    <li><strong>Historiala:</strong> Itzulitako mailegu guztien erregistroa.</li>
-                    <li><strong>Nahien Zerrenda:</strong> Lortu nahi dituzun liburuak.</li>
-                    <li><strong>Sagak:</strong> Liburuak bilduma edo sagetan taldekatu.</li>
+                    <li><strong>Nire Liburuak:</strong> Zure bildumako azalak dituen galeria bisuala.</li>
+                    <li><strong>Gehitu / Kudeatu:</strong> Liburuak OpenLibrary-n bilatu, kameraz eskaneatu eta eskuz gehitu.</li>
+                    <li><strong>Mailegu Aktiboak:</strong> Bazkideei egindako maileguak erregistratu eta kontrolatu.</li>
+                    <li><strong>Historia:</strong> Itzulitako mailegu guztien erregistroa.</li>
+                    <li><strong>Desioen zerrenda:</strong> Lortu nahi dituzun liburuak.</li>
+                    <li><strong>Sagak:</strong> Liburuak bilduma edo sagen arabera multzokatu.</li>
                 </ul>
             </li>
-            <li><strong>Egoera Barra (Behekoa):</strong> Sistemen mezuak erakusten ditu, hala nola "Ongi etorri, Jon" edo zenbat liburu filtratu diren.</li>
+            <li><strong>Egoera-barra (Behean):</strong> Sistemaren mezuak erakusten ditu, hala nola "Ongi etorri, Jon" edo iragazitako liburu kopurua.</li>
         </ul>
 
-        <h2 id="funtzioak">4. Funtzio Nagusiak</h2>
-        <p>Fitxa guztien eta haien funtzioen azalpena.</p>
+        <h2 id="funcionalidades">4. Funtzionalitate Nagusiak</h2>
+        <p>Fitxa guztien eta haien funtzioen azalpen zehatza.</p>
 
         <div class="feature-box">
-            <h3>1. Fitxa: Nire Liburuak (Azal Galeria)</h3>
-            <p><strong>Helburua:</strong> Zure bilduma osoa modu erraketsuan ikustea.</p>
-            <p><strong>Funtzionamendua:</strong> Zure liburu guztien azalak panel motako galeria batean erakusten ditu. Erabili goiko eskuineko bilaketa barra titulu edo egilearen arabera iragazteko. Ezkerreko panelan apaleta bat hautatzean, galeria automatikoki iragazten da.</p>
-            <p><strong>Testuinguru Menua:</strong> Edozein liburutan eskuineko botoarekin klik eginez, aukerak atzitu ditzakezu:</p>
+            <h3>1. Fitxa: Nire Liburuak (Azalen Galeria)</h3>
+            <p><strong>Helburua:</strong> Zure bilduma osoa modu erakargarrian bistaratzea.</p>
+            <p><strong>Funtzionamendua:</strong> Zure liburu guztien azalak erakusten ditu galeria motako panel batean. Erabili goiko eskuineko bilaketa-barra izenburuaren edo egilearen arabera iragazteko. Ezkerreko paneleko apal bat hautatzean, galeria automatikoki iragazten da.</p>
+            <p><strong>Laster-menua:</strong> Egin klik eskuineko botoiarekin edozein liburutan aukeretara sartzeko:</p>
             <ul>
-                <li><strong>Liburu hau maileguan eman:</strong> Mailegu azkar bat hasi.</li>
-                <li><strong>Xehetasunak editatu:</strong> Editatzeko pantaila osoa ireki.</li>
-                <li><strong>Azala aldatu:</strong> Azal lokal bat hautatu.</li>
-                <li><strong>Markatu honela…:</strong> Irakurketaren egoera aldatu (📋 Zain, 📖 Irakurtzen, ✅ Irakurria).</li>
-                <li><strong>Liburua ezabatu:</strong> Zure bildumatik liburua ezabatu.</li>
+                <li><strong>📖 E-book irakurri:</strong> EPUB fitxategia irekitzen du BiblioHouse-ren irakurgailu integratu natiboarekin (liburu digitalentzat soilik).</li>
+                <li><strong>Liburu hau maileguan eman:</strong> Mailegu azkar bat abiarazten du.</li>
+                <li><strong>Xehetasunak editatu:</strong> Edizio-pantaila osoa irekitzen du.</li>
+                <li><strong>Azala aldatu:</strong> Tokiko irudi bat azal gisa hautatu.</li>
+                <li><strong>Honela markatu…:</strong> Irakurketa-egoera aldatu (📋 Zain, 📖 Irakurtzen, ✅ Irakurrita).</li>
+                <li><strong>🖨️ QR Etiketa Sortu (PDF):</strong> Zure liburuaren xehetasunetara lotzen duen QR kodea duen PDF bat sortzen du (liburu fisikoentzat soilik).</li>
+                <li><strong>Liburua ezabatu:</strong> Liburua zure bildumatik ezabatu.</li>
             </ul>
-            <p><strong>Bikoitz klik:</strong> Liburu batean bikoitz klik eginez, <strong>Xehetasunen Txartela</strong> irekitzen da, irakurketarako moduan, azala, izenburua, egilea, argitaletxea, urtea, generoa, ISBN, izarretako balorazioa eta iritzia pertsona erakutsiz. Hemendik, "Xehetasunak editatu" sakatu dezakezu liburua aldatu ahal izateko.</p>
-            <p><strong>E-book-ak inportatu (Arrastatu eta Utzi):</strong> Arrastatu <strong>EPUB, PDF edo MOBI</strong> fitxategi bat zuzenean "Nire Liburuak" panelera. BiblioHousek automatikoki aterako ditu metadatuak (izenburua, egilea, azala) eta zure bildumari gehituko dio. Panela ertz urdin ez-jarraitu batez nabarmenduko da fitxategia utzi dezakezula adierazteko.</p>
-            <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Liburu azalen galeria alboko apaleta panelekin." />
+            <p><strong>Klik bikoitza:</strong> Liburu batean klik bikoitza egitean <strong>Xehetasunen Fitxa</strong> irekitzen da irakurtzeko soilik moduan. Bertan azala, oinarrizko datuak eta <em>Irakurketa Egunkari</em> berria ikusiko dituzu.</p>
+            <p><strong>E-book-ak Inportatu (Drag &amp; Drop):</strong> Arrastatu <strong>EPUB, PDF edo MOBI</strong> fitxategi bat zuzenean "Nire Liburuak" panelera. BiblioHouse-k automatikoki aterako ditu metadatuak (izenburua, egilea, azala) eta zure bildumara gehituko du.</p>
         </div>
 
         <div class="feature-box">
-            <h3>2. Fitxa: Gehi / Kudeatu</h3>
-            <p><strong>Helburua:</strong> Zure liburutegira liburu berriak gehitu hiru modu desberdinetan.</p>
+            <h3>2. Fitxa: Gehitu / Kudeatu</h3>
+            <p><strong>Helburua:</strong> Zure liburutegian liburu berriak hiru modu ezberdinetan gehitzea.</p>
 
-            <h3>Metodo 1: OpenLibrary-n Bilatu</h3>
+            <h3>1. metodoa: Bilaketa OpenLibrary-n</h3>
             <ul class="step-list">
-                <li>Goiko bilaketa barran, liburuaren izenburua edo ISBN idatzi (adib. 9788445000663).</li>
-                <li><strong>🔍</strong> botoian klik egin edo <kbd>Enter</kbd> sakatu.</li>
-                <li><em>Bilaketaren Emaitzak</em> leihoa agertuko da, OpenLibrary, Google Books eta Inventaire-ko datuekin.</li>
-                <li>Zure gogokoen emaitza hautatu eta <strong>"Liburutegira Inportatu"</strong> edo <strong>"Nahien Zerrendara Gehi"</strong> sakatu.</li>
+                <li>Goiko bilaketa-barran, idatzi liburuaren izenburua edo ISBN-a (adib. 9788445000663).</li>
+                <li>Sakatu <strong>🔍</strong> botoia edo <kbd>Enter</kbd> tekla.</li>
+                <li><em>Bilaketaren Emaitzak</em> leihoa agertuko da OpenLibrary, Google Books eta Inventaire-ko datuekin.</li>
+                <li>Egin klik nahiago duzun emaitzan eta sakatu <strong>"Liburutegira inportatu"</strong> edo <strong>"Desioetara gehitu"</strong>.</li>
             </ul>
 
-            <h3>Metodo 2: Web Kamera bidezko Eskanerra</h3>
-            <p><strong>📷</strong> botoian klik egin (bilaketa barraren ondoan). Liburuaren barkodea zure webcam-era erakutsi. Aplikazioak detektatuko du, soinu bat egingo du eta automatikoki bilatuko du.</p>
+            <h3>2. metodoa: Web Kamera bidezko Eskanerra</h3>
+            <p>Sakatu <strong>📷</strong> botoia (bilaketa-barraren ondoan). Erakutsi liburuaren barra-kodea zure web kamerari. Aplikazioak detektatu, soinu bat egin eta automatikoki bilatuko du.</p>
 
-            <h3>Metodo 3: Eskuz Gehitu</h3>
-            <p>"Eskuz gehitu" formularioan, eremu hauek bete:</p>
+            <h3>3. metodoa: Eskuz Gehitu</h3>
+            <p>Beheko "Eskuz gehitu" inprimakian, bete eremuak (Izenburua, Egilea, etab.), aukeratu azala eta kokapen zehatzak. Gero sakatu <strong>"Liburutegira gehitu"</strong>.</p>
+        </div>
+
+        <div class="feature-box">
+            <h3>Liburuen Edizio Pantaila</h3>
+            <p>"Xehetasunak editatu" sakatzean, liburuaren eremu guztiak dituen leiho bat irekitzen da:</p>
             <ul>
-                <li>Izenburua, Egilea, Argitaletxea, Generoa, ISBN, Urtea, Kantitatea.</li>
-                <li>Saila/Saga eta Ordena (bildumetan taldekatu ahal izateko).</li>
-                <li>"Aukeratu..." botoiarekin azal irudi bat hautatu.</li>
-                <li>"Badakit (jabetzan)" kutxatila markatu baduzu liburua baduzu.</li>
-                <li><strong>"Liburutegira Gehi"</strong> sakatu.</li>
+                <li><strong>Datu Orokorrak:</strong> Izenburua, Egilea, Argitaletxea, Generoa, Urtea, ISBN-a, Seriea/Saga eta Ordena.</li>
+                <li><strong>Kokapen fisikoa:</strong> Orain etxean liburua gordetzen duzun apala eta apalategi zehatza zehaztu ditzakezu.</li>
+                <li><strong>Apal Logikoak:</strong> Gehitu edo sortu gaikako apalak (Fantasia, Eleberria...) eta esleitu itzazu.</li>
+                <li><strong>Digitala / Formatuak:</strong> Hautatu liburua EPUB edo MOBI fitxategian duzun eta integratu bihurgailua Calibre erabiliz.</li>
             </ul>
-            <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png" alt="Gehi/Kudeatu fitxa, eskuz betetze formularioa eta OpenLibrary bilaketa barrarekin." />
+            <p>Sakatu <strong>Aldaketak Gorde</strong> baieztatzeko.</p>
         </div>
 
         <div class="feature-box">
-            <h3>Liburuaren Editatzeko Pantaila</h3>
-            <p>"Xehetasunak editatu" (testuinguru menutik edo xehetasunen txartelatik) sakatzean, liburuaren eremu guztiekin leiho bat irekitzen da:</p>
-            <ul>
-                <li><strong>Azala:</strong> "Azala aldatu" (edo zure nabigatzailetik irudi bat arrastatu) eta "Online bilatu" erabiliz, automatikoki azal bat deskargatu.</li>
-                <li><strong>Irakurketaren Egoera:</strong> Zerrendatik "Zain", "Irakurtzen" edo "Irakurria" hautatu.</li>
-                <li><strong>Balorazioa:</strong> 0 eta 5 izarren artean baloratu.</li>
-                <li><strong>Datuak:</strong> Izenburua, Egilea, Argitaletxea, Generoa, Urtea, ISBN, Saila/Saga eta Ordena.</li>
-                <li><strong>Apaletak:</strong> Apaleta pertsonalizatuak gehitu edo sortu eta liburuari esleitu.</li>
-                <li><strong>Iritzi pertsonala:</strong> Liburuari buruz zure inpresioak idatzi.</li>
-                <li><strong>"Jabetzan":</strong> Kutxatila desmarkatu liburua oraindik fisikoki ez baduzu.</li>
-            </ul>
-            <p><strong>Aldaketak gorde</strong> sakatu aldaketak konfirmatu ahal izateko, edo <strong>Ezeztatu</strong> baztertu ahal izateko.</p>
-            <img src="https://imgur.com/lzqMfU5.png" alt="Liburuaren editatzeko formularioa, azala, datu eremuak, apaletak, balorazioa eta iritziarekin." />
-        </div>
-
-        <div class="feature-box">
-            <h3>3. Fitxa: Mailegu Aktiboak</h3>
-            <p><strong>Helburua:</strong> Nori liburuak maileguratzen dizkion erregistratu eta itzulketen kontrolatu.</p>
+            <h3>3. Fitxa: Mailegu Aktiboak (Mailegu Adimendunak)</h3>
+            <p><strong>Helburua:</strong> Zure liburuak nori mailegatzen dizkiozun erregistratu eta itzulketak kontrolatu.</p>
+            <p>BiblioHouse-k <strong>Abisu Adimendunak</strong> ditu: Aplikazioa abiarazten baduzu edo fitxa nagusira bazoaz eta epea gainditu duten maileguak badituzu (berez, 30 egun baino gehiago), aplikazioak berehala abisu-banner bat erakutsiko du (adib. <em>"Itzultzeko epea gainditu duten 2 liburu dituzu"</em>).</p>
             <ul class="step-list">
-                <li>"Maileguratuko liburua" zerrendatik <strong>Liburua</strong> bat hautatu.</li>
-                <li>Zerrendatik <strong>Kidea</strong> bat hautatu. Ez badago, <strong>"+"</strong> botoian klik egin kide azkar bat sortzeko, edo <strong>"Kideak Kudeatu"</strong> kudeaketa osoa irekitzeko.</li>
-                <li><strong>"Mailegua egin"</strong> sakatu.</li>
-                <li>Mailegua beheko taulan agertuko da, datarekin eta itzulketa data estimatuarekin.</li>
-                <li>Itzulketa erregistratu ahal izateko, mailegua hautatu eta <strong>"Itzulita markatu"</strong> sakatu. Mailegua Historial fitxara pasako da.</li>
+                <li>Hautatu <strong>Liburu</strong> bat eta <strong>Bazkide</strong> bat goitibeherakotik.</li>
+                <li>Sakatu <strong>"Mailegua Egin"</strong>.</li>
+                <li>Itzulketa erregistratzeko, hautatu mailegua eta sakatu <strong>"Itzulitzat markatu"</strong>. Mailegua Historia fitxara pasatuko da.</li>
             </ul>
-            <p><strong>Mailegu atzeratuen abisua:</strong> Aplikazioa hastean, maileguak egun-muga konfiguratua gainditzen badute, itzulketa zain dauden liburuak abisatuko dizute.</p>
         </div>
 
         <div class="feature-box">
-            <h3>4. Fitxa: Historiala</h3>
-            <p><strong>Helburua:</strong> Amaitutako mailegu guztien erregistro historikoa kontsultatu.</p>
-            <p>Liburua, Kidea, Mailegu Data eta Itzulketa Data zutabeekin taula bat erakusten du.</p>
+            <h3>4. Fitxa: Historia</h3>
+            <p><strong>Helburua:</strong> Amaitutako mailegu guztien erregistro historikoa kontsultatu, haien hasiera- eta itzulketa-datekin.</p>
         </div>
 
         <div class="feature-box">
-            <h3>5. Fitxa: Nahien Zerrenda</h3>
-            <p><strong>Helburua:</strong> Lortu nahi dituzun liburuak gorde, zure bildumarekin nahastuta gabe.</p>
-            <ul class="step-list">
-                <li><strong>"Bilatu gehitzeko..."</strong> sakatu OpenLibrary-n liburua bilatu ahal izateko.</li>
-                <li>Bilaketaren emaitzetan, <strong>"Nahien Zerrendara Gehi"</strong> sakatu "Inportatu" ordez.</li>
-                <li>Nahien zerrendako liburuak txartel moduan agertzen dira fitxa honetan.</li>
-                <li>Liburua lortzen duzunean, eskuineko botoarekin klik egin eta <strong>"Lortuta markatu"</strong> hautatu zure liburutegi nagusira mugitu ahal izateko.</li>
-            </ul>
+            <h3>5. Fitxa: Desioen zerrenda</h3>
+            <p><strong>Helburua:</strong> Lortu nahi dituzun liburuak gordetzea, zure bilduma nagusiarekin nahastu gabe. Lortzen dituzunean, egin klik eskuineko botoiarekin gainean eta hautatu "Lortutzat markatu".</p>
         </div>
 
         <div class="feature-box">
             <h3>6. Fitxa: Sagak eta Bildumak</h3>
-            <p><strong>Helburua:</strong> Serie edo bilduma berbereko liburuak taldekatu.</p>
-            <p>Fitxak bi paneletan banatzen da:</p>
-            <ul>
-                <li><strong>Ezkerreko Panela — "Nire Bildumak":</strong> Zure saga guztien zerrenda. Bat hautatu bere liburuak ikusteko.</li>
-                <li><strong>Eskuineko Panela:</strong> Saga horretako liburuen azalen galeria, laburpena erakutsiz.</li>
-            </ul>
-            <p><strong>Saga zerrendako testuinguru menua:</strong></p>
-            <ul>
-                <li><strong>Saga izen berria eman:</strong> Bildumaren izena aldatu.</li>
-                <li><strong>Saga ezabatu (Liburuak gorde):</strong> Taldekatzea ezabatu, baina liburuak gorde.</li>
-                <li><strong>Saga eta bere liburuak ezabatu:</strong> Saga eta haren liburu guztiak ezabatu.</li>
-            </ul>
-            <p>Liburuak automatikoki sagetan esleitzen dira "Saila/Saga" eremua betetzen denean liburua gehitu edo editatzen denean.</p>
+            <p><strong>Helburua:</strong> Serie edo bilduma berekoak diren liburuak multzokatzea.</p>
+            <p>Fitxak bi zatitan banatutako panela du: "Nire Bildumak" ezkerraldean, eta sagaren liburukiak eskuinaldean.</p>
+            <p><strong>Laster-menua:</strong> Saga baten barruan liburu jakin batean klik egitean, orain <em>"Liburua sagatik desbinkulatu"</em> hauta dezakezu bildumatik ateratzeko, liburua zure datu-base nagusitik ezabatu gabe.</p>
+            <p><strong>Falta diren Liburukien Abisua:</strong> BiblioHouse-k saga bateko 1. liburukia eta 3. liburukia dituzula detektatzen badu, "2. Liburukia falta da" aldi baterako txartel batekin ohartaraziko zaitu zure bilduma osatugabea dela jakin dezazun.</p>
         </div>
 
         <div class="feature-box">
-            <h3>Kideen Kudeaketa</h3>
-            <p><strong>Helburua:</strong> Liburuak maileguratzen dizkien pertsonen kudeaketa.</p>
-            <p>Mailegu Aktiboak fitxatik &gt; <strong>"Kideak Kudeatu"</strong> botoian sartuz atzitu.</p>
-            <ul>
-                <li>Kide guztien taula ikusi (Kide Zenbakia, Izena, Abizenak, NAN, Helbidea).</li>
-                <li><strong>Hautatutakoa editatu:</strong> Kidearen datuak aldatu.</li>
-                <li><strong>Karneta inprimatu (PDF):</strong> Kideen karnetak inprimitu ahal izateko PDF dokumentua sortu.</li>
-                <li><strong>Kidea ezabatu:</strong> Kidea datu basetik ezabatu.</li>
-            </ul>
+            <h3>Bazkideen Kudeaketa</h3>
+            <p>Sartu Mailegu Aktiboak fitxatik &gt; <strong>"Bazkideak Kudeatu"</strong> botoiatik. Erregistratutako bazkide bakoitzaren txartelekin PDF bat sortu, editatu eta sor dezakezu.</p>
         </div>
 
         <div class="feature-box">
             <h3>Estatistikak</h3>
-            <p><strong>Helburua:</strong> Zure bildumaren analisi bisual bat lortu.</p>
-            <p><em>Tresnak</em> &gt; <em>Estatistikak</em> menutik atzitu. Leihoak honakoak erakusten ditu:</p>
+            <p>Sartu <em>Tresnak</em> &gt; <em>Estatistikak</em> menutik. Gozatu analisi grafiko aurreratu batez zure urteko aurrerapenarekin, generoen araberako gazta-grafikoarekin eta 10 egile onenekin.</p>
+        </div>
+        
+        <h2 id="lector-ebooks">5. E-book Irakurgailu Txertatua</h2>
+        <div class="feature-box">
+            <p>BiblioHouse-k orain <strong>EPUB fitxategien irakurgailu erabat natiboa</strong> barne hartzen du, irakurtzeko aplikaziotik irten beharrik ez izateko diseinatua.</p>
             <ul>
-                <li><strong>Gako Metrikak:</strong> Liburu guztiak, Irakurritako liburuak (ehunekoarekin), Ohikoen egilea, Genero nagusia, Izarretako balorazio batez bestekoa, Urte honetan amaitutakoak eta Batez besteko tasa (liburuak/hilabete).</li>
-                <li><strong>Zirkulu-diagrama:</strong> Generoen banaketa.</li>
-                <li><strong>Barra-diagrama:</strong> 10 Egile Ohikoenak.</li>
-                <li><strong>Barra-diagrama pilatuak:</strong> Irakurketaren Egoera Generoaren arabera.</li>
+                <li>Ireki ahal izateko, egin klik eskuineko botoiarekin liburu digital batean "Nire Liburuak" atalean eta hautatu <strong>"📖 E-book irakurri"</strong>.</li>
+                <li><strong>Progresioaren sinkronizazioa:</strong> Aplikazioak automatikoki gordeko du irakurritako ehunekoa, hurrengo aldian irekitzen duzunean edo Nextcloud-ekin sinkronizatzen duzunean, zehazki orrialde beretik jarraitu ahal izateko.</li>
+                <li>Liburua "Zain" baldin bazegoen, aplikazioak automatikoki aldatuko du bere egoera "Irakurtzen" izatera.</li>
+                <li>Diseinu garbia du, e-reader komertzialen antzekoa, irakurtzeko marjinak eta koloreak optimizatuz.</li>
+            </ul>
+        </div>
+        
+        <h2 id="diario-lectura">6. Irakurketa Egunkaria eta Kokapen Zehatzak</h2>
+        <div class="feature-box">
+            <p>BiblioHouse-k katalogazio esperientzia benetako irakurketa bitakora pertsonal batean bilakatzen du:</p>
+            <ul>
+                <li><strong>Irakurketa Egunkaria:</strong> Liburu batean klik bikoitza egitean (Xehetasunen Fitxa), alboko panelean <strong>Oharrak</strong> eta aipamen literalak (<strong>Aipuak</strong>) (dagozkien orrialde zenbakiarekin) gehitzeko atal bat aurkituko duzu. Irakurtzen duzun bitartean gogoetak idazteko edo pasarte gogoangarriak nabarmentzeko ezin hobea.</li>
+                <li><strong>Kudeaketa Fisiko Aurreratua:</strong> Trastelekuan kaxak dituzu eta ez dakizu non dagoen zure *Eraztunen Jauna*ren alea? Erabili "Kokapena" eremua (adib. "Egongelako Apalategia, 3. Apala"). </li>
+                <li><strong>QR kodeen etiketak:</strong> Egin klik eskuineko botoiarekin liburuan > "QR Etiketa Sortu (PDF)". Inprimatu etiketa hauek zure liburu fisikoen bizkarrean edo barrualdean itsasteko eta eskaneatu kodea mugikorrarekin obraren xehetasun guztiak ikusteko.</li>
             </ul>
         </div>
 
-        <h2 id="ezarpenak">5. Ezarpenak</h2>
-        <p><em>Tresnak</em> &gt; <em>Ezarpenak</em> menutik atzitu. Lau fitxatan banatzen da:</p>
+        <h2 id="configuracion">7. Ezarpenak</h2>
+        <p>Sartu <em>Tresnak</em> &gt; <em>Ezarpenak</em> menuaren bidez. Lau fitxatan banatzen da:</p>
 
         <div class="feature-box">
             <h3>Orokorra Fitxa</h3>
             <ul>
-                <li><strong>Erabiltzailearen Hobespenak:</strong>
+                <li><strong>Erabiltzailearen Hobespenak:</strong> Ezabatu aurretik berrespena eskatu, Maileguaren muga egunak (berez 30), etab.</li>
+                <li><strong>Itxura eta Hizkuntzak:</strong>
                     <ul>
-                        <li>Liburua ezabatu aurretik baieztapena eskatu.</li>
-                        <li>Betiere pantaila osotan hasi.</li>
-                        <li>Maileguen epe mugatua (defektuz 30 egun).</li>
-                    </ul>
-                </li>
-                <li><strong>Itxura:</strong>
-                    <ul>
-                        <li><strong>Hizkuntza:</strong> Gaztelania, Ingelesa, Katalana, Galegoa, Euskara eta Portugesa artean aldatu. Aldaketa berehala aplikatzen da, berriro hasieratu gabe.</li>
-                        <li><strong>Itxura Gaia:</strong> Aukeratu eskuragarri dauden 7 gaien artean:
+                        <li><strong>Hizkuntza:</strong> Gaztelania, Ingelesa, Katalana, Galegoa, Euskara eta Portugesa. Itzulpenak interfaze osoan integratu dira aplikazioa berrabiarazi beharrik gabe.</li>
+                        <li><strong>Gai Bisuala:</strong>
                             <ul>
-                                <li><strong>Argia (Primer Light):</strong> Gai argia lehenetsia, GitHub estiloa. Garbia eta profesionala.</li>
-                                <li><strong>Iluna (Primer Dark):</strong> Modu ilun profesionala kontraste handiarekin.</li>
-                                <li><strong>Nord Argia (Nord Light):</strong> Tono hotz urdin-grisak, Artikoko Nord paletan oinarritua. Ikusmen-nekea murrizten du.</li>
-                                <li><strong>Nord Iluna (Nord Dark):</strong> Urdin sakonak eta gris urdinxkak. Primer Dark baino leunagoa, gaueko saioetarako ezin hobea.</li>
-                                <li><strong>Cupertino Argia (macOS Light):</strong> Apple/macOS estetika. Mac sisteman integratzen da.</li>
-                                <li><strong>Cupertino Iluna (macOS Dark):</strong> macOS estiloko modu iluna gris fin landuekin.</li>
-                                <li><strong>Dracula:</strong> Gai ilun bizia arrosa, berde eta zian azentuekin. Garatzaileen artean ezaguna.</li>
+                                <li><strong>Argia/Iluna (Primer):</strong> GitHub estiloko gai klasikoa.</li>
+                                <li><strong>Nord Argia/Iluna:</strong> Ikusmen-nekea murrizten duten tonu hotz eta artikoak.</li>
+                                <li><strong>Cupertino Argia/Iluna:</strong> macOS-en antzeko estetika arina.</li>
+                                <li><strong>Dracula:</strong> Gai ilun dardaratzailea zian eta arrosa azentuekin, programatzaileek maitea.</li>
                             </ul>
-                            <em>Sarbidetasun Oharra:</em> Gai ilun guztiek beltz purua (#000000) saihesten dute, astigmatismoa duten pertsonei "halo" efektua murriztuz. Gaiaren aldaketa berehala aplikatzen da.
                         </li>
                     </ul>
                 </li>
-                <li><strong>Pertsonalizazioa:</strong> Zure liburutegiaren izena aldatu (izenburu barran agertuko da).</li>
             </ul>
         </div>
 
         <div class="feature-box">
             <h3>Datuak Fitxa</h3>
-            <ul>
-                <li><strong>Fitxategien Kokapena:</strong> Datu-base lokalaren bidea erakusten du. Karpeta bat klikekin ireki dezakezu.</li>
-                <li><strong>Babeskopia Esportatu:</strong> Zure liburutegiko datu guztiekin (liburuak, kideak, azalak, hobespenak) ZIP fitxategia sortzen du.</li>
-                <li><strong>Arrisku Zona:</strong>
-                    <ul>
-                        <li><strong>EZABATU LIBURU GUZTIAK:</strong> Liburutegia hustu (baieztapena eskatzen du).</li>
-                        <li><strong>Fabrikako ezarpenetara itzuli:</strong> Denetariko ezabatzea (liburuak, kideak, azalak, kredentzialak eta ezarpenak). "EZABATU" idatzi behar da segurtasun baieztapen gisa. Aplikazioa itxi egeriko da, eta berriro irekitzean, berria bezalakoa izango da.</li>
-                    </ul>
-                </li>
-            </ul>
+            <p>Hemen fitxategien <strong>tokiko kokapena</strong> kontsulta dezakezu eta babeskopia bat egin ZIP formatuan. <strong>Arrisku Eremuan</strong> zure datu-basea garbitu edo ezabaketa osoa egin dezakezu (Fabrikako ezarpenetara berrezarri).</p>
         </div>
 
         <div class="feature-box">
             <h3>Sinkronizazioa Fitxa (NextCloud)</h3>
-            <p><a href="#sinkronizazioa">7. NextCloud-ekin Sinkronizazioa</a> atalera joan detale guztiak ikusteko.</p>
+            <p>Konfiguratu zure NextCloud zerbitzari pribatua. Aukera honek <strong>zure azalak eta oharrak automatikoki sinkronizatzen ditu</strong> atzeko planoan aldaketa bat egiten duzun bakoitzean.</p>
         </div>
 
-        <div class="feature-box">
-            <h3>Honi buruz Fitxa</h3>
-            <p>Logoa, BiblioHouse-ren bertsio eguna, egilea eta Liberapay-n proiektua laguntzeko estekak bat erakusten du.</p>
-        </div>
-
-        <p>Gogoratu <strong>"Ezarpenak gorde"</strong> sakatu aldaketak aplikatu ahal izateko, edo <strong>Ezeztatu</strong> baztertu ahal izateko.</p>
-        <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png" alt="Ezarpenen pantaila Orokorra, Datuak, Sinkronizazioa eta Honi buruz fitxekin." />
-
-        <h2 id="datuen-kudeaketa">6. Datuen Kudeaketa (Inportatu, Esportatu eta Babeskopia)</h2>
-        <p>Inportazio eta esportazio aukerak guztiak <em>Fitxategia</em> menuan daude:</p>
+        <h2 id="gestion-datos">8. Datuen Kudeaketa (Inportatu, Esportatu eta Babeskopia)</h2>
+        <p>Inportatzeko eta esportatzeko aukera guztiak <em>Fitxategia</em> menuan daude:</p>
         <ul>
-            <li><strong>Datu-basea inportatu:</strong> Aurretik esportatutako BiblioHouse JSON fitxategia kargatu.</li>
-            <li><strong>CSV-tik inportatu:</strong> CSV fitxategitik (Excel-rekin bateragarria) liburuak inportatu.</li>
-            <li><strong>Esportatu:</strong> Zure liburutegia JSON formatuan esportatu babeskopia ahal izateko.</li>
-            <li><strong>PDF txostena esportatu:</strong> Zure liburutegiko txosten profesional bat sortu, iragazki aurreratuarekin (izenburu, egile, apaleta, genero, urte tartea eta irakurketaren egoeraren arabera).</li>
-            <li><strong>Web Katalogoa esportatu:</strong> Zure katalogoa nabigatu ahal izateko HTML fitxategia sortu, web-ean zure katalogoa partekatu ahal izateko perfektua. Genero edo apaleta arabera taldekatu eta iragazkiak aplika ditzakezu.</li>
+            <li><strong>Datu-basea inportatu:</strong> Aurrez esportatutako BiblioHouse JSON fitxategi bat kargatu.</li>
+            <li><strong>CSVtik inportatu:</strong> Liburuak masiboki inportatu CSV txantiloiak erabiliz.</li>
+            <li><strong>PDF Txostena esportatu:</strong> Txosten profesionalak sortu iragazki gurutzatu anitz aplikatuz (Generoak, urteak, apalak).</li>
+            <li><strong>Web Katalogoa (HTML) esportatu:</strong> Zure bilduma osoa eta bere azalak txertatuta dituen web orri bat sortu (zure lagunei WhatsApp edo Telegram bidez bidaltzeko aproposa).</li>
         </ul>
-        <p><strong>Bilaketa lokala:</strong> "Nire Liburuak" fitxako goiko barran egiten da. "Tolkien" idatzi eta galeria automatikoki iragaziko da idatzitzea moteltzen ez duena.</p>
 
-        <h2 id="sinkronizazioa">7. NextCloud-ekin Sinkronizazioa</h2>
+        <h2 id="sincronizacion">9. NextCloud-ekin sinkronizatzea</h2>
         <div class="feature-box">
-            <p><strong>Helburua:</strong> Zure liburutegiko kopia sinkronizatu bat zure NextCloud zerbitzari propian WebDAV bidez mantendu, hirugarrenen hodei servizuekin mendekotuta egotea saihestuz.</p>
-            <p><em>Tresnak</em> &gt; <em>Ezarpenak</em> &gt; <em>Sinkronizazioa</em> fitxatik atzitu.</p>
+            <p><strong>Helburua:</strong> Zure liburutegiaren (zure e-book eta azalekin) kopia sinkronizatu bat mantentzea zure NextCloud zerbitzari propioan WebDAV bidez.</p>
+            <p>Sartu <em>Tresnak</em> &gt; <em>Ezarpenak</em> &gt; <em>Sinkronizazioa</em> fitxatik.</p>
             <ul class="step-list">
-                <li><strong>Zerbitzariaren URL</strong> idatzi (adib. <code>https://zure-nextcloud.adibidea.com</code>).</li>
-                <li>Zure <strong>NextCloud erabiltzaile-izena</strong> idatzi.</li>
-                <li><strong>Aplikazioaren pasahitza</strong> idatzi (zure NextCloud paneletik Ezarpenak &gt; Segurtasuna ataletik sortua). Pasahitz hau sistema eragilearen gako-sortan zifratuta gordetzen da, inoiz ez testu arruntan.</li>
-                <li><strong>"Konexioa probatu"</strong> sakatu datuak zuzenak diren egiaztatu ahal izateko.</li>
-                <li><strong>"Orain sinkronizatu (Gora ↑)":</strong> Zure datu-base lokala NextCloud-era igo.</li>
-                <li><strong>"NextCloud-etik berreskuratu (Behera ↓)":</strong> NextCloud-eko datuekin zure datu lokalak gainidatzi (baieztapena eskatzen du).</li>
+                <li>Idatzi <strong>zerbitzariaren URLa</strong> (adib.
+                    <code>https://zure-nextcloud.adibidea.com</code>).</li>
+                <li>Idatzi zure NextCloud <strong>Erabiltzailea</strong> eta zure <strong>Aplikazioaren pasahitza</strong> (Nextcloud-en segurtasun ezarpenetan sortua, inoiz ez idatzi zure Nextcloud-eko pasahitz nagusia hemen).</li>
+                <li>Sakatu <strong>"Konexioa probatu"</strong> eta gero erabili eskuzko aukerak datuak igo edo jaisteko lehen aldia bada.</li>
             </ul>
-            <p><strong>Auto-sinkronizazioa:</strong> NextCloud konfiguratuta badago, aplikazioak automatikoki zure datuak igo ditzake aldaketa garrantzitsuak egiten dituzunean (liburuak gehitu, editatu edo ezabatu).</p>
         </div>
 
-        <h2 id="araztak">8. Arazo Ohikoen Konponbidea</h2>
-        <p>Taulak erabiltzaileek jakinarazitako arazoen %90 estaltzen du.</p>
+        <h2 id="solucion-problemas">10. Arazoen Konponbidea (Troubleshooting)</h2>
+        <p>Taula honek erabiltzaileek jakinarazitako benetako gorabeheren %90 estaltzen du.</p>
 
         <table>
             <thead>
                 <tr>
                     <th>SINTOMA / ARAZOA</th>
-                    <th>ARAZO PROBABLEA</th>
-                    <th>URRATSKAKO KONPONBIDEA</th>
+                    <th>ZERGATIA</th>
+                    <th>PAUSOZ PAUSOKO KONPONBIDEA</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Aplikazioaren pasahitz lokala ahaztu ditut.</strong></td>
-                    <td>Lokala eta pribatua denez, berreskuratze zerbitzaririk ez dago.</td>
-                    <td>BiblioHouse-ren instalazio karpetan <code>users.json</code> fitxategi ezkutua ezabatu. Erabiltzaile berri bat erregistratu behar duzu, baina zure liburuak ez dituzu galduko. Bestela, aplikazioa berriro ireki eta "Erregistrorik gabe Hasi" aukeratu gonbidatu moduan sartzeko.</td>
+                    <td><strong>Aplikazioaren tokiko pasahitza ahaztu zait.</strong></td>
+                    <td>Tokikoa eta pribatua denez, ez dago berreskuratze-zerbitzaririk.</td>
+                    <td>Ezabatu BiblioHouse-ren instalazio-karpetako <code>users.json</code> ezkutuko fitxategia erregistro berri bat behartzeko (zure liburuak ez dira galduko).</td>
                 </tr>
                 <tr>
-                    <td><strong>ISBN bilatzailea kargatzen jarraitzen du (infinituan biratzen)</strong></td>
-                    <td>OpenLibrary zerbitzariak gainkargatu egin dira edo internetik gabe zaude.</td>
-                    <td>Emaitzen leihoa itxiz ekintza bertan behera utzi. Zure konexioa egiaztatu. Bestela, liburuaren datuak eskuz "Eskuz gehitu" atalean idatzi.</td>
+                    <td><strong>ISBN bilatzailea kargatzen geratzen da</strong></td>
+                    <td>OpenLibrary-ko zerbitzariak kolapsatuta.</td>
+                    <td>Utzi bilaketa eta gehitu liburua eskuz.</td>
                 </tr>
                 <tr>
-                    <td><strong>Kamera eskannerrak pantaila beltza erakusten du</strong></td>
-                    <td>Sistema eragileak aplikazioaren kamera sarbidea blokeatzen du pribatutasunagatik.</td>
-                    <td>Zure Sistema Eragilearen Ezarpenetara joan &gt; Pribatutasuna &gt; Kamera, eta baimena eman Java/BiblioHouse-ri.</td>
+                    <td><strong>EPUBera bihurtzeko errorea</strong></td>
+                    <td>Programak ez du Calibre exekutagarria aurkitzen.</td>
+                    <td>Instalatu Calibre zure ordenagailuan eta ziurtatu sistemaren aldagaigetan (PATH) sartuta dagoela.</td>
                 </tr>
                 <tr>
-                    <td><strong>"PDF esportatzean akatsa" Kideen Karnetetan</strong></td>
-                    <td>Helmuga karpetak administratzaile baimenak eskatzen ditu.</td>
-                    <td>BiblioHouse administratzaile moduan exekutatu edo PDFa "Mahaigaina"ra esportatu.</td>
+                    <td><strong>"Errorea PDF esportatzean"</strong></td>
+                    <td>Helmugako karpetak administratzaile-baimenak behar ditu.</td>
+                    <td>Gorde txostena edo txartela zuzenean "Mahaigainean" horren ordez.</td>
                 </tr>
                 <tr>
-                    <td><strong>Ilun Modua ilegarria da (letra beltzak ilun atzeal gain)</strong></td>
-                    <td>Sistema eragileak "Gao Kontrastea" gaia aplikazioaren gainean behartzen ari da.</td>
-                    <td><em>Tresnak</em> &gt; <em>Ezarpenak</em> &gt; Orokorra fitxara joan. Aldiberekoan, Itxura Gaia "Argia (Primer Light)"ra aldatu. Aplikazioa berriro hasi eta "Iluna (Primer Dark)" berriro saiatu.</td>
-                </tr>
-                <tr>
-                    <td><strong>Euskaraz/Galegoz zenbait botoi moztuta agertzen dira</strong></td>
-                    <td>Jatorrizko diseinuaren kutxatik luzeagoak diren testuak.</td>
-                    <td>BiblioHouse-ren leihoaren ertza arrastatu hura maximizatu ahal izateko. Aplikazioa guztiz "erantzunkorra" da eta zabalerara egokitzen da.</td>
-                </tr>
-                <tr>
-                    <td><strong>Azalak falta dira (Azal gris generiko bat bakarrik agertzen da)</strong></td>
-                    <td>Atzealdean irudia deskargatzen ari zenean internetek hutsegitea izan da.</td>
-                    <td><em>Tresnak</em> menura joan &gt; <strong>"Azal falta direnak bilatu"</strong>. Sistemak azal gabe dauden liburu guztiak berrikusiko ditu eta berriro deskargatu saiatuko da.</td>
-                </tr>
-                <tr>
-                    <td><strong>NextCloud-ekin konexio akatsa</strong></td>
-                    <td>URL okerra, erabiltzaile-izena/pasahitz okerrak, edo zerbitzaria eskuragarri ez dago.</td>
-                    <td>URLa egiaztatu ( <code>https://</code> barruan eduki behar du). Zihur zaude <em>aplikazioaren pasahitza</em> bat erabiltzen ari zarela NextCloud-etik sortua (Ezarpenak &gt; Segurtasuna), eta ez zure pasahitz ohikoa. "Konexioa probatu" sakatu akatsaren diagnostiko zehatza lortzeko.</td>
-                </tr>
-                <tr>
-                    <td><strong>Aplikazioak eguneraketen berriak detektatzen ditu, baina ez ditu automatikoki instalatzen</strong></td>
-                    <td>BiblioHousek berrien berri ematen du soilik; ez da automatikoki eguneratu.</td>
-                    <td><a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a> bisitatu eta eskuz azken bertsioa deskargatu.</td>
+                    <td><strong>Azalak falta dira</strong></td>
+                    <td>Internetek huts egin du deskargan.</td>
+                    <td>Joan <em>Tresnak</em> &gt; <strong>"Falta diren azalak bilatu"</strong> menura.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2 id="funtzioaurreratuak">9. Funtzio Aurreratuak (Erabiltzaile Aurreratuentzat)</h2>
+        <h2 id="funciones-avanzadas">11. Funtzio Aurreratuak (Power-Userrentzat)</h2>
         <ul class="step-list">
-            <li><strong>Teklatu Lasterbideak:</strong>
+            <li><strong>Teklatuko lasterbideak:</strong>
                 <ul>
-                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — "Gehi/Kudeatu" fitxara joan eta izenburu eremuan fokatua liburua eskuz gehitu ahal izateko.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — "Gehi/Kudeatu" fitxara joan eta OpenLibrary bilaketa barran fokatua.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Mailegu Aktiboak fitxara joan.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>Q</kbd> / <kbd>⌘</kbd>+<kbd>Q</kbd> — Aplikazioa itxi.</li>
-                    <li><kbd>F1</kbd> — Erabiltzaile Gida hau ireki.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — "Gehitu/Kudeatu" atalera joan.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — OpenLibrary-n bilatu.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Mailegu Aktiboen fitxa.</li>
+                    <li><kbd>F1</kbd> — Erabiltzailearen Eskuliburu hau ireki.</li>
                 </ul>
             </li>
-            <li><strong>Arrastatu eta Utzi Bisuala (Azalak):</strong> Liburuaren Editatzeko pantailan egotean, zure web nabigatzailean argazki bat bilatu, arrastatu eta BiblioHouse-ren azal eremuan utzi azala aldatu ahal izateko unean bertan.</li>
-            <li><strong>E-book-ak Arrastatu eta Utzi:</strong> Arrastatu <strong>EPUB, PDF edo MOBI</strong> fitxategi bat zuzenean "Nire Liburuak" panelera. Aplikazioak automatikoki aterako ditu metadatuak (izenburua, egilea, txertatutako azala) eta zure bildumari gehituko dio. Panela ertz urdin ez-jarraitu batez nabarmenduko da gidatzeko.</li>
-            <li><strong>Rafaga Modua (Barkodea):</strong> USB laser eskanner "pistola" bat erabiltzen baduzu, OpenLibrary bilatzailean kurtsorea jarri. Barkode bat irakurri; detektatzen denean, <kbd>Enter</kbd> sakatu. Minutuko liburu hamarkak kataloga ditzakezu.</li>
-            <li><strong>Saga falta direnak bilatu:</strong> <em>Tresnak</em> menutik &gt; <em>"Saga falta direnak online bilatu"</em>, aplikazioak datu-base publikoetan zure sagetan falta zaizkien liburuak bilatuko ditu eta zein lortu sugestioak egingo dizu.</li>
-            <li><strong>Urteko Irakurketa Erronka:</strong> Ezkerreko alboko panelean, apalategien azpian, aurrerapen barra bat duen widget bat dago. Egin klik aurten zenbat liburu irakurri nahi dituzun konfiguratzeko. Aurrerapena automatikoki kalkulatzen da "Irakurria" gisa markatutako liburuetan oinarrituta. Jarri 0 erronka desgaitzeko.</li>
-            <li><strong>Bikoiztuak bilatu:</strong> <em>Tresnak</em> menutik &gt; <em>"Bikoiztuak bilatu"</em>, aplikazioak zure bilduma eskaneatuko du izenburuan edo ISBNan errepikatutako liburuen bila eta bikoiztuak modu kontrolatuan ezabatzeko aukera ematen dizu.</li>
-            <li><strong>Eguneraketen konprobazioa:</strong> Aplikazioa hastean, BiblioHousek isilpean eguneraketa berri bat eskuragarri dagoen konprobatuko du eta goiko barran banner bat erakutsiko dizu.</li>
+            <li><strong>Drag &amp; Drop Bisuala (Azalak):</strong> Arrastatu interneteko irudiak zuzenean zure liburuaren miniaturaren gainera.</li>
+            <li><strong>Bolada Modua (Barcode):</strong> USB laser eskaner batekin enfokatu ISBN eremua. Minutuko dozenaka liburu katalogatu ditzakezu.</li>
+            <li><strong>Urteko Irakurketa Erronka:</strong> Alboko panelean, aurten zenbat liburu irakurri nahi dituzun konfigura dezakezu, aplikazioak zure aurrerapena birkalkulatzen du "Irakurrita" gisa markatzen duzun liburu bakoitzarekin.</li>
         </ul>
 
-        <h2 id="glosarioa">10. Terminoen Glosarioa</h2>
+        <h2 id="glosario">12. Glosarioa</h2>
         <ul>
-            <li><strong>CRUD:</strong> Oinarrizko eragiketa: Sortu, Irakurri, Eguneratu (Update) eta Ezabatu (Delete).</li>
-            <li><strong>ISBN:</strong> Liburuen Nazioarteko Zenbakizko Identifikadorea, 13 digitu. Barkodearen gainean atzealdean aurkitzen da.</li>
-            <li><strong>OpenLibrary / Inventaire / Google Books:</strong> Aplikazioak liburuen metadatuak dohainik osatu ahal izateko erabiltzen dituen datu-base publiko globalak.</li>
-            <li><strong>NextCloud:</strong> Hodei biltegiratze auto-ostatu plataforma. BiblioHousek zure liburutegia zure zerbitzari propioarekin sinkronizatu ahal izateko erabiltzen du.</li>
-            <li><strong>WebDAV:</strong> NextCloud-ek sinkronizaziorako erabiltzen duen urruneko fitxategien sarbide protokoloa.</li>
-            <li><strong>Gonbidatu Modua:</strong> Aplikazioan sartu pasahitzik gabeko konturik sortu gabe. Datuak lokalki gordetzen dira, babesik gabe.</li>
-            <li><strong>Apaleta:</strong> Gai tematikoa (adib. Eleberria, Fantasia) liburuak antolatu eta iragazteko erabiltzen dena.</li>
-            <li><strong>Saga/Bilduma:</strong> Literatura serie berbereko liburuak taldekatu.</li>
+            <li><strong>ISBN:</strong> Liburuaren Nazioarteko Zenbaki Normalizatua, 13 digitukoa.</li>
+            <li><strong>OpenLibrary:</strong> Metadatuak doan inportatzeko erabiltzen den datu-base publikoa.</li>
+            <li><strong>NextCloud:</strong> Zure BiblioHouse datuak modu seguruan sinkronizatzeko hodei pribatua.</li>
+            <li><strong>EPUB:</strong> Liburu elektronikoetarako irakurketa-formatu ireki unibertsala.</li>
+            <li><strong>Saga/Bilduma:</strong> Literatur serie berekoak diren liburuen multzoa.</li>
         </ul>
 
-        <h2 id="harremana">11. Harremana eta Laguntza</h2>
+        <h2 id="contacto">13. Kontaktua eta Laguntza</h2>
         <div class="feature-box">
-            <p><strong>Zer informazioa eman behar den:</strong> Goiko taulako arazo bat konpondu ez badute, beti azaldu Windows, Mac edo Linux erabiltzen duzun, Java-ren bertsioa (<code>java --version</code> terminalean) eta nola arazoa urratska urrats errepikatu.</p>
-            <p><strong>Ofizial Kanalak:</strong></p>
+            <p><strong>Eman beharreko informazioa:</strong> Adierazi beti
+                Windows, Mac edo Linux erabiltzen duzun, instalatutako Java bertsioa (<code>java --version</code>) eta akatsa urratsez urrats nola errepikatu.</p>
+            <p><strong>Kanal Ofizialak:</strong></p>
             <ul>
-                <li><strong>Laguntza Teknikoa (Akatsak):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a></li>
-                <li><strong>Foroa eta Kontsultak:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a></li>
-                <li><strong>Proiektua lagundu:</strong> <a href="https://liberapay.com/ferlagod./" target="_blank">Liberapay</a></li>
+                <li><strong>Laguntza Teknikoa (Akatsak):</strong> <a href="mailto:info@ferlagod.eu">info@ferlagod.eu</a>
+                </li>
+                <li><strong>Foroa eta Kontsultak:</strong> <a href="https://ferlagod.eu" target="_blank">ferlagod.eu</a>
+                </li>
+                <li><strong>Proiektua babestu:</strong> <a href="https://liberapay.com/ferlagod./"
+                                                            target="_blank">Liberapay</a></li>
             </ul>
         </div>
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.9 - ferlagod-ek garatua. Gida %100 estaldura eta sarbidetasuna bermatzen duena.</em>
+            <em>BiblioHouse v2.0 - ferlagod-ek garatua. Eskuliburua 6 hizkuntzatan estaldura eta irisgarritasun osoa (%100) bermatuz egokitua.</em>
         </p>
+
     </body>
+
 </html>

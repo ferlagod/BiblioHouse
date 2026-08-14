@@ -29,8 +29,8 @@ import java.io.IOException;
  * El corazón de la bestia. Aquí arranca todo: cargamos la configuración,
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class App extends Application {
 

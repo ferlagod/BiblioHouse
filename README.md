@@ -80,7 +80,7 @@
 Este proyecto es Software Libre y se distribuye bajo la Licencia **GNU General Public License v3.0**. Eres libre de usarlo, estudiarlo, modificarlo y compartirlo. Consulta el archivo `LICENSE.txt` para más detalles.
 
 ---
-🌐 **Web Oficial:** [bibliohouse.org](https://bibliohouse.org)  
+🌐 **Web Oficial:** [ferlagod.eu](https://ferlagod.eu)  
 
 [![Apóyame en Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/ferlagod./)
 

@@ -21,8 +21,8 @@ package com.ferlagod.bibliohousefx;
  * Clase de utilidad para obtener información del sistema. Proporciona versiones
  * de Java y JavaFX en uso.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class SystemInfo {
 

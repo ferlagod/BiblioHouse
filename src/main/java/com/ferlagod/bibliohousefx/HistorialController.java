@@ -29,8 +29,8 @@ import javafx.scene.control.TableView;
  * Controlador para la vista de historial de préstamos. Muestra los préstamos
  * devueltos con información del libro, socio y fechas.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class HistorialController {
 

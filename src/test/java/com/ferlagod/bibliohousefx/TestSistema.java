@@ -30,8 +30,8 @@ import org.testfx.framework.junit5.Start;
  * básica. Evita cargar la lógica completa de la aplicación para simplificar las
  * pruebas.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 @ExtendWith(ApplicationExtension.class)
 @Tag("system")

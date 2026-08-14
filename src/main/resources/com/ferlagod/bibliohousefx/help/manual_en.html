@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BiblioHouse - Comprehensive User Manual</title>
+        <title>Comprehensive User Manual - BiblioHouse</title>
         <style>
             :root {
                 --bg-color: #f8f9fa;
@@ -40,578 +40,399 @@
                     --alert-text: #cce5ff;
                     --alert-border: #0056b3;
                 }
+
                 img {
                     filter: brightness(0.85) contrast(1.1);
                 }
             }
 
-            body {
-                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-                line-height: 1.6;
-                color: var(--text-color);
-                background-color: var(--bg-color);
-                max-width: 1000px;
-                margin: 0 auto;
-                padding: 30px 20px;
-                transition: background-color 0.3s, color 0.3s;
-            }
-
-            h1 {
-                color: var(--heading-color);
-                border-bottom: 2px solid var(--heading-color);
-                padding-bottom: 10px;
-                font-size: 2.5rem;
-            }
-            h2 {
-                color: var(--h2-color);
-                margin-top: 40px;
-                border-left: 5px solid var(--heading-color);
-                padding-left: 15px;
-                font-size: 1.8rem;
-            }
-            h3 {
-                color: var(--h3-color);
-                margin-top: 25px;
-            }
-
-            a {
-                color: var(--link-color);
-                text-decoration: none;
-                font-weight: 500;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-
-            .feature-box {
-                background: var(--box-bg);
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px var(--box-shadow);
-                margin-bottom: 25px;
-                border: 1px solid var(--border-color);
-            }
-
-            code, kbd {
-                background: var(--code-bg);
-                padding: 3px 6px;
-                border-radius: 4px;
-                font-family: ui-monospace, 'Cascadia Code', monospace;
-                font-size: 0.9em;
-            }
-
-            kbd {
-                border: 1px solid var(--border-color);
-                box-shadow: 0 2px 0 var(--border-color);
-                font-weight: bold;
-            }
-
-            img {
-                max-width: 100%;
-                height: auto;
-                border-radius: 8px;
-                box-shadow: 0 4px 8px var(--box-shadow);
-                margin: 20px auto;
-                display: block;
-                border: 1px solid var(--border-color);
-            }
-
-            .image-caption {
-                text-align: center;
-                font-size: 0.9em;
-                color: var(--h3-color);
-                margin-top: -10px;
-                margin-bottom: 20px;
-                font-style: italic;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                background: var(--box-bg);
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 5px var(--box-shadow);
-            }
-
-            th, td {
-                border: 1px solid var(--border-color);
-                padding: 12px;
-                text-align: left;
-            }
-
-            th {
-                background: var(--table-header);
-                font-weight: 600;
-            }
-
-            nav ul {
-                list-style: none;
-                padding: 20px;
-                background: var(--box-bg);
-                border-radius: 8px;
-                box-shadow: 0 2px 5px var(--box-shadow);
-                border: 1px solid var(--border-color);
-            }
-
-            nav li {
-                margin-bottom: 10px;
-            }
-
-            .alert {
-                padding: 15px;
-                margin: 20px 0;
-                border: 1px solid var(--alert-border);
-                border-radius: 6px;
-                background-color: var(--alert-bg);
-                color: var(--alert-text);
-            }
-
-            .step-list {
-                counter-reset: custom-counter;
-                list-style: none;
-                padding-left: 0;
-            }
-
-            .step-list li {
-                counter-increment: custom-counter;
-                margin-bottom: 15px;
-                padding-left: 35px;
-                position: relative;
-            }
-
-            .step-list li::before {
-                content: counter(custom-counter);
-                position: absolute;
-                left: 0;
-                top: 0;
-                background: var(--heading-color);
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.8em;
-                font-weight: bold;
-            }
-
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                border: 0;
-            }
+            body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.6; color: var(--text-color); background-color: var(--bg-color); max-width: 1000px; margin: 0 auto; padding: 30px 20px; transition: background-color 0.3s, color 0.3s; }
+            h1 { color: var(--heading-color); border-bottom: 2px solid var(--heading-color); padding-bottom: 10px; font-size: 2.5rem; }
+            h2 { color: var(--h2-color); margin-top: 40px; border-left: 5px solid var(--heading-color); padding-left: 15px; font-size: 1.8rem; }
+            h3 { color: var(--h3-color); margin-top: 25px; }
+            a { color: var(--link-color); text-decoration: none; font-weight: 500; }
+            a:hover { text-decoration: underline; }
+            .feature-box { background: var(--box-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px var(--box-shadow); margin-bottom: 25px; border: 1px solid var(--border-color); }
+            code, kbd { background: var(--code-bg); padding: 3px 6px; border-radius: 4px; font-family: ui-monospace, 'Cascadia Code', monospace; font-size: 0.9em; }
+            kbd { border: 1px solid var(--border-color); box-shadow: 0 2px 0 var(--border-color); font-weight: bold; }
+            img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px var(--box-shadow); margin: 20px auto; display: block; border: 1px solid var(--border-color); }
+            .image-caption { text-align: center; font-size: 0.9em; color: var(--h3-color); margin-top: -10px; margin-bottom: 20px; font-style: italic; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; background: var(--box-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px var(--box-shadow); }
+            th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+            th { background: var(--table-header); font-weight: 600; }
+            nav ul { list-style: none; padding: 20px; background: var(--box-bg); border-radius: 8px; box-shadow: 0 2px 5px var(--box-shadow); border: 1px solid var(--border-color); }
+            nav li { margin-bottom: 10px; }
+            .alert { padding: 15px; margin: 20px 0; border: 1px solid var(--alert-border); border-radius: 6px; background-color: var(--alert-bg); color: var(--alert-text); }
+            .step-list { counter-reset: custom-counter; list-style: none; padding-left: 0; }
+            .step-list li { counter-increment: custom-counter; margin-bottom: 15px; padding-left: 35px; position: relative; }
+            .step-list li::before { content: counter(custom-counter); position: absolute; left: 0; top: 0; background: var(--heading-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; }
+            .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
         </style>
     </head>
 
     <body>
-        <h1>BiblioHouse - User Manual</h1>
+        <h1>User Manual - BiblioHouse</h1>
 
         <div class="alert">
             <strong>Accessibility Note:</strong> This manual supports interactive keyboard navigation (use
-            <kbd>Tab</kbd>). All images have alternative descriptions (alt-text) for screen readers. The dynamic theme system ensures an optimal WCAG contrast ratio of 4.5:1 in both light and dark modes.
+            <kbd>Tab</kbd>). All images have alternative descriptions (alt-text) for screen readers. The
+            dynamic theme system ensures an optimal WCAG contrast ratio of 4.5:1 in both light and dark mode.
         </div>
 
         <nav aria-label="Table of Contents">
             <h2>Table of Contents</h2>
             <ul>
-                <li><a href="#introduction">1. Quick Introduction</a></li>
-                <li><a href="#getting-started">2. Getting Started (Welcome and Access)</a></li>
-                <li><a href="#navigation">3. Navigation and Structure</a></li>
-                <li><a href="#features">4. Main Features</a></li>
-                <li><a href="#settings">5. Settings</a></li>
-                <li><a href="#data-management">6. Data Management (Import, Export, and Backup)</a></li>
-                <li><a href="#sync">7. NextCloud Synchronization</a></li>
-                <li><a href="#troubleshooting">8. Troubleshooting Common Issues</a></li>
-                <li><a href="#advanced">9. Advanced Features</a></li>
-                <li><a href="#glossary">10. Glossary</a></li>
-                <li><a href="#contact">11. Contact and Support</a></li>
+                <li><a href="#introduccion">1. Quick Introduction</a></li>
+                <li><a href="#primeros-pasos">2. Getting Started (Welcome and Access)</a></li>
+                <li><a href="#navegacion">3. Navigation and Layout</a></li>
+                <li><a href="#funcionalidades">4. Main Features</a></li>
+                <li><a href="#lector-ebooks">5. Built-in E-book Reader</a></li>
+                <li><a href="#diario-lectura">6. Reading Diary and Exact Locations</a></li>
+                <li><a href="#configuracion">7. Settings</a></li>
+                <li><a href="#gestion-datos">8. Data Management (Import, Export and Backup)</a></li>
+                <li><a href="#sincronizacion">9. NextCloud Synchronization</a></li>
+                <li><a href="#solucion-problemas">10. Troubleshooting</a></li>
+                <li><a href="#funciones-avanzadas">11. Advanced Features</a></li>
+                <li><a href="#glosario">12. Glossary</a></li>
+                <li><a href="#contacto">13. Contact and Support</a></li>
             </ul>
         </nav>
 
-        <h2 id="introduction">1. Quick Introduction</h2>
+        <h2 id="introduccion">1. Quick Introduction</h2>
         <div class="feature-box">
-            <p><strong>What the App Does:</strong> BiblioHouse is your ultimate personal library manager. Organize physical and digital books, manage loans to friends, track missing volumes in your favorite sagas, maintain a wishlist, and sync everything with your NextCloud server—without relying on third-party cloud services.</p>
-            <p><strong>Who It's For:</strong> Designed from scratch for both novice readers and advanced librarians. No prior technical knowledge required.</p>
-            <p><strong>Minimum Requirements:</strong> Windows, macOS, or modern Linux. Java 21+ installed. 500 MB disk space. Screen resolution 1024x768.</p>
-            <p><strong>Fully Supported Languages:</strong> Spanish (es), English (en), Catalan (ca), Portuguese (pt), Galician (gl), Basque (eu). You can change the language from the <em>Tools</em> &gt; <em>Language</em> menu or via <em>Tools</em> &gt; <em>Settings</em> &gt; <em>General</em> tab.</p>
+            <p><strong>What the app does:</strong> BiblioHouse is your ultimate personal library manager. Organize physical
+                and digital books, read your e-books natively, manage who you lend them to (with overdue alerts),
+                track which volumes you're missing from your favourite sagas, keep your own reading diary, locate the exact shelf of each book
+                and sync everything with your NextCloud server, without relying on third-party cloud services.</p>
+            <p><strong>Who it's for:</strong> Designed from scratch for novice readers and advanced librarians alike. No
+                prior technical knowledge required.</p>
+            <p><strong>Minimum requirements:</strong> Modern Windows, macOS or Linux. Java 21+ installed. 500 MB of disk space.
+                Screen resolution 1024×768.</p>
+            <p><strong>Languages (100% Supported):</strong> Spanish (es), English (en), Catalan (ca), Portuguese (pt),
+                Galician (gl), Basque (eu). You can change the language from the <em>Tools</em> &gt; <em>Language</em> menu or
+                from <em>Tools</em> &gt; <em>Settings</em> &gt; <em>General</em> tab.</p>
         </div>
 
-        <h2 id="getting-started">2. Getting Started (Welcome and Access)</h2>
+        <h2 id="primeros-pasos">2. Getting Started (Welcome and Access)</h2>
         <p><em>Estimated time: 2 minutes</em></p>
 
         <h3>Splash Screen and Loading</h3>
-        <p>When you double-click the BiblioHouse icon, you'll see a loading screen (Splash Screen) with the app logo. This indicates that the database is initializing.</p>
+        <p>When you double-click the BiblioHouse icon, you will see a loading window (Splash Screen) with the
+            application logo. This indicates that the database is initializing.</p>
 
         <h3>Welcome Screen</h3>
-        <p>After loading, you'll see the Welcome screen with two options:</p>
+        <p>After loading, you will see the Welcome screen with two options:</p>
         <ul>
-            <li><strong>Start with Registration:</strong> Takes you to the Login/Registration screen to create a local user account protected with a password. Recommended to protect your collection.</li>
-            <li><strong>Start without Registration (Guest Mode):</strong> Enters directly without a password. Data is saved on your computer but will be accessible to anyone using the device. Ideal for quickly testing the app.</li>
+            <li><strong>Start with Registration:</strong> Takes you to the Login/Registration screen to create a
+                local user account protected with a password. Recommended for protecting your collection.</li>
+            <li><strong>Start without Registration (Guest Mode):</strong> Enter directly without a password. Data is
+                saved on your computer but will be accessible to anyone using the device. Ideal for quickly trying
+                the app.</li>
         </ul>
 
         <h3>Registration and Login</h3>
-        <p>If you choose "Start with Registration," you'll reach the Login screen:</p>
+        <p>If you choose "Start with Registration", you will reach the Login screen:</p>
         <ul class="step-list">
-            <li>On the Login screen, click the <strong>"Create Account"</strong> link at the bottom.</li>
-            <li>Enter your <strong>Username</strong>, <strong>Password</strong>, and confirm it. Click <em>Register</em>.</li>
-            <li>The app will take you back to the login screen. Enter your newly created credentials and click <strong>Next</strong>.</li>
+            <li>On the Login screen, click the bottom link <strong>"Create account"</strong>.</li>
+            <li>Enter your <strong>Username</strong>, <strong>Password</strong> and confirm it. Click
+                <em>Register</em>.</li>
+            <li>The application will return you to the login screen. Enter your newly created credentials and press
+                <strong>Next</strong>.</li>
         </ul>
-        <p>Next time you open the app, you'll be prompted for your username and password directly.</p>
+        <p>The next time you open the app, you will be prompted for your username and password directly.</p>
 
-        <h2 id="navigation">3. Navigation and Structure</h2>
+        <h2 id="navegacion">3. Navigation and Layout</h2>
         <p>The main window is divided into these areas:</p>
         <ul>
-            <li><strong>Menu Bar (Top):</strong> Contains the <em>File</em>, <em>Tools</em>, and <em>Help</em> menus. From here, you can import/export, find duplicates, access settings, change language, view statistics, and open this manual.</li>
-            <li><strong>Left Sidebar — "My Shelves":</strong> Displays thematic categories (Novel, Science Fiction, Fantasy, etc.) and virtual categories ("E-books", "Wishlist"). Selecting a shelf filters the main view to show only books from that category.
-                <br/><strong>Reading Challenge Widget:</strong> At the bottom of the sidebar, a widget with a progress bar shows your progress on the Annual Reading Challenge (see section <a href="#advanced">9. Advanced Features</a>).</li>
+            <li><strong>Menu Bar (Top):</strong> Contains the menus <em>File</em>, <em>Tools</em> and
+                <em>Help</em>. From here you access import/export, duplicates, settings, language, statistics and
+                this manual.</li>
+            <li><strong>Left Side Panel — "My Shelves":</strong> Displays thematic categories (Novel, Science
+                Fiction, Fantasy, etc.) and virtual categories ("E-books", "Wishlist"). Selecting a
+                shelf filters the main view to show only books in that category.
+                <br/><strong>Reading Challenge Widget:</strong> At the bottom of the side panel there is a widget
+                with a progress bar showing your progress in the Annual Reading Challenge (see section
+                <a href="#funciones-avanzadas">Advanced Features</a>).</li>
             <li><strong>Central Panel — Tabs:</strong> The workspace with the following tabs:
                 <ul>
-                    <li><strong>My Books:</strong> Visual gallery with book covers from your collection.</li>
-                    <li><strong>Add / Manage:</strong> Search for books on OpenLibrary, scan via webcam, and add manually.</li>
-                    <li><strong>Active Loans:</strong> Register and manage loans to members.</li>
+                    <li><strong>My Books:</strong> Visual gallery with covers from your collection.</li>
+                    <li><strong>Add / Manage:</strong> Search for books on OpenLibrary, scan by camera and add
+                        manually.</li>
+                    <li><strong>Active Loans:</strong> Register and track loans to members.</li>
                     <li><strong>History:</strong> Record of all returned loans.</li>
-                    <li><strong>Wishlist:</strong> Books you want to acquire.</li>
+                    <li><strong>Wishlist:</strong> Books you want to get.</li>
                     <li><strong>Sagas:</strong> Group books by collections or sagas.</li>
                 </ul>
             </li>
-            <li><strong>Status Bar (Bottom):</strong> Displays system messages like "Welcome, John" or the number of filtered books.</li>
+            <li><strong>Status Bar (Bottom):</strong> Shows system messages such as "Welcome, John" or the
+                number of filtered books.</li>
         </ul>
 
-        <h2 id="features">4. Main Features</h2>
+        <h2 id="funcionalidades">4. Main Features</h2>
         <p>Comprehensive explanation of all tabs and their functions.</p>
 
         <div class="feature-box">
             <h3>Tab 1: My Books (Cover Gallery)</h3>
-            <p><strong>Purpose:</strong> Visually display your entire collection attractively.</p>
-            <p><strong>How It Works:</strong> Shows all your book covers in a gallery-style panel. Use the search bar in the top-right to filter by title or author. Selecting a shelf from the left panel automatically filters the gallery.</p>
-            <p><strong>Context Menu:</strong> Right-click any book to access options:</p>
+            <p><strong>Purpose:</strong> View your complete collection in an attractive way.</p>
+            <p><strong>How it works:</strong> Displays all your book covers in a gallery-style panel. Use the
+                top-right search bar to filter by title or author. Selecting a shelf from the left panel
+                automatically filters the gallery.</p>
+            <p><strong>Context menu:</strong> Right-click any book to access the options:</p>
             <ul>
-                <li><strong>Lend This Book:</strong> Start a quick loan.</li>
-                <li><strong>Edit Details:</strong> Open the full edit screen.</li>
-                <li><strong>Change Cover:</strong> Select a local image as the cover.</li>
-                <li><strong>Mark as...</strong> Change reading status (📋 Pending, 📖 Reading, ✅ Read).</li>
-                <li><strong>Delete Book:</strong> Remove the book from your collection.</li>
+                <li><strong>📖 Read E-book:</strong> Opens the EPUB file with BiblioHouse's native built-in reader (only for digital books).</li>
+                <li><strong>Lend this book:</strong> Starts a quick loan.</li>
+                <li><strong>Edit details:</strong> Opens the full editing screen.</li>
+                <li><strong>Change cover:</strong> Select a local image as the cover.</li>
+                <li><strong>Mark as…:</strong> Change the reading status (📋 Pending, 📖 Reading, ✅ Read).</li>
+                <li><strong>🖨️ Generate QR Label (PDF):</strong> Creates a PDF with a QR code linking to your book's details (only for physical books).</li>
+                <li><strong>Delete book:</strong> Remove the book from your collection.</li>
             </ul>
-            <p><strong>Double Click:</strong> Double-clicking a book opens its <strong>Detail Card</strong> in read-only mode, showing the cover, title, author, publisher, year, genre, ISBN, star rating, and personal review. From there, you can click "Edit Details" to modify the book.</p>
-            <p><strong>Import E-books (Drag &amp; Drop):</strong> Drag an <strong>EPUB, PDF, or MOBI</strong> file directly onto the "My Books" panel. BiblioHouse will automatically extract the metadata (title, author, cover) and add it to your collection. The panel highlights with a dashed blue border to indicate you can drop the file.</p>
-            <img src="https://i.postimg.cc/KYXHF8sD/Captura-de-pantalla-2026-05-02-a-las-14-09-32.png" alt="Gallery of book covers with a sidebar of shelves." />
+            <p><strong>Double-click:</strong> Double-clicking a book opens the <strong>Detail Card</strong> in
+                read-only mode. There you will see the cover, basic data and the new <em>Reading Diary</em>.</p>
+            <p><strong>Import E-books (Drag &amp; Drop):</strong> Drag an <strong>EPUB, PDF or MOBI</strong> file
+                directly onto the "My Books" panel. BiblioHouse will automatically extract the metadata (title,
+                author, cover) and add it to your collection. The panel will highlight with a blue dotted border to indicate
+                that you can drop the file.</p>
         </div>
 
         <div class="feature-box">
             <h3>Tab 2: Add / Manage</h3>
             <p><strong>Purpose:</strong> Add new books to your library in three different ways.</p>
 
-            <h3>Method 1: Search on OpenLibrary</h3>
+            <h3>Method 1: OpenLibrary Search</h3>
             <ul class="step-list">
-                <li>In the top search bar, enter the book's title or ISBN (e.g., 9788445000663).</li>
-                <li>Click the <strong>🔍</strong> button or press <kbd>Enter</kbd>.</li>
-                <li>The <em>Search Results</em> window will appear with data from OpenLibrary, Google Books, and Inventaire.</li>
-                <li>Click your preferred result and press <strong>"Import to Library"</strong> or <strong>"Add to Wishlist"</strong>.</li>
+                <li>In the top search bar, type the book's title or ISBN (e.g. 9788445000663).</li>
+                <li>Press the <strong>🔍</strong> button or hit <kbd>Enter</kbd>.</li>
+                <li>The <em>Search Results</em> window will appear with data from OpenLibrary, Google Books and
+                    Inventaire.</li>
+                <li>Click on the result you prefer and press <strong>"Import to Library"</strong> or
+                    <strong>"Add to Wishlist"</strong>.</li>
             </ul>
 
-            <h3>Method 2: Webcam Barcode Scanner</h3>
-            <p>Click the <strong>📷</strong> button (next to the search bar). Show the book's barcode to your webcam. The app will detect it, beep, and automatically search for it.</p>
+            <h3>Method 2: Webcam Scanner</h3>
+            <p>Press the <strong>📷</strong> button (next to the search bar). Show the book's barcode to your
+                webcam. The app will detect it, emit a beep and search for it automatically.</p>
 
             <h3>Method 3: Add Manually</h3>
-            <p>In the "Add Manually" form at the bottom, fill in the fields:</p>
-            <ul>
-                <li>Title, Author, Publisher, Genre, ISBN, Year, Quantity.</li>
-                <li>Series/Saga and Order (for grouping in collections).</li>
-                <li>Select a cover image using the "Select..." button.</li>
-                <li>Check the "I already own it" box if you possess the book.</li>
-                <li>Click <strong>"Add to Library"</strong>.</li>
-            </ul>
-            <img src="https://i.postimg.cc/TP84G3Hz/Captura-de-pantalla-2026-05-02-a-las-14-09-47.png" alt="Add/Manage tab with manual form and OpenLibrary search bar." />
+            <p>In the lower form "Add manually", fill in the fields (Title, Author, etc.), choose the cover and the
+                exact locations. Then press <strong>"Add to Library"</strong>.</p>
         </div>
 
         <div class="feature-box">
-            <h3>Book Edit Screen</h3>
-            <p>Clicking "Edit Details" (from the context menu or detail card) opens a window with all the book's fields:</p>
+            <h3>Book Editing Screen</h3>
+            <p>When you press "Edit details", a window opens with all the book's fields:</p>
             <ul>
-                <li><strong>Cover:</strong> Change the image with "Change Cover" (or drag an image from your browser) and "Search Online" to automatically download a cover.</li>
-                <li><strong>Reading Status:</strong> Select "Pending," "Reading," or "Read" from the dropdown.</li>
-                <li><strong>Rating:</strong> Rate it from 0 to 5 stars.</li>
-                <li><strong>Data:</strong> Title, Author, Publisher, Genre, Year, ISBN, Series/Saga, and Order.</li>
-                <li><strong>Shelves:</strong> Add or create custom shelves and assign them to the book.</li>
-                <li><strong>Personal Review:</strong> Write your impressions about the book.</li>
-                <li><strong>"Owned":</strong> Uncheck this box if you don't physically have the book yet.</li>
+                <li><strong>General Data:</strong> Title, Author, Publisher, Genre, Year, ISBN, Series/Saga and Order.</li>
+                <li><strong>Physical location:</strong> You can now specify the exact shelf and rack where you keep the book at home.</li>
+                <li><strong>Logical Shelves:</strong> Add or create thematic shelves (Fantasy, Novel…) and assign them.</li>
+                <li><strong>Digital / Formats:</strong> Select whether you have the book as an EPUB or MOBI file and integrate the converter using Calibre.</li>
             </ul>
-            <p>Click <strong>Save Changes</strong> to confirm or <strong>Cancel</strong> to discard.</p>
-            <img src="https://imgur.com/lzqMfU5.png" alt="Book edit form with cover, data fields, shelves, rating, and review." />
+            <p>Press <strong>Save Changes</strong> to confirm.</p>
         </div>
 
         <div class="feature-box">
-            <h3>Tab 3: Active Loans</h3>
-            <p><strong>Purpose:</strong> Register to whom you lend your books and track returns.</p>
+            <h3>Tab 3: Active Loans (Smart Loans)</h3>
+            <p><strong>Purpose:</strong> Record who you lend your books to and track returns.</p>
+            <p>BiblioHouse has <strong>Smart Alerts</strong>: If you start the app or go to the main tab and have loans that have exceeded their deadline (by default, more than 30 days), the app will display an immediate warning banner (e.g. <em>"You have 2 overdue books pending return"</em>).</p>
             <ul class="step-list">
-                <li>Select a <strong>Book</strong> from the "Book to Lend" dropdown.</li>
-                <li>Select a <strong>Member</strong> from the dropdown. If they don't exist, click the <strong>"+"</strong> button to create a quick member, or <strong>"Manage Members"</strong> for full management.</li>
-                <li>Click <strong>"Make Loan"</strong>.</li>
-                <li>The loan will appear in the table below with the date and estimated return date.</li>
-                <li>To register a return, select the loan and click <strong>"Mark as Returned"</strong>. The loan will move to the History tab.</li>
+                <li>Select a <strong>Book</strong> and a <strong>Member</strong> from the dropdown.</li>
+                <li>Press <strong>"Make Loan"</strong>.</li>
+                <li>To register a return, select the loan and press <strong>"Mark as Returned"</strong>. The
+                    loan will move to the History tab.</li>
             </ul>
-            <p><strong>Overdue Loan Warning:</strong> When starting the app, if there are books with loans exceeding the configured day limit, you'll receive a warning with the pending returns.</p>
         </div>
 
         <div class="feature-box">
             <h3>Tab 4: History</h3>
-            <p><strong>Purpose:</strong> View the historical record of all completed loans.</p>
-            <p>Displays a table with columns: Book, Member, Loan Date, and Return Date.</p>
+            <p><strong>Purpose:</strong> View the historical record of all completed loans, with their respective start and return dates.</p>
         </div>
 
         <div class="feature-box">
             <h3>Tab 5: Wishlist</h3>
-            <p><strong>Purpose:</strong> Save books you want to acquire without mixing them with your collection.</p>
-            <ul class="step-list">
-                <li>Click <strong>"Search to Add..."</strong> to search for a book on OpenLibrary.</li>
-                <li>In the search results, click <strong>"Add to Wishlist"</strong> instead of "Import."</li>
-                <li>Wishlist books appear as cards in this tab.</li>
-                <li>When you acquire a book, right-click and select <strong>"Mark as Acquired"</strong> to move it to your main library.</li>
-            </ul>
+            <p><strong>Purpose:</strong> Save books you want to get without mixing them with your main collection. When you acquire them, right-click and select "Mark as acquired".</p>
         </div>
 
         <div class="feature-box">
             <h3>Tab 6: Sagas and Collections</h3>
             <p><strong>Purpose:</strong> Group books that belong to the same series or collection.</p>
-            <p>The tab has a split panel:</p>
-            <ul>
-                <li><strong>Left Panel — "My Collections":</strong> List of all your sagas. Click one to view its books.</li>
-                <li><strong>Right Panel:</strong> Gallery of covers for books in that saga, with an informative summary.</li>
-            </ul>
-            <p><strong>Context Menu in Saga List:</strong></p>
-            <ul>
-                <li><strong>Rename Saga:</strong> Change the collection's name.</li>
-                <li><strong>Delete Saga (Keep Books):</strong> Delete the grouping but keep the books.</li>
-                <li><strong>Delete Saga and Its Books:</strong> Delete the saga and all its associated books.</li>
-            </ul>
-            <p>Books are automatically assigned to sagas when you fill in the "Series/Saga" field when adding or editing a book.</p>
+            <p>The tab has a split panel: "My Collections" on the left, and the saga's volumes on the right.</p>
+            <p><strong>Context menu:</strong> When clicking on a specific book within a saga, you can now select <em>"Unlink book from saga"</em> to remove it from the collection without deleting the book from your main database.</p>
+            <p><strong>Missing Volumes Warning:</strong> If BiblioHouse detects that you have Volume 1 and Volume 3 of a saga, it will display a temporary "Volume 2 missing" card so you know your collection is incomplete.</p>
         </div>
 
         <div class="feature-box">
             <h3>Member Management</h3>
-            <p><strong>Purpose:</strong> Manage the people to whom you lend books.</p>
-            <p>Access via the Active Loans tab &gt; <strong>"Manage Members"</strong> button.</p>
-            <ul>
-                <li>View the table of all registered members (Member No., Name, Surname, ID, Address).</li>
-                <li><strong>Edit Selected:</strong> Modify a member's data.</li>
-                <li><strong>Print ID Cards (PDF):</strong> Generate a printable PDF document with member ID cards.</li>
-                <li><strong>Delete Member:</strong> Remove a member from the database.</li>
-            </ul>
+            <p>Access from the Active Loans tab &gt; <strong>"Manage Members"</strong> button. You can create, edit and generate a PDF with the membership cards for each registered member.</p>
         </div>
 
         <div class="feature-box">
             <h3>Statistics</h3>
-            <p><strong>Purpose:</strong> Get a visual analysis of your collection.</p>
-            <p>Access via the <em>Tools</em> &gt; <em>Statistics</em> menu. The window shows:</p>
+            <p>Access from the <em>Tools</em> &gt; <em>Statistics</em> menu. Enjoy an advanced graphical analysis with your annual progress, genre pie chart and top 10 authors.</p>
+        </div>
+        
+        <h2 id="lector-ebooks">5. Built-in E-book Reader</h2>
+        <div class="feature-box">
+            <p>BiblioHouse now includes a <strong>completely native EPUB file reader</strong>, designed so that you don't need to leave the app to read.</p>
             <ul>
-                <li><strong>Key Metrics:</strong> Total books, Read books (with percentage), Most frequent author, Main genre, Average rating with stars, Finished this year, and Average rate (books/month).</li>
-                <li><strong>Pie Chart:</strong> Distribution by Genre.</li>
-                <li><strong>Bar Chart:</strong> Top 10 Most Frequent Authors.</li>
-                <li><strong>Stacked Bar Chart:</strong> Reading Status by Genre.</li>
+                <li>To open it, right-click on a digital book in "My Books" and select <strong>"📖 Read E-book"</strong>.</li>
+                <li><strong>Progress synchronization:</strong> The application will automatically save the reading percentage where you left off, so that the next time you open it or sync with Nextcloud, you'll continue on exactly the same page.</li>
+                <li>If the book was set to "Pending", the app will automatically change its status to "Reading".</li>
+                <li>It features a clean design, similar to commercial e-readers, optimizing margins and colours for reading.</li>
+            </ul>
+        </div>
+        
+        <h2 id="diario-lectura">6. Reading Diary and Exact Locations</h2>
+        <div class="feature-box">
+            <p>BiblioHouse transforms the cataloguing experience into a true personal reading log:</p>
+            <ul>
+                <li><strong>Reading Diary:</strong> When double-clicking a book (Detail Card), you will find a section in the side panel to add <strong>Notes</strong> and literal <strong>Quotes</strong> (with their respective page number). Perfect for jotting down reflections while you read or highlighting memorable passages.</li>
+                <li><strong>Advanced Physical Management:</strong> Do you have boxes in the attic and can't find your copy of *The Lord of the Rings*? Use the "Location" field (e.g. "Living Room Shelf, Rack 3").</li>
+                <li><strong>QR Code Labels:</strong> Right-click the book &gt; "Generate QR Label (PDF)". Print these labels to stick on the spine or inside your physical books and scan the code with your phone to view all the details of the work.</li>
             </ul>
         </div>
 
-        <h2 id="settings">5. Settings</h2>
+        <h2 id="configuracion">7. Settings</h2>
         <p>Access via the <em>Tools</em> &gt; <em>Settings</em> menu. It is divided into four tabs:</p>
 
         <div class="feature-box">
             <h3>General Tab</h3>
             <ul>
-                <li><strong>User Preferences:</strong>
+                <li><strong>User Preferences:</strong> Ask for confirmation before deleting, Loan day limit (default 30), etc.</li>
+                <li><strong>Appearance and Languages:</strong>
                     <ul>
-                        <li>Ask for confirmation before deleting a book.</li>
-                        <li>Always start in full screen.</li>
-                        <li>Loan limit days (default: 30).</li>
-                    </ul>
-                </li>
-                <li><strong>Appearance:</strong>
-                    <ul>
-                        <li><strong>Language:</strong> Switch between Spanish, English, Catalan, Galician, Basque, and Portuguese. The change applies instantly without restarting.</li>
-                        <li><strong>Visual Theme:</strong> Choose from 7 available themes:
+                        <li><strong>Language:</strong> Spanish, English, Catalan, Galician, Basque and Portuguese. Translations have been integrated throughout the entire interface without needing to restart the app.</li>
+                        <li><strong>Visual Theme:</strong>
                             <ul>
-                                <li><strong>Light (Primer Light):</strong> Default light theme, GitHub style. Clean and professional.</li>
-                                <li><strong>Dark (Primer Dark):</strong> Professional dark mode with high contrast.</li>
-                                <li><strong>Nord Light:</strong> Cool blue-gray tones inspired by the Arctic Nord palette. Reduces eye strain.</li>
-                                <li><strong>Nord Dark:</strong> Deep blues and bluish grays. Softer than Primer Dark, ideal for night sessions.</li>
-                                <li><strong>Cupertino Light (macOS Light):</strong> Apple/macOS aesthetics. Integrates with the system on Mac.</li>
-                                <li><strong>Cupertino Dark (macOS Dark):</strong> macOS-style dark mode with refined grays.</li>
-                                <li><strong>Dracula:</strong> Vibrant dark theme with pink, green, and cyan accents. Popular among developers.</li>
+                                <li><strong>Light/Dark (Primer):</strong> Classic GitHub-style theme.</li>
+                                <li><strong>Nord Light/Dark:</strong> Cold, arctic tones that reduce visual fatigue.</li>
+                                <li><strong>Cupertino Light/Dark:</strong> Fluid macOS-style aesthetics.</li>
+                                <li><strong>Dracula:</strong> Vibrant dark theme with cyan and pink accents, loved by developers.</li>
                             </ul>
-                            <em>Accessibility Note:</em> All dark themes avoid pure black (#000000), reducing the "halo" effect for people with astigmatism. Theme changes are applied instantly.
                         </li>
                     </ul>
                 </li>
-                <li><strong>Personalization:</strong> Change your library's name (appears in the title bar).</li>
             </ul>
         </div>
 
         <div class="feature-box">
             <h3>Data Tab</h3>
-            <ul>
-                <li><strong>File Location:</strong> Shows the path of the local database. You can open the folder with one click.</li>
-                <li><strong>Export Backup:</strong> Generates a ZIP file with all your library data (books, members, covers, preferences).</li>
-                <li><strong>Danger Zone:</strong>
-                    <ul>
-                        <li><strong>Delete ALL Books:</strong> Empties the library (asks for confirmation).</li>
-                        <li><strong>Factory Reset:</strong> Deletes absolutely everything (books, members, covers, credentials, and settings). Requires typing "DELETE" as a security confirmation. The app will close and, upon reopening, will be as if freshly installed.</li>
-                    </ul>
-                </li>
-            </ul>
+            <p>Here you can view the <strong>local location</strong> of the files and create a backup in ZIP format. In the <strong>Danger Zone</strong> you can clear your database or perform a full wipe (Factory Reset).</p>
         </div>
 
         <div class="feature-box">
             <h3>Synchronization Tab (NextCloud)</h3>
-            <p>See section <a href="#sync">7. NextCloud Synchronization</a> for all details.</p>
+            <p>Configure your private NextCloud server. This option also <strong>automatically syncs your covers and notes</strong> in the background every time you make a change.</p>
         </div>
 
-        <div class="feature-box">
-            <h3>About Tab</h3>
-            <p>Displays the logo, current BiblioHouse version, author, and a link to support the project on Liberapay.</p>
-        </div>
-
-        <p>Remember to click <strong>"Save Settings"</strong> to apply changes or <strong>"Cancel"</strong> to discard them.</p>
-        <img src="https://i.postimg.cc/BvWVsnwd/Captura-de-pantalla-2026-05-06-a-las-15-19-44.png" alt="Settings screen with General, Data, Synchronization, and About tabs." />
-
-        <h2 id="data-management">6. Data Management (Import, Export, and Backup)</h2>
+        <h2 id="gestion-datos">8. Data Management (Import, Export and Backup)</h2>
         <p>All import and export options are in the <em>File</em> menu:</p>
         <ul>
-            <li><strong>Import Database:</strong> Load a previously exported BiblioHouse JSON file.</li>
-            <li><strong>Import from CSV:</strong> Import books from a CSV file (Excel-compatible).</li>
-            <li><strong>Export:</strong> Export your library in JSON format for backup.</li>
-            <li><strong>Export PDF Report:</strong> Generate a professional PDF report of your library with advanced filters (by title, author, shelves, genres, year range, and reading status).</li>
-            <li><strong>Export Web Catalog:</strong> Generate a navigable HTML file of your collection, ideal for sharing your catalog on the web. You can group by genre or shelf and apply filters.</li>
+            <li><strong>Import database:</strong> Load a previously exported BiblioHouse JSON file.</li>
+            <li><strong>Import from CSV:</strong> Bulk import books using CSV templates.</li>
+            <li><strong>Export PDF Report:</strong> Generate professional reports applying multiple cross-filters (Genres, years, shelves).</li>
+            <li><strong>Export Web Catalogue (HTML):</strong> Generate a web page with your entire collection and embedded covers (ideal for sharing with friends via WhatsApp or Telegram).</li>
         </ul>
-        <p><strong>Local Search:</strong> Performed in the top bar of the "My Books" tab. Type "Tolkien," and the gallery will automatically filter with a slight delay to avoid slowing down typing.</p>
 
-        <h2 id="sync">7. NextCloud Synchronization</h2>
+        <h2 id="sincronizacion">9. NextCloud Synchronization</h2>
         <div class="feature-box">
-            <p><strong>Purpose:</strong> Keep a synchronized copy of your library on your own NextCloud server via WebDAV, without relying on third-party cloud services.</p>
-            <p>Access via <em>Tools</em> &gt; <em>Settings</em> &gt; <em>Synchronization</em> tab.</p>
+            <p><strong>Purpose:</strong> Keep a synchronized copy of your library (with your e-books and covers) on your own NextCloud server
+                via WebDAV.</p>
+            <p>Access from <em>Tools</em> &gt; <em>Settings</em> &gt; <em>Synchronization</em> tab.</p>
             <ul class="step-list">
-                <li>Enter the <strong>Server URL</strong> (e.g., <code>https://your-nextcloud.example.com</code>).</li>
-                <li>Enter your <strong>NextCloud Username</strong>.</li>
-                <li>Enter the <strong>Application Password</strong> (generated from Settings &gt; Security in your NextCloud panel). This password is stored encrypted in the operating system's keychain, never in plain text.</li>
-                <li>Click <strong>"Test Connection"</strong> to verify the data is correct.</li>
-                <li><strong>"Sync Now (Upload ↑)":</strong> Upload your local database to NextCloud.</li>
-                <li><strong>"Restore from NextCloud (Download ↓)":</strong> Download and overwrite your local data with NextCloud data (asks for confirmation).</li>
+                <li>Enter the <strong>Server URL</strong> (e.g.
+                    <code>https://your-nextcloud.example.com</code>).</li>
+                <li>Enter your NextCloud <strong>Username</strong> and your <strong>Application password</strong> (generated in Nextcloud's security settings; never enter your main Nextcloud password here).</li>
+                <li>Press <strong>"Test connection"</strong> and then use the manual options to upload or download data if it's the first time.</li>
             </ul>
-            <p><strong>Auto-Synchronization:</strong> If NextCloud is configured, the app automatically uploads your data whenever you make significant changes (adding, editing, or deleting books).</p>
         </div>
 
-        <h2 id="troubleshooting">8. Troubleshooting Common Issues</h2>
+        <h2 id="solucion-problemas">10. Troubleshooting</h2>
         <p>This table covers 90% of real incidents reported by users.</p>
 
         <table>
             <thead>
                 <tr>
-                    <th>SYMPTOM / ISSUE</th>
-                    <th>LIKELY CAUSE</th>
+                    <th>SYMPTOM / PROBLEM</th>
+                    <th>PROBABLE CAUSE</th>
                     <th>STEP-BY-STEP SOLUTION</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><strong>I forgot my local app password.</strong></td>
-                    <td>Since it's local and private, there's no recovery server.</td>
-                    <td>Delete the hidden file <code>users.json</code> in the BiblioHouse installation folder. You'll need to register a new user, but you won't lose your books. Alternatively, reopen the app and choose "Start without Registration" to access in guest mode.</td>
+                    <td>Being local and private, there is no recovery server.</td>
+                    <td>Delete the hidden file <code>users.json</code> in the BiblioHouse installation folder to force a new registration (your books will not be lost).</td>
                 </tr>
                 <tr>
-                    <td><strong>ISBN search keeps loading (infinite spinner)</strong></td>
-                    <td>OpenLibrary servers are down or you have no internet.</td>
-                    <td>Cancel the action by closing the results window. Check your connection. Alternatively, manually enter the book's data in the "Add Manually" section.</td>
+                    <td><strong>ISBN search keeps loading</strong></td>
+                    <td>OpenLibrary servers overloaded.</td>
+                    <td>Cancel the search and add the book manually.</td>
                 </tr>
                 <tr>
-                    <td><strong>Camera scanner shows a black screen</strong></td>
-                    <td>The operating system blocks the app's camera access for privacy.</td>
-                    <td>Go to your OS Settings &gt; Privacy &gt; Camera, and allow access to Java/BiblioHouse.</td>
+                    <td><strong>EPUB conversion error</strong></td>
+                    <td>The program cannot find the Calibre executable.</td>
+                    <td>Install Calibre on your PC and make sure it is included in your system's PATH variables.</td>
                 </tr>
                 <tr>
-                    <td><strong>"Error exporting PDF" for Member ID Cards</strong></td>
+                    <td><strong>"Error exporting PDF"</strong></td>
                     <td>The destination folder requires administrator permissions.</td>
-                    <td>Run BiblioHouse as Administrator or export the PDF to the "Desktop" instead.</td>
+                    <td>Save the report or card directly to the "Desktop" instead.</td>
                 </tr>
                 <tr>
-                    <td><strong>Dark Mode is unreadable (black text on dark background)</strong></td>
-                    <td>The operating system is forcing a "High Contrast" theme on the app.</td>
-                    <td>Go to <em>Tools</em> &gt; <em>Settings</em> &gt; General tab. Temporarily change the Visual Theme to "Light (Primer Light)". Restart the app and try "Dark (Primer Dark)" again.</td>
-                </tr>
-                <tr>
-                    <td><strong>Some buttons appear cut off in Basque/Galician</strong></td>
-                    <td>Longer texts than the original design box.</td>
-                    <td>Drag the edge of the BiblioHouse window to maximize it. The app is fully "responsive" and adapts to width.</td>
-                </tr>
-                <tr>
-                    <td><strong>Missing Covers (Only a generic gray book appears)</strong></td>
-                    <td>Internet failed during background image download.</td>
-                    <td>Go to the <em>Tools</em> menu &gt; <strong>"Find Missing Covers"</strong>. The system will review all books without covers and try downloading them again.</td>
-                </tr>
-                <tr>
-                    <td><strong>NextCloud connection error</strong></td>
-                    <td>Incorrect URL, username/password, or the server is inaccessible.</td>
-                    <td>Verify the URL (must include <code>https://</code>). Ensure you're using an <em>application password</em> generated from NextCloud (Settings &gt; Security), not your regular password. Click "Test Connection" for a detailed error diagnosis.</td>
-                </tr>
-                <tr>
-                    <td><strong>The app detects updates but doesn't install them automatically</strong></td>
-                    <td>BiblioHouse only notifies about new versions; it doesn't auto-update.</td>
-                    <td>Visit <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a> and manually download the latest version.</td>
+                    <td><strong>Missing Covers</strong></td>
+                    <td>Internet failed during download.</td>
+                    <td>Go to the <em>Tools</em> &gt; <strong>"Search for missing covers"</strong> menu.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2 id="advanced">9. Advanced Features (For Power Users)</h2>
+        <h2 id="funciones-avanzadas">11. Advanced Features (For Power Users)</h2>
         <ul class="step-list">
             <li><strong>Keyboard Shortcuts:</strong>
                 <ul>
-                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Go to the "Add/Manage" tab and focus the title field to manually add a book.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Go to the "Add/Manage" tab and focus the OpenLibrary search bar.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Go to the Active Loans tab.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>Q</kbd> / <kbd>⌘</kbd>+<kbd>Q</kbd> — Close the application.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Go to "Add/Manage".</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Search on OpenLibrary.</li>
+                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Active Loans tab.</li>
                     <li><kbd>F1</kbd> — Open this User Manual.</li>
                 </ul>
             </li>
-            <li><strong>Drag &amp; Drop Visual (Covers):</strong> While in the Book Edit screen, you can search for a photo in your web browser, drag it, and drop it directly onto the cover area in BiblioHouse to change it instantly.</li>
-            <li><strong>E-book Drag &amp; Drop:</strong> Drag an <strong>EPUB, PDF, or MOBI</strong> file directly onto the "My Books" panel. The app automatically extracts metadata (title, author, embedded cover) and adds it to your collection. The panel highlights with a dashed border to guide you.</li>
-            <li><strong>Burst Mode (Barcode):</strong> If you use a USB laser scanner "gun," place the cursor in the OpenLibrary searcher. Scan a barcode; when detected, press <kbd>Enter</kbd>. You can catalog dozens of books per minute.</li>
-            <li><strong>Find Missing Sagas:</strong> From the <em>Tools</em> menu &gt; <em>"Find Missing Sagas Online"</em>, the app searches public databases for missing volumes in your sagas and suggests which ones to get.</li>
-            <li><strong>Annual Reading Challenge:</strong> At the bottom of the left sidebar, below the shelves, there is a widget with a progress bar. Click on it to set how many books you aim to read this year. Progress is calculated automatically based on books marked as "Read". Set to 0 to disable the challenge.</li>
-            <li><strong>Find Duplicates:</strong> From the <em>Tools</em> menu &gt; <em>"Find Duplicates"</em>, the app scans your collection for repeated books by title or ISBN and lets you remove duplicates in a controlled way.</li>
-            <li><strong>Update Check:</strong> On startup, BiblioHouse silently checks if a new version is available and notifies you with a banner in the top bar.</li>
+            <li><strong>Drag &amp; Drop (Covers):</strong> Drag images from the internet directly onto your book's thumbnail.</li>
+            <li><strong>Burst Mode (Barcode):</strong> With a USB laser scanner focus on the ISBN field. You can catalogue
+                dozens of books per minute.</li>
+            <li><strong>Annual Reading Challenge:</strong> In the side panel, you can set how many books you want to read this year; the app recalculates your progress with every book you mark as "Read".</li>
         </ul>
 
-        <h2 id="glossary">10. Glossary</h2>
+        <h2 id="glosario">12. Glossary</h2>
         <ul>
-            <li><strong>CRUD:</strong> Basic operations: Create, Read, Update, Delete.</li>
-            <li><strong>ISBN:</strong> 13-digit International Standard Book Number. Found above the barcode on the back cover.</li>
-            <li><strong>OpenLibrary / Inventaire / Google Books:</strong> Global public databases the app uses to auto-complete book metadata for free.</li>
-            <li><strong>NextCloud:</strong> Self-hosted cloud storage platform. BiblioHouse uses it to sync your library with your own server.</li>
-            <li><strong>WebDAV:</strong> Remote file access protocol used by NextCloud for synchronization.</li>
-            <li><strong>Guest Mode:</strong> Access the app without creating a password-protected account. Data is saved locally without protection.</li>
-            <li><strong>Shelf:</strong> Thematic category (e.g., Novel, Fantasy) used to organize and filter books.</li>
-            <li><strong>Saga/Collection:</strong> Grouping of books that belong to the same literary series.</li>
+            <li><strong>ISBN:</strong> International Standard Book Number, a 13-digit code.</li>
+            <li><strong>OpenLibrary:</strong> Public database used to import metadata for free.</li>
+            <li><strong>NextCloud:</strong> Private cloud to securely sync your BiblioHouse data.</li>
+            <li><strong>EPUB:</strong> Universal open reading format for electronic books.</li>
+            <li><strong>Saga/Collection:</strong> Grouping of books belonging to the same literary series.</li>
         </ul>
 
-        <h2 id="contact">11. Contact and Support</h2>
+        <h2 id="contacto">13. Contact and Support</h2>
         <div class="feature-box">
-            <p><strong>What Information to Provide:</strong> If an issue from the table above isn't resolved, always specify whether you're using Windows, Mac, or Linux, the installed Java version (<code>java --version</code> in terminal), and how to reproduce the issue step-by-step.</p>
+            <p><strong>What information to provide:</strong> Always indicate
+                whether you use Windows, Mac or Linux, the Java version installed (<code>java --version</code>) and how
+                to reproduce the issue step by step.</p>
             <p><strong>Official Channels:</strong></p>
             <ul>
-                <li><strong>Technical Support (Bugs):</strong> <a href="mailto:info@bibliohouse.org">info@bibliohouse.org</a></li>
-                <li><strong>Forum and Queries:</strong> <a href="https://bibliohouse.org" target="_blank">bibliohouse.org</a></li>
-                <li><strong>Support the Project:</strong> <a href="https://liberapay.com/ferlagod./" target="_blank">Liberapay</a></li>
+                <li><strong>Technical Support (Bugs):</strong> <a href="mailto:proyectos@oniros.eu">proyectos@oniros.eu</a>
+                </li>
+                <li><strong>Forum and Queries:</strong> <a href="https://ferlagod.eu" target="_blank">ferlagod.eu</a>
+                </li>
+                <li><strong>Support the project:</strong> <a href="https://liberapay.com/ferlagod./"
+                                                            target="_blank">Liberapay</a></li>
             </ul>
         </div>
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v1.9 - Developed by ferlagod. Manual adapted to ensure 100% coverage and accessibility.</em>
+            <em>BiblioHouse v2.0 - Developed by ferlagod. Manual adapted ensuring 100% coverage and
+                accessibility in 6 languages.</em>
         </p>
+
     </body>
+
 </html>

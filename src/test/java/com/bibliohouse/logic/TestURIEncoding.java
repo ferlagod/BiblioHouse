@@ -24,7 +24,7 @@ package com.bibliohouse.logic;
  * codificado (%40) al resultado de {@link java.net.URI#getPath()}.
  *
  * @author Fernando lago Dávila
- * @version 1.9
+ * @version 2.0
  */
 public class TestURIEncoding {
 

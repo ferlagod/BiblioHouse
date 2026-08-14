@@ -39,8 +39,8 @@ import java.net.URL;
  * permite que el JS llame a métodos como {@link #updateProgress(int)} y
  * {@link #logError(String)} directamente.</p>
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class LectorDigitalController {
 

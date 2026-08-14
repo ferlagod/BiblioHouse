@@ -36,8 +36,8 @@ import javafx.stage.Stage;
  * interacción del usuario con la aplicación, ofreciendo la opción de iniciar
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class WelcomeController {
 

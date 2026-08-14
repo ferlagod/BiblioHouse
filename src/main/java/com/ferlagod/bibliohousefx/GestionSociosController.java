@@ -18,6 +18,7 @@
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.Socio;
+import com.bibliohouse.logic.LanguageManager;
 import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,8 +31,8 @@ import javafx.stage.Stage;
  * Controlador para crear o editar socios. Aquí metemos los datos de la gente a
  * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class GestionSociosController {
 
@@ -74,7 +75,7 @@ public class GestionSociosController {
         txtNumeroSocio.setEditable(false); // No se debe editar el ID en creación
 
         if (lblTitulo != null) {
-            lblTitulo.setText("Nuevo Socio");
+            lblTitulo.setText(LanguageManager.getString("member.new", "Nuevo Socio"));
         }
     }
 
@@ -94,7 +95,7 @@ public class GestionSociosController {
         txtDomicilio.setText(socio.getDomicilio());
 
         if (lblTitulo != null) {
-            lblTitulo.setText("Editar Socio: " + socio.getNumeroSocio());
+            lblTitulo.setText(LanguageManager.getString("member.edit", "Editar Socio: ") + socio.getNumeroSocio());
         }
     }
 
@@ -129,7 +130,7 @@ public class GestionSociosController {
         String apellidos = txtApellidos.getText().trim();
 
         if (nombre.isEmpty() || apellidos.isEmpty()) {
-            mostrarAlerta("Datos incompletos", "El Nombre y los Apellidos son obligatorios.");
+            mostrarAlerta(LanguageManager.getString("member.error.incomplete.title", "Datos incompletos"), LanguageManager.getString("member.error.incomplete.content", "El Nombre y los Apellidos son obligatorios."));
             return;
         }
 

@@ -19,6 +19,7 @@ package com.ferlagod.bibliohousefx;
 
 import java.util.List;
 import com.bibliohouse.logic.Libro;
+import com.bibliohouse.logic.LanguageManager;
 import java.io.File;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -37,8 +38,8 @@ import javafx.stage.Stage;
  * Ventana para ver la info de un libro. Sale la portada, resumen y las
  * estrellitas.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class DetalleLibroController {
 
@@ -79,6 +80,10 @@ public class DetalleLibroController {
     private Button btnLeerDigital;
     @FXML
     private Button btnConvertirDigital;
+    @FXML
+    private Label lblUbicacionLabel;
+    @FXML
+    private Label lblUbicacion;
 
     // --- DIARIO Y TRACKER ---
     @FXML
@@ -144,25 +149,26 @@ public class DetalleLibroController {
 
         // Estado de lectura con 3 estados visuales (no solo leído/pendiente)
         String estadoLectura = libroActual.getEstadoLectura();
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
+        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
+
         if (estadoLectura == null || estadoLectura.isEmpty()) {
-            estadoLectura = "Pendiente";
+            estadoLectura = txtPendiente;
         }
-        switch (estadoLectura) {
-            case "Leído" -> {
-                lblEstadoLectura.setText("Leído");
-                lblEstadoLectura.setStyle(
-                        "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            }
-            case "Leyendo" -> {
-                lblEstadoLectura.setText("Leyendo");
-                lblEstadoLectura.setStyle(
-                        "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            }
-            default -> {
-                lblEstadoLectura.setText("Pendiente");
-                lblEstadoLectura.setStyle(
-                        "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            }
+        
+        if (estadoLectura.equalsIgnoreCase(txtLeido) || estadoLectura.equalsIgnoreCase("Leído")) {
+            lblEstadoLectura.setText(txtLeido);
+            lblEstadoLectura.setStyle(
+                    "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+        } else if (estadoLectura.equalsIgnoreCase(txtLeyendo) || estadoLectura.equalsIgnoreCase("Leyendo")) {
+            lblEstadoLectura.setText(txtLeyendo);
+            lblEstadoLectura.setStyle(
+                    "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+        } else {
+            lblEstadoLectura.setText(txtPendiente);
+            lblEstadoLectura.setStyle(
+                    "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
         }
         lblEstadoLectura.setVisible(true);
 
@@ -204,6 +210,22 @@ public class DetalleLibroController {
             btnConvertirDigital.setManaged(digital);
         }
 
+        // --- UBICACIÓN FÍSICA ---
+        if (lblUbicacionLabel != null && lblUbicacion != null) {
+            if (digital) {
+                lblUbicacionLabel.setVisible(false);
+                lblUbicacionLabel.setManaged(false);
+                lblUbicacion.setVisible(false);
+                lblUbicacion.setManaged(false);
+            } else {
+                lblUbicacionLabel.setVisible(true);
+                lblUbicacionLabel.setManaged(true);
+                lblUbicacion.setVisible(true);
+                lblUbicacion.setManaged(true);
+                lblUbicacion.setText(libroActual.getUbicacionFisica() != null && !libroActual.getUbicacionFisica().isEmpty() ? libroActual.getUbicacionFisica() : LanguageManager.getString("detail.location.none", "No especificada"));
+            }
+        }
+
         // --- PROGRESO DE LECTURA ---
         actualizarUIProgreso();
 
@@ -222,10 +244,10 @@ public class DetalleLibroController {
                         celda.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-border-color: -color-border-default; -fx-border-radius: 8;");
 
                         javafx.scene.layout.HBox cabecera = new javafx.scene.layout.HBox(10);
-                        Label lblTipo = new Label(nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA ? "📝 Cita" : "💡 Nota");
+                        Label lblTipo = new Label(nota.getTipo() == com.bibliohouse.logic.NotaLectura.TipoNota.CITA ? LanguageManager.getString("detail.note.quote", "📝 Cita") : LanguageManager.getString("detail.note.note", "💡 Nota"));
                         lblTipo.setStyle("-fx-font-weight: bold; -fx-text-fill: -color-accent-fg;");
 
-                        Label lblPagina = new Label("Pág. " + nota.getPaginaReferencia());
+                        Label lblPagina = new Label(LanguageManager.getString("detail.note.page", "Pág. ") + nota.getPaginaReferencia());
                         lblPagina.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;");
 
                         String fechaSolo = nota.getFechaHora().split("T")[0];
@@ -257,9 +279,11 @@ public class DetalleLibroController {
         if (boxProgreso == null || libroActual == null) return;
         
         String estado = libroActual.getEstadoLectura();
-        if (estado == null || estado.isEmpty()) estado = "Pendiente";
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
+        if (estado == null || estado.isEmpty()) estado = txtPendiente;
         
-        if (!"Leyendo".equalsIgnoreCase(estado)) {
+        if (!txtLeyendo.equalsIgnoreCase(estado) && !"Leyendo".equalsIgnoreCase(estado)) {
             boxProgreso.setOpacity(0.5);
             progressBarLectura.setDisable(true);
             txtPaginaActual.setDisable(true);
@@ -282,7 +306,7 @@ public class DetalleLibroController {
         lblPorcentajeProgreso.setText(porcentaje + "%");
         
         txtPaginaActual.setText(String.valueOf(actual));
-        lblPaginasTotalesProgreso.setText("de " + totales);
+        lblPaginasTotalesProgreso.setText(LanguageManager.getString("detail.progress.of", "de ") + totales);
     }
 
     @FXML
@@ -392,7 +416,7 @@ public class DetalleLibroController {
             }
 
             Stage stage = new Stage();
-            stage.setTitle("Editar: " + libroActual.getTitulo());
+            stage.setTitle(LanguageManager.getString("detail.edit.title", "Editar: ") + libroActual.getTitulo());
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(lblTitulo.getScene().getWindow());
@@ -449,9 +473,9 @@ public class DetalleLibroController {
         if (!archivo.exists()) {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                     javafx.scene.control.Alert.AlertType.WARNING);
-            alert.setTitle("Error");
+            alert.setTitle(LanguageManager.getString("config.alert.error.title"));
             alert.setHeaderText(null);
-            alert.setContentText("El archivo ya no existe en la ruta guardada:\n" + archivo.getAbsolutePath());
+            alert.setContentText(LanguageManager.getString("detail.error.file_missing", "El archivo ya no existe en la ruta guardada:\n") + archivo.getAbsolutePath());
             alert.showAndWait();
             return;
         }
@@ -460,12 +484,14 @@ public class DetalleLibroController {
             // Abrir con lector interno
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
+                loader.setResources(LanguageManager.getBundle());
                 Parent root = loader.load();
                 LectorDigitalController controller = loader.getController();
                 controller.setLibro(libroActual);
                 
-                if (!"Leyendo".equals(libroActual.getEstadoLectura())) {
-                    libroActual.setEstadoLectura("Leyendo");
+                String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
+                if (!txtLeyendo.equals(libroActual.getEstadoLectura()) && !"Leyendo".equals(libroActual.getEstadoLectura())) {
+                    libroActual.setEstadoLectura(txtLeyendo);
                 }
                 
                 controller.setOnSyncRequested(() -> {
@@ -477,7 +503,7 @@ public class DetalleLibroController {
                 });
                 
                 Stage stage = new Stage();
-                stage.setTitle("Lector: " + libroActual.getTitulo());
+                stage.setTitle(LanguageManager.getString("detail.reader.title", "Lector: ") + libroActual.getTitulo());
                 stage.setScene(new Scene(root, 900, 700));
                 stage.centerOnScreen();
                 stage.initOwner(lblTitulo.getScene().getWindow());
@@ -499,9 +525,9 @@ public class DetalleLibroController {
             LOGGER.log(java.util.logging.Level.WARNING, "No se pudo abrir el archivo digital", e);
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
                     javafx.scene.control.Alert.AlertType.WARNING);
-            alert.setTitle("Error");
+            alert.setTitle(LanguageManager.getString("config.alert.error.title"));
             alert.setHeaderText(null);
-            alert.setContentText("No se pudo abrir el archivo.");
+            alert.setContentText(LanguageManager.getString("detail.error.cannot_open", "No se pudo abrir el archivo."));
             alert.showAndWait();
         }
     }
@@ -517,11 +543,10 @@ public class DetalleLibroController {
         String targetExt = nombre.endsWith(".epub") ? "pdf" : "epub";
         
         javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Convertir Formato");
-        confirm.setHeaderText("Conversión usando Calibre");
-        confirm.setContentText("Vamos a intentar convertir el archivo a " + targetExt.toUpperCase() + ".\n" +
-                "Esto requiere que tengas Calibre instalado en tu ordenador y accesible ('ebook-convert' en el PATH).\n\n" +
-                "¿Deseas continuar?");
+        confirm.setTitle(LanguageManager.getString("detail.convert.title", "Convertir Formato"));
+        confirm.setHeaderText(LanguageManager.getString("detail.convert.header", "Conversión usando Calibre"));
+        String formatMsg = LanguageManager.getString("detail.convert.content", "Vamos a intentar convertir el archivo a %s.\nEsto requiere que tengas Calibre instalado en tu ordenador y accesible ('ebook-convert' en el PATH).\n\n¿Deseas continuar?");
+        confirm.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
                 
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
@@ -554,9 +579,10 @@ public class DetalleLibroController {
         
         task.setOnSucceeded(e -> {
             javafx.scene.control.Alert ok = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-            ok.setTitle("Éxito");
+            ok.setTitle(LanguageManager.getString("detail.convert.success.title", "Éxito"));
             ok.setHeaderText(null);
-            ok.setContentText("Conversión completada. El archivo ha sido convertido a " + targetExt.toUpperCase());
+            String formatMsg = LanguageManager.getString("detail.convert.success.content", "Conversión completada. El archivo ha sido convertido a %s");
+            ok.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
             ok.show();
             
             libroActual.setRutaArchivoDigital(task.getValue().getAbsolutePath());
@@ -567,9 +593,10 @@ public class DetalleLibroController {
         
         task.setOnFailed(e -> {
             javafx.scene.control.Alert err = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
-            err.setTitle("Error de Conversión");
-            err.setHeaderText("No pudimos realizar la conversión.");
-            err.setContentText("Asegúrate de tener Calibre instalado. Si ya lo tienes, el comando 'ebook-convert' no está en el PATH.\n\nDetalle: " + task.getException().getMessage());
+            err.setTitle(LanguageManager.getString("detail.convert.error.title", "Error de Conversión"));
+            err.setHeaderText(LanguageManager.getString("detail.convert.error.header", "No pudimos realizar la conversión."));
+            String formatMsg = LanguageManager.getString("detail.convert.error.content", "Asegúrate de tener Calibre instalado. Si ya lo tienes, el comando 'ebook-convert' no está en el PATH.\n\nDetalle: %s");
+            err.setContentText(String.format(formatMsg, task.getException().getMessage()));
             err.show();
         });
         
@@ -579,10 +606,10 @@ public class DetalleLibroController {
     @FXML
     private void abrirDialogoNuevaNota(ActionEvent event) {
         javafx.scene.control.Dialog<com.bibliohouse.logic.NotaLectura> dialog = new javafx.scene.control.Dialog<>();
-        dialog.setTitle("Nueva Nota");
-        dialog.setHeaderText("Añadir al Diario de Lectura");
+        dialog.setTitle(LanguageManager.getString("detail.note.new.title", "Nueva Nota"));
+        dialog.setHeaderText(LanguageManager.getString("detail.note.new.header", "Añadir al Diario de Lectura"));
 
-        javafx.scene.control.ButtonType btnGuardar = new javafx.scene.control.ButtonType("Guardar", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        javafx.scene.control.ButtonType btnGuardar = new javafx.scene.control.ButtonType(LanguageManager.getString("ctx.save", "Guardar"), javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(btnGuardar, javafx.scene.control.ButtonType.CANCEL);
 
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
@@ -598,15 +625,15 @@ public class DetalleLibroController {
         spnPagina.setEditable(true);
 
         javafx.scene.control.TextArea txtContenido = new javafx.scene.control.TextArea();
-        txtContenido.setPromptText("Escribe aquí tu nota o cita...");
+        txtContenido.setPromptText(LanguageManager.getString("detail.note.new.placeholder", "Escribe aquí tu nota o cita..."));
         txtContenido.setPrefRowCount(4);
         txtContenido.setWrapText(true);
 
-        grid.add(new Label("Tipo:"), 0, 0);
+        grid.add(new Label(LanguageManager.getString("detail.note.new.type", "Tipo:")), 0, 0);
         grid.add(cmbTipo, 1, 0);
-        grid.add(new Label("Página:"), 0, 1);
+        grid.add(new Label(LanguageManager.getString("detail.note.new.page", "Página:")), 0, 1);
         grid.add(spnPagina, 1, 1);
-        grid.add(new Label("Contenido:"), 0, 2);
+        grid.add(new Label(LanguageManager.getString("detail.note.new.content", "Contenido:")), 0, 2);
         grid.add(txtContenido, 1, 2);
 
         dialog.getDialogPane().setContent(grid);

@@ -31,15 +31,17 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 import java.util.*;
+import java.util.*;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.LanguageManager;
 
 /**
  * Controlador para la ventana de exportación de catálogo web HTML. Permite
  * filtrar libros, personalizar el nombre de la biblioteca y elegir el modo de
  * agrupación antes de generar el archivo HTML estático.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class ExportarWebController {
 
@@ -91,16 +93,21 @@ public class ExportarWebController {
         seleccionGeneros = new HashMap<>();
 
         // Configurar modos de agrupación
-        cmbAgrupacion.setItems(FXCollections.observableArrayList("Género", "Estantería"));
-        cmbAgrupacion.setValue("Género");
+        String txtGenero = LanguageManager.getString("export.group.genre", "Género");
+        String txtEstanteria = LanguageManager.getString("export.group.shelf", "Estantería");
+        cmbAgrupacion.setItems(FXCollections.observableArrayList(txtGenero, txtEstanteria));
+        cmbAgrupacion.setValue(txtGenero);
 
         // Configurar estados de lectura
-        cmbEstadoLectura.setItems(FXCollections.observableArrayList(
-                "Todos", "Leído", "Leyendo", "Pendiente"));
-        cmbEstadoLectura.setValue("Todos");
+        String txtTodos = LanguageManager.getString("export.status.all", "Todos");
+        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
+        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        cmbEstadoLectura.setItems(FXCollections.observableArrayList(txtTodos, txtLeido, txtLeyendo, txtPendiente));
+        cmbEstadoLectura.setValue(txtTodos);
 
         // Nombre por defecto
-        txtNombreBiblioteca.setText("Mi Biblioteca");
+        txtNombreBiblioteca.setText(LanguageManager.getString("export.library.default", "Mi Biblioteca"));
 
         // Listeners para actualizar contador
         txtBuscar.textProperty().addListener((obs, old, newVal) -> actualizarContador());
@@ -218,7 +225,7 @@ public class ExportarWebController {
      */
     private void actualizarContador() {
         List<Libro> librosFiltrados = aplicarFiltros();
-        lblContadorLibros.setText("Libros que coinciden: " + librosFiltrados.size());
+        lblContadorLibros.setText(LanguageManager.getString("export.matching", "Libros que coinciden: ") + librosFiltrados.size());
         btnExportar.setDisable(librosFiltrados.isEmpty());
     }
 
@@ -329,8 +336,10 @@ public class ExportarWebController {
 
         // Filtro por estado de lectura
         String estadoSeleccionado = cmbEstadoLectura.getValue();
-        if (estadoSeleccionado != null && !estadoSeleccionado.equals("Todos")) {
-            String estadoLibro = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : "Pendiente";
+        String txtTodos = LanguageManager.getString("export.status.all", "Todos");
+        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
+        if (estadoSeleccionado != null && !estadoSeleccionado.equals(txtTodos)) {
+            String estadoLibro = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : txtPendiente;
             if (!estadoLibro.equals(estadoSeleccionado)) {
                 return false;
             }
@@ -348,7 +357,7 @@ public class ExportarWebController {
         txtAutor.clear();
         txtAnioDesde.clear();
         txtAnioHasta.clear();
-        cmbEstadoLectura.setValue("Todos");
+        cmbEstadoLectura.setValue(LanguageManager.getString("export.status.all", "Todos"));
 
         chkTodasEstanterias.setSelected(true);
         toggleTodasEstanterias(null);
@@ -376,8 +385,8 @@ public class ExportarWebController {
         List<Libro> librosFiltrados = aplicarFiltros();
 
         if (librosFiltrados.isEmpty()) {
-            mostrarAlerta("No hay libros",
-                    "No hay libros que coincidan con los filtros seleccionados.",
+            mostrarAlerta(LanguageManager.getString("export.empty.title", "No hay libros"),
+                    LanguageManager.getString("export.empty.content", "No hay libros que coincidan con los filtros seleccionados."),
                     Alert.AlertType.WARNING);
             return;
         }
@@ -385,21 +394,22 @@ public class ExportarWebController {
         // Obtener nombre de la biblioteca
         String nombreBiblioteca = txtNombreBiblioteca.getText().trim();
         if (nombreBiblioteca.isEmpty()) {
-            nombreBiblioteca = "Mi Biblioteca";
+            nombreBiblioteca = LanguageManager.getString("export.library.default", "Mi Biblioteca");
         }
 
         // Obtener modo de agrupación
         String agrupacionStr = cmbAgrupacion.getValue();
-        ServicioExportarWeb.ModoAgrupacion modo = "Estantería".equals(agrupacionStr)
+        String txtEstanteria = LanguageManager.getString("export.group.shelf", "Estantería");
+        ServicioExportarWeb.ModoAgrupacion modo = txtEstanteria.equals(agrupacionStr)
                 ? ServicioExportarWeb.ModoAgrupacion.ESTANTERIA
                 : ServicioExportarWeb.ModoAgrupacion.GENERO;
 
         // Mostrar diálogo para seleccionar ubicación del archivo
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Catálogo Web");
-        fileChooser.setInitialFileName("catalogo_biblioteca.html");
+        fileChooser.setTitle(LanguageManager.getString("export.web.save.title", "Guardar Catálogo Web"));
+        fileChooser.setInitialFileName(LanguageManager.getString("export.web.save.default", "catalogo_biblioteca.html"));
         fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Archivos HTML", "*.html"));
+                new FileChooser.ExtensionFilter(LanguageManager.getString("export.web.save.html", "Archivos HTML"), "*.html"));
 
         Stage stage = (Stage) btnExportar.getScene().getWindow();
         File archivoDestino = fileChooser.showSaveDialog(stage);
@@ -432,16 +442,14 @@ public class ExportarWebController {
                 btnExportar.setDisable(false);
 
                 if (exito) {
-                    mostrarAlerta("Exportación exitosa",
-                            "El catálogo web se ha generado correctamente en:\n"
-                            + finalDestino.getAbsolutePath()
-                            + "\n\nPuedes abrirlo en cualquier navegador, subirlo "
-                            + "a un hosting o compartirlo por WhatsApp.",
+                    String formatExito = LanguageManager.getString("export.web.success.content", "El catálogo web se ha generado correctamente en:\n%s\n\nPuedes abrirlo en cualquier navegador, subirlo a un hosting o compartirlo por WhatsApp.");
+                    mostrarAlerta(LanguageManager.getString("export.web.success.title", "Exportación exitosa"),
+                            String.format(formatExito, finalDestino.getAbsolutePath()),
                             Alert.AlertType.INFORMATION);
                     stage.close();
                 } else {
-                    mostrarAlerta("Error al exportar",
-                            "Hubo un error al generar el catálogo web. Revise los logs para más detalles.",
+                    mostrarAlerta(LanguageManager.getString("export.web.error.title", "Error al exportar"),
+                            LanguageManager.getString("export.web.error.content", "Hubo un error al generar el catálogo web. Revise los logs para más detalles."),
                             Alert.AlertType.ERROR);
                 }
             });

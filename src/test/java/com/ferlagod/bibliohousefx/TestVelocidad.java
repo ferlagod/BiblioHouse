@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * libros. Mide el tiempo requerido para manejar grandes volúmenes de datos en
  * JsonManager.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 class TestVelocidad {
 

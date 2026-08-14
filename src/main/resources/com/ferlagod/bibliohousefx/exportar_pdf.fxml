@@ -18,8 +18,8 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
     <children>
-        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Exportar Informe de Biblioteca a PDF" />
-        <Label style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" text="Seleccione los filtros que desea aplicar al informe:" wrapText="true" />
+        <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="%pdf.export.title" />
+        <Label style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" text="%pdf.export.subtitle" wrapText="true" />
         
         <Separator />
         
@@ -32,21 +32,21 @@
                     <children>
                         <!-- Filtro por título/ISBN -->
                         <VBox spacing="5.0">
-                            <Label style="-fx-font-weight: bold;" text="Buscar por Título o ISBN:" />
-                            <TextField fx:id="txtBuscar" promptText="Escriba título o ISBN..." />
+                            <Label style="-fx-font-weight: bold;" text="%pdf.export.search" />
+                            <TextField fx:id="txtBuscar" promptText="%pdf.export.search.placeholder" />
                         </VBox>
                         
                         <!-- Filtro por autor -->
                         <VBox spacing="5.0">
-                            <Label style="-fx-font-weight: bold;" text="Buscar por Autor:" />
-                            <TextField fx:id="txtAutor" promptText="Escriba nombre del autor..." />
+                            <Label style="-fx-font-weight: bold;" text="%pdf.export.author" />
+                            <TextField fx:id="txtAutor" promptText="%pdf.export.author.placeholder" />
                         </VBox>
                         
                         <!-- Filtro por estanterías -->
                         <VBox spacing="5.0">
                             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                <Label style="-fx-font-weight: bold;" text="Estanterías:" />
-                                <CheckBox fx:id="chkTodasEstanterias" onAction="#toggleTodasEstanterias" selected="true" text="Todas" />
+                                <Label style="-fx-font-weight: bold;" text="%pdf.export.shelves" />
+                                <CheckBox fx:id="chkTodasEstanterias" onAction="#toggleTodasEstanterias" selected="true" text="%pdf.export.all" />
                             </HBox>
                             <ListView fx:id="listaEstanterias" maxHeight="120.0" prefHeight="120.0" />
                         </VBox>
@@ -54,31 +54,31 @@
                         <!-- Filtro por géneros -->
                         <VBox spacing="5.0">
                             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                <Label style="-fx-font-weight: bold;" text="Géneros:" />
-                                <CheckBox fx:id="chkTodosGeneros" onAction="#toggleTodosGeneros" selected="true" text="Todos" />
+                                <Label style="-fx-font-weight: bold;" text="%pdf.export.genres" />
+                                <CheckBox fx:id="chkTodosGeneros" onAction="#toggleTodosGeneros" selected="true" text="%pdf.export.all" />
                             </HBox>
                             <ListView fx:id="listaGeneros" maxHeight="120.0" prefHeight="120.0" />
                         </VBox>
                         
                         <!-- Filtro por año -->
                         <VBox spacing="5.0">
-                            <Label style="-fx-font-weight: bold;" text="Rango de Años:" />
+                            <Label style="-fx-font-weight: bold;" text="%pdf.export.years" />
                             <HBox spacing="10.0">
                                 <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                    <Label style="-fx-font-size: 9px;" text="Desde:" />
-                                    <TextField fx:id="txtAnioDesde" prefWidth="80.0" promptText="YYYY" />
+                                    <Label style="-fx-font-size: 9px;" text="%pdf.export.years.from" />
+                                    <TextField fx:id="txtAnioDesde" prefWidth="80.0" promptText="%pdf.export.year.placeholder" />
                                 </VBox>
                                 <VBox spacing="2.0" HBox.hgrow="ALWAYS">
-                                    <Label style="-fx-font-size: 9px;" text="Hasta:" />
-                                    <TextField fx:id="txtAnioHasta" prefWidth="80.0" promptText="YYYY" />
+                                    <Label style="-fx-font-size: 9px;" text="%pdf.export.years.to" />
+                                    <TextField fx:id="txtAnioHasta" prefWidth="80.0" promptText="%pdf.export.year.placeholder" />
                                 </VBox>
                             </HBox>
                         </VBox>
                         
                         <!-- Filtro por estado de lectura -->
                         <VBox spacing="5.0">
-                            <Label style="-fx-font-weight: bold;" text="Estado de Lectura:" />
-                            <ComboBox fx:id="cmbEstadoLectura" prefWidth="200.0" promptText="Todos los estados" />
+                            <Label style="-fx-font-weight: bold;" text="%pdf.export.status" />
+                            <ComboBox fx:id="cmbEstadoLectura" prefWidth="200.0" promptText="%pdf.export.status.all" />
                         </VBox>
                     </children>
                 </VBox>
@@ -89,15 +89,15 @@
         
         <!-- Contador de libros filtrados -->
         <HBox alignment="CENTER_LEFT" spacing="10.0">
-            <Label fx:id="lblContadorLibros" style="-fx-font-weight: bold;" text="Libros que coinciden con los filtros: 0" />
+            <Label fx:id="lblContadorLibros" style="-fx-font-weight: bold;" text="" />
             <ProgressIndicator fx:id="progressIndicator" maxHeight="20.0" maxWidth="20.0" visible="false" />
         </HBox>
         
         <!-- Botones de acción -->
         <HBox alignment="CENTER_RIGHT" spacing="10.0">
-            <Button onAction="#limpiarFiltros" text="Limpiar Filtros" />
-            <Button onAction="#cancelar" text="Cancelar" />
-            <Button fx:id="btnExportar" defaultButton="true" onAction="#exportarPDF" styleClass="accent" text="Exportar PDF" />
+            <Button onAction="#limpiarFiltros" text="%pdf.export.clear" />
+            <Button onAction="#cancelar" text="%pdf.export.cancel" />
+            <Button fx:id="btnExportar" defaultButton="true" onAction="#exportarPDF" styleClass="accent" text="%pdf.export.btn" />
         </HBox>
     </children>
 </VBox>

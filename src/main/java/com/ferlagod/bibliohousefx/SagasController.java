@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.LanguageManager;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -49,8 +50,8 @@ import javafx.scene.control.TextInputDialog;
  * y detecta automáticamente los huecos en la colección (tomos que faltan) para
  * resaltarlos en rojo.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class SagasController {
 
@@ -151,11 +152,11 @@ public class SagasController {
      */
     private void mostrarSaga(String nombreSaga) {
         lblTituloSaga.setText(nombreSaga);
-        panelLibros.getChildren().clear();
 
         List<Libro> libros = sagasMap.get(nombreSaga);
         if (libros == null || libros.isEmpty()) {
             lblResumenSaga.setText("");
+            Platform.runLater(() -> panelLibros.getChildren().clear());
             return;
         }
 
@@ -170,16 +171,16 @@ public class SagasController {
 
         // Actualizar resumen de la saga
         if (huecos > 0) {
-            lblResumenSaga.setText("Tienes " + encontrados + " de " + totalTomos
-                    + " tomo" + (totalTomos != 1 ? "s" : "") + " · Faltan " + huecos
-                    + " tomo" + (huecos != 1 ? "s" : ""));
+            String formatIncompleto = LanguageManager.getString("sagas.resume.incomplete", "Tienes %d de %d tomos · Faltan %d");
+            lblResumenSaga.setText(String.format(formatIncompleto, encontrados, totalTomos, huecos));
         } else {
-            lblResumenSaga.setText("Colección completa · " + encontrados
-                    + " tomo" + (encontrados != 1 ? "s" : ""));
+            String formatCompleto = LanguageManager.getString("sagas.resume.complete", "Colección completa · %d tomos");
+            lblResumenSaga.setText(String.format(formatCompleto, encontrados));
         }
 
         // Mostrar los tomos en el panel
         Platform.runLater(() -> {
+            panelLibros.getChildren().clear(); // <-- Movido aquí para evitar condiciones de carrera
             for (double i = 1.0; i <= maxOrden; i += 1.0) {
                 final double tomo = i;
                 boolean encontrado = false;
@@ -219,7 +220,8 @@ public class SagasController {
         tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;");
 
         // Número de tomo
-        String numTomo = libro.getOrdenEnSerie() > 0 ? "Tomo " + formatarTomo(libro.getOrdenEnSerie()) : "";
+        String prefixTomo = LanguageManager.getString("sagas.tomo", "Tomo ");
+        String numTomo = libro.getOrdenEnSerie() > 0 ? prefixTomo + formatarTomo(libro.getOrdenEnSerie()) : "";
         Label lblNumero = new Label(numTomo);
         lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-text-muted;");
 
@@ -260,7 +262,8 @@ public class SagasController {
         tarjeta.setStyle("-fx-padding: 6; -fx-background-radius: 8;");
 
         // Número de tomo
-        Label lblNumero = new Label("Tomo " + numeroTomo);
+        String prefixTomo = LanguageManager.getString("sagas.tomo", "Tomo ");
+        Label lblNumero = new Label(prefixTomo + numeroTomo);
         lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-danger-fg;");
 
         // Placeholder visual
@@ -274,7 +277,8 @@ public class SagasController {
         placeholder.getChildren().add(lblInterrogacion);
 
         // Texto informativo
-        Label lblTitulo = new Label("¡Falta el Tomo " + numeroTomo + "!");
+        String faltaFormat = LanguageManager.getString("sagas.missing", "¡Falta el Tomo %d!");
+        Label lblTitulo = new Label(String.format(faltaFormat, numeroTomo));
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(125);
         lblTitulo.setAlignment(Pos.CENTER);
@@ -329,9 +333,9 @@ public class SagasController {
 
             // Menú contextual
             menu = new ContextMenu();
-            MenuItem itemRenombrar = new MenuItem("Renombrar saga");
-            MenuItem itemBorrarSaga = new MenuItem("Eliminar saga (mantener libros)");
-            MenuItem itemBorrarTodo = new MenuItem("Eliminar saga y sus libros");
+            MenuItem itemRenombrar = new MenuItem(LanguageManager.getString("sagas.menu.rename", "Renombrar saga"));
+            MenuItem itemBorrarSaga = new MenuItem(LanguageManager.getString("sagas.menu.delete", "Eliminar saga (mantener libros)"));
+            MenuItem itemBorrarTodo = new MenuItem(LanguageManager.getString("sagas.menu.delete_all", "Eliminar saga y sus libros"));
 
             itemRenombrar.setOnAction(e -> renombrarSaga(getItem()));
             itemBorrarSaga.setOnAction(e -> eliminarSaga(getItem(), false));
@@ -352,7 +356,7 @@ public class SagasController {
                 nombre.setText(saga);
                 java.util.List<com.bibliohouse.logic.Libro> libros = sagasMap.get(saga);
                 int total = libros != null ? libros.size() : 0;
-                info.setText(total + " tomo" + (total != 1 ? "s" : ""));
+                info.setText(total + " " + LanguageManager.getString("sagas.tomos.count", "tomos"));
 
                 setGraphic(contenido);
                 setText(null);
@@ -375,14 +379,14 @@ public class SagasController {
         List<Libro> librosDeSaga = sagasMap.get(nombreSaga);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar eliminación");
+        alert.setTitle(LanguageManager.getString("sagas.delete.title", "Confirmar eliminación"));
 
         if (borrarLibros) {
-            alert.setHeaderText("¿Seguro que deseas eliminar la saga y TODOS sus libros?");
-            alert.setContentText("Se borrarán " + librosDeSaga.size() + " libros de tu biblioteca. Esta acción no se puede deshacer.");
+            alert.setHeaderText(LanguageManager.getString("sagas.delete_all.header", "¿Seguro que deseas eliminar la saga y TODOS sus libros?"));
+            alert.setContentText(String.format(LanguageManager.getString("sagas.delete_all.content", "Se borrarán %d libros de tu biblioteca. Esta acción no se puede deshacer."), librosDeSaga.size()));
         } else {
-            alert.setHeaderText("¿Seguro que deseas desvincular estos libros de la saga?");
-            alert.setContentText("Los libros seguirán en tu biblioteca, pero ya no formarán parte de la colección.");
+            alert.setHeaderText(LanguageManager.getString("sagas.delete.header", "¿Seguro que deseas desvincular estos libros de la saga?"));
+            alert.setContentText(LanguageManager.getString("sagas.delete.content", "Los libros seguirán en tu biblioteca, pero ya no formarán parte de la colección."));
         }
 
         Optional<ButtonType> result = alert.showAndWait();
@@ -400,7 +404,7 @@ public class SagasController {
             initData(listaLibrosPrincipal);
 
             if (lblTituloSaga.getText().equals(nombreSaga)) {
-                lblTituloSaga.setText("Selecciona una saga...");
+                lblTituloSaga.setText(LanguageManager.getString("sagas.select", "Selecciona una saga..."));
                 lblResumenSaga.setText("");
                 panelLibros.getChildren().clear();
             }
@@ -420,9 +424,9 @@ public class SagasController {
         }
 
         TextInputDialog dialog = new TextInputDialog(nombreAntiguo);
-        dialog.setTitle("Renombrar saga");
-        dialog.setHeaderText("Introduce el nuevo nombre para la colección:");
-        dialog.setContentText("Nombre:");
+        dialog.setTitle(LanguageManager.getString("sagas.rename.title", "Renombrar saga"));
+        dialog.setHeaderText(LanguageManager.getString("sagas.rename.header", "Introduce el nuevo nombre para la colección:"));
+        dialog.setContentText(LanguageManager.getString("sagas.rename.content", "Nombre:"));
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {

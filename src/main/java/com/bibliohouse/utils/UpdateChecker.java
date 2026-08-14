@@ -31,8 +31,8 @@ import javafx.application.Platform;
  * la API de Forgejo para verificar si existe una versión más reciente que la
  * actual y notifica el resultado mediante un callback.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class UpdateChecker {
 

@@ -30,7 +30,7 @@
                         </Label>
                         <Label fx:id="lblBadgeDigital" managed="false" visible="false"
                                style="-fx-background-color: #e3f2fd; -fx-text-fill: #1565c0; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold; -fx-font-size: 11px;"
-                               text="📱 Digital" />
+                               text="%shelf.digital" />
                     </children>
                 </VBox>
 
@@ -64,6 +64,7 @@
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
                                 <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.publisher" />
@@ -78,11 +79,14 @@
                                 <Label style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.isbn" GridPane.rowIndex="3" />
                                 <Label fx:id="lblIsbn" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                                <Label fx:id="lblFormatoLabel" managed="false" visible="false" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="Formato" GridPane.rowIndex="4" />
+                                <Label fx:id="lblFormatoLabel" managed="false" visible="false" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.format.label" GridPane.rowIndex="4" />
                                 <Label fx:id="lblFormato" managed="false" visible="false" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-                                <Label fx:id="lblArchivoLabel" managed="false" visible="false" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="Archivo" GridPane.rowIndex="5" />
+                                <Label fx:id="lblArchivoLabel" managed="false" visible="false" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.file.label" GridPane.rowIndex="5" />
                                 <Label fx:id="lblArchivo" managed="false" visible="false" text="-" style="-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                <Label fx:id="lblUbicacionLabel" style="-fx-font-weight: bold; -fx-text-fill: -color-fg-muted;" text="%book.location.label" GridPane.rowIndex="6" />
+                                <Label fx:id="lblUbicacion" text="-" GridPane.columnIndex="1" GridPane.rowIndex="6" wrapText="true" />
                             </children>
                         </GridPane>
                   
@@ -102,16 +106,16 @@
                             </VBox.margin>
                             <children>
                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                    <Label text="Progreso de Lectura" style="-fx-font-weight: bold;" />
+                                    <Label text="%book.progress.title" style="-fx-font-weight: bold;" />
                                     <Region HBox.hgrow="ALWAYS" />
                                     <Label fx:id="lblPorcentajeProgreso" text="0%" style="-fx-text-fill: -color-fg-muted; -fx-font-weight: bold;" />
                                 </HBox>
                                 <javafx.scene.control.ProgressBar fx:id="progressBarLectura" progress="0.0" maxWidth="Infinity" prefHeight="10.0" style="-fx-accent: #ff9800;" />
                                 <HBox alignment="CENTER_LEFT" spacing="10.0">
-                                    <Label text="Página:" />
+                                    <Label text="%book.page.label" />
                                     <javafx.scene.control.TextField fx:id="txtPaginaActual" prefWidth="60.0" />
                                     <Label fx:id="lblPaginasTotalesProgreso" text="de ?" style="-fx-text-fill: -color-fg-muted;" />
-                                    <Button text="Actualizar" onAction="#actualizarProgresoRapido" style="-fx-background-color: -color-accent-emphasis; -fx-text-fill: white;" />
+                                    <Button text="%btn.update" onAction="#actualizarProgresoRapido" style="-fx-background-color: -color-accent-emphasis; -fx-text-fill: white;" />
                                 </HBox>
                             </children>
                         </VBox>
@@ -131,12 +135,12 @@
                         </VBox>
                     </content>
                 </javafx.scene.control.Tab>
-                <javafx.scene.control.Tab text="Diario de Lectura">
+                <javafx.scene.control.Tab text="%book.diary.title">
                     <content>
                         <VBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
                             <children>
                                 <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <Button text="Añadir Nota" onAction="#abrirDialogoNuevaNota" />
+                                    <Button text="%book.diary.add" onAction="#abrirDialogoNuevaNota" />
                                 </HBox>
                                 <javafx.scene.control.ListView fx:id="listaDiario" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;" />
                             </children>
@@ -150,10 +154,10 @@
             <children>
                 <Button fx:id="btnLeerDigital" managed="false" visible="false" onAction="#abrirArchivoDigital"
                         style="-fx-font-weight: bold; -fx-background-color: #1565c0; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 8 20;"
-                        text="📖 Leer" />
+                        text="%btn.read" />
                 <Button fx:id="btnConvertirDigital" managed="false" visible="false" onAction="#convertirFormato"
                         style="-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-background-radius: 6; -fx-border-radius: 6;"
-                        text="🔄 Convertir" />
+                        text="%btn.convert" />
                 <Button onAction="#editarLibro" styleClass="text-button" text="%ctx.edit" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button cancelButton="true" onAction="#cerrar" styleClass="accent" text="%btn.close" />

@@ -29,8 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * que se rechacen entradas inválidas y documenta el comportamiento actual
  * frente a intentos de path traversal.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 class TestSeguridad {
 

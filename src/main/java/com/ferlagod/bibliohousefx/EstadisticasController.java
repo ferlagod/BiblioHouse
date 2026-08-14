@@ -32,13 +32,14 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.LanguageManager;
 
 /**
  * Controlador para la ventana de estadísticas. Muestra métricas sobre la
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class EstadisticasController {
 
@@ -91,7 +92,7 @@ public class EstadisticasController {
         String autorTop = conteoAutores.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElse("N/A");
+                .orElse(LanguageManager.getString("stats.na", "N/A"));
         lblAutorTop.setText(autorTop);
 
         // 3. Género más frecuente (para el texto) y para el gráfico
@@ -100,7 +101,7 @@ public class EstadisticasController {
         String generoTop = conteoGeneros.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElse("N/A");
+                .orElse(LanguageManager.getString("stats.na", "N/A"));
         lblGeneroTop.setText(generoTop);
 
         ObservableList<PieChart.Data> pieChartData = conteoGeneros.entrySet().stream()
@@ -141,14 +142,15 @@ public class EstadisticasController {
         int anioActual = LocalDate.now().getYear();
 
         // Contamos solo los que tienen fecha de finalización y el estado "Leído"
+        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
         long totalLibrosTerminados = libros.stream()
-                .filter(libro -> "Leído".equalsIgnoreCase(libro.getEstadoLectura())
+                .filter(libro -> txtLeido.equalsIgnoreCase(libro.getEstadoLectura())
                 && libro.getFechaFinalizacion() != null)
                 .count();
 
         // Contamos los terminados ESTE AÑO
         leidosEsteAnio = (int) libros.stream()
-                .filter(libro -> "Leído".equalsIgnoreCase(libro.getEstadoLectura())
+                .filter(libro -> txtLeido.equalsIgnoreCase(libro.getEstadoLectura())
                 && libro.getFechaFinalizacion() != null)
                 .filter(libro -> libro.getFechaFinalizacion().getYear() == anioActual)
                 .count();
@@ -189,7 +191,7 @@ public class EstadisticasController {
                 .collect(Collectors.toList());
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Libros por Autor");
+        series.setName(LanguageManager.getString("stats.books_by_author", "Libros por Autor"));
 
         for (Map.Entry<String, Long> entry : topAutores) {
             series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
@@ -212,18 +214,19 @@ public class EstadisticasController {
         graficoEstadosPorGenero.getData().clear();
 
         // Agrupar por género y luego por estado de lectura
+        String txtSinEstado = LanguageManager.getString("stats.no_status", "Sin estado");
         Map<String, Map<String, Long>> datos = libros.stream()
                 .collect(Collectors.groupingBy(Libro::getGenero,
                         Collectors.groupingBy(l -> {
                             String estado = l.getEstadoLectura();
-                            return (estado == null || estado.isEmpty()) ? "Sin estado" : estado;
+                            return (estado == null || estado.isEmpty()) ? txtSinEstado : estado;
                         }, Collectors.counting())));
 
         // Identificar todos los estados únicos presentes
         List<String> todosLosEstados = libros.stream()
                 .map(l -> {
                     String estado = l.getEstadoLectura();
-                    return (estado == null || estado.isEmpty()) ? "Sin estado" : estado;
+                    return (estado == null || estado.isEmpty()) ? txtSinEstado : estado;
                 })
                 .distinct()
                 .sorted()
@@ -254,8 +257,9 @@ public class EstadisticasController {
     private void limpiarDatos() {
         lblTotal.setText("0");
         lblLeidos.setText("0 (0%)");
-        lblAutorTop.setText("N/A");
-        lblGeneroTop.setText("N/A");
+        String txtNA = LanguageManager.getString("stats.na", "N/A");
+        lblAutorTop.setText(txtNA);
+        lblGeneroTop.setText(txtNA);
         lblMedia.setText("0.0");
         lblEstrellasMedia.setText("☆☆☆☆☆");
         lblLeidosAnio.setText("0");

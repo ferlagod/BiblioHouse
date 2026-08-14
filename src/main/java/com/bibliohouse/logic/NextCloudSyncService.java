@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
  * correcta y gestiona la subida/bajada de archivos JSON y portadas de forma
  * incremental.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class NextCloudSyncService {
 

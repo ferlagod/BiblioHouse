@@ -26,8 +26,8 @@ import javafx.stage.Stage;
  * Controlador para la ventana de resultados de duplicados. Muestra el texto con
  * el análisis de libros duplicados.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class DuplicadosController {
 

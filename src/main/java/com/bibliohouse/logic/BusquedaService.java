@@ -12,8 +12,8 @@ import java.util.logging.Logger;
  * Servicio encargado de gestionar las búsquedas unificadas en APIs externas
  * (Google Books, OpenLibrary, Inventaire).
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class BusquedaService {
 

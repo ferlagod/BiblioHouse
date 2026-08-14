@@ -43,8 +43,8 @@ import javafx.stage.Stage;
  * Controlador para la edición de libros. Permite modificar datos como título,
  * autor, portada o gestionar las estanterías.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class EditarLibroController {
 
@@ -62,6 +62,8 @@ public class EditarLibroController {
     private TextField txtSerie;
     @FXML
     private TextField txtOrden;
+    @FXML
+    private TextField txtUbicacion;
     @FXML
     private Spinner<Integer> spinnerAnio; // Selector numérico para el año de publicación
     @FXML
@@ -220,6 +222,7 @@ public class EditarLibroController {
         txtEditorial.setText(libro.getEditorial());
         txtGenero.setText(libro.getGenero());
         txtIsbn.setText(libro.getIsbn());
+        txtUbicacion.setText(libro.getUbicacionFisica() != null ? libro.getUbicacionFisica() : "");
         txtResena.setText(libro.getReseña() != null ? libro.getReseña() : "");
 
         // Serie y orden
@@ -374,6 +377,7 @@ public class EditarLibroController {
         libro.setGenero(txtGenero.getText());
         libro.setIsbn(txtIsbn.getText());
         libro.setAño(String.valueOf(spinnerAnio.getValue()));
+        libro.setUbicacionFisica(txtUbicacion.getText());
 
         libro.setSerie(txtSerie.getText());
         double orden = 0.0;

@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Pruebas unitarias para la clase SystemInfo. Verifica la obtención de
  * información del sistema sin efectos secundarios.
  *
- * @author Fernando Lago Dávila
- * @version 1.9
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.0
  */
 public class SystemInfoTest {
 

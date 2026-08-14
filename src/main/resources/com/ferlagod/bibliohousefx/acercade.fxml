@@ -51,7 +51,7 @@
         <HBox alignment="CENTER" spacing="5.0">
             <children>
                 <Label text="%about.contact" style="-fx-text-fill: -color-fg-muted;" />
-                <Hyperlink onAction="#abrirEmail" text="info@bibliohouse.org" />
+                <Hyperlink onAction="#abrirEmail" text="proyectos@oniros.eu" />
             </children>
         </HBox>
         
