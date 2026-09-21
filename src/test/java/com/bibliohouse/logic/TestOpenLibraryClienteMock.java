@@ -109,7 +109,7 @@ public class TestOpenLibraryClienteMock {
     @Test
     @DisplayName("Debe capturar HttpTimeoutException y retornar lista vacía sin arrojar excepción")
     public void testExcepcionDeRedTimeout() {
-        OpenLibraryCliente.setHttpSender(req -> {
+        OpenLibraryCliente.setHttpSender((OpenLibraryCliente.HttpSender) req -> {
             throw new HttpTimeoutException("Request timed out");
         });
 

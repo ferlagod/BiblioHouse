@@ -26,18 +26,24 @@ package com.bibliohouse.logic;
  * @author Fernando lago Dávila
  * @version 2.0
  */
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestURIEncoding {
 
-    /**
-     * Método principal que demuestra las diferencias entre: -
-     * {@code toASCIIString()}: Devuelve la URI con caracteres codificados (ej.
-     * %40). - {@code toString()}: Devuelve la URI en su forma original, si es
-     * posible. - {@code getPath()}: Extrae el componente de ruta, interpretando
-     * el '@' como separador de usuario.
-     *
-     * @param args Argumentos de la línea de comandos (no se utilizan).
-     * @throws Exception Si ocurre un error al crear las URIs.
-     */
+    @Test
+    public void testUriEncodingDifferences() throws Exception {
+        java.net.URI uri = new java.net.URI("https://nextcloud05.webo.cloud/remote.php/dav/files/fernando.lago%40oniros.eu/");
+        assertNotNull(uri.toASCIIString());
+        assertEquals("/remote.php/dav/files/fernando.lago@oniros.eu/", uri.getPath());
+        assertEquals("/remote.php/dav/files/fernando.lago%40oniros.eu/", uri.getRawPath());
+
+        java.net.URI uri2 = new java.net.URI("https://nextcloud05.webo.cloud/remote.php/dav/files/fernando.lago@oniros.eu/");
+        assertNotNull(uri2.toASCIIString());
+        assertEquals("/remote.php/dav/files/fernando.lago@oniros.eu/", uri2.getPath());
+        assertEquals("/remote.php/dav/files/fernando.lago@oniros.eu/", uri2.getRawPath());
+    }
+
     public static void main(String[] args) throws Exception {
         // URI con '@' codificado como %40.
         java.net.URI uri = new java.net.URI("https://nextcloud05.webo.cloud/remote.php/dav/files/fernando.lago%40oniros.eu/");

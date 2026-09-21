@@ -26,20 +26,21 @@ package com.bibliohouse.logic;
  * @author ferlagod (Fernando Lago Dávila)
  * @version 2.0
  */
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 public class TestProperURIEncoding {
 
-    /**
-     * Método principal que ejecuta la prueba de codificación de URI. Toma un
-     * nombre de usuario con '@' y lo codifica para que sea válido en una URI.
-     *
-     * @param args Argumentos de la línea de comandos (no se utilizan en este
-     * ejemplo).
-     * @throws Exception Si ocurre un error al crear la URI.
-     */
+    @Test
+    public void testProperUriEncoding() throws Exception {
+        String username = "fernando.lago@oniros.eu";
+        String encoded = new java.net.URI(null, null, username, null).getRawPath();
+        assertNotNull(encoded);
+        assertEquals("fernando.lago@oniros.eu", encoded);
+    }
+
     public static void main(String[] args) throws Exception {
         String username = "fernando.lago@oniros.eu";
-        // Crea una URI con el nombre de usuario como componente de ruta.
-        // El constructor de URI codifica automáticamente los caracteres especiales.
         String encoded = new java.net.URI(null, null, username, null).getRawPath();
         System.out.println("Properly encoded username for path: " + encoded);
     }

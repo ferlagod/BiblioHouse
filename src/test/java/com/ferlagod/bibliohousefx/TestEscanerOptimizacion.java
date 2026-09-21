@@ -7,9 +7,8 @@
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
  */
-package com.bibliohouse.logic;
+package com.ferlagod.bibliohousefx;
 
-import com.ferlagod.bibliohousefx.EscanerController;
 import java.awt.image.BufferedImage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;

@@ -7,9 +7,9 @@
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
  */
-package com.bibliohouse.logic;
+package com.ferlagod.bibliohousefx;
 
-import com.ferlagod.bibliohousefx.CatalogoGridController;
+import com.bibliohouse.logic.Libro;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.FXCollections;

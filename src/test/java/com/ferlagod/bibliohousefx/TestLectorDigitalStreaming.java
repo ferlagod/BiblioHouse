@@ -15,9 +15,8 @@
  * Usted debería haber recibido una copia de la Licencia Pública General de GNU
  * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
-package com.bibliohouse.logic;
+package com.ferlagod.bibliohousefx;
 
-import com.ferlagod.bibliohousefx.LectorDigitalController;
 import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
