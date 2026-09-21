@@ -32,6 +32,7 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.LanguageManager;
 
 /**
@@ -141,16 +142,15 @@ public class EstadisticasController {
         int mesActual = LocalDate.now().getMonthValue();
         int anioActual = LocalDate.now().getYear();
 
-        // Contamos solo los que tienen fecha de finalización y el estado "Leído"
-        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
+        // Contamos solo los que tienen fecha de finalización y el estado LEIDO
         long totalLibrosTerminados = libros.stream()
-                .filter(libro -> txtLeido.equalsIgnoreCase(libro.getEstadoLectura())
+                .filter(libro -> libro.getEstadoLecturaEnum() == EstadoLectura.LEIDO
                 && libro.getFechaFinalizacion() != null)
                 .count();
 
         // Contamos los terminados ESTE AÑO
         leidosEsteAnio = (int) libros.stream()
-                .filter(libro -> txtLeido.equalsIgnoreCase(libro.getEstadoLectura())
+                .filter(libro -> libro.getEstadoLecturaEnum() == EstadoLectura.LEIDO
                 && libro.getFechaFinalizacion() != null)
                 .filter(libro -> libro.getFechaFinalizacion().getYear() == anioActual)
                 .count();
@@ -213,21 +213,14 @@ public class EstadisticasController {
 
         graficoEstadosPorGenero.getData().clear();
 
-        // Agrupar por género y luego por estado de lectura
-        String txtSinEstado = LanguageManager.getString("stats.no_status", "Sin estado");
+        // Agrupar por género y luego por estado de lectura canónico y localizado
         Map<String, Map<String, Long>> datos = libros.stream()
                 .collect(Collectors.groupingBy(Libro::getGenero,
-                        Collectors.groupingBy(l -> {
-                            String estado = l.getEstadoLectura();
-                            return (estado == null || estado.isEmpty()) ? txtSinEstado : estado;
-                        }, Collectors.counting())));
+                        Collectors.groupingBy(l -> l.getEstadoLecturaEnum().getEtiqueta(), Collectors.counting())));
 
         // Identificar todos los estados únicos presentes
         List<String> todosLosEstados = libros.stream()
-                .map(l -> {
-                    String estado = l.getEstadoLectura();
-                    return (estado == null || estado.isEmpty()) ? txtSinEstado : estado;
-                })
+                .map(l -> l.getEstadoLecturaEnum().getEtiqueta())
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());

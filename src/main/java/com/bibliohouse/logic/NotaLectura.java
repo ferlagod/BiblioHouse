@@ -18,6 +18,7 @@
 package com.bibliohouse.logic;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -83,6 +84,15 @@ public class NotaLectura {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Permite asignar el identificador único de la nota.
+     *
+     * @param id El ID en forma de texto.
+     */
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**
@@ -155,5 +165,31 @@ public class NotaLectura {
      */
     public void setPaginaReferencia(int paginaReferencia) {
         this.paginaReferencia = paginaReferencia;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NotaLectura that = (NotaLectura) o;
+        if (id != null && !id.isBlank() && that.id != null && !that.id.isBlank()) {
+            return id.equals(that.id);
+        }
+        return paginaReferencia == that.paginaReferencia
+                && tipo == that.tipo
+                && Objects.equals(fechaHora, that.fechaHora)
+                && Objects.equals(texto, that.texto);
+    }
+
+    @Override
+    public int hashCode() {
+        if (id != null && !id.isBlank()) {
+            return id.hashCode();
+        }
+        return Objects.hash(fechaHora, tipo, texto, paginaReferencia);
     }
 }

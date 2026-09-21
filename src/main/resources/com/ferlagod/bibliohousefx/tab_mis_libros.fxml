@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20.0" styleClass="content-area" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.CatalogoGridController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <children>
+                <Label styleClass="heading-text" text="%tab.my_books" />
+                <Region HBox.hgrow="ALWAYS" />
+                <MenuButton fx:id="btnOrdenar" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-padding: 3 10; -fx-cursor: hand;">
+                    <items>
+                        <MenuItem text="%main.sort.title.az" onAction="#ordenarPorTituloAZ" />
+                        <MenuItem text="%main.sort.title.za" onAction="#ordenarPorTituloZA" />
+                        <MenuItem text="%main.sort.author" onAction="#ordenarPorAutor" />
+                        <MenuItem text="%main.sort.year" onAction="#ordenarPorAnio" />
+                        <MenuItem text="%main.sort.recent" onAction="#ordenarPorReciente" />
+                    </items>
+                </MenuButton>
+                <TextField fx:id="txtBuscarMisLibros" prefWidth="250.0" promptText="%book.search.placeholder" style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-background-color: -color-bg-default;" />
+            </children>
+        </HBox>
+        <Separator />
+        <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+            <content>
+                <FlowPane fx:id="panelMisLibros" hgap="25.0" vgap="25.0" />
+            </content>
+        </ScrollPane>
+        <HBox fx:id="boxPaginacion" alignment="CENTER" spacing="10.0" style="-fx-padding: 8 0 0 0;">
+            <children>
+                <Button fx:id="btnPrimeraPagina" onAction="#irPrimeraPagina" text="«" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Button fx:id="btnAnterior" onAction="#irPaginaAnterior" text="‹" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Label fx:id="lblInfoPaginacion" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted; -fx-padding: 0 10;" text="Página 1 de 1" />
+                <Button fx:id="btnSiguiente" onAction="#irPaginaSiguiente" text="›" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Button fx:id="btnUltima" onAction="#irUltimaPagina" text="»" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="Por pág.:" />
+                <ComboBox fx:id="comboLibrosPorPagina" prefWidth="95.0" style="-fx-background-radius: 8; -fx-cursor: hand;" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

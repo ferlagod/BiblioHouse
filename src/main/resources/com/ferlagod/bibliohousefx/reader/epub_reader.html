@@ -33,19 +33,8 @@
         if (window.javaBridge) window.javaBridge.logError(msg);
     }
 
-    function openEpubBase64(base64Data, startPercentage) {
-      try {
-        logToHtml("Iniciando carga de EPUB...");
-        var binaryString = window.atob(base64Data);
-        var bytes = new Uint8Array(binaryString.length);
-        for (var i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        var arrayBuffer = bytes.buffer;
-        
-        logToHtml("ArrayBuffer creado. Instanciando ePub...");
-        book = ePub(arrayBuffer);
-        
+    function configurarLibro(bookInstance, startPercentage) {
+        book = bookInstance;
         logToHtml("Instancia creada. Renderizando...");
         rendition = book.renderTo("viewer", {
           width: "100%",
@@ -78,6 +67,31 @@
             window.javaBridge.updateProgress(percentageValue);
           }
         });
+    }
+
+    function openEpubUrl(epubUrl, startPercentage) {
+      try {
+        logToHtml("Iniciando carga de EPUB desde URL: " + epubUrl);
+        var bookInstance = ePub(epubUrl);
+        configurarLibro(bookInstance, startPercentage);
+      } catch (err) {
+        logToHtml("Error abriendo EPUB desde URL (Excepción): " + err);
+      }
+    }
+
+    function openEpubBase64(base64Data, startPercentage) {
+      try {
+        logToHtml("Iniciando carga de EPUB...");
+        var binaryString = window.atob(base64Data);
+        var bytes = new Uint8Array(binaryString.length);
+        for (var i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        var arrayBuffer = bytes.buffer;
+        
+        logToHtml("ArrayBuffer creado. Instanciando ePub...");
+        var bookInstance = ePub(arrayBuffer);
+        configurarLibro(bookInstance, startPercentage);
       } catch (err) {
         logToHtml("Error abriendo EPUB (Excepción): " + err);
       }

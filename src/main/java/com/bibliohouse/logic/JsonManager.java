@@ -69,12 +69,14 @@ public class JsonManager {
     // Declaración de preferencias
     private final String preferencesFilePath;
 
-    // Rutas de los archivos JSON que usamos para guardar los datos.
     private final String databaseFilePath;
     private final String prestamosDatabasePath;
     private final String sociosDatabasePath;
     private final String estanteriasDatabasePath;
     private final String deseosDatabasePath;
+    private final String progresoLecturaFilePath;
+
+    private final Map<String, ProgresoLectura> cacheProgresos = new java.util.concurrent.ConcurrentHashMap<>();
 
     private final Gson gson;
 
@@ -113,6 +115,11 @@ public class JsonManager {
      * Referencia al guardado de libros pendiente (debounce).
      */
     private ScheduledFuture<?> pendingSaveFuture;
+
+    /**
+     * Referencia al guardado de progreso de lectura pendiente (debounce).
+     */
+    private ScheduledFuture<?> pendingProgresoSaveFuture;
 
     /**
      * Establece la tarea de sincronización automática. Pasar {@code null}
@@ -190,6 +197,7 @@ public class JsonManager {
         this.estanteriasDatabasePath = rutaDatosUsuario + File.separator + "estanterias.json";
         this.preferencesFilePath = rutaDatosUsuario + File.separator + "preferences.json"; // <-- Inicialización
         this.deseosDatabasePath = rutaDatosUsuario + File.separator + "deseos.json";
+        this.progresoLecturaFilePath = rutaDatosUsuario + File.separator + "progreso_lectura.json";
 
         // Se configura el Gson para que use el adaptador de fechas
         this.gson = new GsonBuilder()
@@ -266,7 +274,15 @@ public class JsonManager {
      * @param tipoDato Un String que describe qué tipo de datos estamos
      *                 guardando.
      */
-    private synchronized <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
+    /**
+     * Método genérico para guardar cualquier objeto (lista, mapa, etc.) en un
+     * archivo JSON de forma atómica y segura con backup.
+     *
+     * @param objeto   El objeto a serializar.
+     * @param path     La ruta del archivo donde se guardará.
+     * @param tipoDato Descripción del dato para el logging.
+     */
+    private synchronized void guardarObjeto(Object objeto, String path, String tipoDato) {
         crearDirectorioUsuarioSiNoExiste();
 
         File archivoFinal = new File(path);
@@ -275,7 +291,7 @@ public class JsonManager {
 
         // 1. Escribir en el archivo TEMPORAL primero
         try (FileWriter writer = new FileWriter(archivoTemporal)) {
-            gson.toJson(lista, writer);
+            gson.toJson(objeto, writer);
             // Forzamos el volcado al disco físico
             writer.flush();
         } catch (IOException e) {
@@ -321,26 +337,37 @@ public class JsonManager {
     }
 
     /**
-     * Método genérico para cargar datos desde un archivo JSON.
+     * Método genérico para guardar cualquier lista de objetos en un archivo
+     * JSON.
      *
-     * @param path      La ruta del archivo que queremos cargar.
-     * @param tipoLista El tipo de la lista que esperamos.
-     * @param tipoDato  Un String que describe qué tipo de datos estamos
-     *                  cargando.
-     * @return La lista de objetos cargados desde el archivo. Si hay error,
-     *         devuelve una lista vacía.
+     * @param lista    La lista de objetos que queremos guardar.
+     * @param path     La ruta del archivo donde se guardará.
+     * @param tipoDato Un String que describe qué tipo de datos estamos
+     *                 guardando.
      */
-    private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
+    private synchronized <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
+        guardarObjeto(lista, path, tipoDato);
+    }
+
+    /**
+     * Método genérico para cargar un objeto o mapa desde un archivo JSON.
+     *
+     * @param path       La ruta del archivo.
+     * @param tipoObjeto El tipo del objeto esperado.
+     * @param tipoDato   Descripción del dato para el logging.
+     * @return El objeto deserializado, o {@code null} si falla o no existe.
+     */
+    private <T> T cargarObjeto(String path, Type tipoObjeto, String tipoDato) {
         File file = new File(path);
         File backupFile = new File(path + ".bak");
 
         // Intentar cargar el archivo principal
         if (file.exists()) {
             try (FileReader reader = new FileReader(file)) {
-                List<T> lista = gson.fromJson(reader, tipoLista);
-                if (lista != null) {
-                    LOGGER.log(Level.FINE, "Cargados {0} {1} desde {2}", new Object[] { lista.size(), tipoDato, path });
-                    return lista;
+                T obj = gson.fromJson(reader, tipoObjeto);
+                if (obj != null) {
+                    LOGGER.log(Level.FINE, "Cargado {0} desde {1}", new Object[] { tipoDato, path });
+                    return obj;
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Error al cargar " + path + ". Intentando cargar backup...", e);
@@ -350,20 +377,38 @@ public class JsonManager {
         // Si llegamos aquí, o no existe el principal o falló. Intentamos backup.
         if (backupFile.exists()) {
             try (FileReader reader = new FileReader(backupFile)) {
-                List<T> lista = gson.fromJson(reader, tipoLista);
-                if (lista != null) {
-                    LOGGER.log(Level.WARNING, "RECUPERADO: Cargados {0} {1} desde BACKUP {2}",
-                            new Object[] { lista.size(), tipoDato, backupFile.getPath() });
-                    return lista;
+                T obj = gson.fromJson(reader, tipoObjeto);
+                if (obj != null) {
+                    LOGGER.log(Level.WARNING, "RECUPERADO: Cargado {0} desde BACKUP {1}",
+                            new Object[] { tipoDato, backupFile.getPath() });
+                    return obj;
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Error al cargar backup " + backupFile.getPath(), e);
             }
         }
 
-        LOGGER.log(Level.INFO,
-                "No se encontraron datos válidos para {0} (ni original ni backup). Se devuelve lista vacía.", tipoDato);
-        return new ArrayList<>();
+        return null;
+    }
+
+    /**
+     * Método genérico para cargar datos desde un archivo JSON en forma de lista.
+     *
+     * @param path      La ruta del archivo que queremos cargar.
+     * @param tipoLista El tipo de la lista que esperamos.
+     * @param tipoDato  Un String que describe qué tipo de datos estamos
+     *                  cargando.
+     * @return La lista de objetos cargados desde el archivo. Si hay error,
+     *         devuelve una lista vacía.
+     */
+    private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
+        List<T> resultado = cargarObjeto(path, tipoLista, tipoDato);
+        if (resultado == null) {
+            LOGGER.log(Level.INFO,
+                    "No se encontraron datos válidos para {0} (ni original ni backup). Se devuelve lista vacía.", tipoDato);
+            return new ArrayList<>();
+        }
+        return resultado;
     }
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
@@ -475,6 +520,20 @@ public class JsonManager {
         // los cambios
         if (migracionPaginas) {
             guardarLibros(libros);
+        }
+
+        // 4. Fusionar datos de tracking de lectura desde progreso_lectura.json
+        Map<String, ProgresoLectura> progresos = cargarProgresosLectura();
+        for (Libro libro : libros) {
+            if (libro.getId() != null && progresos.containsKey(libro.getId())) {
+                ProgresoLectura prog = progresos.get(libro.getId());
+                libro.setPaginaActual(prog.getPaginaActual());
+                if (prog.getPaginasTotales() > 0 && libro.getPaginasTotales() <= 0) {
+                    libro.setPaginasTotales(prog.getPaginasTotales());
+                }
+            } else if (libro.getId() != null && libro.getPaginaActual() > 0) {
+                cacheProgresos.put(libro.getId(), new ProgresoLectura(libro.getPaginaActual(), libro.getPaginasTotales()));
+            }
         }
 
         return libros;
@@ -685,5 +744,88 @@ public class JsonManager {
         Type tipoLista = new TypeToken<ArrayList<Libro>>() {
         }.getType();
         return cargarDatos(deseosDatabasePath, tipoLista, "lista de deseos");
+    }
+
+    // --- MÉTODOS MODULARES PARA EL TRACKING DE LECTURA (PERSISTENCIA LIGERA) ---
+
+    /**
+     * Carga el mapa de progreso de lectura desde el archivo JSON secundario
+     * {@code progreso_lectura.json}. Almacena los resultados en caché en memoria.
+     *
+     * @return Mapa asociativo de ID de libro a su {@link ProgresoLectura}.
+     */
+    public Map<String, ProgresoLectura> cargarProgresosLectura() {
+        Type tipoMapa = new TypeToken<HashMap<String, ProgresoLectura>>() {
+        }.getType();
+        Map<String, ProgresoLectura> datos = cargarObjeto(progresoLecturaFilePath, tipoMapa, "progresos de lectura");
+        if (datos != null) {
+            cacheProgresos.clear();
+            cacheProgresos.putAll(datos);
+        }
+        return new HashMap<>(cacheProgresos);
+    }
+
+    /**
+     * Guarda el progreso de lectura de un libro de forma atómica en el archivo
+     * ultraligero {@code progreso_lectura.json}, sin reescribir ni tocar el
+     * archivo principal {@code biblioteca.json}.
+     *
+     * @param libroId        Identificador único (UUID) del libro.
+     * @param paginaActual   Página alcanzada por el usuario.
+     * @param paginasTotales Páginas totales del libro.
+     */
+    public void guardarProgresoLectura(String libroId, int paginaActual, int paginasTotales) {
+        if (libroId == null || libroId.isBlank()) return;
+        cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
+        guardarObjeto(new HashMap<>(cacheProgresos), progresoLecturaFilePath, "progreso de lectura");
+    }
+
+    /**
+     * Guarda el progreso de lectura con debounce de 400ms en el archivo
+     * ultraligero {@code progreso_lectura.json}.
+     * <p>
+     * Es la opción óptima para el visor EPUB/lector digital, ya que un usuario
+     * que pasa páginas frecuentemente nunca bloquea la aplicación ni provoca
+     * escrituras masivas de megabytes en disco.
+     * </p>
+     *
+     * @param libroId        Identificador único (UUID) del libro.
+     * @param paginaActual   Página actual alcanzada.
+     * @param paginasTotales Páginas totales del libro.
+     */
+    public void guardarProgresoLecturaDebounced(String libroId, int paginaActual, int paginasTotales) {
+        if (libroId == null || libroId.isBlank()) return;
+        cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
+
+        if (pendingProgresoSaveFuture != null && !pendingProgresoSaveFuture.isDone()) {
+            pendingProgresoSaveFuture.cancel(false);
+        }
+
+        Map<String, ProgresoLectura> copia = new HashMap<>(cacheProgresos);
+        pendingProgresoSaveFuture = syncScheduler.schedule(
+                () -> guardarObjeto(copia, progresoLecturaFilePath, "progreso de lectura"),
+                400, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Fuerza la escritura en disco de cualquier progreso de lectura pendiente
+     * en el temporizador debounced. Útil al cerrar ventanas de lectura o salir.
+     */
+    public void flushProgresoLectura() {
+        if (pendingProgresoSaveFuture != null && !pendingProgresoSaveFuture.isDone()) {
+            pendingProgresoSaveFuture.cancel(false);
+        }
+        if (!cacheProgresos.isEmpty()) {
+            guardarObjeto(new HashMap<>(cacheProgresos), progresoLecturaFilePath, "progreso de lectura");
+        }
+    }
+
+    /**
+     * Devuelve la ruta del archivo secundario progreso_lectura.json.
+     *
+     * @return Ruta completa al archivo de progreso.
+     */
+    public String getProgresoLecturaPath() {
+        return progresoLecturaFilePath;
     }
 }

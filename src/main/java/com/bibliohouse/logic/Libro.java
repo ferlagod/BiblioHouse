@@ -22,6 +22,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -396,23 +397,46 @@ public class Libro {
     }
 
     /**
+     * Nos dice en qué estado se encuentra nuestra lectura como enum fuertemente tipado.
+     *
+     * @return El {@link EstadoLectura} del libro.
+     */
+    public EstadoLectura getEstadoLecturaEnum() {
+        return EstadoLectura.fromString(estadoLectura);
+    }
+
+    /**
+     * Asigna el estado de lectura utilizando el enum fuertemente tipado.
+     * Sincroniza la etiqueta canónica en español y la bandera booleana leido.
+     *
+     * @param estado El nuevo {@link EstadoLectura}.
+     */
+    public void setEstadoLecturaEnum(EstadoLectura estado) {
+        EstadoLectura resolved = (estado != null) ? estado : EstadoLectura.PENDIENTE;
+        this.estadoLectura = resolved.getEtiquetaEspanol();
+        this.leido = (resolved == EstadoLectura.LEIDO);
+    }
+
+    /**
      * Nos dice en qué estado se encuentra nuestra lectura (ej: 'Leído', 'Leyendo', 'Pendiente').
      *
-     * @return El estado de lectura.
+     * @return El estado de lectura canónico en español.
      */
     public String getEstadoLectura() {
-        return estadoLectura;
+        if (estadoLectura == null || estadoLectura.isBlank()) {
+            return EstadoLectura.PENDIENTE.getEtiquetaEspanol();
+        }
+        return getEstadoLecturaEnum().getEtiquetaEspanol();
     }
 
     /**
      * Sirve para decirle al programa cómo va nuestra lectura y actualizar el estado.
+     * Parsea de forma tolerante cadenas en cualquier idioma soportado y las normaliza.
      *
-     * @param estadoLectura El nuevo estado (ej: 'Leído', 'Leyendo').
+     * @param estadoLectura El nuevo estado (ej: 'Leído', 'Read', 'Leyendo', 'Reading').
      */
     public void setEstadoLectura(String estadoLectura) {
-        this.estadoLectura = estadoLectura;
-        // Sincronizar con el booleano leido
-        this.leido = "Leído".equals(estadoLectura);
+        setEstadoLecturaEnum(EstadoLectura.fromString(estadoLectura));
     }
 
     /**
@@ -656,4 +680,34 @@ public class Libro {
     public void setUbicacionFisica(String ubicacionFisica) {
         this.ubicacionFisica = ubicacionFisica;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Libro libro = (Libro) o;
+        if (id != null && !id.isBlank() && libro.id != null && !libro.id.isBlank()) {
+            return id.equals(libro.id);
+        }
+        if (isbn != null && !isbn.isBlank() && libro.isbn != null && !libro.isbn.isBlank()) {
+            return isbn.trim().equalsIgnoreCase(libro.isbn.trim());
+        }
+        return Objects.equals(titulo, libro.titulo) && Objects.equals(autor, libro.autor);
+    }
+
+    @Override
+    public int hashCode() {
+        if (id != null && !id.isBlank()) {
+            return id.hashCode();
+        }
+        if (isbn != null && !isbn.isBlank()) {
+            return isbn.trim().toLowerCase().hashCode();
+        }
+        return Objects.hash(titulo, autor);
+    }
 }
+

@@ -53,11 +53,27 @@ public class OpenLibraryCliente {
     private static final String API_BASE_URL = "https://openlibrary.org/search.json";
     // Campos que solicitamos a la API para no traer datos innecesarios.
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i,number_of_pages";
-    // Cliente HTTP compartido: reutiliza conexiones TCP (HTTP/2 multiplexing)
-    private static final HttpClient CLIENT = HttpClient.newBuilder()
+    @FunctionalInterface
+    public interface HttpSender {
+        HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException;
+    }
+
+    // Cliente HTTP compartido por defecto
+    private static final HttpClient DEFAULT_CLIENT = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .connectTimeout(Duration.ofSeconds(10))
             .build();
+
+    private static HttpSender httpSender = req -> DEFAULT_CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+
+    /**
+     * Permite inyectar un despachador HTTP personalizado para pruebas unitarias sin conexión.
+     *
+     * @param customSender Instancia de HttpSender o {@code null} para restaurar el cliente estándar.
+     */
+    public static void setHttpSender(HttpSender customSender) {
+        httpSender = (customSender != null) ? customSender : req -> DEFAULT_CLIENT.send(req, HttpResponse.BodyHandlers.ofString());
+    }
 
     /**
      * Busca libros en OpenLibrary. Si no encuentra nada, devuelve una lista
@@ -99,7 +115,7 @@ public class OpenLibraryCliente {
                     .build();
 
             // Enviar petición y obtener respuesta
-            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpSender.send(request);
 
             // Comprobar que la respuesta es OK (código 200)
             if (response.statusCode() != 200) {

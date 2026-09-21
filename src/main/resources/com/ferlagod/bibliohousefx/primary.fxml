@@ -2,34 +2,16 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import org.controlsfx.control.NotificationPane?>
 
@@ -91,22 +73,7 @@
             </top>
 
             <left>
-                <VBox prefWidth="240.0" spacing="15.0" styleClass="sidebar">
-                    <children>
-                        <Label style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;" text="Mis Estanterías" />
-                        <ListView fx:id="listaEstanterias" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
-                        
-                        <!-- Widget de Reto Anual -->
-                        <VBox fx:id="widgetRetoAnual" spacing="8.0" style="-fx-padding: 15; -fx-background-color: -color-bg-subtle; -fx-background-radius: 10; -fx-border-color: -color-border-default; -fx-border-radius: 10; -fx-cursor: hand;" onMouseClicked="#configurarRetoAnual">
-                            <Label fx:id="lblTituloReto" text="Reto de Lectura" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
-                            <javafx.scene.control.ProgressBar fx:id="progresoReto" progress="0.0" prefWidth="200.0" style="-fx-accent: #4caf50;" />
-                            <Label fx:id="lblEstadoReto" text="0 de 0 libros" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
-                        </VBox>
-                    </children>
-                    <padding>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                    </padding>
-                </VBox>
+                <fx:include fx:id="sidebar" source="sidebar.fxml" />
             </left>
 
             <center>
@@ -114,129 +81,13 @@
                     <tabs>
                         <Tab text="%tab.my_books">
                             <content>
-                                <VBox spacing="20.0" styleClass="content-area">
-                                    <padding>
-                                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                                    </padding>
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                            <children>
-                                                <Label styleClass="heading-text" text="%tab.my_books" />
-                                                <Region HBox.hgrow="ALWAYS" />
-                                                <MenuButton fx:id="btnOrdenar" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-padding: 3 10; -fx-cursor: hand;">
-                                                    <items>
-                                                        <MenuItem text="%main.sort.title.az" onAction="#ordenarPorTituloAZ" />
-                                                        <MenuItem text="%main.sort.title.za" onAction="#ordenarPorTituloZA" />
-                                                        <MenuItem text="%main.sort.author" onAction="#ordenarPorAutor" />
-                                                        <MenuItem text="%main.sort.year" onAction="#ordenarPorAnio" />
-                                                        <MenuItem text="%main.sort.recent" onAction="#ordenarPorReciente" />
-                                                    </items>
-                                                </MenuButton>
-                                                <TextField fx:id="txtBuscarMisLibros" prefWidth="250.0" promptText="Buscar título o autor..." style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-background-color: -color-bg-default;" />
-                                            </children>
-                                        </HBox>
-                                        <Separator />
-                                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-                                            <content>
-                                                <FlowPane fx:id="panelMisLibros" hgap="25.0" vgap="25.0" />
-                                            </content>
-                                        </ScrollPane>
-                                    </children>
-                                </VBox>
+                                <fx:include fx:id="catalogoGrid" source="tab_mis_libros.fxml" />
                             </content>
                         </Tab>
 
                         <Tab text="%tab.manage_books">
                             <content>
-                                <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
-                                    <content>
-                                        <VBox spacing="20.0" styleClass="content-area">
-                                            <padding>
-                                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                                            </padding>
-                                            <VBox maxWidth="1000.0" spacing="10.0" VBox.vgrow="NEVER">
-                                                <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Añadir desde OpenLibrary" />
-                                                <HBox alignment="CENTER" spacing="15.0">
-                                                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
-                                                        <image>
-                                                            <Image url="@../../../resources/LogoBiblioHouse.png" />
-                                                        </image>
-                                                    </ImageView>
-                                                    <TextField fx:id="txtBusquedaOpenLibrary" onAction="#buscarLibroOpenLibrary" promptText="%book.search.placeholder" HBox.hgrow="ALWAYS" />
-                                                    <Button onAction="#abrirEscaner" text="📷" />
-                                                    <Button onAction="#buscarLibroOpenLibrary" text="🔍" />
-                                                </HBox>
-                                            </VBox>
-                                            <Separator maxWidth="1000.0" />
-                                            <VBox fx:id="vboxManual" maxWidth="1000.0" spacing="25.0" style="-fx-background-color: -color-bg-default; -fx-padding: 35; -fx-background-radius: 8; -fx-border-color: -color-border-default; -fx-border-radius: 8;" VBox.vgrow="ALWAYS">
-                                                <Label style="-fx-font-weight: bold; -fx-font-size: 16px;" text="%book.manual.title" />
-                                                <HBox spacing="40.0" VBox.vgrow="ALWAYS">
-                                                    <VBox alignment="TOP_CENTER" spacing="15.0">
-                                                        <ImageView fx:id="imgPortadaManual" fitHeight="220.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true" />
-                                                        <Button onAction="#seleccionarImagenManual" style="-fx-font-size: 12px;" text="%book.image.select" />
-                                                    </VBox>
-                                                    <GridPane hgap="25.0" vgap="15.0" HBox.hgrow="ALWAYS">
-                                                        <columnConstraints>
-                                                            <ColumnConstraints hgrow="NEVER" minWidth="90.0" />
-                                                            <ColumnConstraints hgrow="ALWAYS" minWidth="250.0" />
-                                                        </columnConstraints>
-                                                        <children>
-                                                            <Label text="%book.title" />
-                                                            <TextField fx:id="txtTitulo" GridPane.columnIndex="1" />
-                                                            <Label text="%book.author" GridPane.rowIndex="1" />
-                                                            <TextField fx:id="txtAutor" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                                            <Label text="%book.publisher" GridPane.rowIndex="2" />
-                                                            <TextField fx:id="txtEditorial" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                                            <Label text="%book.genre" GridPane.rowIndex="3" />
-                                                            <TextField fx:id="txtGenero" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                                            <Label text="%book.isbn" GridPane.rowIndex="4" />
-                                                            <TextField fx:id="txtIsbn" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                                            <Label text="%book.year" GridPane.rowIndex="5" />
-                                                            <HBox alignment="CENTER_LEFT" spacing="20.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                                                <TextField fx:id="txtAnio" prefWidth="120.0" />
-                                                                <Label text="%book.qty" />
-                                                                <Spinner fx:id="spinnerCantidad" prefWidth="100.0" />
-                                                            </HBox>
-                                                            <Label text="%book.series" GridPane.rowIndex="6" />
-                                                            <TextField fx:id="txtSerie" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                                            <Label text="%book.order" GridPane.rowIndex="7" />
-                                                            <TextField fx:id="txtOrden" prefWidth="120.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                                                        </children>
-                                                    </GridPane>
-                                                </HBox>
-                                                <HBox alignment="CENTER_RIGHT" spacing="15.0">
-                                                    <padding>
-                                                        <Insets top="15.0" />
-                                                    </padding>
-                                                    <CheckBox fx:id="chkPoseidoManual" selected="true" text="%book.owned" />
-                                                    <Region HBox.hgrow="ALWAYS" />
-                                                    <Button onAction="#limpiarCamposManuales" style="-fx-padding: 8 20;" text="%book.clear" />
-                                                    <Button onAction="#anadirLibro" style="-fx-font-weight: bold; -fx-padding: 8 25;" styleClass="accent" text="%book.add" />
-                                                </HBox>
-                                            </VBox>
-                                            <VBox managed="false" visible="false">
-                                                <TextField fx:id="txtBusquedaLocal" />
-                                                <TextField fx:id="txtFiltroAutor" />
-                                                <TextField fx:id="txtFiltroISBN" />
-                                                <ComboBox fx:id="cmbFiltroEstado" />
-                                                <TableView fx:id="tablaLibros">
-                                                    <columns>
-                                                        <TableColumn fx:id="colTitulo" />
-                                                        <TableColumn fx:id="colAutor" />
-                                                        <TableColumn fx:id="colSerie" />
-                                                        <TableColumn fx:id="colOrden" />
-                                                        <TableColumn fx:id="colEditorial" />
-                                                        <TableColumn fx:id="colGenero" />
-                                                        <TableColumn fx:id="colAnio" />
-                                                        <TableColumn fx:id="colEstado" />
-                                                        <TableColumn fx:id="colIsbn" />
-                                                        <TableColumn fx:id="colCantidad" />
-                                                    </columns>
-                                                </TableView>
-                                            </VBox>
-                                        </VBox>
-                                    </content>
-                                </ScrollPane>
+                                <fx:include fx:id="gestionLibros" source="tab_gestionar_libros.fxml" />
                             </content>
                         </Tab>
 

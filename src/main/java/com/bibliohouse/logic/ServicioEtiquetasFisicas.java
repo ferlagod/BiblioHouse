@@ -11,8 +11,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import com.bibliohouse.utils.PdfFontHelper;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 
@@ -39,6 +39,9 @@ public class ServicioEtiquetasFisicas {
      */
     public static void generarEtiquetasPDF(List<Libro> libros, File archivoDestino) throws Exception {
         try (PDDocument document = new PDDocument()) {
+            PDFont fontBold = PdfFontHelper.loadBoldFont(document);
+            PDFont fontRegular = PdfFontHelper.loadRegularFont(document);
+
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
 
@@ -71,27 +74,23 @@ public class ServicioEtiquetasFisicas {
 
                 // Draw Text
                 contentStream.beginText();
-                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+                contentStream.setFont(fontBold, 10);
                 contentStream.newLineAtOffset(currentX + 10, currentY - 15);
                 
                 String titulo = libro.getTitulo();
                 if (titulo.length() > 22) titulo = titulo.substring(0, 19) + "...";
-                // Limpiar caracteres no imprimibles para PDFBox (Helvetica)
-                titulo = limpiarTextoParaPDF(titulo);
-                contentStream.showText(titulo);
+                contentStream.showText(PdfFontHelper.sanitizarTexto(titulo, fontBold));
                 
-                contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 8);
+                contentStream.setFont(fontRegular, 8);
                 contentStream.newLineAtOffset(0, -12);
                 String autor = libro.getAutor() != null ? libro.getAutor() : "";
                 if (autor.length() > 25) autor = autor.substring(0, 22) + "...";
-                autor = limpiarTextoParaPDF(autor);
-                contentStream.showText(autor);
+                contentStream.showText(PdfFontHelper.sanitizarTexto(autor, fontRegular));
 
                 contentStream.newLineAtOffset(0, -12);
                 String ubic = libro.getUbicacionFisica() != null ? libro.getUbicacionFisica() : "";
                 if (ubic.length() > 25) ubic = ubic.substring(0, 22) + "...";
-                ubic = limpiarTextoParaPDF(ubic);
-                contentStream.showText(ubic);
+                contentStream.showText(PdfFontHelper.sanitizarTexto(ubic, fontRegular));
                 
                 contentStream.endText();
 

@@ -17,89 +17,200 @@
  */
 package com.bibliohouse.logic;
 
+import com.ferlagod.bibliohousefx.App;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
- * Gestiona el idioma de la aplicación.
+ * Fuente única de verdad para la gestión de internacionalización (i18n)
+ * e idiomas en BiblioHouse.
+ *
+ * Sincroniza las preferencias del sistema, mantiene el ResourceBundle activo
+ * y notifica a los componentes visuales mediante AppEventBus.
  *
  * @author ferlagod (Fernando Lago Dávila)
  * @version 2.0
  */
 public class LanguageManager {
 
+    private static final Logger LOGGER = Logger.getLogger(LanguageManager.class.getName());
+    private static final String BUNDLE_BASE_NAME = "com.ferlagod.bibliohousefx.messages";
+
+    private static final String APP_LANG_KEY = "language";
+    private static final String LM_LANG_KEY = "appLanguage";
+    private static final String LM_COUNTRY_KEY = "appCountry";
+
+    private static Locale currentLocale;
     private static ResourceBundle bundle;
-    private static Preferences preferencias;
-    private static final String LANGUAGE_KEY = "appLanguage";
-    private static final String COUNTRY_KEY = "appCountry";
 
-    // Bloque estático para cargar el idioma al iniciar la clase
     static {
-        preferencias = Preferences.userNodeForPackage(LanguageManager.class);
-        String language = preferencias.get(LANGUAGE_KEY, Locale.getDefault().getLanguage());
-        String country = preferencias.get(COUNTRY_KEY, Locale.getDefault().getCountry());
-        Locale initialLocale = new Locale(language, country);
-
-        cargarIdioma(initialLocale);
+        inicializarDesdePreferencias();
     }
 
     /**
-     * Carga el archivo de idioma correspondiente al locale especificado. Si no
-     * encuentra el archivo de idioma, utiliza el inglés como idioma por
-     * defecto.
-     *
-     * @param locale El locale para el que se quiere cargar el archivo de
-     * mensajes.
-     *
+     * Carga el idioma inicial leyendo de forma unificada las preferencias.
      */
-    private static void cargarIdioma(Locale locale) {
+    private static synchronized void inicializarDesdePreferencias() {
         try {
-            bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", locale);
+            Preferences prefsApp = Preferences.userNodeForPackage(App.class);
+            Preferences prefsLM = Preferences.userNodeForPackage(LanguageManager.class);
+
+            String lang = prefsApp.get(APP_LANG_KEY, null);
+            if (lang == null || lang.isBlank()) {
+                lang = prefsLM.get(LM_LANG_KEY, null);
+            }
+
+            if (lang == null || lang.isBlank()) {
+                lang = "es";
+            }
+
+            String country = prefsLM.get(LM_COUNTRY_KEY, "");
+            Locale initialLocale;
+            if (country != null && !country.isBlank()) {
+                initialLocale = new Locale(lang, country);
+            } else {
+                initialLocale = Locale.forLanguageTag(lang);
+            }
+
+            cargarIdioma(initialLocale, false);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error al inicializar preferencias de idioma, usando español por defecto", e);
+            cargarIdioma(Locale.forLanguageTag("es"), false);
+        }
+    }
+
+    /**
+     * Carga el archivo de idioma correspondiente al locale especificado.
+     *
+     * @param locale El locale objetivo.
+     * @param notificarEventBus Si true, emite IdiomaCambiadoEvent en el bus de eventos.
+     */
+    private static synchronized void cargarIdioma(Locale locale, boolean notificarEventBus) {
+        currentLocale = locale;
+        ResourceBundle.clearCache();
+        try {
+            bundle = ResourceBundle.getBundle(BUNDLE_BASE_NAME, locale);
         } catch (MissingResourceException e) {
-            // Fallback al inglés si no encuentra el idioma
-            bundle = ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", Locale.ENGLISH);
+            LOGGER.log(Level.WARNING, "No se encontró bundle para {0}. Recurriendo a inglés.", locale);
+            try {
+                bundle = ResourceBundle.getBundle(BUNDLE_BASE_NAME, Locale.ENGLISH);
+            } catch (MissingResourceException ex) {
+                bundle = ResourceBundle.getBundle(BUNDLE_BASE_NAME, Locale.ROOT);
+            }
         }
 
+        if (notificarEventBus) {
+            AppEventBus.getInstance().publish(new AppEventBus.IdiomaCambiadoEvent(currentLocale, bundle));
+        }
+    }
+
+    /**
+     * Obtiene el Locale actual de la aplicación.
+     *
+     * @return El Locale activo.
+     */
+    public static synchronized Locale getLocale() {
+        if (currentLocale == null) {
+            currentLocale = Locale.forLanguageTag("es");
+        }
+        return currentLocale;
     }
 
     /**
      * Obtiene el ResourceBundle actual.
-     * 
+     *
      * @return El ResourceBundle cargado.
      */
-    public static ResourceBundle getBundle() {
+    public static synchronized ResourceBundle getBundle() {
+        if (bundle == null) {
+            inicializarDesdePreferencias();
+        }
         return bundle;
     }
 
     /**
-     * Cambia el idioma de la aplicación y guarda la preferencia.
+     * Establece el idioma activo a partir de su código de idioma ISO (ej: "es", "en", "gl", "ca", "eu", "pt").
+     * Guarda la preferencia en todos los nodos correspondientes y notifica al bus de eventos.
      *
-     * @param language El código del idioma
-     * @param country El código del país
+     * @param langCode Código del idioma.
+     */
+    public static synchronized void setLocale(String langCode) {
+        if (langCode == null || langCode.isBlank()) {
+            langCode = "es";
+        }
+        setLocale(Locale.forLanguageTag(langCode));
+    }
+
+    /**
+     * Establece el Locale activo de la aplicación.
+     *
+     * @param locale El nuevo Locale a aplicar.
+     */
+    public static synchronized void setLocale(Locale locale) {
+        if (locale == null) {
+            locale = Locale.forLanguageTag("es");
+        }
+
+        // Persistir en Preferences de App.class (usado por el recargador de UI)
+        try {
+            Preferences prefsApp = Preferences.userNodeForPackage(App.class);
+            prefsApp.put(APP_LANG_KEY, locale.getLanguage());
+
+            // Persistir también en Preferences de LanguageManager.class para compatibilidad
+            Preferences prefsLM = Preferences.userNodeForPackage(LanguageManager.class);
+            prefsLM.put(LM_LANG_KEY, locale.getLanguage());
+            if (locale.getCountry() != null) {
+                prefsLM.put(LM_COUNTRY_KEY, locale.getCountry());
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "No se pudieron guardar las preferencias de idioma", e);
+        }
+
+        LOGGER.log(Level.INFO, "Idioma cambiado a: {0}", locale.toLanguageTag());
+        cargarIdioma(locale, true);
+    }
+
+    /**
+     * Cambia el idioma de la aplicación (sobrecarga de compatibilidad).
+     *
+     * @param language Código del idioma.
+     * @param country Código del país (opcional, puede ser nulo o vacío).
      */
     public static void cambiarIdioma(String language, String country) {
-        if (language == null || country == null || language.isEmpty() || country.isEmpty()) {
-            throw new IllegalArgumentException("El idioma y el país no pueden ser nulos o vacíos.");
+        if (language == null || language.isBlank()) {
+            language = "es";
         }
-        preferencias.put(LANGUAGE_KEY, language);
-        preferencias.put(COUNTRY_KEY, country);
-        Locale newLocale = new Locale(language, country);
-        cargarIdioma(newLocale);
+        if (country != null && !country.isBlank()) {
+            setLocale(new Locale(language, country));
+        } else {
+            setLocale(language);
+        }
+    }
+
+    /**
+     * Cambia el idioma de la aplicación únicamente con código de idioma.
+     *
+     * @param language Código del idioma.
+     */
+    public static void cambiarIdioma(String language) {
+        setLocale(language);
     }
 
     /**
      * Obtiene una cadena de texto traducida a partir de su clave.
      *
      * @param key La clave del texto
-     * @return El texto traducido.
+     * @return El texto traducido, o la clave misma si no existe.
      */
     public static String getString(String key) {
+        ResourceBundle b = getBundle();
         try {
-            return bundle.getString(key);
+            return b.getString(key);
         } catch (Exception e) {
-            // Si no se encuentra una clave, devuelve la clave misma para que sea fácil de depurar
             return key;
         }
     }
@@ -110,23 +221,19 @@ public class LanguageManager {
      *
      * @param key La clave del texto.
      * @param defaultValue El texto a devolver si la clave no existe.
-     * @return El texto traducido o valor por defecto.
+     * @return El texto traducido o el valor por defecto.
      */
     public static String getString(String key, String defaultValue) {
+        ResourceBundle b = getBundle();
         try {
-            // El bundle no puede ser null, sino devuelve el valor por defecto
-            if (bundle == null) {
-                System.err.println("Error: ResourceBundle no inicializado en LanguageManager.");
+            if (b == null) {
                 return defaultValue;
             }
-            return bundle.getString(key);
+            return b.getString(key);
         } catch (MissingResourceException e) {
-            // Si no se encuentra la clave, devuelve el valor por defecto
             return defaultValue;
         } catch (Exception e) {
-            System.err.println("Error inesperado obteniendo clave '" + key + "': " + e.getMessage());
             return defaultValue;
         }
     }
-
 }

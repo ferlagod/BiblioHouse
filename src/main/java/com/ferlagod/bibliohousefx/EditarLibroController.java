@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import com.bibliohouse.logic.EbookMetadataService;
+import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.Libro;
 import java.util.concurrent.ExecutionException;
 import javafx.collections.FXCollections;
@@ -67,7 +68,7 @@ public class EditarLibroController {
     @FXML
     private Spinner<Integer> spinnerAnio; // Selector numérico para el año de publicación
     @FXML
-    private ComboBox<String> cmbEstadoLectura; // Desplegable para el estado de lectura
+    private ComboBox<EstadoLectura> cmbEstadoLectura; // Desplegable fuertemente tipado para el estado de lectura
     @FXML
     private ComboBox<String> cmbCalificacion; // Desplegable para seleccionar la calificación
     @FXML
@@ -102,7 +103,18 @@ public class EditarLibroController {
     @FXML
     public void initialize() {
         // Inicializar ComboBox de estado de lectura y de calificación
-        cmbEstadoLectura.getItems().addAll("Pendiente", "Leyendo", "Leído");
+        cmbEstadoLectura.getItems().setAll(EstadoLectura.values());
+        cmbEstadoLectura.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(EstadoLectura object) {
+                return object != null ? object.getEtiqueta() : "";
+            }
+
+            @Override
+            public EstadoLectura fromString(String string) {
+                return EstadoLectura.fromString(string);
+            }
+        });
         cmbCalificacion.getItems().addAll(
                 "Sin calificar",
                 "★ (Malo)",
@@ -239,12 +251,8 @@ public class EditarLibroController {
             spinnerAnio.getValueFactory().setValue(2024); // Valor por defecto
         }
 
-        // Estado de lectura
-        String estado = libro.getEstadoLectura();
-        if (estado == null || estado.isEmpty()) {
-            estado = "Pendiente";
-        }
-        cmbEstadoLectura.setValue(estado);
+        // Estado de lectura desacoplado
+        cmbEstadoLectura.setValue(libro.getEstadoLecturaEnum());
 
         // Calificación (0-5 estrellas)
         int calif = libro.getCalificacion();
@@ -390,7 +398,7 @@ public class EditarLibroController {
         }
         libro.setOrdenEnSerie(orden);
 
-        libro.setEstadoLectura(cmbEstadoLectura.getValue());
+        libro.setEstadoLecturaEnum(cmbEstadoLectura.getValue());
 
         // Calificación: obtenemos el índice seleccionado (0=Sin calificar, 1=1
         // estrella...)

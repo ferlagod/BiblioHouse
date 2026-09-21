@@ -51,7 +51,8 @@ public class NextCloudSyncService {
         "prestamos.json",
         "socios.json",
         "estanterias.json",
-        "deseos.json"
+        "deseos.json",
+        "progreso_lectura.json"
     };
 
     private static final String[] DAV_CANDIDATES = {

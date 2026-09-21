@@ -18,38 +18,97 @@
 package com.bibliohouse.utils;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Base64;
+import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.prefs.Preferences;
 
 /**
- * Utilidad para encriptar y desencriptar cadenas de texto usando AES con una
- * clave única basada en información del hardware del equipo. Esto permite que
- * los datos encriptados solo puedan ser leídos en el mismo equipo donde se
- * encriptaron.
+ * Utilidad criptográfica moderna para encriptar y desencriptar cadenas de texto sensibles
+ * (como credenciales de NextCloud) usando AES-256-GCM con autenticación de integridad (AEAD),
+ * vector de inicialización (IV) criptográfico aleatorio por cada operación y clave maestra
+ * persistida en el perfil del usuario.
+ *
+ * Mantiene compatibilidad transparente hacia atrás con datos cifrados en versiones previas
+ * mediante el modo legado AES-ECB.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.2
  */
 public class SeguridadUtil {
 
-    /**
-     * Algoritmo de encriptación utilizado (AES).
-     */
-    private static final String ALGORITMO = "AES";
+    private static final String ALGORITMO_GCM = "AES/GCM/NoPadding";
+    private static final String ALGORITMO_LEGACY = "AES";
+    private static final String KEY_ALGORITHM = "AES";
+    private static final int GCM_IV_LENGTH = 12; // 96 bits recomendado por NIST SP 800-38D
+    private static final int GCM_TAG_LENGTH = 128; // 128 bits de tag de autenticación
+    private static final String PREFIX_V2 = "v2:";
+    private static final String PREF_KEY_MASTER = "vault_master_key";
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static SecretKeySpec masterKey;
 
     /**
-     * Genera una clave única de 128 bits (AES) basada en información del
-     * hardware del equipo. La clave se deriva de propiedades del sistema como
-     * el nombre del OS, arquitectura y usuario.
+     * Obtiene o genera la clave maestra de 256 bits protegida en el almacén de preferencias
+     * del usuario del sistema operativo.
      *
-     * @return Clave secreta para AES.
+     * @return Clave de 256 bits para AES.
+     */
+    private static synchronized SecretKeySpec getMasterKey() {
+        if (masterKey != null) {
+            return masterKey;
+        }
+
+        try {
+            Preferences prefs = Preferences.userNodeForPackage(SeguridadUtil.class);
+            String storedKey = prefs.get(PREF_KEY_MASTER, null);
+
+            if (storedKey != null && !storedKey.trim().isEmpty()) {
+                byte[] keyBytes = Base64.getDecoder().decode(storedKey.trim());
+                if (keyBytes.length == 32) { // 256 bits
+                    masterKey = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
+                    return masterKey;
+                }
+            }
+
+            // Generar nueva clave criptográfica de 256 bits
+            byte[] newKeyBytes = new byte[32];
+            SECURE_RANDOM.nextBytes(newKeyBytes);
+            prefs.put(PREF_KEY_MASTER, Base64.getEncoder().encodeToString(newKeyBytes));
+            prefs.flush();
+
+            masterKey = new SecretKeySpec(newKeyBytes, KEY_ALGORITHM);
+            return masterKey;
+        } catch (Exception e) {
+            // Fallback determinista seguro en caso de error de acceso a Preferences
+            return getFallbackKey();
+        }
+    }
+
+    private static SecretKeySpec getFallbackKey() {
+        try {
+            String seed = System.getProperty("user.home", "") + "BiblioHouseSecureSalt2026";
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = sha.digest(seed.getBytes(StandardCharsets.UTF_8));
+            return new SecretKeySpec(keyBytes, KEY_ALGORITHM);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error inicializando clave de seguridad", ex);
+        }
+    }
+
+    /**
+     * Genera la clave de 128 bits derivada de propiedades del sistema para permitir
+     * descifrar contraseñas previamente almacenadas con el formato legado.
+     *
+     * @return Clave secreta para AES legado.
      * @throws Exception Si falla la generación del hash SHA-256.
      */
-    private static SecretKeySpec generarClaveUnica() throws Exception {
-        // Obtenemos información del hardware
+    private static SecretKeySpec generarClaveLegada() throws Exception {
         String infoHardware = System.getProperty("os.name")
                 + System.getProperty("os.arch")
                 + System.getProperty("user.name");
@@ -57,50 +116,100 @@ public class SeguridadUtil {
         byte[] claveBytes = infoHardware.getBytes(StandardCharsets.UTF_8);
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         claveBytes = sha.digest(claveBytes);
-        claveBytes = Arrays.copyOf(claveBytes, 16); // 128 bits para máxima compatibilidad
+        claveBytes = Arrays.copyOf(claveBytes, 16);
 
-        return new SecretKeySpec(claveBytes, ALGORITMO);
+        return new SecretKeySpec(claveBytes, ALGORITMO_LEGACY);
     }
 
     /**
-     * Encripta una cadena de texto usando AES con la clave única del equipo. Si
-     * falla la encriptación, devuelve el texto original.
+     * Encripta una cadena de texto usando AES-256-GCM con un vector de inicialización (IV)
+     * criptográficamente aleatorio generado para cada cifrado.
      *
      * @param texto Texto a encriptar.
-     * @return Texto encriptado en Base64, o el texto original si falla.
+     * @return Texto encriptado con prefijo "v2:" y contenido Base64, o el texto original si ocurre un error.
      */
     public static String encriptar(String texto) {
         if (texto == null || texto.isEmpty()) {
             return "";
         }
         try {
-            Cipher cipher = Cipher.getInstance(ALGORITMO);
-            cipher.init(Cipher.ENCRYPT_MODE, generarClaveUnica());
-            byte[] encriptado = cipher.doFinal(texto.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encriptado);
+            byte[] iv = new byte[GCM_IV_LENGTH];
+            SECURE_RANDOM.nextBytes(iv);
+
+            Cipher cipher = Cipher.getInstance(ALGORITMO_GCM);
+            GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+            cipher.init(Cipher.ENCRYPT_MODE, getMasterKey(), spec);
+
+            byte[] cipherBytes = cipher.doFinal(texto.getBytes(StandardCharsets.UTF_8));
+
+            ByteBuffer buffer = ByteBuffer.allocate(iv.length + cipherBytes.length);
+            buffer.put(iv);
+            buffer.put(cipherBytes);
+
+            return PREFIX_V2 + Base64.getEncoder().encodeToString(buffer.array());
         } catch (Exception e) {
             return texto; // Fallback: devuelve el texto original
         }
     }
 
     /**
-     * Desencripta una cadena de texto encriptada con AES usando la clave única
-     * del equipo. Si falla la desencriptación, devuelve el texto original.
+     * Desencripta una cadena de texto. Detecta automáticamente si el contenido fue
+     * cifrado con el formato moderno AES-256-GCM (prefijo "v2:") o con el formato legado
+     * AES-ECB, proporcionando compatibilidad hacia atrás completa y transparente.
      *
      * @param textoEncriptado Texto encriptado en Base64.
-     * @return Texto desencriptado, o el texto original si falla.
+     * @return Texto desencriptado, o el texto original si falla la autenticación o descifrado.
      */
     public static String desencriptar(String textoEncriptado) {
         if (textoEncriptado == null || textoEncriptado.isEmpty()) {
             return "";
         }
-        try {
-            Cipher cipher = Cipher.getInstance(ALGORITMO);
-            cipher.init(Cipher.DECRYPT_MODE, generarClaveUnica());
-            byte[] original = cipher.doFinal(Base64.getDecoder().decode(textoEncriptado));
-            return new String(original, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            return textoEncriptado; // Fallback: devuelve el texto original
+
+        if (textoEncriptado.startsWith(PREFIX_V2)) {
+            // Formato moderno AES-256-GCM
+            try {
+                String payload = textoEncriptado.substring(PREFIX_V2.length());
+                byte[] decoded = Base64.getDecoder().decode(payload);
+
+                if (decoded.length < GCM_IV_LENGTH) {
+                    return textoEncriptado;
+                }
+
+                byte[] iv = Arrays.copyOfRange(decoded, 0, GCM_IV_LENGTH);
+                byte[] cipherBytes = Arrays.copyOfRange(decoded, GCM_IV_LENGTH, decoded.length);
+
+                Cipher cipher = Cipher.getInstance(ALGORITMO_GCM);
+                GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+                cipher.init(Cipher.DECRYPT_MODE, getMasterKey(), spec);
+
+                byte[] plainBytes = cipher.doFinal(cipherBytes);
+                return new String(plainBytes, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                return textoEncriptado; // Fallback: devuelve texto original ante manipulación o error
+            }
+        } else {
+            // Formato legado AES-ECB para retrocompatibilidad
+            try {
+                Cipher cipher = Cipher.getInstance(ALGORITMO_LEGACY);
+                cipher.init(Cipher.DECRYPT_MODE, generarClaveLegada());
+                byte[] original = cipher.doFinal(Base64.getDecoder().decode(textoEncriptado));
+                return new String(original, StandardCharsets.UTF_8);
+            } catch (Exception e) {
+                return textoEncriptado; // Fallback: devuelve el texto original
+            }
         }
+    }
+
+    /**
+     * Cifra usando el algoritmo legado AES-ECB. Método auxiliar para pruebas de retrocompatibilidad.
+     */
+    static String encriptarLegado(String texto) throws Exception {
+        if (texto == null || texto.isEmpty()) {
+            return "";
+        }
+        Cipher cipher = Cipher.getInstance(ALGORITMO_LEGACY);
+        cipher.init(Cipher.ENCRYPT_MODE, generarClaveLegada());
+        byte[] encriptado = cipher.doFinal(texto.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encriptado);
     }
 }

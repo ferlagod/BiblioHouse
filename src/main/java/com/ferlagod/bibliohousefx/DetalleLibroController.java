@@ -19,6 +19,7 @@ package com.ferlagod.bibliohousefx;
 
 import java.util.List;
 import com.bibliohouse.logic.Libro;
+import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.LanguageManager;
 import java.io.File;
 import java.io.IOException;
@@ -147,27 +148,17 @@ public class DetalleLibroController {
             txtResena.setText(resena != null ? resena : "");
         }
 
-        // Estado de lectura con 3 estados visuales (no solo leído/pendiente)
-        String estadoLectura = libroActual.getEstadoLectura();
-        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
-        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
-        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
-
-        if (estadoLectura == null || estadoLectura.isEmpty()) {
-            estadoLectura = txtPendiente;
-        }
-        
-        if (estadoLectura.equalsIgnoreCase(txtLeido) || estadoLectura.equalsIgnoreCase("Leído")) {
-            lblEstadoLectura.setText(txtLeido);
-            lblEstadoLectura.setStyle(
+        // Estado de lectura desacoplado usando EstadoLectura
+        EstadoLectura estadoLectura = libroActual.getEstadoLecturaEnum();
+        lblEstadoLectura.setText(estadoLectura.getEtiqueta());
+        switch (estadoLectura) {
+            case LEIDO -> lblEstadoLectura.setStyle(
                     "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-        } else if (estadoLectura.equalsIgnoreCase(txtLeyendo) || estadoLectura.equalsIgnoreCase("Leyendo")) {
-            lblEstadoLectura.setText(txtLeyendo);
-            lblEstadoLectura.setStyle(
+            case LEYENDO -> lblEstadoLectura.setStyle(
                     "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-        } else {
-            lblEstadoLectura.setText(txtPendiente);
-            lblEstadoLectura.setStyle(
+            case ABANDONADO -> lblEstadoLectura.setStyle(
+                    "-fx-background-color: #f1f3f4; -fx-text-fill: #5f6368; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+            case PENDIENTE -> lblEstadoLectura.setStyle(
                     "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
         }
         lblEstadoLectura.setVisible(true);
@@ -278,12 +269,8 @@ public class DetalleLibroController {
     private void actualizarUIProgreso() {
         if (boxProgreso == null || libroActual == null) return;
         
-        String estado = libroActual.getEstadoLectura();
-        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
-        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
-        if (estado == null || estado.isEmpty()) estado = txtPendiente;
-        
-        if (!txtLeyendo.equalsIgnoreCase(estado) && !"Leyendo".equalsIgnoreCase(estado)) {
+        EstadoLectura estado = libroActual.getEstadoLecturaEnum();
+        if (estado != EstadoLectura.LEYENDO) {
             boxProgreso.setOpacity(0.5);
             progressBarLectura.setDisable(true);
             txtPaginaActual.setDisable(true);
@@ -489,9 +476,8 @@ public class DetalleLibroController {
                 LectorDigitalController controller = loader.getController();
                 controller.setLibro(libroActual);
                 
-                String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
-                if (!txtLeyendo.equals(libroActual.getEstadoLectura()) && !"Leyendo".equals(libroActual.getEstadoLectura())) {
-                    libroActual.setEstadoLectura(txtLeyendo);
+                if (libroActual.getEstadoLecturaEnum() != EstadoLectura.LEYENDO) {
+                    libroActual.setEstadoLecturaEnum(EstadoLectura.LEYENDO);
                 }
                 
                 controller.setOnSyncRequested(() -> {
@@ -507,6 +493,7 @@ public class DetalleLibroController {
                 stage.setScene(new Scene(root, 900, 700));
                 stage.centerOnScreen();
                 stage.initOwner(lblTitulo.getScene().getWindow());
+                stage.setOnCloseRequest(e -> controller.detenerServidor());
                 stage.show();
             } catch (Exception e) {
                 LOGGER.log(java.util.logging.Level.WARNING, "Error al abrir lector interno", e);

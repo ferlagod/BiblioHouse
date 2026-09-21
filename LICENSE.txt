@@ -1,4 +1,4 @@
-Copyright (C) 2026 Fernando Lago Dávila
+                    Copyright (C) 2026 Fernando Lago Dávila
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,6 +13,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+                    
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -88,9 +90,6 @@ modification follow.
   0. Definitions.
 
   "This License" refers to version 3 of the GNU General Public License.
-
-  "Copyright" also means copyright-like laws that apply to other kinds of
-works, such as semiconductor masks.
 
   "The Program" refers to any copyrightable work licensed under this
 License.  Each licensee is addressed as "you".  "Licensees" and
@@ -537,7 +536,7 @@ work and works based on it.
 the scope of its coverage, prohibits the exercise of, or is
 conditioned on the non-exercise of one or more of the rights that are
 specifically granted under this License.  You may not convey a covered
-work if you are a party to an arrangement with a third party that is
+work if you are party to an arrangement with a third party that is
 in the business of distributing software, under which you make payment
 to the third party based on the extent of your activity of conveying
 the work, and under which the third party grants, to any of the
@@ -667,7 +666,7 @@ Also add information on how to contact you by electronic and paper mail.
   If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:
 
-    <program>  Copyright (C) <year>  <name of author>
+    BiblioHouse  Copyright (C) 2026  Fernando Lago Dávila
     This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
     This is free software, and you are welcome to redistribute it
     under certain conditions; type `show c' for details.
@@ -687,3 +686,29 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+-------------------------------------------------------------------------------
+
+SPECIFIC INFORMATION FOR THIS PROJECT
+
+Program: BiblioHouse
+Version: 2.0
+Copyright (C) 2026 ferlagod (Fernando Lago Dávila)
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License above for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Contact the Author:
+  Name: Fernando Lago Dávila (ferlagod)
+  Email: proyectos@oniros.eu
+  Web:  https://ferlagod.eu

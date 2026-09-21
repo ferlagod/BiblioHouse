@@ -31,8 +31,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import java.io.File;
 import java.util.*;
-import java.util.*;
 import java.util.stream.Collectors;
+import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.LanguageManager;
 
 /**
@@ -100,10 +100,11 @@ public class ExportarWebController {
 
         // Configurar estados de lectura
         String txtTodos = LanguageManager.getString("export.status.all", "Todos");
-        String txtLeido = LanguageManager.getString("export.status.read", "Leído");
-        String txtLeyendo = LanguageManager.getString("export.status.reading", "Leyendo");
-        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
-        cmbEstadoLectura.setItems(FXCollections.observableArrayList(txtTodos, txtLeido, txtLeyendo, txtPendiente));
+        ObservableList<String> itemsEstado = FXCollections.observableArrayList(txtTodos);
+        for (EstadoLectura e : EstadoLectura.values()) {
+            itemsEstado.add(e.getEtiqueta());
+        }
+        cmbEstadoLectura.setItems(itemsEstado);
         cmbEstadoLectura.setValue(txtTodos);
 
         // Nombre por defecto
@@ -337,10 +338,9 @@ public class ExportarWebController {
         // Filtro por estado de lectura
         String estadoSeleccionado = cmbEstadoLectura.getValue();
         String txtTodos = LanguageManager.getString("export.status.all", "Todos");
-        String txtPendiente = LanguageManager.getString("export.status.pending", "Pendiente");
         if (estadoSeleccionado != null && !estadoSeleccionado.equals(txtTodos)) {
-            String estadoLibro = libro.getEstadoLectura() != null ? libro.getEstadoLectura() : txtPendiente;
-            if (!estadoLibro.equals(estadoSeleccionado)) {
+            EstadoLectura estadoObjetivo = EstadoLectura.fromString(estadoSeleccionado);
+            if (libro.getEstadoLecturaEnum() != estadoObjetivo) {
                 return false;
             }
         }

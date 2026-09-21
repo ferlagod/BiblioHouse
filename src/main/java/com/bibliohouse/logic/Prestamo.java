@@ -19,6 +19,8 @@ package com.bibliohouse.logic;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Esto representa un préstamo de libro a alguien. Aquí guardamos quién se llevó
@@ -31,6 +33,8 @@ public class Prestamo {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // Identificador único del préstamo
+    private String id;
     // Usamos el ID interno (UUID) para identificar inequívocamente el libro
     private String libroId;
     // Mantenemos ISBN y Título como caché para mostrar datos si el libro se borra
@@ -51,6 +55,7 @@ public class Prestamo {
      * cargar los datos guardados sin volverse loco (Gson lo necesita).
      */
     public Prestamo() {
+        this.id = UUID.randomUUID().toString();
     }
 
     /**
@@ -64,6 +69,7 @@ public class Prestamo {
      */
     public Prestamo(String isbnLibro, String tituloLibro, int numeroSocio, String nombreSocio,
             LocalDate fechaPrestamo) {
+        this.id = UUID.randomUUID().toString();
         this.libroId = null; // En constructores legacy o manuales sin objeto Libro, esto puede ser null
         this.isbnLibro = isbnLibro;
         this.tituloLibro = tituloLibro;
@@ -81,6 +87,7 @@ public class Prestamo {
      * @param socio La persona que se lo lleva a casa.
      */
     public Prestamo(Libro libro, Socio socio) {
+        this.id = UUID.randomUUID().toString();
         // Extraemos datos del Libro
         this.libroId = libro.getId();
         this.isbnLibro = libro.getIsbn();
@@ -212,4 +219,51 @@ public class Prestamo {
     public boolean isDevuelto() {
         return fechaDevolucion != null;
     }
+
+    /**
+     * Nos devuelve el identificador único de este préstamo.
+     *
+     * @return El UUID del préstamo.
+     */
+    public String getId() {
+        if (id == null) {
+            id = UUID.randomUUID().toString();
+        }
+        return id;
+    }
+
+    /**
+     * Permite asignar el identificador único del préstamo.
+     *
+     * @param id El UUID del préstamo.
+     */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Prestamo prestamo = (Prestamo) o;
+        if (id != null && !id.isBlank() && prestamo.id != null && !prestamo.id.isBlank()) {
+            return id.equals(prestamo.id);
+        }
+        return numeroSocio == prestamo.numeroSocio
+                && Objects.equals(libroId, prestamo.libroId)
+                && Objects.equals(fechaPrestamo, prestamo.fechaPrestamo);
+    }
+
+    @Override
+    public int hashCode() {
+        if (id != null && !id.isBlank()) {
+            return id.hashCode();
+        }
+        return Objects.hash(libroId, numeroSocio, fechaPrestamo);
+    }
 }
+

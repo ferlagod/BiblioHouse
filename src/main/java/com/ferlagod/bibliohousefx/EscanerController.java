@@ -66,6 +66,10 @@ public class EscanerController {
     private EscanerListener listener;
     private ObservableList<String> codigosDetectados;
 
+    // Buffers reutilizables para evitar asignación continua en cada frame (30 FPS)
+    private byte[] reusableBuffer;
+    private BufferedImage reusableImage;
+
     /**
      * Interfaz para comunicar el resultado del escaneo al controlador
      * principal.
@@ -175,54 +179,62 @@ public class EscanerController {
             @Override
             protected Void call() throws Exception {
                 Mat matrix = new Mat();
+                MultiFormatReader reader = new MultiFormatReader();
 
-                while (!stopCamera.get()) {
-                    if (capture != null && capture.isOpened()) {
-                        // Leer frame
-                        if (capture.read(matrix)) {
+                try {
+                    while (!stopCamera.get()) {
+                        if (capture != null && capture.isOpened()) {
+                            // Leer frame
+                            if (capture.read(matrix) && !matrix.empty()) {
 
-                            // Convertir Mat a BufferedImage para ZXing y JavaFX
-                            BufferedImage image = matToBufferedImage(matrix);
+                                // Convertir Mat a BufferedImage reutilizando buffers
+                                BufferedImage image = matToBufferedImage(matrix);
 
-                            if (image != null) {
-                                // 1. Mostrar imagen en la UI (JavaFX thread)
-                                Platform.runLater(() -> {
+                                if (image != null) {
+                                    // 1. Convertir a imagen JavaFX fuera del hilo UI para evitar sobrecarga y condiciones de carrera
                                     Image fxImage = SwingFXUtils.toFXImage(image, null);
-                                    imgWebcam.setImage(fxImage);
-                                });
+                                    Platform.runLater(() -> {
+                                        imgWebcam.setImage(fxImage);
+                                    });
 
-                                // 2. Intentar leer código de barras (ZXing)
-                                try {
-                                    BufferedImageLuminanceSource source = new BufferedImageLuminanceSource(image);
-                                    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-                                    Result result = new MultiFormatReader().decode(bitmap);
+                                    // 2. Intentar leer código de barras (ZXing)
+                                    try {
+                                        BufferedImageLuminanceSource source = new BufferedImageLuminanceSource(image);
+                                        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+                                        Result result = reader.decodeWithState(bitmap);
 
-                                    if (result != null) {
-                                        String text = result.getText();
-                                        System.out.println("Código detectado: " + text);
+                                        if (result != null) {
+                                            String text = result.getText();
+                                            System.out.println("Código detectado: " + text);
 
-                                        // Si parece un ISBN (10 o 13 dígitos)
-                                        if (esPosibleISBN(text)) {
-                                            if (!codigosDetectados.contains(text)) {
-                                                Toolkit.getDefaultToolkit().beep();
-                                                Platform.runLater(() -> {
-                                                    codigosDetectados.add(text);
-                                                    listaCodigos.scrollTo(codigosDetectados.size() - 1);
-                                                });
+                                            // Si parece un ISBN (10 o 13 dígitos)
+                                            if (esPosibleISBN(text)) {
+                                                if (!codigosDetectados.contains(text)) {
+                                                    Toolkit.getDefaultToolkit().beep();
+                                                    Platform.runLater(() -> {
+                                                        codigosDetectados.add(text);
+                                                        listaCodigos.scrollTo(codigosDetectados.size() - 1);
+                                                    });
 
-                                                // Pausa para evitar lecturas múltiples seguidas
-                                                Thread.sleep(2000);
+                                                    // Pausa para evitar lecturas múltiples seguidas
+                                                    Thread.sleep(2000);
+                                                }
                                             }
                                         }
+                                    } catch (NotFoundException e) {
+                                        // Comportamiento normal cuando no hay código en el encuadre
+                                    } finally {
+                                        reader.reset();
                                     }
-                                } catch (NotFoundException e) {
-
                                 }
                             }
                         }
+                        // Pequeña pausa (~30 FPS)
+                        Thread.sleep(30);
                     }
-                    // Pequeña pausa
-                    Thread.sleep(30);
+                } finally {
+                    // Liberar matriz nativa de OpenCV para evitar fugas de memoria nativa fuera del heap
+                    matrix.release();
                 }
                 return null;
             }
@@ -234,35 +246,55 @@ public class EscanerController {
     }
 
     /**
-     * Convierte una Mat de OpenCV a BufferedImage para poder usarla con ZXing y
-     * JavaFX.
+     * Convierte una Mat de OpenCV a BufferedImage reutilizando el buffer de bytes
+     * y la instancia de BufferedImage para minimizar la sobrecarga del Garbage Collector.
      *
      * @param original La Mat de OpenCV a convertir.
      * @return La imagen convertida a BufferedImage.
      */
-    private BufferedImage matToBufferedImage(Mat original) {
-        // Asegurarse de tener 3 canales (BGR) o 1 (Grayscale)
-        // Por defecto Webcam suele dar BGR.
+    public BufferedImage matToBufferedImage(Mat original) {
+        if (original == null || original.empty()) {
+            return null;
+        }
 
         int width = original.width();
         int height = original.height();
         int channels = original.channels();
+        int bufferSize = width * height * channels;
 
-        byte[] sourcePixels = new byte[width * height * channels];
-        original.get(0, 0, sourcePixels);
-
-        BufferedImage image;
-
-        if (channels > 1) {
-            image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        } else {
-            image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        if (bufferSize <= 0) {
+            return null;
         }
 
-        final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-        System.arraycopy(sourcePixels, 0, targetPixels, 0, sourcePixels.length);
+        int imageType = (channels > 1) ? BufferedImage.TYPE_3BYTE_BGR : BufferedImage.TYPE_BYTE_GRAY;
 
-        return image;
+        // Reutilizar BufferedImage si las dimensiones y el tipo coinciden
+        if (reusableImage == null
+                || reusableImage.getWidth() != width
+                || reusableImage.getHeight() != height
+                || reusableImage.getType() != imageType) {
+            reusableImage = new BufferedImage(width, height, imageType);
+        }
+
+        // Reutilizar el array de bytes intermedio
+        if (reusableBuffer == null || reusableBuffer.length != bufferSize) {
+            reusableBuffer = new byte[bufferSize];
+        }
+
+        original.get(0, 0, reusableBuffer);
+
+        final byte[] targetPixels = ((DataBufferByte) reusableImage.getRaster().getDataBuffer()).getData();
+        System.arraycopy(reusableBuffer, 0, targetPixels, 0, bufferSize);
+
+        return reusableImage;
+    }
+
+    public byte[] getReusableBuffer() {
+        return reusableBuffer;
+    }
+
+    public BufferedImage getReusableImage() {
+        return reusableImage;
     }
 
     /**
@@ -311,8 +343,12 @@ public class EscanerController {
         if (capture != null && capture.isOpened()) {
             capture.release();
         }
-        Stage stage = (Stage) imgWebcam.getScene().getWindow();
-        stage.close();
+        reusableBuffer = null;
+        reusableImage = null;
+        if (imgWebcam != null && imgWebcam.getScene() != null && imgWebcam.getScene().getWindow() != null) {
+            Stage stage = (Stage) imgWebcam.getScene().getWindow();
+            stage.close();
+        }
     }
 
     /**
@@ -323,5 +359,7 @@ public class EscanerController {
         if (capture != null) {
             capture.release();
         }
+        reusableBuffer = null;
+        reusableImage = null;
     }
 }

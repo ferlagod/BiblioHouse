@@ -32,8 +32,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
@@ -75,8 +74,8 @@ public class CarnetGenerator {
      */
     public void generarCarnetsPDF(List<Socio> socios, File archivoSalida) throws IOException {
         try (PDDocument document = new PDDocument()) {
-            PDType1Font fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-            PDType1Font fontRegular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+            PDFont fontBold = PdfFontHelper.loadBoldFont(document);
+            PDFont fontRegular = PdfFontHelper.loadRegularFont(document);
 
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
@@ -124,13 +123,13 @@ public class CarnetGenerator {
                 contentStream.beginText();
                 contentStream.setFont(fontBold, 12);
                 contentStream.newLineAtOffset(currentX + 10, currentY + CARD_HEIGHT - 18);
-                contentStream.showText("BIBLIOHOUSE");
+                contentStream.showText(PdfFontHelper.sanitizarTexto("BIBLIOHOUSE", fontBold));
                 contentStream.endText();
 
                 contentStream.beginText();
                 contentStream.setFont(fontRegular, 7);
                 contentStream.newLineAtOffset(currentX + 10, currentY + CARD_HEIGHT - 28);
-                contentStream.showText("CARNET DE SOCIO");
+                contentStream.showText(PdfFontHelper.sanitizarTexto("CARNET DE SOCIO", fontRegular));
                 contentStream.endText();
 
                 // 5. Datos del Socio (Gris oscuro/Negro)
@@ -143,13 +142,13 @@ public class CarnetGenerator {
                 if (nombreCompleto.length() > 26) {
                     nombreCompleto = nombreCompleto.substring(0, 23) + "...";
                 }
-                contentStream.showText(nombreCompleto.toUpperCase());
+                contentStream.showText(PdfFontHelper.sanitizarTexto(nombreCompleto.toUpperCase(), fontBold));
                 contentStream.endText();
 
                 contentStream.beginText();
                 contentStream.setFont(fontRegular, 9);
                 contentStream.newLineAtOffset(currentX + 10, currentY + 65);
-                contentStream.showText("Socio Nº: " + socio.getNumeroSocio());
+                contentStream.showText(PdfFontHelper.sanitizarTexto("Socio Nº: " + socio.getNumeroSocio(), fontRegular));
                 contentStream.endText();
 
                 // 6. Generar y centrar el código de barras
@@ -168,7 +167,7 @@ public class CarnetGenerator {
                     contentStream.beginText();
                     contentStream.setFont(fontRegular, 8);
                     contentStream.newLineAtOffset(currentX + 10, currentY + 20);
-                    contentStream.showText("Error generando código de barras");
+                    contentStream.showText(PdfFontHelper.sanitizarTexto("Error generando código de barras", fontRegular));
                     contentStream.endText();
                 }
 

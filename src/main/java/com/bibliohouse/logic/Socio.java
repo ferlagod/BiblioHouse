@@ -169,4 +169,30 @@ public class Socio {
         return numeroSocio + " - " + nombre + " " + apellidos;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Socio socio = (Socio) o;
+        if (numeroSocio > 0 && socio.numeroSocio > 0) {
+            return numeroSocio == socio.numeroSocio;
+        }
+        if (dni != null && !dni.isBlank() && socio.dni != null && !socio.dni.isBlank()) {
+            return dni.trim().equalsIgnoreCase(socio.dni.trim());
+        }
+        return numeroSocio == socio.numeroSocio;
+    }
+
+    @Override
+    public int hashCode() {
+        if (numeroSocio > 0) {
+            return Integer.hashCode(numeroSocio);
+        }
+        return (dni != null && !dni.isBlank()) ? dni.trim().toUpperCase().hashCode() : 0;
+    }
 }
+

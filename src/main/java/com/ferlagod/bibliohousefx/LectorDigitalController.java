@@ -18,6 +18,7 @@
 package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.Libro;
+import com.bibliohouse.utils.EpubStreamServer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -25,7 +26,9 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Controlador del lector digital de libros electrónicos. Permite abrir y
@@ -55,6 +58,7 @@ public class LectorDigitalController {
     private Runnable onSyncRequested;
     private int currentPercentage = 0;
     private int fontSizePercent = 100;
+    private EpubStreamServer streamServer;
 
     /**
      * Establece el libro que se va a leer en el visor. Actualiza el título
@@ -64,6 +68,7 @@ public class LectorDigitalController {
      *              ninguna acción.
      */
     public void setLibro(Libro libro) {
+        detenerServidor();
         this.libroActual = libro;
         if (libro != null) {
             lblTituloLector.setText(libro.getTitulo());
@@ -82,10 +87,37 @@ public class LectorDigitalController {
     }
 
     /**
-     * Carga el visor EPUB en el WebView. Lee el archivo digital del libro
-     * actual, lo convierte a Base64 y lo envía al visor JavaScript mediante
-     * el puente {@code javaBridge}. Calcula la posición inicial de lectura
-     * a partir de la página guardada en el modelo del libro.
+     * Inicia un mini servidor HTTP local en loopback (127.0.0.1) con puerto efímero
+     * para transmitir el archivo EPUB por bloques (streaming) al visor webkit,
+     * evitando cargar archivos de decenas de megabytes en memoria RAM o convertirlos
+     * a Base64.
+     *
+     * @param archivo Archivo EPUB físico en disco.
+     * @return URL local para que el visor JavaScript cargue el EPUB.
+     * @throws IOException Si ocurre un error de bind en localhost.
+     */
+    public synchronized String iniciarServidorLocal(File archivo) throws IOException {
+        if (streamServer != null) {
+            detenerServidor();
+        }
+        streamServer = new EpubStreamServer(archivo);
+        return streamServer.start();
+    }
+
+    /**
+     * Detiene el servidor HTTP local y libera los sockets y recursos asociados.
+     */
+    public synchronized void detenerServidor() {
+        if (streamServer != null) {
+            streamServer.stop();
+            streamServer = null;
+        }
+    }
+
+    /**
+     * Carga el visor EPUB en el WebView. Transmite el archivo digital mediante
+     * el servidor HTTP local ligero. Si el streaming falla por restricciones del
+     * sistema, recurre a un fallback asíncrono fuera del hilo de interfaz.
      */
     private void cargarLector() {
         if (libroActual.getRutaArchivoDigital() == null) return;
@@ -103,20 +135,30 @@ public class LectorDigitalController {
             if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                 JSObject window = (JSObject) webViewLector.getEngine().executeScript("window");
                 window.setMember("javaBridge", this);
-                
+
+                double startPercent = 0;
+                if (libroActual.getPaginasTotales() > 0) {
+                    startPercent = ((double) libroActual.getPaginaActual() / libroActual.getPaginasTotales()) * 100;
+                }
+                final double finalStartPercent = startPercent;
+
                 try {
-                    byte[] fileContent = java.nio.file.Files.readAllBytes(archivo.toPath());
-                    String base64 = java.util.Base64.getEncoder().encodeToString(fileContent);
-                    
-                    double startPercent = 0;
-                    if (libroActual.getPaginasTotales() > 0) {
-                        startPercent = ((double) libroActual.getPaginaActual() / libroActual.getPaginasTotales()) * 100;
-                    }
-                    
-                    window.setMember("epubBase64", base64);
-                    webViewLector.getEngine().executeScript("openEpubBase64(window.epubBase64, " + startPercent + ")");
+                    String epubUrl = iniciarServidorLocal(archivo);
+                    webViewLector.getEngine().executeScript("openEpubUrl('" + epubUrl + "', " + finalStartPercent + ")");
                 } catch (Exception e) {
-                    System.err.println("Error procesando EPUB a Base64: " + e.getMessage());
+                    System.err.println("Aviso: No se pudo iniciar streaming HTTP local, recurriendo a fallback asíncrono: " + e.getMessage());
+                    CompletableFuture.runAsync(() -> {
+                        try {
+                            byte[] fileContent = java.nio.file.Files.readAllBytes(archivo.toPath());
+                            String base64 = java.util.Base64.getEncoder().encodeToString(fileContent);
+                            javafx.application.Platform.runLater(() -> {
+                                window.setMember("epubBase64", base64);
+                                webViewLector.getEngine().executeScript("openEpubBase64(window.epubBase64, " + finalStartPercent + ")");
+                            });
+                        } catch (Exception ex) {
+                            System.err.println("Error en fallback Base64: " + ex.getMessage());
+                        }
+                    });
                 }
             }
         });

@@ -35,8 +35,6 @@ import java.io.IOException;
 public class App extends Application {
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(App.class.getName());
-    private static java.util.Locale currentLocale = java.util.Locale.forLanguageTag("es");
-    private static java.util.ResourceBundle bundle;
     private static Scene scene;
     private static App instance;
 
@@ -58,28 +56,22 @@ public class App extends Application {
     }
 
     /**
-     * Establece el idioma de la aplicación.
+     * Establece el idioma de la aplicación delegando en LanguageManager.
      *
      * @param lang código de idioma (es, en, ca, gl, eu, pt)
      */
     public static void setLocale(String lang) {
-        currentLocale = java.util.Locale.forLanguageTag(lang);
-        // Limpiamos la caché para asegurar que no se use una versión antigua
-        java.util.ResourceBundle.clearCache();
-
         LOGGER.info("[App] Cambiando idioma a: " + lang);
-
-        // Al cambiar locale, recargamos el bundle
-        bundle = java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages", currentLocale);
+        com.bibliohouse.logic.LanguageManager.setLocale(lang);
     }
 
     /**
-     * Obtiene el locale actual configurado en la aplicación.
+     * Obtiene el locale actual configurado en la aplicación delegando en LanguageManager.
      *
      * @return Objeto {@link java.util.Locale} que representa el locale actual.
      */
     public static java.util.Locale getCurrentLocale() {
-        return currentLocale;
+        return com.bibliohouse.logic.LanguageManager.getLocale();
     }
 
     /**
@@ -97,12 +89,12 @@ public class App extends Application {
 
     /**
      * Devuelve el ResourceBundle actual para usar traducciones desde código
-     * Java.
+     * Java delegando en LanguageManager.
      *
      * @return el ResourceBundle activo.
      */
     public static java.util.ResourceBundle getBundle() {
-        return bundle;
+        return com.bibliohouse.logic.LanguageManager.getBundle();
     }
 
     /**
@@ -151,13 +143,13 @@ public class App extends Application {
         try {
             // Al arrancar, cargamos primero la pantalla de SPLASH
             FXMLLoader loader = new FXMLLoader(App.class.getResource("splash.fxml"));
-            loader.setResources(bundle);
+            loader.setResources(getBundle());
             Parent root = loader.load();
 
             scene = new Scene(root);
             scene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
             stage.setScene(scene);
-            stage.setTitle(bundle.getString("app.title"));
+            stage.setTitle(getBundle().getString("app.title"));
             stage.setResizable(false);
 
             // Icono
@@ -176,7 +168,7 @@ public class App extends Application {
     public void loadWelcome() {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("welcome.fxml"));
-            loader.setResources(bundle);
+            loader.setResources(getBundle());
             Parent root = loader.load();
             root.setOpacity(0.0);
             scene.setRoot(root);
@@ -200,7 +192,7 @@ public class App extends Application {
      */
     public static void loadMain(String username, String path) throws IOException {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("primary.fxml"));
-        loader.setResources(bundle);
+        loader.setResources(getBundle());
         Parent root = loader.load();
 
         // Pasamos los datos al controlador
@@ -210,7 +202,7 @@ public class App extends Application {
 
         // Creamos una NUEVA ventana (Stage) para la aplicación principal
         Stage mainStage = new Stage();
-        String title = java.text.MessageFormat.format(bundle.getString("app.title.main"), username);
+        String title = java.text.MessageFormat.format(getBundle().getString("app.title.main"), username);
         mainStage.setTitle(title);
 
         Scene mainScene = new Scene(root);
@@ -253,7 +245,7 @@ public class App extends Application {
 
         // Cargar el FXML con el nuevo idioma
         FXMLLoader loader = new FXMLLoader(App.class.getResource("primary.fxml"));
-        loader.setResources(bundle); // ESTO ES CLAVE: le damos el diccionario nuevo
+        loader.setResources(getBundle()); // Diccionario nuevo desde LanguageManager
         Parent root = loader.load();
 
         // Re-configurar los datos del controlador

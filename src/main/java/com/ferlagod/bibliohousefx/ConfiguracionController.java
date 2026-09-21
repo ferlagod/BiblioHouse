@@ -201,8 +201,8 @@ public class ConfiguracionController {
                         java.util.Map<String, String> prefsMap = jsonManager.cargarPreferencias();
                         prefsMap.put("language", langCode);
                         jsonManager.guardarPreferencias(prefsMap);
-                        // Cambiar locale global
-                        App.setLocale(langCode);
+                        // Cambiar locale global en la fuente única de verdad
+                        com.bibliohouse.logic.LanguageManager.setLocale(langCode);
                         // Recargar ventana principal (Hot-Swap) y mantener Configuración abierta
                         Stage settingsStage = (Stage) comboIdioma.getScene().getWindow();
                         Stage mainStage = (Stage) settingsStage.getOwner();
@@ -214,9 +214,7 @@ public class ConfiguracionController {
                             // Recargar esta misma ventana de Configuración para aplicar el idioma
                             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                                     ConfiguracionController.this.getClass().getResource("configuracion.fxml"));
-                            loader.setResources(
-                                    java.util.ResourceBundle.getBundle("com.ferlagod.bibliohousefx.messages",
-                                            App.getCurrentLocale()));
+                            loader.setResources(com.bibliohouse.logic.LanguageManager.getBundle());
                             javafx.scene.Parent newConfigRoot = loader.load();
                             ConfiguracionController newConfigController = loader.getController();
                             newConfigController.initData(jsonManager, newMainController);
