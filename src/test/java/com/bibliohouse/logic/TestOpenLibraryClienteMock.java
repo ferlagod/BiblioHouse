@@ -22,6 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Pruebas unitarias para OpenLibraryCliente sin conexión a internet (100% deterministas)
  * utilizando inyección de HttpSender para aislar por completo las llamadas HTTP de red.
+ *
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.1
  */
 public class TestOpenLibraryClienteMock {
 

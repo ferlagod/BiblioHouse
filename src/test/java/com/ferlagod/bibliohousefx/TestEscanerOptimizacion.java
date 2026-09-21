@@ -24,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * - Reutilización de búferes de bytes y BufferedImage ante fotogramas consecutivos.
  * - Reasignación controlada únicamente cuando cambian las dimensiones.
  * - Liberación de matrices nativas de OpenCV.
+ *
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.1
  */
 public class TestEscanerOptimizacion {
 

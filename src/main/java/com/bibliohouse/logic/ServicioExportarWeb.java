@@ -47,7 +47,7 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
  * Base64 data URIs para máxima portabilidad (un solo archivo sin dependencias).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class ServicioExportarWeb {
 

@@ -53,7 +53,7 @@ import org.opencv.videoio.Videoio;
  * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class EscanerController {
 
@@ -289,10 +289,20 @@ public class EscanerController {
         return reusableImage;
     }
 
+    /**
+     * Obtiene el búfer reutilizable de bytes empleado para la transferencia de fotogramas de OpenCV.
+     *
+     * @return Array de bytes reutilizable.
+     */
     public byte[] getReusableBuffer() {
         return reusableBuffer;
     }
 
+    /**
+     * Obtiene la instancia reutilizable de {@link BufferedImage} que evita asignaciones de memoria a 30 FPS.
+     *
+     * @return Instancia de {@link BufferedImage} reutilizada.
+     */
     public BufferedImage getReusableImage() {
         return reusableImage;
     }

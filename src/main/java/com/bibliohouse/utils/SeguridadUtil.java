@@ -38,7 +38,7 @@ import java.util.prefs.Preferences;
  * mediante el modo legado AES-ECB.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.1
  */
 public class SeguridadUtil {
 
@@ -201,7 +201,12 @@ public class SeguridadUtil {
     }
 
     /**
-     * Cifra usando el algoritmo legado AES-ECB. Método auxiliar para pruebas de retrocompatibilidad.
+     * Cifra una cadena usando el algoritmo legado AES-ECB derivado del hardware/usuario.
+     * Método auxiliar de paquete destinado a pruebas unitarias de retrocompatibilidad.
+     *
+     * @param texto Cadena en texto plano a cifrar.
+     * @return Texto cifrado codificado en Base64.
+     * @throws Exception Si ocurre un fallo durante la inicialización del cifrado.
      */
     static String encriptarLegado(String texto) throws Exception {
         if (texto == null || texto.isEmpty()) {

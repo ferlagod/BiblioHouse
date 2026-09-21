@@ -62,7 +62,7 @@ import javafx.scene.layout.VBox;
  * de e-books y acciones de menú contextual sobre cada libro.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class CatalogoGridController {
 
@@ -148,7 +148,15 @@ public class CatalogoGridController {
     }
 
     /**
-     * Inicializa los datos necesarios para el catálogo.
+     * Inicializa las dependencias, listas observables, rutas y recursos localizados
+     * requeridos por la vista de cuadrícula del catálogo de libros.
+     *
+     * @param mainController Controlador principal de la ventana (PrimaryController).
+     * @param jsonManager    Gestor de persistencia en disco de datos JSON.
+     * @param listaLibros    Lista observable que contiene la totalidad de libros del usuario.
+     * @param listaDeseos    Lista de libros deseados pero no poseídos.
+     * @param rutaUsuario    Directorio raíz del perfil del usuario en disco.
+     * @param resources      Paquete de recursos para textos internacionalizados.
      */
     public void initData(PrimaryController mainController, JsonManager jsonManager,
                          ObservableList<Libro> listaLibros, List<Libro> listaDeseos,
@@ -169,6 +177,10 @@ public class CatalogoGridController {
     // ORDENACIÓN
     // =========================================================================
 
+    /**
+     * Ordena los libros alfabéticamente por título de forma ascendente (A - Z)
+     * y reinicia la paginación a la primera página.
+     */
     @FXML
     public void ordenarPorTituloAZ() {
         currentComparator = Comparator.comparing(l -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase);
@@ -176,6 +188,10 @@ public class CatalogoGridController {
         refrescarCuadricula();
     }
 
+    /**
+     * Ordena los libros alfabéticamente por título de forma descendente (Z - A)
+     * y reinicia la paginación a la primera página.
+     */
     @FXML
     public void ordenarPorTituloZA() {
         currentComparator = Comparator.comparing((Libro l) -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase).reversed();
@@ -183,6 +199,10 @@ public class CatalogoGridController {
         refrescarCuadricula();
     }
 
+    /**
+     * Ordena los libros alfabéticamente por autor de la A a la Z
+     * y reinicia la paginación a la primera página.
+     */
     @FXML
     public void ordenarPorAutor() {
         currentComparator = Comparator.comparing((Libro l) -> l.getAutor() != null ? l.getAutor() : "", String::compareToIgnoreCase);
@@ -190,6 +210,10 @@ public class CatalogoGridController {
         refrescarCuadricula();
     }
 
+    /**
+     * Ordena los libros por año de publicación de más reciente a más antiguo
+     * y reinicia la paginación a la primera página.
+     */
     @FXML
     public void ordenarPorAnio() {
         currentComparator = (l1, l2) -> {
@@ -201,6 +225,10 @@ public class CatalogoGridController {
         refrescarCuadricula();
     }
 
+    /**
+     * Ordena los libros por orden de inserción o modificación más reciente
+     * y reinicia la paginación a la primera página.
+     */
     @FXML
     public void ordenarPorReciente() {
         currentComparator = (l1, l2) -> {
@@ -217,6 +245,9 @@ public class CatalogoGridController {
     // NAVEGACIÓN Y PAGINACIÓN
     // =========================================================================
 
+    /**
+     * Salta a la primera página de la cuadrícula de libros y desplaza la vista hacia arriba.
+     */
     @FXML
     public void irPrimeraPagina() {
         if (paginaActual > 1) {
@@ -226,6 +257,9 @@ public class CatalogoGridController {
         }
     }
 
+    /**
+     * Retrocede a la página anterior de la cuadrícula de libros si no se está en la primera.
+     */
     @FXML
     public void irPaginaAnterior() {
         if (paginaActual > 1) {
@@ -235,6 +269,9 @@ public class CatalogoGridController {
         }
     }
 
+    /**
+     * Avanza a la página siguiente de la cuadrícula de libros si hay páginas posteriores disponibles.
+     */
     @FXML
     public void irPaginaSiguiente() {
         if (paginaActual < totalPaginas) {
@@ -244,6 +281,9 @@ public class CatalogoGridController {
         }
     }
 
+    /**
+     * Salta directamente a la última página de la cuadrícula de libros.
+     */
     @FXML
     public void irUltimaPagina() {
         if (paginaActual < totalPaginas) {
@@ -253,12 +293,23 @@ public class CatalogoGridController {
         }
     }
 
+    /**
+     * Desplaza suavemente el ScrollPane de libros a la posición superior inicial.
+     */
     private void scrollearArriba() {
         if (scrollMisLibros != null) {
             scrollMisLibros.setVvalue(0.0);
         }
     }
 
+    /**
+     * Actualiza las etiquetas de información de paginación y el estado de habilitación
+     * de los botones de navegación anterior/siguiente/primera/última página.
+     *
+     * @param inicio Índice del primer libro mostrado en la página actual.
+     * @param fin    Índice del último libro mostrado en la página actual.
+     * @param total  Número total de libros tras aplicar los filtros de búsqueda y estantería.
+     */
     private void actualizarBarraPaginacion(int inicio, int fin, int total) {
         if (boxPaginacion == null) {
             return;
@@ -390,48 +441,102 @@ public class CatalogoGridController {
         panelMisLibros.getChildren().setAll(tarjetas);
     }
 
+    /**
+     * Obtiene el número de la página actual en la cuadrícula (1-indexed).
+     *
+     * @return Página actual.
+     */
     public int getPaginaActual() {
         return paginaActual;
     }
 
+    /**
+     * Establece el número de página actual en la cuadrícula.
+     *
+     * @param paginaActual Nueva página a mostrar.
+     */
     public void setPaginaActual(int paginaActual) {
         this.paginaActual = paginaActual;
     }
 
+    /**
+     * Obtiene la cantidad máxima de libros que se renderizan por página.
+     *
+     * @return Límite de libros por página.
+     */
     public int getLibrosPorPagina() {
         return librosPorPagina;
     }
 
+    /**
+     * Establece la cantidad de libros que se renderizarán por página.
+     *
+     * @param librosPorPagina Cantidad de libros por página.
+     */
     public void setLibrosPorPagina(int librosPorPagina) {
         this.librosPorPagina = librosPorPagina;
     }
 
+    /**
+     * Obtiene el total de páginas calculadas para la vista actual.
+     *
+     * @return Número total de páginas.
+     */
     public int getTotalPaginas() {
         return totalPaginas;
     }
 
+    /**
+     * Obtiene el total de libros que coinciden con los filtros actuales.
+     *
+     * @return Cantidad de libros filtrados.
+     */
     public int getTotalLibrosFiltrados() {
         return totalLibrosFiltrados;
     }
 
+    /**
+     * Establece la lista completa observable de libros de la biblioteca.
+     *
+     * @param listaLibrosCompleta Lista de libros.
+     */
     public void setListaLibrosCompleta(ObservableList<Libro> listaLibrosCompleta) {
         this.listaLibrosCompleta = listaLibrosCompleta;
     }
 
+    /**
+     * Establece la categoría o estantería activa para el filtrado de libros.
+     *
+     * @param categoriaActual Nombre de la estantería o categoría seleccionada.
+     */
     public void setCategoriaActual(String categoriaActual) {
         this.categoriaActual = categoriaActual;
     }
 
+    /**
+     * Obtiene el FlowPane contenedor de la cuadrícula de libros.
+     *
+     * @return Contenedor FlowPane.
+     */
     public FlowPane getPanelMisLibros() {
         return panelMisLibros;
     }
 
+    /**
+     * Establece el FlowPane contenedor de la cuadrícula de libros.
+     *
+     * @param panelMisLibros Contenedor FlowPane.
+     */
     public void setPanelMisLibros(FlowPane panelMisLibros) {
         this.panelMisLibros = panelMisLibros;
     }
 
     /**
-     * Construye la tarjeta gráfica de un libro individual.
+     * Construye la tarjeta gráfica de un libro individual con portada, títulos,
+     * insignias de lectura y soporte para eventos de clic y menú contextual.
+     *
+     * @param libro Libro para el que se genera la tarjeta.
+     * @return Nodo {@link VBox} con la tarjeta interactiva renderizada.
      */
     private VBox crearTarjetaMisLibros(Libro libro) {
         VBox tarjeta = new VBox(8);
@@ -538,10 +643,23 @@ public class CatalogoGridController {
     // MENÚ CONTEXTUAL DE LIBROS
     // =========================================================================
 
+    /**
+     * Inicializa la instancia compartida del menú contextual de libros.
+     */
     private void configurarContextMenu() {
         this.contextMenuLibros = new ContextMenu();
     }
 
+    /**
+     * Construye dinámicamente y despliega el menú contextual sobre la tarjeta del libro,
+     * adaptando las opciones disponibles según si el libro es digital o físico (leer,
+     * prestar, editar, cambiar portada, cambiar estado de lectura, imprimir etiqueta, eliminar).
+     *
+     * @param owner   Nodo gráfico propietario sobre el que se despliega el menú.
+     * @param libro   Libro sobre el que se ejecutarán las acciones.
+     * @param screenX Coordenada X absoluta de la pantalla donde se produjo el evento.
+     * @param screenY Coordenada Y absoluta de la pantalla donde se produjo el evento.
+     */
     private void mostrarContextMenu(Node owner, Libro libro, double screenX, double screenY) {
         if (contextMenuLibros == null) {
             contextMenuLibros = new ContextMenu();
@@ -620,6 +738,13 @@ public class CatalogoGridController {
         contextMenuLibros.show(owner, screenX, screenY);
     }
 
+    /**
+     * Actualiza el estado de lectura de un libro (Pendiente, Leyendo, Leído, Abandonado),
+     * persistiendo el cambio con debounce y notificando al bus de eventos de la aplicación.
+     *
+     * @param libro       Libro cuyo estado será modificado.
+     * @param nuevoEstado Nuevo {@link EstadoLectura} a aplicar.
+     */
     private void cambiarEstadoLectura(Libro libro, EstadoLectura nuevoEstado) {
         libro.setEstadoLecturaEnum(nuevoEstado);
         if (jsonManager != null && listaLibrosCompleta != null) {
@@ -630,6 +755,11 @@ public class CatalogoGridController {
         AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Estado actualizado a " + nuevoEstado.getEtiqueta() + ": " + libro.getTitulo()));
     }
 
+    /**
+     * Solicita al controlador principal abrir la ventana con la ficha de detalle del libro.
+     *
+     * @param libro Libro seleccionado por el usuario.
+     */
     private void abrirDetalle(Libro libro) {
         if (mainController != null) {
             mainController.mostrarDetalleLibro(libro);
@@ -640,6 +770,10 @@ public class CatalogoGridController {
     // DRAG & DROP DE E-BOOKS
     // =========================================================================
 
+    /**
+     * Configura el comportamiento de arrastrar y soltar (Drag & Drop) sobre el panel
+     * del catálogo para permitir la importación directa y automática de archivos e-book (EPUB, PDF, MOBI).
+     */
     private void configurarDragAndDrop() {
         if (panelMisLibros == null) {
             return;

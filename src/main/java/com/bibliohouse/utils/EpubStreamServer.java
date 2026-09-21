@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  * </p>
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class EpubStreamServer {
 
@@ -55,6 +55,12 @@ public class EpubStreamServer {
     private volatile boolean running = false;
     private int port;
 
+    /**
+     * Construye una nueva instancia del servidor de streaming para el archivo EPUB indicado.
+     *
+     * @param archivo Archivo EPUB existente en el sistema de archivos local.
+     * @throws IllegalArgumentException Si el archivo es nulo o no existe.
+     */
     public EpubStreamServer(File archivo) {
         if (archivo == null || !archivo.exists()) {
             throw new IllegalArgumentException("El archivo EPUB no existe o es nulo");
@@ -163,10 +169,20 @@ public class EpubStreamServer {
         return "http://127.0.0.1:" + port + "/book.epub";
     }
 
-    public int getPort() {
+    /**
+     * Obtiene el puerto TCP local efímero asignado por el sistema operativo.
+     *
+     * @return Número de puerto local.
+     */
+     public int getPort() {
         return port;
     }
 
+    /**
+     * Comprueba si el servidor HTTP local se encuentra actualmente en ejecución y aceptando conexiones.
+     *
+     * @return {@code true} si el socket del servidor está abierto y activo; {@code false} en caso contrario.
+     */
     public boolean isRunning() {
         return running && serverSocket != null && !serverSocket.isClosed();
     }

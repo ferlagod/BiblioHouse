@@ -32,7 +32,7 @@ import javafx.stage.Stage;
  * la que vamos a prestar libros (y perseguir si no los devuelven a tiempo).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class GestionSociosController {
 

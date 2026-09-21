@@ -26,7 +26,7 @@ import java.util.Objects;
  * sin necesidad de re-serializar la totalidad de los metadatos de la biblioteca.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class ProgresoLectura {
 
@@ -35,10 +35,21 @@ public class ProgresoLectura {
     private double porcentaje;
     private String fechaUltimaLectura;
 
+    /**
+     * Constructor por defecto requerido para serialización y deserialización JSON.
+     * Inicializa la página actual y totales en cero.
+     */
     public ProgresoLectura() {
         this(0, 0);
     }
 
+    /**
+     * Crea una nueva instancia de progreso de lectura con las páginas especificadas.
+     * Calcula automáticamente el porcentaje y registra la marca de tiempo actual.
+     *
+     * @param paginaActual   Página actual alcanzada por el lector.
+     * @param paginasTotales Número total de páginas del libro.
+     */
     public ProgresoLectura(int paginaActual, int paginasTotales) {
         this.paginaActual = paginaActual;
         this.paginasTotales = paginasTotales;
@@ -46,36 +57,76 @@ public class ProgresoLectura {
         this.fechaUltimaLectura = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
+    /**
+     * Obtiene la página actual leída.
+     *
+     * @return Número de página actual.
+     */
     public int getPaginaActual() {
         return paginaActual;
     }
 
+    /**
+     * Establece la página actual leída y recalcula el porcentaje y fecha de lectura.
+     *
+     * @param paginaActual Nueva página alcanzada.
+     */
     public void setPaginaActual(int paginaActual) {
         this.paginaActual = paginaActual;
         actualizarPorcentajeYFecha();
     }
 
+    /**
+     * Obtiene el número total de páginas del libro.
+     *
+     * @return Total de páginas.
+     */
     public int getPaginasTotales() {
         return paginasTotales;
     }
 
+    /**
+     * Establece el número total de páginas y recalcula el porcentaje de avance.
+     *
+     * @param paginasTotales Total de páginas del libro.
+     */
     public void setPaginasTotales(int paginasTotales) {
         this.paginasTotales = paginasTotales;
         actualizarPorcentajeYFecha();
     }
 
+    /**
+     * Obtiene el porcentaje de lectura completado (de 0.0 a 100.0).
+     *
+     * @return Porcentaje de avance de lectura.
+     */
     public double getPorcentaje() {
         return porcentaje;
     }
 
+    /**
+     * Establece manualmente el porcentaje de lectura completado.
+     *
+     * @param porcentaje Porcentaje numérico (0.0 a 100.0).
+     */
     public void setPorcentaje(double porcentaje) {
         this.porcentaje = porcentaje;
     }
 
+    /**
+     * Obtiene la fecha y hora de la última sesión de lectura en formato ISO-8601.
+     *
+     * @return Cadena con la fecha y hora en formato ISO.
+     */
     public String getFechaUltimaLectura() {
         return fechaUltimaLectura;
     }
 
+    /**
+     * Establece la fecha y hora de la última sesión de lectura.
+     *
+     * @param fechaUltimaLectura Cadena con la fecha y hora.
+     */
     public void setFechaUltimaLectura(String fechaUltimaLectura) {
         this.fechaUltimaLectura = fechaUltimaLectura;
     }

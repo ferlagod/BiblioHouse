@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Pruebas unitarias para EstadoLectura y su integración con Libro y LanguageManager.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 class TestEstadoLectura {
 

@@ -42,7 +42,7 @@ import javafx.scene.layout.VBox;
  * los filtros por categoría y el widget interactivo del reto de lectura anual.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class SidebarController {
 
@@ -71,6 +71,10 @@ public class SidebarController {
     private Map<String, String> preferencias;
     private ResourceBundle resources;
 
+    /**
+     * Inicializa el controlador suscribiéndose a los eventos reactivos de libros modificados,
+     * eliminados y estanterías actualizadas a través de {@link AppEventBus}.
+     */
     @FXML
     public void initialize() {
         // Suscribirse a cambios en los libros para actualizar el reto anual en tiempo real

@@ -40,7 +40,7 @@ import com.bibliohouse.logic.LanguageManager;
  * biblioteca, como total de libros, leídos, autor preferido, etc.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class EstadisticasController {
 

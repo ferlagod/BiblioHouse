@@ -43,7 +43,7 @@ import org.json.JSONObject;
  * devuelve los resultados como objetos Libro.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class OpenLibraryCliente {
 
@@ -53,8 +53,21 @@ public class OpenLibraryCliente {
     private static final String API_BASE_URL = "https://openlibrary.org/search.json";
     // Campos que solicitamos a la API para no traer datos innecesarios.
     private static final String FIELDS_TO_GET = "title,author_name,first_publish_year,publisher,subject,isbn,cover_i,number_of_pages";
+    /**
+     * Interfaz funcional que desacopla el despacho de peticiones HTTP para facilitar
+     * la inyección de simuladores o mocks durante las pruebas unitarias y evitar
+     * conexiones externas no deseadas a servidores remotos.
+     */
     @FunctionalInterface
     public interface HttpSender {
+        /**
+         * Envía una petición HTTP de forma síncrona y devuelve la respuesta.
+         *
+         * @param request Solicitud HTTP configurada.
+         * @return Respuesta HTTP que contiene el cuerpo como cadena.
+         * @throws IOException          Si ocurre un fallo de E/S en la conexión.
+         * @throws InterruptedException Si el hilo es interrumpido durante el envío.
+         */
         HttpResponse<String> send(HttpRequest request) throws IOException, InterruptedException;
     }
 

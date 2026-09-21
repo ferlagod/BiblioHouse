@@ -334,7 +334,7 @@
                 <version>1.6.0</version>
                 <configuration>
                     <name>BiblioHouse</name>
-                    <appVersion>1.0.0</appVersion>
+                    <appVersion>2.1.0</appVersion>
                     <vendor>Fernando Lago Dávila</vendor>
                     <description>Sistema de Gestión de Biblioteca y Lector Digital</description>
                     <destination>${project.build.directory}/dist</destination>

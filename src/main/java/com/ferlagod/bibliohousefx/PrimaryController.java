@@ -80,7 +80,7 @@ import org.controlsfx.control.NotificationPane;
  * modulares (Sidebar, Catálogo, Gestión de Libros, Préstamos, Historial, Wishlist y Sagas).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class PrimaryController implements Initializable {
 
@@ -351,25 +351,50 @@ public class PrimaryController implements Initializable {
         return dueDaysLimit;
     }
 
+    /**
+     * Establece el límite de días permitidos para un préstamo antes de considerarlo vencido.
+     *
+     * @param days Número de días de margen.
+     */
     public void setDueDaysLimit(int days) {
         this.dueDaysLimit = days;
         checkOverdueLoans();
     }
 
+    /**
+     * Establece el libro actualmente seleccionado por el usuario en cualquiera de las vistas.
+     *
+     * @param libro Libro seleccionado.
+     */
     public void seleccionarLibro(Libro libro) {
         this.libroSeleccionado = libro;
     }
 
+    /**
+     * Obtiene el libro actualmente seleccionado en la aplicación.
+     *
+     * @return Libro seleccionado, o {@code null} si ninguno está seleccionado.
+     */
     public Libro getLibroSeleccionado() {
         return libroSeleccionado;
     }
 
+    /**
+     * Actualiza el texto mostrado en la barra de estado inferior de la ventana principal.
+     *
+     * @param mensaje Mensaje de estado.
+     */
     public void setMensajeEstado(String mensaje) {
         if (lblEstado != null) {
             lblEstado.setText(mensaje);
         }
     }
 
+    /**
+     * Muestra una notificación emergente temporal animada en la parte inferior de la ventana.
+     *
+     * @param mensaje Texto descriptivo a notificar.
+     */
     public void notificar(String mensaje) {
         if (notificationPane != null) {
             notificationPane.setText(mensaje);
@@ -380,6 +405,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Obtiene la ventana nativa (Window / Stage) contenedora de la escena principal.
+     *
+     * @return Instancia de {@link Window} o {@code null} si aún no está asociada.
+     */
     public Window getWindow() {
         if (mainContainer != null && mainContainer.getScene() != null) {
             return mainContainer.getScene().getWindow();
@@ -387,6 +417,12 @@ public class PrimaryController implements Initializable {
         return null;
     }
 
+    /**
+     * Configura la escena en el escenario especificado aplicando la hoja de estilos global.
+     *
+     * @param stage Escenario (Stage) a configurar.
+     * @param root  Nodo raíz cargado del FXML.
+     */
     public void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
@@ -394,6 +430,12 @@ public class PrimaryController implements Initializable {
         stage.sizeToScene();
     }
 
+    /**
+     * Muestra una alerta informativa garantizando su ejecución en el hilo gráfico de JavaFX.
+     *
+     * @param titulo  Título de la ventana de diálogo.
+     * @param mensaje Contenido textual de la alerta.
+     */
     public void mostrarAlertaPublic(String titulo, String mensaje) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -404,6 +446,9 @@ public class PrimaryController implements Initializable {
         });
     }
 
+    /**
+     * Solicita la persistencia en disco de los libros en segundo plano con control de concurrencia debounced.
+     */
     public void guardarLibrosEnDisco() {
         if (jsonManager != null && listaLibrosCompleta != null) {
             jsonManager.guardarLibrosDebounced(new ArrayList<>(listaLibrosCompleta));
@@ -414,6 +459,11 @@ public class PrimaryController implements Initializable {
     // GESTIÓN DE PRÉSTAMOS Y SOCIOS
     // =========================================================================
 
+    /**
+     * Obtiene una sublista filtrada con los libros poseídos que tienen stock disponible (> 0).
+     *
+     * @return Lista observable de libros disponibles para prestar.
+     */
     public ObservableList<Libro> obtenerLibrosDisponibles() {
         if (listaLibrosCompleta == null) {
             return FXCollections.observableArrayList();
@@ -421,12 +471,18 @@ public class PrimaryController implements Initializable {
         return listaLibrosCompleta.filtered(l -> l.isPoseido() && l.getCantidad() > 0);
     }
 
+    /**
+     * Refresca el desplegable de libros disponibles en el formulario de préstamos.
+     */
     public void actualizarComboLibrosDisponibles() {
         if (pestanaPrestamosController != null) {
             pestanaPrestamosController.refrescarLibrosDisponibles(obtenerLibrosDisponibles());
         }
     }
 
+    /**
+     * Recarga la lista de socios desde el archivo JSON y refresca el controlador de préstamos.
+     */
     public void recargarDatosPrestamos() {
         List<Socio> socios = jsonManager.cargarSocios();
         listaSocios.clear();
@@ -436,6 +492,9 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Actualiza los predicados de filtrado de préstamos activos e históricos y refresca la cuadrícula.
+     */
     public void actualizarVistasPrestamo() {
         if (filteredPrestamos != null) {
             filteredPrestamos.setPredicate(p -> p.getFechaDevolucion() == null);
@@ -449,6 +508,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Cambia a la pestaña de préstamos y preselecciona el libro indicado en el formulario.
+     *
+     * @param libro Libro para el que se va a emitir un préstamo.
+     */
     public void prepararPrestamoLibro(Libro libro) {
         if (libro == null) return;
         if (mainTabPane != null && tabPrestamos != null) {
@@ -459,6 +523,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Cambia a la pestaña de préstamos y preselecciona el socio indicado en el formulario.
+     *
+     * @param socio Socio para el que se va a emitir un préstamo.
+     */
     public void prepararPrestamoSocio(Socio socio) {
         if (socio == null) return;
         if (mainTabPane != null && tabPrestamos != null) {
@@ -500,6 +569,9 @@ public class PrimaryController implements Initializable {
         });
     }
 
+    /**
+     * Despliega el diálogo modal para crear y registrar un nuevo socio en la base de datos local.
+     */
     public void nuevoSocioPublic() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("gestion_socios.fxml"));
@@ -525,6 +597,10 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Despliega la ventana de administración integral de socios, permitiendo editar, eliminar
+     * o ver el historial de préstamos asociados.
+     */
     public void gestionarSociosPublic() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("socios_manager.fxml"));
@@ -549,6 +625,12 @@ public class PrimaryController implements Initializable {
     // WISHLIST Y DETALLE DE LIBROS
     // =========================================================================
 
+    /**
+     * Traslada un libro de la lista de deseos a la biblioteca personal como libro poseído (stock 1)
+     * y actualiza ambas listas en disco y en el bus de eventos.
+     *
+     * @param libro Libro deseado adquirido por el usuario.
+     */
     public void moverDeseoABiblioteca(Libro libro) {
         if (listaDeseos != null) {
             listaDeseos.remove(libro);
@@ -567,6 +649,9 @@ public class PrimaryController implements Initializable {
         setMensajeEstado(resources != null && resources.containsKey("wishlist.moved.status") ? resources.getString("wishlist.moved.status") : "Libro movido a la biblioteca.");
     }
 
+    /**
+     * Solicita una búsqueda rápida de libros para incorporar directamente a la lista de deseos.
+     */
     public void buscarLibroParaDeseos() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Buscar Libro");
@@ -580,6 +665,12 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Abre la ventana modal de visualización detallada del libro con ficha completa,
+     * notas de lectura, avance y portadas.
+     *
+     * @param libro Libro del que se mostrarán los detalles.
+     */
     public void mostrarDetalleLibro(Libro libro) {
         if (libro == null) return;
         try {
@@ -612,6 +703,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Despliega la ventana modal de edición de metadatos de un libro.
+     *
+     * @param libro Libro a editar.
+     */
     public void editarLibro(Libro libro) {
         if (libro == null) return;
         try {
@@ -642,6 +738,12 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Permite seleccionar una nueva imagen de portada desde el explorador de archivos
+     * y la asocia al libro indicado.
+     *
+     * @param libro Libro al que se le cambiará la portada.
+     */
     public void cambiarPortada(Libro libro) {
         if (libro == null) return;
         FileChooser fileChooser = new FileChooser();
@@ -658,6 +760,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Elimina un ejemplar o la totalidad de un libro tras confirmación interactiva del usuario.
+     *
+     * @param libro Libro que se va a eliminar.
+     */
     public void eliminarLibro(Libro libro) {
         if (libro == null) return;
         if (libro.getCantidad() > 1) {
@@ -695,6 +802,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Genera un archivo PDF con la etiqueta física que incluye código de barras para lomos y estanterías.
+     *
+     * @param libro Libro físico del que se generará la etiqueta.
+     */
     public void generarEtiquetaFisica(Libro libro) {
         if (libro == null) return;
         if (libro.isEsDigital()) {
@@ -721,6 +833,11 @@ public class PrimaryController implements Initializable {
         }
     }
 
+    /**
+     * Abre el lector digital integrado en caso de archivos EPUB o abre la aplicación predeterminada del sistema.
+     *
+     * @param libro Libro digital a leer.
+     */
     public void abrirLectorDigital(Libro libro) {
         if (libro == null || !libro.isEsDigital() || libro.getRutaArchivoDigital() == null) {
             mostrarAlertaPublic("Aviso", "Este libro no tiene un archivo digital enlazado.");

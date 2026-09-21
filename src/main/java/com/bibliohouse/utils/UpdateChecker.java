@@ -32,14 +32,14 @@ import javafx.application.Platform;
  * actual y notifica el resultado mediante un callback.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class UpdateChecker {
 
     // API de Forgejo para tu repositorio
     private static final String API_URL = "https://forjalibre.eu/api/v1/repos/ferlagod/BiblioHouse/releases/latest";
     // Versión actual de la aplicación. 
-    private static final String VERSION_ACTUAL = "2.0";
+    private static final String VERSION_ACTUAL = "2.1";
 
     /**
      * Comprueba si hay una versión más reciente de la aplicación.

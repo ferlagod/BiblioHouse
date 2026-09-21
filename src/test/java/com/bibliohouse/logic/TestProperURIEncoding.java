@@ -24,7 +24,7 @@ package com.bibliohouse.logic;
  * correctamente el componente de ruta de una URI.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

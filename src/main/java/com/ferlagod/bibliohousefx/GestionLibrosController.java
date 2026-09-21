@@ -57,7 +57,7 @@ import javafx.stage.Stage;
  * de código de barras o rellenar la ficha de un libro manualmente.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class GestionLibrosController {
 
@@ -106,7 +106,15 @@ public class GestionLibrosController {
     }
 
     /**
-     * Inicializa las dependencias y datos del controlador.
+     * Inicializa las dependencias principales, la lista de libros, el servicio de búsqueda online,
+     * el directorio de usuario y los paquetes de idioma.
+     *
+     * @param mainController   Controlador principal de la aplicación.
+     * @param jsonManager      Gestor de persistencia JSON.
+     * @param listaLibros      Lista observable de todos los libros del usuario.
+     * @param busquedaService  Servicio para consultas multifuente asíncronas.
+     * @param rutaUsuario      Ruta del directorio de datos del usuario actual.
+     * @param resources        Paquete de recursos para cadenas localizadas.
      */
     public void initData(PrimaryController mainController, JsonManager jsonManager,
                          ObservableList<Libro> listaLibros, BusquedaService busquedaService,
@@ -123,6 +131,12 @@ public class GestionLibrosController {
     // BÚSQUEDA EN APIS Y ESCÁNER
     // =========================================================================
 
+    /**
+     * Realiza una búsqueda asíncrona en los servicios externos online (OpenLibrary, Google Books, Inventaire)
+     * a partir del texto o ISBN introducido en la caja de búsqueda.
+     *
+     * @param event Evento de acción disparado por el botón de búsqueda o pulsar Intro.
+     */
     @FXML
     public void buscarLibroOpenLibrary(ActionEvent event) {
         if (txtBusquedaOpenLibrary == null) return;
@@ -153,6 +167,12 @@ public class GestionLibrosController {
                 });
     }
 
+    /**
+     * Abre la ventana modal del escáner de código de barras mediante la cámara web
+     * utilizando OpenCV y ZXing.
+     *
+     * @param event Evento disparado al pulsar el botón del escáner.
+     */
     @FXML
     public void abrirEscaner(ActionEvent event) {
         try {
@@ -185,6 +205,12 @@ public class GestionLibrosController {
         }
     }
 
+    /**
+     * Despliega la ventana modal con la lista de libros encontrados en la búsqueda externa
+     * para que el usuario seleccione el deseado y autorellene la ficha.
+     *
+     * @param resultados Lista de libros devueltos por el servicio de búsqueda.
+     */
     private void abrirVentanaResultados(List<Libro> resultados) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("resultados_busqueda.fxml"));
@@ -209,6 +235,12 @@ public class GestionLibrosController {
         }
     }
 
+    /**
+     * Rellena automáticamente los campos del formulario manual con los datos de un libro
+     * obtenido de la búsqueda externa o del catálogo.
+     *
+     * @param libro Libro con los datos a volcar en los campos de texto.
+     */
     public void rellenarFormularioManual(Libro libro) {
         if (libro == null) return;
 
@@ -230,10 +262,12 @@ public class GestionLibrosController {
         }
     }
 
-    // =========================================================================
-    // FORMULARIO MANUAL
-    // =========================================================================
-
+    /**
+     * Abre un selector de archivos nativo para que el usuario escoja una imagen de portada local
+     * (PNG, JPG, JPEG, WEBP) y la previsualiza en el formulario.
+     *
+     * @param event Evento disparado por el botón de selección de portada.
+     */
     @FXML
     public void seleccionarImagenManual(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
@@ -248,6 +282,9 @@ public class GestionLibrosController {
         }
     }
 
+    /**
+     * Limpia y restablece todos los campos del formulario manual a sus valores predeterminados.
+     */
     @FXML
     public void limpiarCamposManuales() {
         txtTitulo.clear();
@@ -266,6 +303,12 @@ public class GestionLibrosController {
         rutaPortadaTemporal = "";
     }
 
+    /**
+     * Valida los datos introducidos, gestiona posibles duplicados mediante diálogo interactivo,
+     * copia la portada a la carpeta offline local, asigna estanterías y persiste el libro nuevo.
+     *
+     * @param event Evento disparado al pulsar el botón "Añadir Libro".
+     */
     @FXML
     public void anadirLibro(ActionEvent event) {
         String titulo = txtTitulo.getText().trim();
@@ -408,6 +451,12 @@ public class GestionLibrosController {
         limpiarCamposManuales();
     }
 
+    /**
+     * Muestra un cuadro de diálogo informativo modal.
+     *
+     * @param titulo  Título de la ventana de alerta.
+     * @param mensaje Texto explicativo del diálogo.
+     */
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titulo);

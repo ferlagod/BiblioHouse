@@ -37,7 +37,7 @@ import javafx.scene.control.TableView;
  * activos.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class PrestamosController {
 

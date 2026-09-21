@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * en los modelos de dominio (Libro, Socio, Prestamo, NotaLectura).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 class TestModelosDominioEqualsHashCode {
 

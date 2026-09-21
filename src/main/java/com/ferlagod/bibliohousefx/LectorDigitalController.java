@@ -43,7 +43,7 @@ import java.util.concurrent.CompletableFuture;
  * {@link #logError(String)} directamente.</p>
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class LectorDigitalController {
 

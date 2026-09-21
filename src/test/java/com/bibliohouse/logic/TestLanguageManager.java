@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Pruebas unitarias para LanguageManager y su sincronización con App y AppEventBus.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 class TestLanguageManager {
 

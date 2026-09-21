@@ -41,7 +41,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  * barras para facilitar el préstamo.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  *
  */
 public class CarnetGenerator {

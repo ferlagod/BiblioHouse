@@ -23,7 +23,7 @@ package com.bibliohouse.logic;
  * carácter literal '@' afectan al resultado de {@link java.net.URI#getPath()}.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

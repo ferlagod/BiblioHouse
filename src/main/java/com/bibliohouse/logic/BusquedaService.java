@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  * (Google Books, OpenLibrary, Inventaire).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class BusquedaService {
 

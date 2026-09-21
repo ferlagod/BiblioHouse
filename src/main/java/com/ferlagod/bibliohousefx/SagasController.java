@@ -51,7 +51,7 @@ import javafx.scene.control.TextInputDialog;
  * resaltarlos en rojo.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 public class SagasController {
 

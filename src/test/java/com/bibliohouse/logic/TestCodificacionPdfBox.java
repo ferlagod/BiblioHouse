@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * eñes, diéresis y caracteres internacionales sin lanzar IllegalArgumentException.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  */
 class TestCodificacionPdfBox {
 

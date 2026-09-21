@@ -40,6 +40,11 @@ public class AppEventBus {
     private AppEventBus() {
     }
 
+    /**
+     * Obtiene la instancia única (singleton) del bus de eventos de la aplicación.
+     *
+     * @return Instancia singleton de {@link AppEventBus}.
+     */
     public static AppEventBus getInstance() {
         return INSTANCE;
     }
@@ -119,75 +124,124 @@ public class AppEventBus {
     // =========================================================================
 
     /**
-     * Evento emitido cuando un libro ha sido añadido o modificado.
+     * Evento emitido cuando un libro ha sido añadido o modificado en la biblioteca.
      */
     public static class LibroModificadoEvent {
         private final Libro libro;
         private final boolean esNuevo;
 
+        /**
+         * Crea una nueva instancia del evento de modificación o creación de libro.
+         *
+         * @param libro   El libro modificado o añadido.
+         * @param esNuevo Indica si el libro acaba de registrarse como nuevo (true) o si fue editado (false).
+         */
         public LibroModificadoEvent(Libro libro, boolean esNuevo) {
             this.libro = libro;
             this.esNuevo = esNuevo;
         }
 
+        /**
+         * Obtiene el libro asociado al evento.
+         *
+         * @return Objeto {@link Libro} modificado o añadido.
+         */
         public Libro getLibro() {
             return libro;
         }
 
+        /**
+         * Indica si el libro fue recién creado o modificado.
+         *
+         * @return {@code true} si es un libro recién añadido; {@code false} si fue actualizado.
+         */
         public boolean isEsNuevo() {
             return esNuevo;
         }
     }
 
     /**
-     * Evento emitido cuando un libro ha sido eliminado.
+     * Evento emitido cuando un libro ha sido eliminado de la biblioteca.
      */
     public static class LibroEliminadoEvent {
         private final Libro libro;
 
+        /**
+         * Crea una nueva instancia del evento de eliminación de libro.
+         *
+         * @param libro El libro que ha sido eliminado.
+         */
         public LibroEliminadoEvent(Libro libro) {
             this.libro = libro;
         }
 
+        /**
+         * Obtiene el libro que fue eliminado.
+         *
+         * @return Objeto {@link Libro} retirado.
+         */
         public Libro getLibro() {
             return libro;
         }
     }
 
     /**
-     * Evento emitido cuando el usuario selecciona una estantería en la barra lateral.
+     * Evento emitido cuando el usuario selecciona una estantería o categoría en la barra lateral.
      */
     public static class FiltroEstanteriaEvent {
         private final String estanteria;
 
+        /**
+         * Crea un nuevo evento de cambio de filtro de estantería.
+         *
+         * @param estanteria Nombre de la estantería o categoría seleccionada (ej. "Todos los libros", "Ciencia Ficción").
+         */
         public FiltroEstanteriaEvent(String estanteria) {
             this.estanteria = estanteria;
         }
 
+        /**
+         * Obtiene el nombre de la estantería seleccionada.
+         *
+         * @return Nombre de la estantería de filtrado.
+         */
         public String getEstanteria() {
             return estanteria;
         }
     }
 
     /**
-     * Evento emitido cuando cambia la lista de estanterías del usuario.
+     * Evento emitido cuando cambia la lista de estanterías del usuario (creación, edición o borrado).
      */
     public static class EstanteriasActualizadasEvent {
         private final List<String> estanterias;
 
+        /**
+         * Crea un evento de estanterías actualizadas con la nueva lista.
+         *
+         * @param estanterias Lista completa y actualizada de nombres de estanterías.
+         */
         public EstanteriasActualizadasEvent(List<String> estanterias) {
             this.estanterias = estanterias;
         }
 
+        /**
+         * Obtiene la lista actualizada de estanterías.
+         *
+         * @return Lista con los nombres de las estanterías disponibles.
+         */
         public List<String> getEstanterias() {
             return estanterias;
         }
     }
 
     /**
-     * Evento emitido cuando se crea o devuelve un préstamo.
+     * Evento emitido cuando se crea, edita o devuelve un préstamo de un libro.
      */
     public static class PrestamoModificadoEvent {
+        /**
+         * Constructor predeterminado para el evento de modificación de préstamos.
+         */
         public PrestamoModificadoEvent() {}
     }
 
@@ -197,10 +251,20 @@ public class AppEventBus {
     public static class StatusMessageEvent {
         private final String mensaje;
 
+        /**
+         * Crea un evento para mostrar un mensaje en la barra de estado.
+         *
+         * @param mensaje Texto descriptivo de la acción o estado actual.
+         */
         public StatusMessageEvent(String mensaje) {
             this.mensaje = mensaje;
         }
 
+        /**
+         * Obtiene el mensaje a mostrar en la barra de estado.
+         *
+         * @return Mensaje descriptivo.
+         */
         public String getMensaje() {
             return mensaje;
         }
@@ -213,15 +277,31 @@ public class AppEventBus {
         private final java.util.Locale nuevoLocale;
         private final java.util.ResourceBundle nuevoBundle;
 
+        /**
+         * Crea un evento de cambio de idioma.
+         *
+         * @param nuevoLocale  Nuevo {@link java.util.Locale} establecido.
+         * @param nuevoBundle  Nuevo {@link java.util.ResourceBundle} cargado para traducciones.
+         */
         public IdiomaCambiadoEvent(java.util.Locale nuevoLocale, java.util.ResourceBundle nuevoBundle) {
             this.nuevoLocale = nuevoLocale;
             this.nuevoBundle = nuevoBundle;
         }
 
+        /**
+         * Obtiene el nuevo Locale seleccionado.
+         *
+         * @return Instancia de {@link java.util.Locale}.
+         */
         public java.util.Locale getNuevoLocale() {
             return nuevoLocale;
         }
 
+        /**
+         * Obtiene el paquete de recursos con los textos en el nuevo idioma.
+         *
+         * @return Instancia de {@link java.util.ResourceBundle}.
+         */
         public java.util.ResourceBundle getNuevoBundle() {
             return nuevoBundle;
         }

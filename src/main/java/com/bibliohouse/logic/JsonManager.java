@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.0
+ * @version 2.1
  *
  */
 public class JsonManager {
