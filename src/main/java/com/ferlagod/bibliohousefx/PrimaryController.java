@@ -60,6 +60,7 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputDialog;
@@ -73,6 +74,8 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
 import org.controlsfx.control.NotificationPane;
+import com.bibliohouse.utils.SystemNotificationService;
+
 
 /**
  * Controlador principal y orquestador de BiblioHouse. Coordina la carga de datos,
@@ -91,6 +94,8 @@ public class PrimaryController implements Initializable {
     private NotificationPane notificationPane;
     @FXML
     private BorderPane mainContainer;
+    @FXML
+    private MenuBar menuBarPrincipal;
     @FXML
     private TabPane mainTabPane;
     @FXML
@@ -145,6 +150,7 @@ public class PrimaryController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.resources = rb;
+        configurarIntegracionSistema();
 
         // Suscribirse a eventos del bus desacoplado
         AppEventBus.getInstance().subscribe(AppEventBus.StatusMessageEvent.class, e -> setMensajeEstado(e.getMensaje()));
@@ -222,8 +228,14 @@ public class PrimaryController implements Initializable {
                 jsonManager.setAutoSyncTask(() -> {
                     try {
                         syncService.subirBaseDatos(localDir);
+                        Platform.runLater(() -> {
+                            SystemNotificationService.notificarInfo("Sincronización NextCloud", "Copia de seguridad en la nube completada con éxito.");
+                        });
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "Auto-sync fallido: {0}", ex.getMessage());
+                        Platform.runLater(() -> {
+                            SystemNotificationService.notificarAlerta("Sincronización NextCloud", "Error al sincronizar con NextCloud: " + ex.getMessage());
+                        });
                     }
                 });
             } catch (Exception ex) {
@@ -294,21 +306,95 @@ public class PrimaryController implements Initializable {
     // ATAJOS DE TECLADO Y PREFERENCIAS
     // =========================================================================
 
+    private void configurarIntegracionSistema() {
+        if (menuBarPrincipal != null) {
+            // Se mantiene dentro de la ventana de la app para que siempre muestre la marca BiblioHouse
+            // y evitar que macOS reemplace el nombre del menú por el ejecutable del sistema ("java").
+            menuBarPrincipal.useSystemMenuBarProperty().set(false);
+        }
+        SystemNotificationService.inicializar();
+    }
+
     private void setupShortcuts() {
         Platform.runLater(() -> {
             Window window = getWindow();
             if (window != null && window.getScene() != null) {
                 Scene scene = window.getScene();
-                // Ctrl+F -> Foco en búsqueda (Tab 1: Gestionar Libros)
+                // Cmd+K / Ctrl+K -> Paleta de comandos global Spotlight/Raycast
+                scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+K"), this::abrirPaletaComandos);
+                // Cmd+, / Ctrl+, -> Preferencias y configuración
+                scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+,"), this::abrirConfiguracion);
+                // Cmd+N / Ctrl+N -> Añadir nuevo libro / Gestión de libros
+                scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+N"), this::irAGestionLibros);
+                // Cmd+F / Ctrl+F -> Foco en búsqueda (Tab 1: Gestionar Libros)
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+F"), () -> {
-                    if (mainTabPane != null) mainTabPane.getSelectionModel().select(1);
+                    seleccionarPestanaDirecta(1);
                 });
-                // Ctrl+L -> Pestaña Préstamos
+                // Cmd+L / Ctrl+L -> Pestaña Préstamos
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+L"), () -> {
-                    if (mainTabPane != null && tabPrestamos != null) mainTabPane.getSelectionModel().select(tabPrestamos);
+                    seleccionarPestanaDirecta(2);
                 });
+                // Cmd+1 a Cmd+6 -> Navegación directa instantánea entre pestañas
+                for (int i = 1; i <= 6; i++) {
+                    final int tabIdx = i - 1;
+                    scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+" + i), () -> {
+                        seleccionarPestanaDirecta(tabIdx);
+                    });
+                }
             }
         });
+    }
+
+    @FXML
+    public void abrirPaletaComandos() {
+        PaletaComandosDialog.mostrar(this);
+    }
+
+    @FXML
+    public void irAGestionLibros() {
+        seleccionarPestanaDirecta(1);
+    }
+
+    public void abrirEscaner() {
+        seleccionarPestanaDirecta(1);
+        if (gestionLibrosController != null) {
+            gestionLibrosController.abrirEscaner(null);
+        }
+    }
+
+    public void seleccionarPestanaDirecta(int index) {
+        if (mainTabPane != null && index >= 0 && index < mainTabPane.getTabs().size()) {
+            mainTabPane.getSelectionModel().select(index);
+        }
+    }
+
+    public void abrirDetalleLibroDirecto(Libro libro) {
+        if (libro == null) return;
+        this.libroSeleccionado = libro;
+        seleccionarPestanaDirecta(1);
+        if (gestionLibrosController != null) {
+            gestionLibrosController.rellenarFormularioManual(libro);
+        }
+    }
+
+    public void abrirConfiguracion() {
+        abrirConfiguracion(null);
+    }
+
+    public void mostrarEstadisticas() {
+        mostrarEstadisticas(null);
+    }
+
+    public void exportarPDF() {
+        exportarPDF(null);
+    }
+
+    public void exportarWeb() {
+        exportarWeb(null);
+    }
+
+    public void buscarDuplicados() {
+        buscarDuplicados(null);
     }
 
     private void aplicarPreferenciasGuardadas() {
@@ -403,6 +489,7 @@ public class PrimaryController implements Initializable {
             delay.setOnFinished(e -> notificationPane.hide());
             delay.play();
         }
+        SystemNotificationService.notificarInfo("BiblioHouse", mensaje);
     }
 
     /**
@@ -555,12 +642,15 @@ public class PrimaryController implements Initializable {
                 bannerPrestamos.setVisible(true);
                 bannerPrestamos.setManaged(true);
                 bannerPrestamos.setMouseTransparent(false);
+                String msg;
                 if (overdueLoans.size() == 1) {
                     Prestamo p = overdueLoans.get(0);
-                    lblTextoBannerPrestamos.setText("El libro '" + p.getTituloLibro() + "' prestado a " + p.getNombreSocio() + " está " + prestamoService.calcularDiasRetraso(p, dueDaysLimit) + " días retrasado.");
+                    msg = "El libro '" + p.getTituloLibro() + "' prestado a " + p.getNombreSocio() + " está " + prestamoService.calcularDiasRetraso(p, dueDaysLimit) + " días retrasado.";
                 } else {
-                    lblTextoBannerPrestamos.setText("Tienes " + overdueLoans.size() + " libros pendientes de devolución cuyo plazo ha vencido.");
+                    msg = "Tienes " + overdueLoans.size() + " libros pendientes de devolución cuyo plazo ha vencido.";
                 }
+                lblTextoBannerPrestamos.setText(msg);
+                SystemNotificationService.notificarAlerta("Préstamos Vencidos", msg);
             } else {
                 bannerPrestamos.setVisible(false);
                 bannerPrestamos.setManaged(false);
@@ -1000,10 +1090,17 @@ public class PrimaryController implements Initializable {
 
     @FXML
     private void cerrarAplicacion(ActionEvent event) {
-        Window win = getWindow();
-        if (win instanceof Stage mainStage) {
-            preferencias.put("maximized", String.valueOf(mainStage.isMaximized()));
-            jsonManager.guardarPreferencias(preferencias);
+        try {
+            Window win = getWindow();
+            if (win instanceof Stage mainStage) {
+                preferencias.put("maximized", String.valueOf(mainStage.isMaximized()));
+                if (jsonManager != null) {
+                    jsonManager.guardarPreferencias(preferencias);
+                    jsonManager.shutdown();
+                }
+                mainStage.close();
+            }
+        } catch (Throwable ignored) {
         }
         Platform.exit();
     }

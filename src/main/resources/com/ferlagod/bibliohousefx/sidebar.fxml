@@ -4,21 +4,41 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefWidth="240.0" spacing="15.0" styleClass="sidebar" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SidebarController">
+<VBox prefWidth="250.0" spacing="15.0" styleClass="sidebar" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.SidebarController">
     <children>
-        <Label style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;" text="Mis Estanterías" />
+        <Label style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 0 0 5 0;" text="Mis Estanterías" />
         <ListView fx:id="listaEstanterias" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
         
-        <!-- Widget de Reto Anual -->
-        <VBox fx:id="widgetRetoAnual" spacing="8.0" style="-fx-padding: 15; -fx-background-color: -color-bg-subtle; -fx-background-radius: 10; -fx-border-color: -color-border-default; -fx-border-radius: 10; -fx-cursor: hand;" onMouseClicked="#configurarRetoAnual">
-            <Label fx:id="lblTituloReto" text="Reto de Lectura" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
-            <ProgressBar fx:id="progresoReto" progress="0.0" prefWidth="200.0" style="-fx-accent: #4caf50;" />
+        <!-- Widget de Reto Anual Activo -->
+        <VBox fx:id="widgetRetoAnual" spacing="8.0" styleClass="sidebar-reto-widget" onMouseClicked="#configurarRetoAnual">
+            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                <Label text="🎯" style="-fx-font-size: 15px;" />
+                <Label fx:id="lblTituloReto" text="Reto de Lectura" style="-fx-font-weight: bold; -fx-font-size: 13px;" HBox.hgrow="ALWAYS" />
+                <Label text="✎" style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" />
+            </HBox>
+            <HBox alignment="BASELINE_LEFT" spacing="6.0">
+                <Label fx:id="lblPorcentajeReto" text="0%" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-accent-fg;" />
+                <Label text="completado" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
+            </HBox>
+            <ProgressBar fx:id="progresoReto" progress="0.0" prefWidth="210.0" prefHeight="8.0" style="-fx-accent: #10b981; -fx-background-radius: 4;" />
             <Label fx:id="lblEstadoReto" text="0 de 0 libros" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
+        </VBox>
+
+        <!-- Widget de Invitación al Reto Anual (cuando reto es 0) -->
+        <VBox fx:id="widgetRetoVacio" spacing="6.0" styleClass="sidebar-reto-widget" onMouseClicked="#configurarRetoAnual" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT" spacing="6.0">
+                <Label text="🎯" style="-fx-font-size: 15px;" />
+                <Label text="Reto de Lectura" style="-fx-font-weight: bold; -fx-font-size: 13px;" />
+            </HBox>
+            <Label text="¿Cuántos libros leerás este año? Haz clic para definir tu objetivo." wrapText="true" style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;" />
         </VBox>
     </children>
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
     </padding>
 </VBox>
+

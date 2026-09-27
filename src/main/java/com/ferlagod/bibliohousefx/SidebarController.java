@@ -29,12 +29,16 @@ import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
@@ -60,7 +64,11 @@ public class SidebarController {
     @FXML
     private VBox widgetRetoAnual;
     @FXML
+    private VBox widgetRetoVacio;
+    @FXML
     private Label lblTituloReto;
+    @FXML
+    private Label lblPorcentajeReto;
     @FXML
     private ProgressBar progresoReto;
     @FXML
@@ -77,9 +85,19 @@ public class SidebarController {
      */
     @FXML
     public void initialize() {
-        // Suscribirse a cambios en los libros para actualizar el reto anual en tiempo real
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> actualizarRetoAnual());
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> actualizarRetoAnual());
+        // Suscribirse a cambios en los libros para actualizar el reto anual y contadores en tiempo real
+        AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> {
+            actualizarRetoAnual();
+            if (listaEstanterias != null) {
+                listaEstanterias.refresh();
+            }
+        });
+        AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> {
+            actualizarRetoAnual();
+            if (listaEstanterias != null) {
+                listaEstanterias.refresh();
+            }
+        });
         AppEventBus.getInstance().subscribe(AppEventBus.EstanteriasActualizadasEvent.class, e -> cargarListaEstanterias());
     }
 
@@ -117,7 +135,7 @@ public class SidebarController {
     }
 
     /**
-     * Carga y refresca las estanterías en el ListView con sus iconos representativos.
+     * Carga y refresca las estanterías en el ListView con sus iconos representativos y contadores numéricos.
      */
     public void cargarListaEstanterias() {
         if (listaEstanterias == null || jsonManager == null) {
@@ -147,16 +165,30 @@ public class SidebarController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    setText(item);
-                    if (item.equals(VISTA_TODOS)) {
-                        setGraphic(new Label("📚"));
-                    } else if (item.equals(VISTA_DESEOS)) {
-                        setGraphic(new Label("⭐"));
-                    } else if (item.equals(VISTA_DIGITAL)) {
-                        setGraphic(new Label("📱"));
-                    } else {
-                        setGraphic(new Label("📁"));
-                    }
+                    setText(null);
+                    HBox fila = new HBox(8);
+                    fila.setAlignment(Pos.CENTER_LEFT);
+                    fila.setPadding(new Insets(2, 4, 2, 4));
+
+                    String icono = switch (item) {
+                        case VISTA_TODOS -> "📚";
+                        case VISTA_DESEOS -> "⭐";
+                        case VISTA_DIGITAL -> "📱";
+                        default -> "📁";
+                    };
+                    Label lblIcono = new Label(icono);
+                    lblIcono.setStyle("-fx-font-size: 13px;");
+
+                    Label lblTexto = new Label(item);
+                    lblTexto.setStyle("-fx-font-size: 12px; -fx-font-weight: 500;");
+                    HBox.setHgrow(lblTexto, Priority.ALWAYS);
+
+                    long cantidad = contarLibrosEnEstanteria(item);
+                    Label lblBadge = new Label(String.valueOf(cantidad));
+                    lblBadge.getStyleClass().add("sidebar-item-badge");
+
+                    fila.getChildren().addAll(lblIcono, lblTexto, lblBadge);
+                    setGraphic(fila);
                 }
             }
         });
@@ -166,6 +198,23 @@ public class SidebarController {
         } else {
             listaEstanterias.getSelectionModel().select(0);
         }
+    }
+
+    /**
+     * Cuenta dinámicamente los libros correspondientes a una categoría o estantería.
+     */
+    private long contarLibrosEnEstanteria(String item) {
+        if (listaLibrosCompleta == null) {
+            return 0;
+        }
+        return switch (item) {
+            case VISTA_TODOS -> listaLibrosCompleta.stream().filter(Libro::isPoseido).count();
+            case VISTA_DESEOS -> listaLibrosCompleta.stream().filter(l -> !l.isPoseido()).count();
+            case VISTA_DIGITAL -> listaLibrosCompleta.stream().filter(l -> l.isPoseido() && l.isEsDigital()).count();
+            default -> listaLibrosCompleta.stream()
+                    .filter(l -> l.isPoseido() && l.getEstanterias() != null && l.getEstanterias().contains(item))
+                    .count();
+        };
     }
 
     /**
@@ -243,9 +292,17 @@ public class SidebarController {
         if (reto <= 0) {
             widgetRetoAnual.setVisible(false);
             widgetRetoAnual.setManaged(false);
+            if (widgetRetoVacio != null) {
+                widgetRetoVacio.setVisible(true);
+                widgetRetoVacio.setManaged(true);
+            }
             return;
         }
 
+        if (widgetRetoVacio != null) {
+            widgetRetoVacio.setVisible(false);
+            widgetRetoVacio.setManaged(false);
+        }
         widgetRetoAnual.setVisible(true);
         widgetRetoAnual.setManaged(true);
 
@@ -255,7 +312,7 @@ public class SidebarController {
         long librosLeidos = 0;
         if (listaLibrosCompleta != null) {
             librosLeidos = listaLibrosCompleta.stream()
-                    .filter(l -> l.getEstadoLecturaEnum() == EstadoLectura.LEIDO)
+                    .filter(l -> l.isPoseido() && l.getEstadoLecturaEnum() == EstadoLectura.LEIDO)
                     .count();
         }
 
@@ -264,7 +321,14 @@ public class SidebarController {
             progress = 1.0;
         }
 
-        progresoReto.setProgress(progress);
-        lblEstadoReto.setText(librosLeidos + " de " + reto + " libros");
+        if (progresoReto != null) {
+            progresoReto.setProgress(progress);
+        }
+        if (lblPorcentajeReto != null) {
+            lblPorcentajeReto.setText((int) Math.round(progress * 100) + "%");
+        }
+        if (lblEstadoReto != null) {
+            lblEstadoReto.setText(librosLeidos + " de " + reto + " libros leídos");
+        }
     }
 }

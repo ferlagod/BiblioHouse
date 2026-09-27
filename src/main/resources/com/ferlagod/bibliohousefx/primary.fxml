@@ -15,15 +15,17 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.controlsfx.control.NotificationPane?>
 
-<NotificationPane fx:id="notificationPane" showFromTop="true" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.PrimaryController">
+<NotificationPane fx:id="notificationPane" showFromTop="true" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.PrimaryController">
     <content>
         <BorderPane fx:id="mainContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="900.0">
             <top>
                 <VBox>
-                    <MenuBar BorderPane.alignment="CENTER">
+                    <MenuBar fx:id="menuBarPrincipal" BorderPane.alignment="CENTER">
                         <menus>
                             <Menu fx:id="menuArchivo" text="%menu.file">
                                 <items>
+                                    <MenuItem accelerator="Shortcut+N" onAction="#irAGestionLibros" text="%book.manual.title" />
+                                    <SeparatorMenuItem />
                                     <MenuItem onAction="#importarBaseDatos" text="%menu.import" />
                                     <MenuItem onAction="#importarDesdeCSV" text="%menu.import.csv" />
                                     <MenuItem onAction="#exportarBaseDatos" text="%menu.export" />
@@ -35,10 +37,12 @@
                             </Menu>
                             <Menu fx:id="menuHerramientas" text="%menu.tools">
                                 <items>
+                                    <MenuItem accelerator="Shortcut+K" onAction="#abrirPaletaComandos" text="Paleta de Comandos / Búsqueda rápida" />
+                                    <SeparatorMenuItem />
                                     <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
                                     <MenuItem onAction="#buscarPortadasFaltantes" text="%menu.tools.fetch_covers" />
                                     <MenuItem onAction="#buscarSagasFaltantes" text="%menu.tools.fetch_sagas" />
-                                    <MenuItem onAction="#abrirConfiguracion" text="%menu.config" />
+                                    <MenuItem accelerator="Shortcut+," onAction="#abrirConfiguracion" text="%menu.config" />
                                     <Menu text="%menu.language">
                                         <items>
                                             <RadioMenuItem onAction="#cambiarAEspanol" text="%menu.lang.es" />

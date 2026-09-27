@@ -225,8 +225,9 @@ public class ConfiguracionController {
                     }
                 });
 
-        // Configurar el ComboBox de Tema (7 temas de AtlantaFX)
+        // Configurar el ComboBox de Tema (8 temas de AtlantaFX incluyendo Automático)
         comboTema.getItems().setAll(
+                "Automático (Sistema)",
                 "Claro (Primer Light)",
                 "Oscuro (Primer Dark)",
                 "Nord Claro (Nord Light)",
@@ -236,7 +237,7 @@ public class ConfiguracionController {
                 "Dracula"
         );
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-        String savedTheme = prefs.get("theme", "Claro (Primer Light)");
+        String savedTheme = prefs.get("theme", "Automático (Sistema)");
         comboTema.getSelectionModel().select(savedTheme);
 
         comboTema.getSelectionModel().selectedItemProperty()

@@ -215,6 +215,11 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>com.ferlagod.bibliohousefx/com.ferlagod.bibliohousefx.App</mainClass>
+                    <options>
+                        <option>-Xdock:name=BiblioHouse</option>
+                        <option>-Dapple.awt.application.name=BiblioHouse</option>
+                        <option>-Dcom.apple.mrj.application.apple.menu.about.name=BiblioHouse</option>
+                    </options>
                 </configuration>
                 <executions>
                     <execution>

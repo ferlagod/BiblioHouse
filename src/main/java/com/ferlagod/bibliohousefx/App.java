@@ -18,6 +18,7 @@
 package com.ferlagod.bibliohousefx;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -45,6 +46,8 @@ public class App extends Application {
      * @param args Argumentos de la línea de comandos.
      */
     public static void main(String[] args) {
+        System.setProperty("apple.awt.application.name", "BiblioHouse");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "BiblioHouse");
         // Cargar librerías nativas de OpenCV AL INICIO para evitar conflictos
         try {
             nu.pattern.OpenCV.loadLocally();
@@ -106,15 +109,27 @@ public class App extends Application {
      */
     public static void applyTheme(String themeName) {
         String stylesheet;
-        stylesheet = switch (themeName) {
-            case "Oscuro (Primer Dark)" -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
-            case "Nord Claro (Nord Light)" -> new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
-            case "Nord Oscuro (Nord Dark)" -> new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
-            case "Cupertino Claro (macOS Light)" -> new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
-            case "Cupertino Oscuro (macOS Dark)" -> new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
-            case "Dracula" -> new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
-            default -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
-        }; // "Claro (Primer Light)" u otro valor desconocido
+        if ("Automático (Sistema)".equalsIgnoreCase(themeName)) {
+            boolean dark = com.bibliohouse.utils.OsThemeDetector.isDarkMode();
+            String os = System.getProperty("os.name", "").toLowerCase();
+            if (os.contains("mac")) {
+                stylesheet = dark ? new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet()
+                                  : new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+            } else {
+                stylesheet = dark ? new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet()
+                                  : new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+            }
+        } else {
+            stylesheet = switch (themeName) {
+                case "Oscuro (Primer Dark)" -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
+                case "Nord Claro (Nord Light)" -> new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
+                case "Nord Oscuro (Nord Dark)" -> new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
+                case "Cupertino Claro (macOS Light)" -> new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+                case "Cupertino Oscuro (macOS Dark)" -> new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
+                case "Dracula" -> new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
+                default -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+            };
+        }
         Application.setUserAgentStylesheet(stylesheet);
     }
 
@@ -133,8 +148,17 @@ public class App extends Application {
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
 
         // Aplicar el tema moderno de AtlantaFX
-        String savedTheme = prefs.get("theme", "Claro (Primer Light)");
+        String savedTheme = prefs.get("theme", "Automático (Sistema)");
         applyTheme(savedTheme);
+
+        // Sincronización automática con el Modo Oscuro/Claro del Sistema Operativo
+        com.bibliohouse.utils.OsThemeDetector.startAutoSync(dark -> {
+            java.util.prefs.Preferences p = java.util.prefs.Preferences.userNodeForPackage(App.class);
+            String current = p.get("theme", "Automático (Sistema)");
+            if ("Automático (Sistema)".equalsIgnoreCase(current)) {
+                applyTheme("Automático (Sistema)");
+            }
+        });
 
         // Cargar preferencia de idioma si existe (simplificado: por defecto es)
         String lang = prefs.get("language", "es");
@@ -154,6 +178,7 @@ public class App extends Application {
 
             // Icono
             stage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
+            stage.setOnCloseRequest(e -> Platform.exit());
 
             stage.show();
         } catch (IOException e) {
@@ -206,6 +231,7 @@ public class App extends Application {
         mainStage.setTitle(title);
 
         Scene mainScene = new Scene(root);
+        mainScene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
         mainStage.setScene(mainScene);
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
@@ -218,6 +244,7 @@ public class App extends Application {
         mainStage.setMaximized(isMaximized);
 
         // 3. MOSTRAR LA VENTANA (Ahora el SO ya sabe que debe nacer maximizada)
+        mainStage.setOnCloseRequest(e -> Platform.exit());
         mainStage.show();
 
         // 4. Ejecutar la transición
@@ -254,6 +281,9 @@ public class App extends Application {
 
         // Cambiar el contenido de la ventana sin cerrarla
         stage.getScene().setRoot(root);
+        if (!stage.getScene().getStylesheets().contains(App.class.getResource("styles.css").toExternalForm())) {
+            stage.getScene().getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
+        }
 
         return controller;
     }
@@ -266,9 +296,16 @@ public class App extends Application {
     @Override
     public void stop() throws Exception {
         LOGGER.info("[App] Deteniendo aplicación...");
-        com.bibliohouse.utils.ImageLoader.shutdown();
-        // No llamar System.exit(0) — dejar que la JVM termine limpiamente.
-        // Los hilos daemon (syncScheduler, ImageLoader pool) mueren automáticamente.
+        try {
+            com.bibliohouse.utils.ImageLoader.shutdown();
+        } catch (Throwable ignored) {}
+        try {
+            com.bibliohouse.utils.SystemNotificationService.shutdown();
+        } catch (Throwable ignored) {}
+        try {
+            com.bibliohouse.utils.OsThemeDetector.shutdown();
+        } catch (Throwable ignored) {}
         LOGGER.info("[App] Bye bye!");
+        System.exit(0);
     }
 }

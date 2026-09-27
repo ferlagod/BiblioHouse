@@ -8,46 +8,96 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="20.0" styleClass="content-area" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.CatalogoGridController">
+<VBox spacing="15.0" styleClass="content-area" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.CatalogoGridController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="16.0" left="20.0" right="20.0" top="16.0" />
     </padding>
     <children>
-        <HBox alignment="CENTER_LEFT" spacing="15.0">
+        <!-- Fila 1: Título, Búsqueda, Ordenar y Selector de Vista -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
             <children>
                 <Label styleClass="heading-text" text="%tab.my_books" />
                 <Region HBox.hgrow="ALWAYS" />
-                <MenuButton fx:id="btnOrdenar" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-padding: 3 10; -fx-cursor: hand;">
+                
+                <!-- Búsqueda rápida con estilo píldora -->
+                <TextField fx:id="txtBuscarMisLibros" prefWidth="260.0" promptText="%book.search.placeholder" style="-fx-background-radius: 18; -fx-padding: 6 16; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-background-color: -color-bg-default;" />
+                
+                <!-- Botón de Ordenar -->
+                <MenuButton fx:id="btnOrdenar" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-padding: 4 12; -fx-cursor: hand;">
                     <items>
-                        <MenuItem text="%main.sort.title.az" onAction="#ordenarPorTituloAZ" />
-                        <MenuItem text="%main.sort.title.za" onAction="#ordenarPorTituloZA" />
-                        <MenuItem text="%main.sort.author" onAction="#ordenarPorAutor" />
-                        <MenuItem text="%main.sort.year" onAction="#ordenarPorAnio" />
-                        <MenuItem text="%main.sort.recent" onAction="#ordenarPorReciente" />
+                        <MenuItem onAction="#ordenarPorTituloAZ" text="%main.sort.title.az" />
+                        <MenuItem onAction="#ordenarPorTituloZA" text="%main.sort.title.za" />
+                        <MenuItem onAction="#ordenarPorAutor" text="%main.sort.author" />
+                        <MenuItem onAction="#ordenarPorAnio" text="%main.sort.year" />
+                        <MenuItem onAction="#ordenarPorReciente" text="%main.sort.recent" />
                     </items>
                 </MenuButton>
-                <TextField fx:id="txtBuscarMisLibros" prefWidth="250.0" promptText="%book.search.placeholder" style="-fx-background-radius: 15; -fx-padding: 5 15 5 15; -fx-border-color: -color-border-default; -fx-border-radius: 15; -fx-background-color: -color-bg-default;" />
+
+                <!-- Selector de vista Cuadrícula / Lista -->
+                <HBox spacing="2.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 3; -fx-background-radius: 10; -fx-border-color: -color-border-subtle; -fx-border-radius: 10;">
+                    <children>
+                        <Button fx:id="btnVistaCuadricula" onAction="#cambiarAVistaCuadricula" styleClass="view-toggle-btn, active-view-btn" text="▦" />
+                        <Button fx:id="btnVistaLista" onAction="#cambiarAVistaLista" styleClass="view-toggle-btn" text="☰" />
+                    </children>
+                </HBox>
             </children>
         </HBox>
+
+        <!-- Fila 2: Chips / Píldoras de Filtrado Rápido -->
+        <HBox fx:id="boxFiltrosRapidos" alignment="CENTER_LEFT" spacing="8.0">
+            <children>
+                <Button fx:id="chipTodos" onAction="#filtrarChipTodos" styleClass="chip-button, chip-active" text="Todos" />
+                <Button fx:id="chipLeyendo" onAction="#filtrarChipLeyendo" styleClass="chip-button" text="📖 Leyendo" />
+                <Button fx:id="chipLeidos" onAction="#filtrarChipLeidos" styleClass="chip-button" text="✓ Leídos" />
+                <Button fx:id="chipPendientes" onAction="#filtrarChipPendientes" styleClass="chip-button" text="⏳ Pendientes" />
+                <Button fx:id="chipDigitales" onAction="#filtrarChipDigitales" styleClass="chip-button" text="📱 E-books" />
+            </children>
+        </HBox>
+
         <Separator />
-        <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-            <content>
-                <FlowPane fx:id="panelMisLibros" hgap="25.0" vgap="25.0" />
-            </content>
-        </ScrollPane>
+
+        <!-- Contenedor central: Cuadrícula o Lista Compacta -->
+        <StackPane VBox.vgrow="ALWAYS">
+            <children>
+                <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" style="-fx-background-color: transparent;">
+                    <content>
+                        <FlowPane fx:id="panelMisLibros" hgap="22.0" vgap="22.0" />
+                    </content>
+                </ScrollPane>
+                <TableView fx:id="tablaMisLibros" managed="false" styleClass="striped" visible="false">
+                    <columns>
+                        <TableColumn fx:id="colPortada" prefWidth="55.0" resizable="false" text="" />
+                        <TableColumn fx:id="colTitulo" prefWidth="250.0" text="%book.title" />
+                        <TableColumn fx:id="colAutor" prefWidth="180.0" text="%book.author" />
+                        <TableColumn fx:id="colGenero" prefWidth="120.0" text="%book.genre" />
+                        <TableColumn fx:id="colEstado" prefWidth="130.0" text="%col.status" />
+                        <TableColumn fx:id="colProgreso" prefWidth="140.0" text="Progreso" />
+                        <TableColumn fx:id="colCalificacion" prefWidth="110.0" text="Valoración" />
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                </TableView>
+            </children>
+        </StackPane>
+
+        <!-- Barra de Paginación -->
         <HBox fx:id="boxPaginacion" alignment="CENTER" spacing="10.0" style="-fx-padding: 8 0 0 0;">
             <children>
-                <Button fx:id="btnPrimeraPagina" onAction="#irPrimeraPagina" text="«" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
-                <Button fx:id="btnAnterior" onAction="#irPaginaAnterior" text="‹" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Button fx:id="btnPrimeraPagina" onAction="#irPrimeraPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="«" />
+                <Button fx:id="btnAnterior" onAction="#irPaginaAnterior" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="‹" />
                 <Label fx:id="lblInfoPaginacion" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted; -fx-padding: 0 10;" text="Página 1 de 1" />
-                <Button fx:id="btnSiguiente" onAction="#irPaginaSiguiente" text="›" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
-                <Button fx:id="btnUltima" onAction="#irUltimaPagina" text="»" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" />
+                <Button fx:id="btnSiguiente" onAction="#irPaginaSiguiente" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="›" />
+                <Button fx:id="btnUltima" onAction="#irUltimaPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="»" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="Por pág.:" />
                 <ComboBox fx:id="comboLibrosPorPagina" prefWidth="95.0" style="-fx-background-radius: 8; -fx-cursor: hand;" />
@@ -55,3 +105,4 @@
         </HBox>
     </children>
 </VBox>
+

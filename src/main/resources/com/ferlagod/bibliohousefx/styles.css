@@ -96,3 +96,194 @@
 .button.text-button {
     -fx-border-color: transparent;
 }
+
+/* =========================================================================
+   ESTILOS MODERNOS (UI/UX REDESIGN)
+   ========================================================================= */
+
+/* --- TARJETAS DE LIBROS (BOOK CARDS) --- */
+.book-card {
+    -fx-padding: 12px 10px 10px 10px;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
+    -fx-cursor: hand;
+}
+
+.book-card:hover {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 16, 0, 0, 6);
+}
+
+.book-card:focused {
+    -fx-border-color: -color-accent-fg;
+    -fx-border-width: 2px;
+}
+
+/* Contenedor de portada */
+.book-card-cover-container {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.16), 8, 0, 0, 3);
+}
+
+/* Badges de estado en la tabla de libros */
+.table-status-badge {
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 12;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+}
+
+/* Badges de portada en cápsula con texto completo y borde blanco de alto contraste */
+.book-card-badge-pill {
+    -fx-padding: 2 7 2 7;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1.5;
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-alignment: center;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 6, 0.25, 0, 2);
+}
+
+/* Badges de portada en circulito con borde blanco de alto contraste */
+.book-card-badge,
+.book-card-badge-circle {
+    -fx-min-width: 26px;
+    -fx-min-height: 26px;
+    -fx-max-width: 26px;
+    -fx-max-height: 26px;
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-background-radius: 13;
+    -fx-border-radius: 13;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 6, 0.2, 0, 2);
+}
+
+.badge-leido {
+    -fx-background-color: #16a34a;
+    -fx-text-fill: #ffffff;
+}
+
+.badge-leyendo {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+}
+
+.badge-abandonado {
+    -fx-background-color: #64748b;
+    -fx-text-fill: #ffffff;
+}
+
+.badge-digital {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 11px;
+}
+
+/* Título, autor y valoración */
+.book-card-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-default;
+}
+
+.book-card-author {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.book-card-rating {
+    -fx-font-size: 11px;
+    -fx-text-fill: #f59e0b;
+}
+
+/* --- BARRA LATERAL (SIDEBAR) & WIDGET RETO --- */
+.sidebar-item-badge {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-padding: 1px 7px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.sidebar-reto-widget {
+    -fx-padding: 14px;
+    -fx-background-color: linear-gradient(to bottom right, -color-bg-subtle, -color-accent-subtle);
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 1px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 6, 0, 0, 2);
+}
+
+.sidebar-reto-widget:hover {
+    -fx-border-color: -color-accent-emphasis;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 10, 0, 0, 4);
+}
+
+/* --- CHIPS DE FILTRADO RÁPIDO --- */
+.chip-button {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 1px;
+    -fx-padding: 4px 14px;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+}
+
+.chip-button:hover {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-accent-fg;
+}
+
+.chip-button.chip-active {
+    -fx-background-color: -color-accent-emphasis;
+    -fx-text-fill: -color-fg-on-emphasis;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 6, 0, 0, 2);
+}
+
+/* --- BOTONES DE SELECTOR DE VISTA (CUADRÍCULA / LISTA) --- */
+.view-toggle-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-background-radius: 7px;
+    -fx-padding: 4px 10px;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.view-toggle-btn:hover {
+    -fx-background-color: -color-bg-default;
+    -fx-text-fill: -color-fg-default;
+}
+
+.view-toggle-btn.active-view-btn {
+    -fx-background-color: -color-bg-default;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 4, 0, 0, 1);
+}
