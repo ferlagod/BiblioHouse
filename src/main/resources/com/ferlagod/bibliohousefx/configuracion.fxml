@@ -39,18 +39,24 @@
                                     </HBox>
                                 </VBox>
                                 <Separator />
-                                <VBox spacing="8.0">
+                                <VBox spacing="10.0">
                                     <Label style="-fx-font-weight: bold;" text="%config.appearance" />
                                     <HBox alignment="CENTER_LEFT" spacing="15.0">
                                         <children>
-                                            <Label text="%config.language" />
-                                            <ComboBox fx:id="comboIdioma" prefWidth="200.0"/>                                        
+                                            <Label prefWidth="130.0" text="%config.language" />
+                                            <ComboBox fx:id="comboIdioma" accessibleRole="COMBO_BOX" accessibleText="Seleccionar idioma de la aplicación" prefWidth="250.0" />                                        
                                         </children>
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="15.0">
                                         <children>
-                                            <Label text="%config.theme" />
-                                            <ComboBox fx:id="comboTema" prefWidth="200.0"/>                                        
+                                            <Label prefWidth="130.0" text="%config.theme" />
+                                            <ComboBox fx:id="comboTema" accessibleRole="COMBO_BOX" accessibleText="Seleccionar tema visual de la aplicación" prefWidth="250.0" />                                        
+                                        </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="15.0">
+                                        <children>
+                                            <Label prefWidth="130.0" text="%config.density" />
+                                            <ComboBox fx:id="comboDensidad" accessibleRole="COMBO_BOX" accessibleText="Seleccionar escala de interfaz y densidad de tipografía" prefWidth="250.0" />                                        
                                         </children>
                                     </HBox>
                                 </VBox>

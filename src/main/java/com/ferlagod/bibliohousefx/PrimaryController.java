@@ -513,6 +513,7 @@ public class PrimaryController implements Initializable {
     public void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+        App.registerScene(scene);
         stage.setScene(scene);
         stage.sizeToScene();
     }
@@ -956,7 +957,9 @@ public class PrimaryController implements Initializable {
                 });
                 Stage stage = new Stage();
                 stage.setTitle("Lector: " + libro.getTitulo());
-                stage.setScene(new Scene(root, 900, 700));
+                Scene readerScene = new Scene(root, 900, 700);
+                App.registerScene(readerScene);
+                stage.setScene(readerScene);
                 stage.centerOnScreen();
                 stage.initOwner(getWindow());
                 stage.setOnCloseRequest(e -> {

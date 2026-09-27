@@ -29,10 +29,10 @@
                 <Region HBox.hgrow="ALWAYS" />
                 
                 <!-- Búsqueda rápida con estilo píldora -->
-                <TextField fx:id="txtBuscarMisLibros" prefWidth="260.0" promptText="%book.search.placeholder" style="-fx-background-radius: 18; -fx-padding: 6 16; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-background-color: -color-bg-default;" />
+                <TextField fx:id="txtBuscarMisLibros" accessibleRole="TEXT_FIELD" accessibleText="Buscar libros por título o autor" prefWidth="260.0" promptText="%book.search.placeholder" style="-fx-background-radius: 18; -fx-padding: 6 16; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-background-color: -color-bg-default;" />
                 
                 <!-- Botón de Ordenar -->
-                <MenuButton fx:id="btnOrdenar" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-padding: 4 12; -fx-cursor: hand;">
+                <MenuButton fx:id="btnOrdenar" accessibleRole="BUTTON" accessibleText="Menú de ordenación de libros" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-padding: 4 12; -fx-cursor: hand;">
                     <items>
                         <MenuItem onAction="#ordenarPorTituloAZ" text="%main.sort.title.az" />
                         <MenuItem onAction="#ordenarPorTituloZA" text="%main.sort.title.za" />
@@ -45,8 +45,8 @@
                 <!-- Selector de vista Cuadrícula / Lista -->
                 <HBox spacing="2.0" style="-fx-background-color: -color-bg-subtle; -fx-padding: 3; -fx-background-radius: 10; -fx-border-color: -color-border-subtle; -fx-border-radius: 10;">
                     <children>
-                        <Button fx:id="btnVistaCuadricula" onAction="#cambiarAVistaCuadricula" styleClass="view-toggle-btn, active-view-btn" text="▦" />
-                        <Button fx:id="btnVistaLista" onAction="#cambiarAVistaLista" styleClass="view-toggle-btn" text="☰" />
+                        <Button fx:id="btnVistaCuadricula" accessibleRole="BUTTON" accessibleText="Cambiar a vista de cuadrícula de portadas" onAction="#cambiarAVistaCuadricula" styleClass="view-toggle-btn, active-view-btn" text="▦" />
+                        <Button fx:id="btnVistaLista" accessibleRole="BUTTON" accessibleText="Cambiar a vista de lista compacta" onAction="#cambiarAVistaLista" styleClass="view-toggle-btn" text="☰" />
                     </children>
                 </HBox>
             </children>
@@ -55,11 +55,11 @@
         <!-- Fila 2: Chips / Píldoras de Filtrado Rápido -->
         <HBox fx:id="boxFiltrosRapidos" alignment="CENTER_LEFT" spacing="8.0">
             <children>
-                <Button fx:id="chipTodos" onAction="#filtrarChipTodos" styleClass="chip-button, chip-active" text="Todos" />
-                <Button fx:id="chipLeyendo" onAction="#filtrarChipLeyendo" styleClass="chip-button" text="📖 Leyendo" />
-                <Button fx:id="chipLeidos" onAction="#filtrarChipLeidos" styleClass="chip-button" text="✓ Leídos" />
-                <Button fx:id="chipPendientes" onAction="#filtrarChipPendientes" styleClass="chip-button" text="⏳ Pendientes" />
-                <Button fx:id="chipDigitales" onAction="#filtrarChipDigitales" styleClass="chip-button" text="📱 E-books" />
+                <Button fx:id="chipTodos" accessibleRole="BUTTON" accessibleText="Filtrar todos los libros" onAction="#filtrarChipTodos" styleClass="chip-button, chip-active" text="Todos" />
+                <Button fx:id="chipLeyendo" accessibleRole="BUTTON" accessibleText="Filtrar libros que estás leyendo" onAction="#filtrarChipLeyendo" styleClass="chip-button" text="📖 Leyendo" />
+                <Button fx:id="chipLeidos" accessibleRole="BUTTON" accessibleText="Filtrar libros ya leídos" onAction="#filtrarChipLeidos" styleClass="chip-button" text="✓ Leídos" />
+                <Button fx:id="chipPendientes" accessibleRole="BUTTON" accessibleText="Filtrar libros pendientes de lectura" onAction="#filtrarChipPendientes" styleClass="chip-button" text="⏳ Pendientes" />
+                <Button fx:id="chipDigitales" accessibleRole="BUTTON" accessibleText="Filtrar libros digitales e-books" onAction="#filtrarChipDigitales" styleClass="chip-button" text="📱 E-books" />
             </children>
         </HBox>
 
@@ -70,10 +70,10 @@
             <children>
                 <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" style="-fx-background-color: transparent;">
                     <content>
-                        <FlowPane fx:id="panelMisLibros" hgap="22.0" vgap="22.0" />
+                        <FlowPane fx:id="panelMisLibros" accessibleRole="PARENT" accessibleText="Catálogo de libros" focusTraversable="true" hgap="22.0" vgap="22.0" />
                     </content>
                 </ScrollPane>
-                <TableView fx:id="tablaMisLibros" managed="false" styleClass="striped" visible="false">
+                <TableView fx:id="tablaMisLibros" accessibleRole="TABLE_VIEW" accessibleText="Tabla de libros del catálogo" managed="false" styleClass="striped" visible="false">
                     <columns>
                         <TableColumn fx:id="colPortada" prefWidth="55.0" resizable="false" text="" />
                         <TableColumn fx:id="colTitulo" prefWidth="250.0" text="%book.title" />
@@ -93,14 +93,14 @@
         <!-- Barra de Paginación -->
         <HBox fx:id="boxPaginacion" alignment="CENTER" spacing="10.0" style="-fx-padding: 8 0 0 0;">
             <children>
-                <Button fx:id="btnPrimeraPagina" onAction="#irPrimeraPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="«" />
-                <Button fx:id="btnAnterior" onAction="#irPaginaAnterior" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="‹" />
-                <Label fx:id="lblInfoPaginacion" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted; -fx-padding: 0 10;" text="Página 1 de 1" />
-                <Button fx:id="btnSiguiente" onAction="#irPaginaSiguiente" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="›" />
-                <Button fx:id="btnUltima" onAction="#irUltimaPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="»" />
+                <Button fx:id="btnPrimeraPagina" accessibleRole="BUTTON" accessibleText="Ir a la primera página" onAction="#irPrimeraPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="«" />
+                <Button fx:id="btnAnterior" accessibleRole="BUTTON" accessibleText="Ir a la página anterior" onAction="#irPaginaAnterior" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="‹" />
+                <Label fx:id="lblInfoPaginacion" accessibleRole="TEXT" style="-fx-font-size: 13px; -fx-text-fill: -color-fg-muted; -fx-padding: 0 10;" text="Página 1 de 1" />
+                <Button fx:id="btnSiguiente" accessibleRole="BUTTON" accessibleText="Ir a la página siguiente" onAction="#irPaginaSiguiente" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="›" />
+                <Button fx:id="btnUltima" accessibleRole="BUTTON" accessibleText="Ir a la última página" onAction="#irUltimaPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="»" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="Por pág.:" />
-                <ComboBox fx:id="comboLibrosPorPagina" prefWidth="95.0" style="-fx-background-radius: 8; -fx-cursor: hand;" />
+                <ComboBox fx:id="comboLibrosPorPagina" accessibleRole="COMBO_BOX" accessibleText="Seleccionar cantidad de libros por página" prefWidth="95.0" style="-fx-background-radius: 8; -fx-cursor: hand;" />
             </children>
         </HBox>
     </children>

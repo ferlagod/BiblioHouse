@@ -71,6 +71,8 @@ public class ConfiguracionController {
     @FXML
     private ComboBox<String> comboTema;
     @FXML
+    private ComboBox<String> comboDensidad;
+    @FXML
     private Spinner<Integer> spinnerDiasPrestamo;
 
     // NextCloud Sync fields
@@ -225,7 +227,7 @@ public class ConfiguracionController {
                     }
                 });
 
-        // Configurar el ComboBox de Tema (8 temas de AtlantaFX incluyendo Automático)
+        // Configurar el ComboBox de Tema (10 temas de AtlantaFX incluyendo Automático y Alto Contraste WCAG AA/AAA)
         comboTema.getItems().setAll(
                 "Automático (Sistema)",
                 "Claro (Primer Light)",
@@ -234,7 +236,9 @@ public class ConfiguracionController {
                 "Nord Oscuro (Nord Dark)",
                 "Cupertino Claro (macOS Light)",
                 "Cupertino Oscuro (macOS Dark)",
-                "Dracula"
+                "Dracula",
+                App.THEME_HIGH_CONTRAST_LIGHT,
+                App.THEME_HIGH_CONTRAST_DARK
         );
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         String savedTheme = prefs.get("theme", "Automático (Sistema)");
@@ -247,6 +251,25 @@ public class ConfiguracionController {
                         App.applyTheme(newVal);
                     }
                 });
+
+        // Configurar el Selector de Densidad / Escala Tipográfica (A11y)
+        if (comboDensidad != null) {
+            comboDensidad.getItems().setAll(
+                    App.DENSITY_COMPACT,
+                    App.DENSITY_STANDARD,
+                    App.DENSITY_ACCESSIBLE
+            );
+            String savedDensity = prefs.get("uiDensity", App.DENSITY_STANDARD);
+            comboDensidad.getSelectionModel().select(savedDensity);
+
+            comboDensidad.getSelectionModel().selectedItemProperty()
+                    .addListener((ObservableValue<? extends String> obs, String oldVal, String newVal) -> {
+                        if (newVal != null) {
+                            prefs.put("uiDensity", newVal);
+                            App.applyDensity(newVal);
+                        }
+                    });
+        }
 
         // Configurar el Spinner de días de préstamo (como ya tenías)
         if (spinnerDiasPrestamo != null) {
@@ -265,6 +288,13 @@ public class ConfiguracionController {
      */
     @FXML
     private void guardarCambios(ActionEvent event) {
+        // Guardar escala de densidad y accesibilidad
+        if (comboDensidad != null && comboDensidad.getValue() != null) {
+            Preferences p = Preferences.userNodeForPackage(App.class);
+            p.put("uiDensity", comboDensidad.getValue());
+            App.applyDensity(comboDensidad.getValue());
+        }
+
         // Lógica de guardado del título
         if (!txtNombreBiblioteca.getText().isEmpty() && mainController != null) {
             Stage mainStage = (Stage) ((Stage) txtNombreBiblioteca.getScene().getWindow()).getOwner();

@@ -60,6 +60,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
@@ -192,6 +193,7 @@ public class CatalogoGridController {
         }
 
         configurarTablaMisLibros();
+        configurarAccesibilidadControles();
 
         // Suscripción al bus de eventos para reaccionar a cambios
         AppEventBus.getInstance().subscribe(AppEventBus.FiltroEstanteriaEvent.class, e -> {
@@ -202,6 +204,82 @@ public class CatalogoGridController {
 
         AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> refrescarCuadricula());
         AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> refrescarCuadricula());
+    }
+
+    /**
+     * Configura la accesibilidad semántica (AccessibleRole y AccessibleText)
+     * para lectores de pantalla en los controles interactivos del catálogo.
+     */
+    private void configurarAccesibilidadControles() {
+        if (txtBuscarMisLibros != null) {
+            txtBuscarMisLibros.setAccessibleRole(AccessibleRole.TEXT_FIELD);
+            txtBuscarMisLibros.setAccessibleText("Buscar libros por título o autor en el catálogo");
+        }
+        if (btnOrdenar != null) {
+            btnOrdenar.setAccessibleRole(AccessibleRole.BUTTON);
+            btnOrdenar.setAccessibleText("Opciones de ordenación del catálogo");
+        }
+        if (btnVistaCuadricula != null) {
+            btnVistaCuadricula.setAccessibleRole(AccessibleRole.BUTTON);
+            btnVistaCuadricula.setAccessibleText("Cambiar a vista de cuadrícula con portadas de libros");
+        }
+        if (btnVistaLista != null) {
+            btnVistaLista.setAccessibleRole(AccessibleRole.BUTTON);
+            btnVistaLista.setAccessibleText("Cambiar a vista de lista tabular detallada");
+        }
+        if (chipTodos != null) {
+            chipTodos.setAccessibleRole(AccessibleRole.BUTTON);
+            chipTodos.setAccessibleText("Mostrar todos los libros de la colección");
+        }
+        if (chipLeyendo != null) {
+            chipLeyendo.setAccessibleRole(AccessibleRole.BUTTON);
+            chipLeyendo.setAccessibleText("Filtrar libros actualmente en lectura");
+        }
+        if (chipLeidos != null) {
+            chipLeidos.setAccessibleRole(AccessibleRole.BUTTON);
+            chipLeidos.setAccessibleText("Filtrar libros ya leídos");
+        }
+        if (chipPendientes != null) {
+            chipPendientes.setAccessibleRole(AccessibleRole.BUTTON);
+            chipPendientes.setAccessibleText("Filtrar libros pendientes de lectura");
+        }
+        if (chipDigitales != null) {
+            chipDigitales.setAccessibleRole(AccessibleRole.BUTTON);
+            chipDigitales.setAccessibleText("Filtrar únicamente libros electrónicos e-books");
+        }
+        if (btnPrimeraPagina != null) {
+            btnPrimeraPagina.setAccessibleRole(AccessibleRole.BUTTON);
+            btnPrimeraPagina.setAccessibleText("Ir a la primera página de libros");
+        }
+        if (btnAnterior != null) {
+            btnAnterior.setAccessibleRole(AccessibleRole.BUTTON);
+            btnAnterior.setAccessibleText("Ir a la página anterior de libros");
+        }
+        if (btnSiguiente != null) {
+            btnSiguiente.setAccessibleRole(AccessibleRole.BUTTON);
+            btnSiguiente.setAccessibleText("Ir a la página siguiente de libros");
+        }
+        if (btnUltima != null) {
+            btnUltima.setAccessibleRole(AccessibleRole.BUTTON);
+            btnUltima.setAccessibleText("Ir a la última página de libros");
+        }
+        if (comboLibrosPorPagina != null) {
+            comboLibrosPorPagina.setAccessibleRole(AccessibleRole.COMBO_BOX);
+            comboLibrosPorPagina.setAccessibleText("Seleccionar cantidad de libros por página");
+        }
+        if (lblInfoPaginacion != null) {
+            lblInfoPaginacion.setAccessibleRole(AccessibleRole.TEXT);
+        }
+        if (panelMisLibros != null) {
+            panelMisLibros.setFocusTraversable(true);
+            panelMisLibros.setAccessibleRole(AccessibleRole.PARENT);
+            panelMisLibros.setAccessibleText("Cuadrícula interactiva de libros");
+            panelMisLibros.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal && !panelMisLibros.getChildren().isEmpty()) {
+                    panelMisLibros.getChildren().get(0).requestFocus();
+                }
+            });
+        }
     }
 
     /**
@@ -858,14 +936,79 @@ public class CatalogoGridController {
         tarjeta.getStyleClass().add("book-card");
         tarjeta.setFocusTraversable(true);
         tarjeta.setAccessibleRole(AccessibleRole.BUTTON);
-        String descAccesible = "Libro: " + libro.getTitulo()
-                + (libro.getAutor() != null && !libro.getAutor().isBlank() ? ", por " + libro.getAutor() : "")
-                + ", Estado: " + libro.getEstadoLecturaEnum().getEtiqueta()
-                + (libro.getCalificacion() > 0 ? ", " + libro.getCalificacion() + " estrellas" : "");
-        tarjeta.setAccessibleText(descAccesible);
+
+        // Semántica descriptiva completa para lectores de pantalla
+        StringBuilder sbDesc = new StringBuilder();
+        sbDesc.append("Libro: ").append(libro.getTitulo());
+        if (libro.getAutor() != null && !libro.getAutor().isBlank()) {
+            sbDesc.append(", por ").append(libro.getAutor());
+        }
+        if (libro.getEstadoLecturaEnum() != null) {
+            sbDesc.append(", ").append(libro.getEstadoLecturaEnum().getEtiqueta());
+        }
+        if (libro.getCalificacion() > 0) {
+            sbDesc.append(", ").append(libro.getCalificacion()).append(" estrellas");
+        }
+        if (libro.isEsDigital()) {
+            sbDesc.append(", Formato digital");
+        }
+        if (libro.getEstadoLecturaEnum() == EstadoLectura.LEYENDO && libro.getPaginasTotales() > 0) {
+            int pct = (int) Math.round(((double) libro.getPaginaActual() / libro.getPaginasTotales()) * 100);
+            sbDesc.append(", Progreso: ").append(libro.getPaginaActual()).append(" de ").append(libro.getPaginasTotales()).append(" páginas (").append(pct).append("%)");
+        }
+        tarjeta.setAccessibleText(sbDesc.toString());
+
+        // Eventos de teclado (A11y): Enter/Espacio para abrir detalle, Flechas para navegar por la cuadrícula
+        tarjeta.setOnKeyPressed(event -> {
+            KeyCode code = event.getCode();
+            if (code == KeyCode.ENTER || code == KeyCode.SPACE) {
+                if (mainController != null) {
+                    mainController.seleccionarLibro(libro);
+                }
+                abrirDetalle(libro);
+                event.consume();
+            } else if (code == KeyCode.CONTEXT_MENU) {
+                if (mainController != null) {
+                    mainController.seleccionarLibro(libro);
+                }
+                javafx.geometry.Bounds bounds = tarjeta.localToScreen(tarjeta.getBoundsInLocal());
+                if (bounds != null) {
+                    mostrarContextMenu(tarjeta, libro, bounds.getMinX() + 10, bounds.getMaxY() - 10);
+                }
+                event.consume();
+            } else if (code == KeyCode.RIGHT) {
+                navegarTarjetaSiguiente(tarjeta);
+                event.consume();
+            } else if (code == KeyCode.LEFT) {
+                navegarTarjetaAnterior(tarjeta);
+                event.consume();
+            } else if (code == KeyCode.DOWN) {
+                navegarTarjetaFila(tarjeta, true);
+                event.consume();
+            } else if (code == KeyCode.UP) {
+                navegarTarjetaFila(tarjeta, false);
+                event.consume();
+            } else if (code == KeyCode.HOME) {
+                if (panelMisLibros != null && !panelMisLibros.getChildren().isEmpty()) {
+                    panelMisLibros.getChildren().get(0).requestFocus();
+                    event.consume();
+                }
+            } else if (code == KeyCode.END) {
+                if (panelMisLibros != null && !panelMisLibros.getChildren().isEmpty()) {
+                    panelMisLibros.getChildren().get(panelMisLibros.getChildren().size() - 1).requestFocus();
+                    event.consume();
+                }
+            }
+        });
+
+        // Sincronizar selección activa cuando se navega con teclado
+        tarjeta.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal && mainController != null) {
+                mainController.seleccionarLibro(libro);
+            }
+        });
 
         // Eventos de ratón
-
         tarjeta.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (mainController != null) {
@@ -897,6 +1040,8 @@ public class CatalogoGridController {
         img.setMouseTransparent(true);
         img.setFitWidth(120);
         img.setFitHeight(175);
+        img.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
+        img.setAccessibleText("Portada de " + libro.getTitulo());
         Rectangle clip = new Rectangle(120, 175);
         clip.setArcWidth(10);
         clip.setArcHeight(10);
@@ -906,6 +1051,8 @@ public class CatalogoGridController {
         StackPane contenedorPortada = new StackPane(img);
         contenedorPortada.getStyleClass().add("book-card-cover-container");
         contenedorPortada.setMouseTransparent(true);
+        contenedorPortada.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
+        contenedorPortada.setAccessibleText("Portada de " + libro.getTitulo());
 
         // Micro-animación suave al pasar el ratón (hover lift sobre la portada, sin alterar el layout del FlowPane)
         tarjeta.setOnMouseEntered(e -> {
@@ -919,25 +1066,26 @@ public class CatalogoGridController {
             tt.play();
         });
 
-
         // Badge de estado de lectura en portada (diseño en cápsula con texto completo y borde de alto contraste)
         EstadoLectura estado = libro.getEstadoLecturaEnum();
         Label badge = null;
         if (estado == EstadoLectura.LEIDO) {
             badge = new Label("✓ Leído");
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leido");
-            badge.setStyle("-fx-background-color: #16a34a; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
+            badge.setStyle("-fx-background-color: #15803d; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         } else if (estado == EstadoLectura.LEYENDO) {
             badge = new Label("● Leyendo");
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leyendo");
-            badge.setStyle("-fx-background-color: #ea580c; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
+            badge.setStyle("-fx-background-color: #c2410c; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         } else if (estado == EstadoLectura.ABANDONADO) {
             badge = new Label("✕ Abandonado");
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-abandonado");
-            badge.setStyle("-fx-background-color: #64748b; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
+            badge.setStyle("-fx-background-color: #475569; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         }
 
         if (badge != null) {
+            badge.setAccessibleRole(AccessibleRole.TEXT);
+            badge.setAccessibleText("Estado de lectura: " + estado.getEtiqueta());
             badge.setMouseTransparent(true);
             StackPane.setAlignment(badge, Pos.TOP_RIGHT);
             StackPane.setMargin(badge, new Insets(6, 6, 0, 0));
@@ -947,8 +1095,10 @@ public class CatalogoGridController {
         // Badge de formato digital
         if (libro.isEsDigital()) {
             Label badgeDigital = new Label("📱 E-book");
+            badgeDigital.setAccessibleRole(AccessibleRole.TEXT);
+            badgeDigital.setAccessibleText("Formato digital: E-book");
             badgeDigital.getStyleClass().addAll("book-card-badge-pill", "badge-digital");
-            badgeDigital.setStyle("-fx-background-color: #2563eb; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
+            badgeDigital.setStyle("-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
             badgeDigital.setMouseTransparent(true);
             StackPane.setAlignment(badgeDigital, Pos.BOTTOM_LEFT);
             StackPane.setMargin(badgeDigital, new Insets(0, 0, 6, 6));
@@ -957,6 +1107,8 @@ public class CatalogoGridController {
 
         // Título del libro
         Label lblTitulo = new Label(libro.getTitulo());
+        lblTitulo.setAccessibleRole(AccessibleRole.TEXT);
+        lblTitulo.setAccessibleText("Título: " + libro.getTitulo());
         lblTitulo.getStyleClass().add("book-card-title");
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(136);
@@ -969,6 +1121,8 @@ public class CatalogoGridController {
         // Autor del libro
         if (libro.getAutor() != null && !libro.getAutor().isBlank()) {
             Label lblAutor = new Label(libro.getAutor());
+            lblAutor.setAccessibleRole(AccessibleRole.TEXT);
+            lblAutor.setAccessibleText("Autor: " + libro.getAutor());
             lblAutor.getStyleClass().add("book-card-author");
             lblAutor.setMaxWidth(136);
             lblAutor.setAlignment(Pos.CENTER);
@@ -984,8 +1138,10 @@ public class CatalogoGridController {
             stars = Math.max(1, Math.min(5, stars));
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < stars; i++) sb.append("★");
-            for (int i = stars; i < 5; i++) sb.append("☆");
+            for (int i = 0; i < 5 - stars; i++) sb.append("☆");
             Label lblRating = new Label(sb.toString());
+            lblRating.setAccessibleRole(AccessibleRole.TEXT);
+            lblRating.setAccessibleText("Calificación: " + stars + " de 5 estrellas");
             lblRating.getStyleClass().add("book-card-rating");
             lblRating.setMouseTransparent(true);
             tarjeta.getChildren().add(lblRating);
@@ -999,18 +1155,128 @@ public class CatalogoGridController {
             ProgressBar pBar = new ProgressBar(progreso);
             pBar.setPrefWidth(120);
             pBar.setPrefHeight(6);
-            pBar.setStyle("-fx-accent: #f59e0b; -fx-background-radius: 4;");
+            pBar.setStyle("-fx-accent: #d97706; -fx-background-radius: 4;");
             pBar.setMouseTransparent(true);
 
             int pct = (int) Math.round(progreso * 100);
+            pBar.setAccessibleRole(AccessibleRole.PROGRESS_INDICATOR);
+            pBar.setAccessibleText("Progreso de lectura: " + pct + " por ciento");
+
             Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + " pág. (" + pct + "%)");
             lblProgreso.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;");
+            lblProgreso.setAccessibleRole(AccessibleRole.TEXT);
+            lblProgreso.setAccessibleText("Progreso: " + libro.getPaginaActual() + " de " + libro.getPaginasTotales() + " páginas leídas (" + pct + "%)");
             lblProgreso.setMouseTransparent(true);
 
             tarjeta.getChildren().addAll(pBar, lblProgreso);
         }
 
         return tarjeta;
+    }
+
+    private void navegarTarjetaSiguiente(Node actual) {
+        if (panelMisLibros == null) return;
+        int idx = panelMisLibros.getChildren().indexOf(actual);
+        if (idx >= 0 && idx < panelMisLibros.getChildren().size() - 1) {
+            Node siguiente = panelMisLibros.getChildren().get(idx + 1);
+            siguiente.requestFocus();
+            asegurarVisibilidadEnScroll(siguiente);
+        }
+    }
+
+    private void navegarTarjetaAnterior(Node actual) {
+        if (panelMisLibros == null) return;
+        int idx = panelMisLibros.getChildren().indexOf(actual);
+        if (idx > 0) {
+            Node anterior = panelMisLibros.getChildren().get(idx - 1);
+            anterior.requestFocus();
+            asegurarVisibilidadEnScroll(anterior);
+        }
+    }
+
+    private void navegarTarjetaFila(Node actual, boolean abajo) {
+        if (panelMisLibros == null || panelMisLibros.getChildren().isEmpty()) return;
+        javafx.geometry.Bounds curBounds = actual.getBoundsInParent();
+        if (curBounds == null) return;
+        double curY = curBounds.getMinY();
+        double curCenterX = (curBounds.getMinX() + curBounds.getMaxX()) / 2.0;
+
+        Node mejorCandidato = null;
+        double distMin = Double.MAX_VALUE;
+
+        if (abajo) {
+            double filaTargetY = Double.MAX_VALUE;
+            for (Node child : panelMisLibros.getChildren()) {
+                if (child.getBoundsInParent() != null) {
+                    double cy = child.getBoundsInParent().getMinY();
+                    if (cy > curY + 10 && cy < filaTargetY) {
+                        filaTargetY = cy;
+                    }
+                }
+            }
+            if (filaTargetY != Double.MAX_VALUE) {
+                for (Node child : panelMisLibros.getChildren()) {
+                    if (child.getBoundsInParent() != null) {
+                        double cy = child.getBoundsInParent().getMinY();
+                        if (Math.abs(cy - filaTargetY) < 20) {
+                            double cx = (child.getBoundsInParent().getMinX() + child.getBoundsInParent().getMaxX()) / 2.0;
+                            double dist = Math.abs(cx - curCenterX);
+                            if (dist < distMin) {
+                                distMin = dist;
+                                mejorCandidato = child;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            double filaTargetY = -Double.MAX_VALUE;
+            for (Node child : panelMisLibros.getChildren()) {
+                if (child.getBoundsInParent() != null) {
+                    double cy = child.getBoundsInParent().getMinY();
+                    if (cy < curY - 10 && cy > filaTargetY) {
+                        filaTargetY = cy;
+                    }
+                }
+            }
+            if (filaTargetY != -Double.MAX_VALUE) {
+                for (Node child : panelMisLibros.getChildren()) {
+                    if (child.getBoundsInParent() != null) {
+                        double cy = child.getBoundsInParent().getMinY();
+                        if (Math.abs(cy - filaTargetY) < 20) {
+                            double cx = (child.getBoundsInParent().getMinX() + child.getBoundsInParent().getMaxX()) / 2.0;
+                            double dist = Math.abs(cx - curCenterX);
+                            if (dist < distMin) {
+                                distMin = dist;
+                                mejorCandidato = child;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (mejorCandidato != null) {
+            mejorCandidato.requestFocus();
+            asegurarVisibilidadEnScroll(mejorCandidato);
+        }
+    }
+
+    private void asegurarVisibilidadEnScroll(Node target) {
+        if (scrollMisLibros == null || target == null || panelMisLibros == null) return;
+        try {
+            javafx.geometry.Bounds bounds = target.getBoundsInParent();
+            if (bounds != null && panelMisLibros.getBoundsInLocal() != null && scrollMisLibros.getViewportBounds() != null) {
+                double contentHeight = panelMisLibros.getBoundsInLocal().getHeight();
+                double viewportHeight = scrollMisLibros.getViewportBounds().getHeight();
+                if (viewportHeight > 0 && contentHeight > viewportHeight) {
+                    double nodeCenterY = (bounds.getMinY() + bounds.getMaxY()) / 2.0;
+                    double vValue = (nodeCenterY - (viewportHeight / 2.0)) / (contentHeight - viewportHeight);
+                    scrollMisLibros.setVvalue(Math.max(0.0, Math.min(1.0, vValue)));
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     // =========================================================================

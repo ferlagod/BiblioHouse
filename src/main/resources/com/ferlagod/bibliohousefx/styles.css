@@ -120,8 +120,11 @@
 }
 
 .book-card:focused {
-    -fx-border-color: -color-accent-fg;
-    -fx-border-width: 2px;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2.5px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(gaussian, -color-accent-emphasis, 8, 0.45, 0, 0);
 }
 
 /* Contenedor de portada */
@@ -172,23 +175,23 @@
 }
 
 .badge-leido {
-    -fx-background-color: #16a34a;
+    -fx-background-color: #15803d;
     -fx-text-fill: #ffffff;
 }
 
 .badge-leyendo {
-    -fx-background-color: #f97316;
+    -fx-background-color: #c2410c;
     -fx-text-fill: #ffffff;
     -fx-font-size: 11px;
 }
 
 .badge-abandonado {
-    -fx-background-color: #64748b;
+    -fx-background-color: #475569;
     -fx-text-fill: #ffffff;
 }
 
 .badge-digital {
-    -fx-background-color: #2563eb;
+    -fx-background-color: #1d4ed8;
     -fx-text-fill: #ffffff;
     -fx-font-size: 11px;
 }
@@ -207,7 +210,7 @@
 
 .book-card-rating {
     -fx-font-size: 11px;
-    -fx-text-fill: #f59e0b;
+    -fx-text-fill: #d97706;
 }
 
 /* --- BARRA LATERAL (SIDEBAR) & WIDGET RETO --- */
@@ -286,4 +289,246 @@
     -fx-text-fill: -color-accent-fg;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 4, 0, 0, 1);
+}
+
+/* =========================================================================
+   ACCESIBILIDAD TOTAL (A11Y): ESCALA DE INTERFAZ Y TIPOGRAFÍA
+   ========================================================================= */
+
+/* Escala Compacta */
+.root.density-compact {
+    -fx-font-size: 11.5px;
+}
+
+.root.density-compact .book-card {
+    -fx-padding: 8px 6px 6px 6px;
+}
+
+/* Escala Estándar */
+.root.density-standard {
+    -fx-font-size: 13px;
+}
+
+/* Escala Grande / Accesible para usuarios con dificultades visuales */
+.root.density-accessible {
+    -fx-font-size: 16px;
+}
+
+.root.density-accessible .heading-text {
+    -fx-font-size: 22px;
+}
+
+.root.density-accessible .subheading-text {
+    -fx-font-size: 17px;
+}
+
+.root.density-accessible .book-card {
+    -fx-padding: 14px 12px 12px 12px;
+}
+
+.root.density-accessible .book-card-title {
+    -fx-font-size: 14px;
+}
+
+.root.density-accessible .book-card-author {
+    -fx-font-size: 13px;
+}
+
+.root.density-accessible .book-card-rating {
+    -fx-font-size: 13px;
+}
+
+.root.density-accessible .book-card-badge-pill {
+    -fx-font-size: 11px;
+    -fx-padding: 3 9 3 9;
+}
+
+.root.density-accessible .chip-button {
+    -fx-font-size: 14px;
+    -fx-padding: 6px 16px;
+}
+
+.root.density-accessible .button {
+    -fx-padding: 6px 14px;
+}
+
+.root.density-accessible .table-view {
+    -fx-cell-size: 32px;
+}
+
+.root.density-accessible .table-view .column-header .label {
+    -fx-font-size: 13px;
+}
+
+/* =========================================================================
+   ACCESIBILIDAD TOTAL (A11Y): TEMAS DE ALTO CONTRASTE (WCAG AA / AAA)
+   ========================================================================= */
+
+/* Alto Contraste Claro: fondo blanco nítido, tipografía negra pura (21:1), acentos profundos */
+.root.theme-high-contrast-light {
+    -color-bg-default: #ffffff;
+    -color-bg-subtle: #f1f5f9;
+    -color-bg-inset: #e2e8f0;
+    -color-bg-overlay: #ffffff;
+    
+    -color-fg-default: #000000;
+    -color-fg-muted: #1e293b;
+    -color-fg-subtle: #334155;
+    -color-fg-emphasis: #ffffff;
+    
+    -color-border-default: #000000;
+    -color-border-muted: #1e293b;
+    -color-border-subtle: #334155;
+    
+    -color-accent-fg: #002d9c;
+    -color-accent-emphasis: #002d9c;
+    -color-accent-subtle: #e0e7ff;
+    -color-accent-muted: #6366f1;
+    -color-fg-on-emphasis: #ffffff;
+    
+    -color-success-fg: #044f1e;
+    -color-success-emphasis: #044f1e;
+    -color-danger-fg: #7f1d1d;
+    -color-danger-emphasis: #7f1d1d;
+    -color-warning-fg: #78350f;
+    -color-warning-emphasis: #78350f;
+}
+
+.root.theme-high-contrast-light .book-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 1.5px;
+}
+
+.root.theme-high-contrast-light .book-card:hover {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #002d9c;
+    -fx-border-width: 2.5px;
+}
+
+.root.theme-high-contrast-light .book-card:focused {
+    -fx-border-color: #002d9c;
+    -fx-border-width: 3.5px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 45, 156, 0.65), 10, 0.6, 0, 0);
+}
+
+.root.theme-high-contrast-light .book-card-title {
+    -fx-text-fill: #000000;
+}
+
+.root.theme-high-contrast-light .book-card-author {
+    -fx-text-fill: #1e293b;
+    -fx-font-weight: 500;
+}
+
+.root.theme-high-contrast-light .book-card-rating {
+    -fx-text-fill: #b45309;
+}
+
+.root.theme-high-contrast-light .badge-leido {
+    -fx-background-color: #14532d;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-light .badge-leyendo {
+    -fx-background-color: #7c2d12;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-light .badge-digital {
+    -fx-background-color: #1e3a8a;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-light .badge-abandonado {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+}
+
+/* Alto Contraste Oscuro: fondo negro puro (#000000), tipografía blanca pura (#ffffff), acento amarillo vibrante */
+.root.theme-high-contrast-dark {
+    -color-bg-default: #000000;
+    -color-bg-subtle: #0f1115;
+    -color-bg-inset: #1a1c22;
+    -color-bg-overlay: #0a0a0c;
+    
+    -color-fg-default: #ffffff;
+    -color-fg-muted: #f1f5f9;
+    -color-fg-subtle: #cbd5e1;
+    -color-fg-emphasis: #ffffff;
+    
+    -color-border-default: #ffffff;
+    -color-border-muted: #cbd5e1;
+    -color-border-subtle: #94a3b8;
+    
+    -color-accent-fg: #facc15;
+    -color-accent-emphasis: #facc15;
+    -color-accent-subtle: #292518;
+    -color-accent-muted: #eab308;
+    -color-fg-on-emphasis: #000000;
+    
+    -color-success-fg: #4ade80;
+    -color-success-emphasis: #22c55e;
+    -color-danger-fg: #f87171;
+    -color-danger-emphasis: #ef4444;
+    -color-warning-fg: #fde047;
+    -color-warning-emphasis: #facc15;
+}
+
+.root.theme-high-contrast-dark .book-card {
+    -fx-background-color: #0d0f12;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1.5px;
+}
+
+.root.theme-high-contrast-dark .book-card:hover {
+    -fx-background-color: #1a1d24;
+    -fx-border-color: #facc15;
+    -fx-border-width: 2.5px;
+}
+
+.root.theme-high-contrast-dark .book-card:focused {
+    -fx-border-color: #facc15;
+    -fx-border-width: 3.5px;
+    -fx-effect: dropshadow(gaussian, rgba(250, 204, 21, 0.75), 10, 0.6, 0, 0);
+}
+
+.root.theme-high-contrast-dark .book-card-title {
+    -fx-text-fill: #ffffff;
+}
+
+.root.theme-high-contrast-dark .book-card-author {
+    -fx-text-fill: #f1f5f9;
+}
+
+.root.theme-high-contrast-dark .book-card-rating {
+    -fx-text-fill: #facc15;
+}
+
+.root.theme-high-contrast-dark .badge-leido {
+    -fx-background-color: #166534;
+    -fx-border-color: #4ade80;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-dark .badge-leyendo {
+    -fx-background-color: #7c2d12;
+    -fx-border-color: #fb923c;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-dark .badge-digital {
+    -fx-background-color: #1e3a8a;
+    -fx-border-color: #60a5fa;
+    -fx-border-width: 2px;
+}
+
+.root.theme-high-contrast-dark .badge-abandonado {
+    -fx-background-color: #1e293b;
+    -fx-border-color: #94a3b8;
+    -fx-border-width: 2px;
 }

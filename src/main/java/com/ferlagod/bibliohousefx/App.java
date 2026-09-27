@@ -96,20 +96,125 @@ public class App extends Application {
      *
      * @return el ResourceBundle activo.
      */
+    public static final String DENSITY_COMPACT = "Compacto";
+    public static final String DENSITY_STANDARD = "Estándar";
+    public static final String DENSITY_ACCESSIBLE = "Grande / Accesible";
+
+    public static final String THEME_HIGH_CONTRAST_LIGHT = "Alto Contraste Claro (High Contrast Light)";
+    public static final String THEME_HIGH_CONTRAST_DARK = "Alto Contraste Oscuro (High Contrast Dark)";
+
+    private static String currentDensity = DENSITY_STANDARD;
+    private static String currentTheme = "Automático (Sistema)";
+    private static final java.util.Set<Scene> activeScenes = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
     public static java.util.ResourceBundle getBundle() {
         return com.bibliohouse.logic.LanguageManager.getBundle();
     }
 
     /**
+     * Registra una escena para mantener sincronizada su escala de densidad y tema
+     * visual de accesibilidad en tiempo real.
+     *
+     * @param sc Escena a registrar.
+     */
+    public static void registerScene(Scene sc) {
+        if (sc == null) return;
+        activeScenes.add(sc);
+        sc.rootProperty().addListener((obs, oldR, newR) -> {
+            if (newR != null) {
+                applyThemeToScene(sc, currentTheme);
+                applyDensityToScene(sc, currentDensity);
+            }
+        });
+        applyThemeToScene(sc, currentTheme);
+        applyDensityToScene(sc, currentDensity);
+    }
+
+    /**
+     * Aplica la escala tipográfica y de espaciado a una escena específica.
+     */
+    public static void applyDensityToScene(Scene sc, String density) {
+        if (sc == null || sc.getRoot() == null) return;
+        Parent root = sc.getRoot();
+        root.getStyleClass().removeAll("density-compact", "density-standard", "density-accessible");
+        String styleClass;
+        double fontSize;
+        if (DENSITY_COMPACT.equalsIgnoreCase(density)) {
+            styleClass = "density-compact";
+            fontSize = 11.5;
+        } else if (DENSITY_ACCESSIBLE.equalsIgnoreCase(density) || "Grande".equalsIgnoreCase(density)) {
+            styleClass = "density-accessible";
+            fontSize = 16.0;
+        } else {
+            styleClass = "density-standard";
+            fontSize = 13.0;
+        }
+        root.getStyleClass().add(styleClass);
+
+        String curStyle = root.getStyle();
+        if (curStyle == null) curStyle = "";
+        curStyle = curStyle.replaceAll("-fx-font-size:[^;]+;?", "").trim();
+        root.setStyle((curStyle.isEmpty() ? "" : curStyle + " ") + "-fx-font-size: " + fontSize + "px;");
+    }
+
+    /**
+     * Aplica las clases de alto contraste según el tema activo a una escena específica.
+     */
+    public static void applyThemeToScene(Scene sc, String themeName) {
+        if (sc == null || sc.getRoot() == null) return;
+        Parent root = sc.getRoot();
+        root.getStyleClass().removeAll("theme-high-contrast-light", "theme-high-contrast-dark", "high-contrast");
+        if (themeName != null && (themeName.contains("Alto Contraste") || themeName.contains("High Contrast"))) {
+            root.getStyleClass().add("high-contrast");
+            if (themeName.contains("Claro") || themeName.contains("Light")) {
+                root.getStyleClass().add("theme-high-contrast-light");
+            } else {
+                root.getStyleClass().add("theme-high-contrast-dark");
+            }
+        }
+    }
+
+    /**
+     * Aplica globalmente una densidad / escala de interfaz en toda la aplicación.
+     *
+     * @param density Densidad elegida ("Compacto", "Estándar", "Grande / Accesible").
+     */
+    public static void applyDensity(String density) {
+        currentDensity = density != null ? density : DENSITY_STANDARD;
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
+        prefs.put("uiDensity", currentDensity);
+
+        for (Scene sc : new java.util.ArrayList<>(activeScenes)) {
+            applyDensityToScene(sc, currentDensity);
+        }
+    }
+
+    /**
+     * Devuelve la densidad tipográfica actual configurada.
+     */
+    public static String getCurrentDensity() {
+        return currentDensity;
+    }
+
+    /**
+     * Devuelve el tema visual actual configurado.
+     */
+    public static String getCurrentTheme() {
+        return currentTheme;
+    }
+
+    /**
      * Aplica un tema visual de AtlantaFX a toda la aplicación. Centraliza la
-     * lógica para evitar duplicación entre App y ConfiguracionController.
+     * lógica para evitar duplicación entre App y ConfiguracionController,
+     * incorporando soporte para temas de Alto Contraste (WCAG AA/AAA).
      *
      * @param themeName Nombre del tema tal como aparece en el ComboBox de
      * configuración.
      */
     public static void applyTheme(String themeName) {
+        currentTheme = themeName != null ? themeName : "Automático (Sistema)";
         String stylesheet;
-        if ("Automático (Sistema)".equalsIgnoreCase(themeName)) {
+        if ("Automático (Sistema)".equalsIgnoreCase(currentTheme)) {
             boolean dark = com.bibliohouse.utils.OsThemeDetector.isDarkMode();
             String os = System.getProperty("os.name", "").toLowerCase();
             if (os.contains("mac")) {
@@ -120,17 +225,23 @@ public class App extends Application {
                                   : new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
             }
         } else {
-            stylesheet = switch (themeName) {
+            stylesheet = switch (currentTheme) {
                 case "Oscuro (Primer Dark)" -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
                 case "Nord Claro (Nord Light)" -> new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
                 case "Nord Oscuro (Nord Dark)" -> new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
                 case "Cupertino Claro (macOS Light)" -> new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
                 case "Cupertino Oscuro (macOS Dark)" -> new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
                 case "Dracula" -> new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
+                case THEME_HIGH_CONTRAST_LIGHT -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+                case THEME_HIGH_CONTRAST_DARK -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
                 default -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
             };
         }
         Application.setUserAgentStylesheet(stylesheet);
+
+        for (Scene sc : new java.util.ArrayList<>(activeScenes)) {
+            applyThemeToScene(sc, currentTheme);
+        }
     }
 
     /**
@@ -150,6 +261,10 @@ public class App extends Application {
         // Aplicar el tema moderno de AtlantaFX
         String savedTheme = prefs.get("theme", "Automático (Sistema)");
         applyTheme(savedTheme);
+
+        // Cargar y aplicar densidad / escala de interfaz
+        String savedDensity = prefs.get("uiDensity", DENSITY_STANDARD);
+        applyDensity(savedDensity);
 
         // Sincronización automática con el Modo Oscuro/Claro del Sistema Operativo
         com.bibliohouse.utils.OsThemeDetector.startAutoSync(dark -> {
@@ -172,6 +287,7 @@ public class App extends Application {
 
             scene = new Scene(root);
             scene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
+            registerScene(scene);
             stage.setScene(scene);
             stage.setTitle(getBundle().getString("app.title"));
             stage.setResizable(false);
@@ -232,6 +348,7 @@ public class App extends Application {
 
         Scene mainScene = new Scene(root);
         mainScene.getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
+        registerScene(mainScene);
         mainStage.setScene(mainScene);
         mainStage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
 
@@ -284,6 +401,7 @@ public class App extends Application {
         if (!stage.getScene().getStylesheets().contains(App.class.getResource("styles.css").toExternalForm())) {
             stage.getScene().getStylesheets().add(App.class.getResource("styles.css").toExternalForm());
         }
+        registerScene(stage.getScene());
 
         return controller;
     }
