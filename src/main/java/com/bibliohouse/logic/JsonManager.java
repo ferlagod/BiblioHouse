@@ -772,6 +772,18 @@ public class JsonManager {
                     }
                 }
             }
+
+            // Extracción local automática de portada de e-book (EPUB / PDF) si carece de ella
+            if (libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isBlank()) {
+                String portada = libro.getPortadaURL();
+                boolean sinPortada = (portada == null || portada.isBlank() || portada.contains("default_cover") || !new File(portada).exists());
+                if (sinPortada) {
+                    boolean portadaExtraida = EbookMetadataService.asegurarPortadaEbook(libro, rutaDatosUsuario);
+                    if (portadaExtraida) {
+                        migracionPaginas = true;
+                    }
+                }
+            }
         }
 
         // Si hemos extraído páginas de PDFs antiguos, guardamos el JSON para persistir

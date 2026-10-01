@@ -641,6 +641,26 @@ public class ImageLoader {
     }
 
     /**
+     * Lee una imagen desde un flujo de entrada (InputStream), la redimensiona y la comprime en formato JPEG al 85%.
+     *
+     * @param inputStream Flujo con los bytes de la imagen.
+     * @param archivoDestino Archivo final donde se guardará la portada optimizada.
+     * @return true si la operación se completó exitosamente.
+     */
+    public static boolean redimensionarYComprimirPortada(InputStream inputStream, File archivoDestino) {
+        if (inputStream == null || archivoDestino == null) {
+            return false;
+        }
+        try {
+            BufferedImage img = ImageIO.read(inputStream);
+            if (img != null) {
+                return redimensionarYComprimirPortada(img, archivoDestino);
+            }
+        } catch (Exception ignored) {}
+        return false;
+    }
+
+    /**
      * Escribe un BufferedImage en disco en formato JPEG con el factor de calidad indicado.
      *
      * @param imagen Imagen a persistir.

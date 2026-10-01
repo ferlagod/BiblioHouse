@@ -17,6 +17,7 @@
  */
 package com.ferlagod.bibliohousefx;
 
+import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.NextCloudSyncService;
 import java.awt.Desktop;

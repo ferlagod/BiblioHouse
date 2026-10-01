@@ -17,11 +17,14 @@
  */
 package com.bibliohouse.logic;
 
+import com.bibliohouse.utils.ImageLoader;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -332,27 +335,59 @@ public class EbookMetadataService {
     }
 
     /**
-     * Intenta extraer la portada embebida del EPUB.
+     * Intenta extraer la portada embebida del EPUB localizando la entrada a través
+     * del manifiesto OPF (EPUB 2 y 3) o mediante búsqueda de contingencia.
      */
     private static void extraerPortadaEpub(ZipFile zip, Document opfDoc, String opfDir,
             Libro libro, String rutaUsuario) {
         try {
-            // 1. Buscar en <meta name="cover" content="xxx"/>
+            ZipEntry coverEntry = buscarCoverEntryEnOpf(zip, opfDoc, opfDir);
+
+            // Fallback: buscar directamente en el ZIP si hay una imagen nombrada "cover"
+            if (coverEntry == null) {
+                coverEntry = zip.stream()
+                        .filter(e -> {
+                            String n = e.getName().toLowerCase();
+                            return (n.endsWith("/cover.jpg") || n.endsWith("/cover.jpeg")
+                                    || n.endsWith("/cover.png") || n.endsWith("/cover.webp")
+                                    || n.equals("cover.jpg") || n.equals("cover.jpeg")
+                                    || n.equals("cover.png") || n.equals("cover.webp"));
+                        })
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            if (coverEntry != null) {
+                try (InputStream is = zip.getInputStream(coverEntry)) {
+                    guardarPortadaDesdeStream(is, libro, rutaUsuario);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "No se pudo extraer portada del EPUB", e);
+        }
+    }
+
+    /**
+     * Localiza la entrada ZipEntry de la portada analizando el manifiesto OPF.
+     */
+    private static ZipEntry buscarCoverEntryEnOpf(ZipFile zip, Document opfDoc, String opfDir) {
+        try {
+            String coverHref = null;
+
+            // 1. Buscar en <meta name="cover" content="xxx"/> (EPUB 2)
             String coverId = null;
             NodeList metaNodes = opfDoc.getElementsByTagName("meta");
             for (int i = 0; i < metaNodes.getLength(); i++) {
                 Element meta = (Element) metaNodes.item(i);
-                if ("cover".equals(meta.getAttribute("name"))) {
+                if ("cover".equalsIgnoreCase(meta.getAttribute("name"))) {
                     coverId = meta.getAttribute("content");
                     break;
                 }
             }
 
             // 2. Buscar el item con ese ID en el manifest
-            String coverHref = null;
             NodeList items = opfDoc.getElementsByTagName("item");
-
-            if (coverId != null) {
+            if (coverId != null && !coverId.isBlank()) {
                 for (int i = 0; i < items.getLength(); i++) {
                     Element item = (Element) items.item(i);
                     if (coverId.equals(item.getAttribute("id"))) {
@@ -363,7 +398,7 @@ public class EbookMetadataService {
             }
 
             // 3. Fallback: buscar item con properties="cover-image" (EPUB 3)
-            if (coverHref == null) {
+            if (coverHref == null || coverHref.isBlank()) {
                 for (int i = 0; i < items.getLength(); i++) {
                     Element item = (Element) items.item(i);
                     String props = item.getAttribute("properties");
@@ -375,13 +410,13 @@ public class EbookMetadataService {
             }
 
             // 4. Fallback: buscar item con media-type de imagen y "cover" en el id o href
-            if (coverHref == null) {
+            if (coverHref == null || coverHref.isBlank()) {
                 for (int i = 0; i < items.getLength(); i++) {
                     Element item = (Element) items.item(i);
                     String mediaType = item.getAttribute("media-type");
                     String id = item.getAttribute("id");
                     String href = item.getAttribute("href");
-                    if (mediaType != null && mediaType.startsWith("image/")) {
+                    if (mediaType != null && mediaType.toLowerCase().startsWith("image/")) {
                         if ((id != null && id.toLowerCase().contains("cover"))
                                 || (href != null && href.toLowerCase().contains("cover"))) {
                             coverHref = href;
@@ -391,37 +426,102 @@ public class EbookMetadataService {
                 }
             }
 
-            // 5. Extraer la imagen si la encontramos
-            if (coverHref != null) {
-                // Resolver la ruta relativa al OPF
-                String fullCoverPath = opfDir + coverHref;
-                // Intentar sin la ruta del OPF si falla
+            // 5. Fallback: buscar en <guide><reference type="cover" href="..."/>
+            if (coverHref == null || coverHref.isBlank()) {
+                NodeList refs = opfDoc.getElementsByTagName("reference");
+                for (int i = 0; i < refs.getLength(); i++) {
+                    Element ref = (Element) refs.item(i);
+                    if ("cover".equalsIgnoreCase(ref.getAttribute("type"))) {
+                        String refHref = ref.getAttribute("href");
+                        if (refHref != null && !refHref.isBlank()) {
+                            String lower = refHref.toLowerCase();
+                            if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) {
+                                coverHref = refHref;
+                                break;
+                            } else {
+                                String imgHref = extraerImagenDePaginaXhtml(zip, opfDir, refHref);
+                                if (imgHref != null) {
+                                    coverHref = imgHref;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 6. Resolver ruta relativa al directorio del OPF
+            if (coverHref != null && !coverHref.isBlank()) {
+                String fullCoverPath = resolverRutaZip(opfDir, coverHref);
                 ZipEntry coverEntry = zip.getEntry(fullCoverPath);
                 if (coverEntry == null) {
                     coverEntry = zip.getEntry(coverHref);
                 }
+                return coverEntry;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Error analizando manifiesto OPF para portada", e);
+        }
+        return null;
+    }
 
-                if (coverEntry != null) {
-                    guardarPortadaDesdeStream(zip.getInputStream(coverEntry),
-                            libro, rutaUsuario);
+    /**
+     * Extrae la referencia a una imagen dentro de un documento XHTML de portada en un EPUB.
+     */
+    private static String extraerImagenDePaginaXhtml(ZipFile zip, String opfDir, String xhtmlHref) {
+        try {
+            String path = resolverRutaZip(opfDir, xhtmlHref);
+            ZipEntry xhtmlEntry = zip.getEntry(path);
+            if (xhtmlEntry == null) xhtmlEntry = zip.getEntry(xhtmlHref);
+            if (xhtmlEntry != null) {
+                try (InputStream is = zip.getInputStream(xhtmlEntry)) {
+                    String contenido = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                            "(?i)<(?:img|image)[^>]+(?:src|href)=[\"']([^\"']+\\.(?:jpg|jpeg|png|webp))[\"']"
+                    ).matcher(contenido);
+                    if (m.find()) {
+                        String relImg = m.group(1);
+                        int lastSlash = xhtmlHref.lastIndexOf('/');
+                        String xhtmlDir = lastSlash >= 0 ? xhtmlHref.substring(0, lastSlash + 1) : "";
+                        return xhtmlDir + relImg;
+                    }
                 }
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE, "No se pudo extraer portada del EPUB", e);
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    /**
+     * Resuelve y normaliza una ruta relativa dentro de un archivo ZIP.
+     */
+    private static String resolverRutaZip(String baseDir, String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) return null;
+        try {
+            relativePath = java.net.URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {}
+        if (baseDir == null || baseDir.isBlank() || relativePath.startsWith("/")) {
+            return relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
+        }
+        String combined = baseDir + relativePath;
+        try {
+            return java.nio.file.Paths.get(combined).normalize().toString().replace('\\', '/');
+        } catch (Exception e) {
+            return combined;
         }
     }
 
     // ==================== PDF ====================
     /**
      * Extrae la primera página de un PDF como portada y usa el nombre del
-     * archivo como título.
+     * archivo como título. Renderiza la primera página a 72 DPI (dimensión estándar
+     * ~600 px) ejecutándose en ~20-30 ms y guardándola optimizada en JPEG al 85%.
      */
     private static Libro extraerDesdePdf(File archivo, String rutaUsuario) {
         Libro libro = new Libro();
         libro.setTitulo(nombreSinExtension(archivo.getName()));
 
         try (PDDocument pdf = Loader.loadPDF(archivo)) {
-            // Intentar extraer título del metadato PDF
+            // Intentar extraer título y autor del metadato PDF
             if (pdf.getDocumentInformation() != null) {
                 String titulo = pdf.getDocumentInformation().getTitle();
                 if (titulo != null && !titulo.isBlank()) {
@@ -433,20 +533,25 @@ public class EbookMetadataService {
                 }
             }
 
-            // Extraer cantidad de páginas
             int paginasTotales = pdf.getNumberOfPages();
             if (paginasTotales > 0) {
                 libro.setPaginasTotales(paginasTotales);
             }
 
-            // Renderizar primera página como portada
-            if (paginasTotales > 0) {
+            // Renderizar primera página como portada (72 DPI = ultrarrápido ~20-30 ms y ~600 px de ancho)
+            if (paginasTotales > 0 && rutaUsuario != null) {
                 PDFRenderer renderer = new PDFRenderer(pdf);
-                BufferedImage firstPage = renderer.renderImageWithDPI(0, 150);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(firstPage, "jpg", baos);
+                BufferedImage firstPage = renderer.renderImageWithDPI(0, 72);
 
-                guardarPortadaDesdeBytes(baos.toByteArray(), libro, rutaUsuario);
+                File coversDir = new File(rutaUsuario, "covers");
+                if (!coversDir.exists()) {
+                    coversDir.mkdirs();
+                }
+                File archivoDestino = new File(coversDir, libro.getId() + ".jpg");
+                boolean ok = ImageLoader.redimensionarYComprimirPortada(firstPage, archivoDestino);
+                if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
+                    libro.setPortadaURL(archivoDestino.getAbsolutePath());
+                }
             }
 
         } catch (IOException e) {
@@ -454,6 +559,141 @@ public class EbookMetadataService {
         }
 
         return libro;
+    }
+
+    /**
+     * Extrae la portada de un archivo e-book (.epub o .pdf) y la guarda directamente
+     * en la carpeta covers/ del usuario en formato JPEG comprimido y optimizado.
+     *
+     * @param archivoEbook Archivo del libro digital.
+     * @param idLibro ID único del libro para nombrar la portada.
+     * @param rutaUsuario Carpeta de datos del usuario donde está covers/.
+     * @return Ruta absoluta del archivo de portada guardado (.jpg), o null si falló.
+     */
+    public static String extraerPortadaEbook(File archivoEbook, String idLibro, String rutaUsuario) {
+        if (archivoEbook == null || !archivoEbook.exists() || idLibro == null || idLibro.isBlank()
+                || rutaUsuario == null || rutaUsuario.isBlank()) {
+            return null;
+        }
+
+        String nombre = archivoEbook.getName().toLowerCase();
+        File coversDir = new File(rutaUsuario, "covers");
+        if (!coversDir.exists()) {
+            coversDir.mkdirs();
+        }
+        File archivoDestino = new File(coversDir, idLibro + ".jpg");
+
+        if (nombre.endsWith(".epub")) {
+            try (ZipFile zip = new ZipFile(archivoEbook)) {
+                String opfPath = encontrarOpfPath(zip);
+                if (opfPath == null) opfPath = "content.opf";
+                ZipEntry opfEntry = zip.getEntry(opfPath);
+                if (opfEntry == null) {
+                    opfPath = buscarEntradaConExtension(zip, ".opf");
+                    if (opfPath != null) opfEntry = zip.getEntry(opfPath);
+                }
+
+                ZipEntry coverEntry = null;
+                if (opfEntry != null) {
+                    String opfDir = "";
+                    int lastSlash = opfPath.lastIndexOf('/');
+                    if (lastSlash >= 0) opfDir = opfPath.substring(0, lastSlash + 1);
+                    Document doc = parsearXml(zip.getInputStream(opfEntry));
+                    if (doc != null) {
+                        coverEntry = buscarCoverEntryEnOpf(zip, doc, opfDir);
+                    }
+                }
+
+                if (coverEntry == null) {
+                    coverEntry = zip.stream()
+                            .filter(e -> {
+                                String n = e.getName().toLowerCase();
+                                return (n.endsWith("/cover.jpg") || n.endsWith("/cover.jpeg")
+                                        || n.endsWith("/cover.png") || n.endsWith("/cover.webp")
+                                        || n.equals("cover.jpg") || n.equals("cover.jpeg")
+                                        || n.equals("cover.png") || n.equals("cover.webp"));
+                            })
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                if (coverEntry != null) {
+                    try (InputStream is = zip.getInputStream(coverEntry)) {
+                        boolean ok = ImageLoader.redimensionarYComprimirPortada(is, archivoDestino);
+                        if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
+                            return archivoDestino.getAbsolutePath();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Error extrayendo portada de EPUB", e);
+            }
+        } else if (nombre.endsWith(".pdf")) {
+            try (PDDocument pdf = Loader.loadPDF(archivoEbook)) {
+                if (pdf.getNumberOfPages() > 0) {
+                    PDFRenderer renderer = new PDFRenderer(pdf);
+                    BufferedImage firstPage = renderer.renderImageWithDPI(0, 72);
+                    boolean ok = ImageLoader.redimensionarYComprimirPortada(firstPage, archivoDestino);
+                    if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
+                        return archivoDestino.getAbsolutePath();
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Error extrayendo portada de PDF", e);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Comprueba si un libro digital carece de portada válida localmente y, si es así,
+     * extrae automáticamente la portada desde su archivo digital (.epub o .pdf).
+     *
+     * @param libro Libro a verificar y actualizar.
+     * @param rutaUsuario Carpeta de datos del usuario.
+     * @return true si se extrajo y asignó una nueva portada; false en caso contrario.
+     */
+    public static boolean asegurarPortadaEbook(Libro libro, String rutaUsuario) {
+        if (libro == null || !libro.isEsDigital() || libro.getRutaArchivoDigital() == null || libro.getRutaArchivoDigital().isBlank()) {
+            return false;
+        }
+
+        String portada = libro.getPortadaURL();
+        if (portada != null && !portada.isBlank() && !portada.contains("default_cover")) {
+            File f = new File(portada);
+            if (f.exists() && f.length() > 200) {
+                return false; // Ya tiene portada local válida
+            }
+        }
+
+        File ebookFile = new File(libro.getRutaArchivoDigital());
+        if (!ebookFile.exists() && rutaUsuario != null) {
+            File alt = new File(rutaUsuario + File.separator + "ebooks",
+                    ImageLoader.extraerNombreArchivo(libro.getRutaArchivoDigital()));
+            if (alt.exists()) {
+                ebookFile = alt;
+            } else if (libro.getId() != null && !libro.getId().isBlank()) {
+                for (String ext : new String[]{".epub", ".pdf", ".mobi", ".azw3", ".cbz"}) {
+                    File altId = new File(rutaUsuario + File.separator + "ebooks", libro.getId() + ext);
+                    if (altId.exists()) {
+                        ebookFile = altId;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (ebookFile.exists() && ebookFile.isFile()) {
+            String idLibro = libro.getId() != null && !libro.getId().isBlank() ? libro.getId() : java.util.UUID.randomUUID().toString();
+            String portadaExtraida = extraerPortadaEbook(ebookFile, idLibro, rutaUsuario);
+            if (portadaExtraida != null) {
+                libro.setPortadaURL(portadaExtraida);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ==================== MOBI ====================
@@ -501,36 +741,53 @@ public class EbookMetadataService {
 
     /**
      * Guarda la portada desde un InputStream en la carpeta de covers del
-     * usuario.
+     * usuario, redimensionándola y comprimiéndola en JPEG al 85%.
      */
     private static void guardarPortadaDesdeStream(InputStream is, Libro libro,
             String rutaUsuario) {
         try {
-            byte[] bytes = is.readAllBytes();
-            guardarPortadaDesdeBytes(bytes, libro, rutaUsuario);
+            File coversDir = new File(rutaUsuario, "covers");
+            if (!coversDir.exists()) {
+                coversDir.mkdirs();
+            }
+            File archivoDestino = new File(coversDir, libro.getId() + ".jpg");
+            boolean ok = ImageLoader.redimensionarYComprimirPortada(is, archivoDestino);
+            if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
+                libro.setPortadaURL(archivoDestino.getAbsolutePath());
+            } else {
+                byte[] bytes = is.readAllBytes();
+                if (bytes.length > 200) {
+                    guardarPortadaDesdeBytes(bytes, libro, rutaUsuario);
+                }
+            }
         } catch (IOException e) {
             LOGGER.log(Level.FINE, "Error guardando portada desde stream", e);
         }
     }
 
     /**
-     * Guarda la portada desde bytes en la carpeta covers/ del usuario.
+     * Guarda la portada desde bytes en la carpeta covers/ del usuario, optimizándola con ImageLoader.
      */
     private static void guardarPortadaDesdeBytes(byte[] bytes, Libro libro,
             String rutaUsuario) {
         try {
-            String coversDir = rutaUsuario + File.separator + "covers";
-            File coversDirFile = new File(coversDir);
-            if (!coversDirFile.exists()) {
-                coversDirFile.mkdirs();
+            File coversDir = new File(rutaUsuario, "covers");
+            if (!coversDir.exists()) {
+                coversDir.mkdirs();
+            }
+            File archivoDestino = new File(coversDir, libro.getId() + ".jpg");
+
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes)) {
+                boolean ok = ImageLoader.redimensionarYComprimirPortada(bais, archivoDestino);
+                if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
+                    libro.setPortadaURL(archivoDestino.getAbsolutePath());
+                    return;
+                }
             }
 
-            // Detectar extensión por los primeros bytes
+            // Fallback directo en caso de formato no estándar
             String ext = detectarExtensionImagen(bytes);
-
-            String nombreArchivo = libro.getId() + ext;
-            File archivoPortada = new File(coversDir, nombreArchivo);
-
+            File archivoPortada = new File(coversDir, libro.getId() + ext);
             Files.write(archivoPortada.toPath(), bytes);
             libro.setPortadaURL(archivoPortada.getAbsolutePath());
 
