@@ -23,10 +23,14 @@ import com.github.sardine.SardineFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -225,9 +229,14 @@ public class NextCloudSyncService {
                 File localFile = new File(localDir, fileName);
                 if (localFile.exists() && localFile.length() > 0) {
                     String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                    byte[] fileData = Files.readAllBytes(localFile.toPath());
-                    sardine.put(remoteFileUrl, fileData, "application/json");
-                    LOGGER.log(Level.INFO, "JSON sincronizado: {0}", fileName);
+                    if ((fileName.equals("biblioteca.json") || fileName.equals("deseos.json")) && sardine.exists(remoteFileUrl)) {
+                        // Fusión previa antes de sobreescribir en NextCloud
+                        fusionarArchivoLibros(sardine, remoteFileUrl, localFile, null, true);
+                    } else {
+                        byte[] fileData = Files.readAllBytes(localFile.toPath());
+                        sardine.put(remoteFileUrl, fileData, "application/json");
+                        LOGGER.log(Level.INFO, "JSON sincronizado: {0}", fileName);
+                    }
                 }
             }
 
@@ -350,7 +359,7 @@ public class NextCloudSyncService {
      * @return true si el remoto es más reciente que el local (con un margen de tolerancia de 2 segundos),
      *         o si el archivo local no existe. false en caso contrario.
      */
-    static boolean esRecursoRemotoMasReciente(Date remoteModified, File localFile) {
+    public static boolean esRecursoRemotoMasReciente(Date remoteModified, File localFile) {
         if (localFile == null || !localFile.exists()) {
             return true;
         }
@@ -491,17 +500,21 @@ public class NextCloudSyncService {
                     LOGGER.log(Level.FINE, "Backup creado: {0}.bak", fileName);
                 }
 
-                try (InputStream in = sardine.get(remoteFileUrl); FileOutputStream out = new FileOutputStream(localFile)) {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, bytesRead);
+                if ((fileName.equals("biblioteca.json") || fileName.equals("deseos.json")) && localFile.exists() && localFile.length() > 0) {
+                    fusionarArchivoLibros(sardine, remoteFileUrl, localFile, remoteRes, false);
+                } else {
+                    try (InputStream in = sardine.get(remoteFileUrl); FileOutputStream out = new FileOutputStream(localFile)) {
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, bytesRead);
+                        }
+                        LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
                     }
-                    LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
-                }
 
-                if (remoteRes != null && remoteRes.getModified() != null) {
-                    localFile.setLastModified(remoteRes.getModified().getTime());
+                    if (remoteRes != null && remoteRes.getModified() != null) {
+                        localFile.setLastModified(remoteRes.getModified().getTime());
+                    }
                 }
             }
 
@@ -596,5 +609,110 @@ public class NextCloudSyncService {
             } catch (IOException ignored) {
             }
         }
+    }
+
+    /**
+     * Fusiona un archivo de libros (biblioteca.json o deseos.json) combinando los datos
+     * locales y remotos por ID y resolviendo conflictos con el timestamp de última modificación.
+     * Guarda la versión unificada en el archivo local y, si hay cambios locales nuevos o se
+     * solicita forzar la subida, actualiza también el servidor NextCloud.
+     *
+     * @param sardine Cliente Sardine WebDAV.
+     * @param remoteFileUrl URL del archivo en NextCloud.
+     * @param localFile Archivo físico local.
+     * @param remoteRes Recurso WebDAV remoto (puede ser null).
+     * @param forzarSubida true si se debe subir obligatoriamente el resultado unificado a NextCloud.
+     * @throws IOException Si ocurre un error de lectura/escritura.
+     */
+    private void fusionarArchivoLibros(Sardine sardine, String remoteFileUrl, File localFile,
+                                       DavResource remoteRes, boolean forzarSubida) throws IOException {
+        String localDir = localFile.getParent();
+        JsonManager jsonMgr = new JsonManager(localDir);
+
+        // 1. Leer libros locales
+        List<Libro> librosLocales;
+        if (localFile.exists() && localFile.length() > 0) {
+            try (FileReader reader = new FileReader(localFile, StandardCharsets.UTF_8)) {
+                librosLocales = jsonMgr.parsearLibros(reader);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error al parsear libros locales para fusión ({0}): {1}",
+                        new Object[]{localFile.getName(), e.getMessage()});
+                librosLocales = new ArrayList<>();
+            }
+        } else {
+            librosLocales = new ArrayList<>();
+        }
+
+        // 2. Leer libros remotos
+        List<Libro> librosRemotos;
+        try (InputStream in = sardine.get(remoteFileUrl);
+             InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            librosRemotos = jsonMgr.parsearLibros(reader);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error al parsear libros remotos para fusión ({0}): {1}",
+                    new Object[]{localFile.getName(), e.getMessage()});
+            librosRemotos = new ArrayList<>();
+        }
+
+        // 3. Fusionar colecciones (por ID / clave canónica y timestamp de modificación)
+        List<Libro> fusionados = JsonManager.fusionarColecciones(librosLocales, librosRemotos);
+
+        // 4. Guardar archivo local unificado
+        if (localFile.getName().equals("biblioteca.json")) {
+            jsonMgr.guardarLibros(fusionados);
+        } else if (localFile.getName().equals("deseos.json")) {
+            jsonMgr.guardarDeseos(fusionados);
+        } else {
+            byte[] mergedBytes = jsonMgr.serializarLibros(fusionados).getBytes(StandardCharsets.UTF_8);
+            Files.write(localFile.toPath(), mergedBytes);
+        }
+
+        // 5. Actualizar en NextCloud si se fuerza la subida o si la fusión contiene cambios locales más recientes
+        boolean remoteNecesitaActualizacion = forzarSubida || coleccionTieneCambiosNuevos(fusionados, librosRemotos);
+        if (remoteNecesitaActualizacion) {
+            byte[] finalBytes = jsonMgr.serializarLibros(fusionados).getBytes(StandardCharsets.UTF_8);
+            sardine.put(remoteFileUrl, finalBytes, "application/json");
+            LOGGER.log(Level.INFO, "NextCloud actualizado con datos unificados para {0}", localFile.getName());
+        } else if (remoteRes != null && remoteRes.getModified() != null) {
+            localFile.setLastModified(remoteRes.getModified().getTime());
+        }
+
+        LOGGER.log(Level.INFO, "Fusión por ID completada para {0}: {1} libros locales + {2} remotos -> {3} unificados.",
+                new Object[]{localFile.getName(), librosLocales.size(), librosRemotos.size(), fusionados.size()});
+    }
+
+    /**
+     * Comprueba si la colección fusionada aporta libros nuevos o versiones con timestamps
+     * más recientes que los presentes en la colección base de referencia.
+     *
+     * @param fusionados Lista unificada.
+     * @param base Lista de referencia (ej. remota).
+     * @return true si la lista fusionada contiene novedades frente a la base.
+     */
+    public static boolean coleccionTieneCambiosNuevos(List<Libro> fusionados, List<Libro> base) {
+        if (base == null || base.isEmpty()) {
+            return fusionados != null && !fusionados.isEmpty();
+        }
+        if (fusionados == null || fusionados.isEmpty()) {
+            return false;
+        }
+        if (fusionados.size() != base.size()) {
+            return true;
+        }
+        Map<String, Long> mapaBase = new HashMap<>();
+        for (Libro b : base) {
+            if (b != null) {
+                mapaBase.put(JsonManager.obtenerClaveUnicaLibro(b), b.getUltimaModificacion());
+            }
+        }
+        for (Libro f : fusionados) {
+            if (f == null) continue;
+            String clave = JsonManager.obtenerClaveUnicaLibro(f);
+            Long timeBase = mapaBase.get(clave);
+            if (timeBase == null || f.getUltimaModificacion() > timeBase) {
+                return true;
+            }
+        }
+        return false;
     }
 }

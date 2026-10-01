@@ -85,6 +85,9 @@ public class Libro {
     private int paginasTotales = 0;
     private List<NotaLectura> diario = new ArrayList<>();
 
+    // TIMESTAMP DE ÚLTIMA MODIFICACIÓN PARA SINCRONIZACIÓN Y MERGE BIDIRECCIONAL
+    private long ultimaModificacion = System.currentTimeMillis();
+
     /**
      * Constructor vacío. Nos sirve para crear un libro sin datos y que el 
      * programa no se enfade al cargar cosas. Ya le pone un ID aleatorio.
@@ -94,6 +97,7 @@ public class Libro {
         if (this.id == null) {
             this.id = UUID.randomUUID().toString();
         }
+        this.ultimaModificacion = System.currentTimeMillis();
     }
 
     /**
@@ -129,6 +133,7 @@ public class Libro {
         this.cantidad = 1;
         this.leido = false;
         this.poseido = true; // Por defecto es poseído
+        this.ultimaModificacion = System.currentTimeMillis();
     }
 
     /**
@@ -415,6 +420,7 @@ public class Libro {
         EstadoLectura resolved = (estado != null) ? estado : EstadoLectura.PENDIENTE;
         this.estadoLectura = resolved.getEtiquetaEspanol();
         this.leido = (resolved == EstadoLectura.LEIDO);
+        marcarModificado();
     }
 
     /**
@@ -564,6 +570,7 @@ public class Libro {
      */
     public void setPaginaActual(int paginaActual) {
         this.paginaActual = paginaActual;
+        marcarModificado();
     }
 
     /**
@@ -679,6 +686,31 @@ public class Libro {
      */
     public void setUbicacionFisica(String ubicacionFisica) {
         this.ubicacionFisica = ubicacionFisica;
+    }
+
+    /**
+     * Obtiene la marca de tiempo (milisegundos) de última modificación del libro.
+     *
+     * @return Timestamp de última modificación.
+     */
+    public long getUltimaModificacion() {
+        return ultimaModificacion;
+    }
+
+    /**
+     * Establece la marca de tiempo de última modificación del libro.
+     *
+     * @param ultimaModificacion Timestamp en milisegundos.
+     */
+    public void setUltimaModificacion(long ultimaModificacion) {
+        this.ultimaModificacion = ultimaModificacion;
+    }
+
+    /**
+     * Actualiza la marca de tiempo de última modificación al instante actual del sistema.
+     */
+    public void marcarModificado() {
+        this.ultimaModificacion = System.currentTimeMillis();
     }
 
     @Override

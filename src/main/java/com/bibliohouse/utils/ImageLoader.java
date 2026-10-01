@@ -17,6 +17,10 @@
  */
 package com.bibliohouse.utils;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +30,16 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -50,6 +60,10 @@ public class ImageLoader {
     private static final ExecutorService executor = Executors.newFixedThreadPool(8); // Pool reducido para no saturar IO
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
     private static final int MAX_CACHE_SIZE = 150; // Aumentado para evitar evictions al scrollear bibliotecas grandes
+
+    public static final int MAX_COVER_WIDTH = 600;
+    public static final int MAX_COVER_HEIGHT = 900;
+    public static final float JPEG_COMPRESSION_QUALITY = 0.85f;
 
     // Caché en memoria (LRU) — envuelta en synchronizedMap para acceso seguro
     // desde el hilo FX y el ExecutorService simultáneamente.
@@ -440,6 +454,18 @@ public class ImageLoader {
      * @return Ruta absoluta del archivo de portada guardado localmente, o la
      * ruta original si no se pudo procesar.
      */
+    /**
+     * Guarda una portada de libro localmente en la carpeta de usuario, ya sea
+     * descargándola desde una URL o copiándola desde una ruta local.
+     * Redimensiona automáticamente la imagen a un estándar de biblioteca
+     * (máximo 600 px de ancho y 900 px de alto, manteniendo el ratio de aspecto)
+     * y la guarda comprimida en JPEG con calidad al 85%.
+     *
+     * @param urlOrPath URL o ruta local de la portada original.
+     * @param idLibro Identificador único del libro, usado como nombre de archivo.
+     * @param carpetaUsuario Ruta de la carpeta del usuario donde se guardará la portada.
+     * @return Ruta absoluta del archivo de portada guardado localmente, o la ruta original si no se pudo procesar.
+     */
     public static String hacerPortadaLocalOffline(String urlOrPath, String idLibro, String carpetaUsuario) {
         if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH) || urlOrPath.contains("default_cover")) {
             return urlOrPath;
@@ -455,16 +481,24 @@ public class ImageLoader {
         }
 
         String safeId = (idLibro != null && !idLibro.isBlank()) ? idLibro : java.util.UUID.randomUUID().toString();
-        String extension = urlOrPath.toLowerCase().endsWith(".png") ? ".png" : ".jpg";
-        File archivoDestino = new File(dirCovers, safeId + extension);
+        File archivoDestino = new File(dirCovers, safeId + ".jpg");
 
         try {
             if (isValidUrl(urlOrPath)) {
-                boolean descargado = descargarImagenWeb(urlOrPath, archivoDestino);
-                if (descargado && archivoDestino.exists() && archivoDestino.length() > 200) {
-                    return archivoDestino.getAbsolutePath();
+                File tmpDescarga = new File(dirCovers, safeId + "_download.tmp");
+                boolean descargado = descargarImagenWeb(urlOrPath, tmpDescarga);
+                if (descargado && tmpDescarga.exists()) {
+                    boolean optimizado = redimensionarYComprimirPortada(tmpDescarga, archivoDestino);
+                    try {
+                        Files.deleteIfExists(tmpDescarga.toPath());
+                    } catch (Exception ignored) {}
+
+                    if (optimizado && archivoDestino.exists() && archivoDestino.length() > 200) {
+                        limpiarPortadasObsoletasConMismoId(dirCovers, safeId, ".jpg");
+                        return archivoDestino.getAbsolutePath();
+                    }
                 }
-                // Si la descarga falló pero ya existía un archivo válido con ese ID
+                // Si la descarga u optimización falló pero ya existía un archivo válido con ese ID
                 if (archivoDestino.exists() && archivoDestino.length() > 200) {
                     return archivoDestino.getAbsolutePath();
                 }
@@ -472,15 +506,32 @@ public class ImageLoader {
             } else {
                 File archivoOrigen = resolverArchivoLocal(urlOrPath);
                 if (archivoOrigen != null && archivoOrigen.exists() && archivoOrigen.isFile()) {
+                    // Si el archivo origen ya es exactamente el destino y ya está optimizado (< 120 KB), retornarlo directamente
+                    try {
+                        if (archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath()) && archivoOrigen.length() < 120_000) {
+                            return archivoDestino.getAbsolutePath();
+                        }
+                    } catch (IOException ignored) {}
+
                     // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
                     String name = archivoOrigen.getName().toLowerCase();
                     if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp")) {
                         return urlOrPath;
                     }
-                    if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
-                        Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                    boolean optimizado = redimensionarYComprimirPortada(archivoOrigen, archivoDestino);
+                    if (!optimizado) {
+                        // Fallback defensivo si ImageIO no pudo decodificar el formato específico
+                        if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
+                            Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
                     }
-                    return archivoDestino.getAbsolutePath();
+
+                    if (archivoDestino.exists() && archivoDestino.length() > 200) {
+                        limpiarPortadasObsoletasConMismoId(dirCovers, safeId, ".jpg");
+                        return archivoDestino.getAbsolutePath();
+                    }
+                    return urlOrPath;
                 } else {
                     // Verificar si ya existe en destino con cualquier extensión
                     for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
@@ -494,6 +545,144 @@ public class ImageLoader {
             }
         } catch (IOException e) {
             return urlOrPath;
+        }
+    }
+
+    /**
+     * Redimensiona una imagen al tamaño estándar de portada (máximo 600px de ancho y 900px de alto,
+     * conservando la relación de aspecto) y la guarda comprimida en formato JPEG al 85%.
+     * Si la imagen original es menor a estas dimensiones, no se escala hacia arriba.
+     *
+     * @param imagenOriginal Imagen en memoria a redimensionar y comprimir.
+     * @param archivoDestino Archivo de destino donde se guardará.
+     * @return true si la imagen fue procesada y escrita exitosamente.
+     */
+    public static boolean redimensionarYComprimirPortada(BufferedImage imagenOriginal, File archivoDestino) {
+        if (imagenOriginal == null || archivoDestino == null) {
+            return false;
+        }
+
+        int origWidth = imagenOriginal.getWidth();
+        int origHeight = imagenOriginal.getHeight();
+        if (origWidth <= 0 || origHeight <= 0) {
+            return false;
+        }
+
+        int targetWidth = origWidth;
+        int targetHeight = origHeight;
+
+        // Escalar manteniendo aspect ratio únicamente si excede las dimensiones máximas
+        if (origWidth > MAX_COVER_WIDTH || origHeight > MAX_COVER_HEIGHT) {
+            double escala = Math.min((double) MAX_COVER_WIDTH / origWidth, (double) MAX_COVER_HEIGHT / origHeight);
+            targetWidth = Math.max(1, (int) Math.round(origWidth * escala));
+            targetHeight = Math.max(1, (int) Math.round(origHeight * escala));
+        }
+
+        // Crear imagen RGB para evitar colores erróneos al convertir canales alfa de PNG a JPEG
+        BufferedImage imagenOptimizada = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = imagenOptimizada.createGraphics();
+        try {
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Fondo blanco para portadas con transparencia
+            g2d.setColor(Color.WHITE);
+            g2d.fillRect(0, 0, targetWidth, targetHeight);
+
+            g2d.drawImage(imagenOriginal, 0, 0, targetWidth, targetHeight, null);
+        } finally {
+            g2d.dispose();
+        }
+
+        File parent = archivoDestino.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        File tmpFile = new File(archivoDestino.getAbsolutePath() + ".tmp");
+        try {
+            guardarJpegComprimido(imagenOptimizada, tmpFile, JPEG_COMPRESSION_QUALITY);
+
+            try {
+                Files.move(tmpFile.toPath(), archivoDestino.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException e) {
+                Files.move(tmpFile.toPath(), archivoDestino.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+            return true;
+        } catch (Exception ex) {
+            try {
+                Files.deleteIfExists(tmpFile.toPath());
+            } catch (Exception ignored) {}
+            return false;
+        }
+    }
+
+    /**
+     * Carga un archivo de imagen desde disco, lo redimensiona y lo comprime en formato JPEG al 85%.
+     *
+     * @param archivoOrigen Archivo de imagen original (JPEG, PNG, WebP, etc.).
+     * @param archivoDestino Archivo final donde se guardará la portada optimizada.
+     * @return true si la operación se completó exitosamente.
+     */
+    public static boolean redimensionarYComprimirPortada(File archivoOrigen, File archivoDestino) {
+        if (archivoOrigen == null || !archivoOrigen.exists() || archivoDestino == null) {
+            return false;
+        }
+        try {
+            BufferedImage img = ImageIO.read(archivoOrigen);
+            if (img != null) {
+                return redimensionarYComprimirPortada(img, archivoDestino);
+            }
+        } catch (Exception ignored) {}
+        return false;
+    }
+
+    /**
+     * Escribe un BufferedImage en disco en formato JPEG con el factor de calidad indicado.
+     *
+     * @param imagen Imagen a persistir.
+     * @param destino Archivo destino.
+     * @param calidad Calidad entre 0.0f y 1.0f (ej. 0.85f).
+     * @throws IOException Si ocurre un fallo de escritura en disco.
+     */
+    public static void guardarJpegComprimido(BufferedImage imagen, File destino, float calidad) throws IOException {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+        if (!writers.hasNext()) {
+            ImageIO.write(imagen, "jpg", destino);
+            return;
+        }
+
+        ImageWriter writer = writers.next();
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(destino)) {
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            if (param.canWriteCompressed()) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(calidad);
+            }
+            writer.write(null, new IIOImage(imagen, null, null), param);
+        } finally {
+            writer.dispose();
+        }
+    }
+
+    /**
+     * Elimina archivos de portada anteriores con el mismo identificador pero diferente extensión
+     * (por ejemplo, eliminando una versión previa .png de 8 MB al generar el nuevo .jpg de 50 KB).
+     */
+    private static void limpiarPortadasObsoletasConMismoId(File dirCovers, String safeId, String extensionActual) {
+        for (String ext : new String[]{".png", ".jpeg", ".webp"}) {
+            if (!ext.equalsIgnoreCase(extensionActual)) {
+                File oldFile = new File(dirCovers, safeId + ext);
+                if (oldFile.exists() && oldFile.isFile()) {
+                    try {
+                        Files.deleteIfExists(oldFile.toPath());
+                    } catch (Exception ignored) {}
+                }
+            }
         }
     }
 

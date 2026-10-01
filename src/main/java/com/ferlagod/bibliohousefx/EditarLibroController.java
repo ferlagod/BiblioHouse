@@ -434,6 +434,7 @@ public class EditarLibroController {
         libro.setRutaArchivoDigital(rutaArchivoDigitalActual);
         libro.setEsDigital(rutaArchivoDigitalActual != null && !rutaArchivoDigitalActual.isEmpty());
 
+        libro.marcarModificado();
         guardado = true;
         cerrar();
     }

@@ -41,6 +41,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -459,6 +461,143 @@ public class JsonManager {
             paraGuardar.add(copia);
         }
         return paraGuardar;
+    }
+
+    /**
+     * Fusiona dos colecciones de libros (por ejemplo, local y remota de NextCloud)
+     * resolviendo conflictos por identificador único (ID) y timestamp de última modificación.
+     * Si un libro existe en ambas colecciones, se conserva la versión con el timestamp más reciente.
+     * Si un libro solo existe en una de las colecciones, se incluye en la colección unificada.
+     *
+     * @param locales Lista de libros de la biblioteca local.
+     * @param remotas Lista de libros provenientes del almacenamiento remoto o móvil.
+     * @return Lista unificada y sin duplicados con los libros más actualizados de ambos lados.
+     */
+    public static List<Libro> fusionarColecciones(List<Libro> locales, List<Libro> remotas) {
+        if (locales == null && remotas == null) {
+            return new ArrayList<>();
+        }
+        if (locales == null || locales.isEmpty()) {
+            return remotas != null ? new ArrayList<>(remotas) : new ArrayList<>();
+        }
+        if (remotas == null || remotas.isEmpty()) {
+            return new ArrayList<>(locales);
+        }
+
+        Map<String, Libro> mapaFusion = new LinkedHashMap<>();
+
+        // 1. Indexar libros locales
+        for (Libro local : locales) {
+            if (local == null) continue;
+            String clave = obtenerClaveUnicaLibro(local);
+            mapaFusion.put(clave, local);
+        }
+
+        // 2. Fusionar libros remotos
+        for (Libro remoto : remotas) {
+            if (remoto == null) continue;
+            String clave = obtenerClaveUnicaLibro(remoto);
+            Libro localExistente = mapaFusion.get(clave);
+
+            if (localExistente == null) {
+                // Libro nuevo que solo existe en remoto: se agrega a la colección
+                mapaFusion.put(clave, remoto);
+            } else {
+                // Existe en ambos lados: gana la versión con el timestamp de última modificación más reciente
+                long tiempoLocal = localExistente.getUltimaModificacion();
+                long tiempoRemoto = remoto.getUltimaModificacion();
+
+                if (tiempoRemoto > tiempoLocal) {
+                    mapaFusion.put(clave, remoto);
+                }
+            }
+        }
+
+        return new ArrayList<>(mapaFusion.values());
+    }
+
+    /**
+     * Obtiene la clave de identificación única canónica para un libro durante el merge.
+     * Prioriza ID (UUID), con fallback a ISBN o Título+Autor.
+     *
+     * @param libro El libro a indexar.
+     * @return Clave única representativa.
+     */
+    public static String obtenerClaveUnicaLibro(Libro libro) {
+        if (libro == null) return "";
+        if (libro.getId() != null && !libro.getId().isBlank()) {
+            return libro.getId().trim();
+        }
+        if (libro.getIsbn() != null && !libro.getIsbn().isBlank()) {
+            return "isbn:" + libro.getIsbn().replaceAll("[^0-9Xx]", "");
+        }
+        return "title:" + (libro.getTitulo() != null ? libro.getTitulo().toLowerCase().trim() : "")
+                + "|" + (libro.getAutor() != null ? libro.getAutor().toLowerCase().trim() : "");
+    }
+
+    /**
+     * Fusiona la lista actual de libros con una lista remota, guardando en disco
+     * la versión combinada (resolviendo por ID y timestamp de última modificación).
+     *
+     * @param librosRemotos Lista de libros obtenidos de la nube o dispositivo remoto.
+     * @return Lista unificada final resultante de la fusión.
+     */
+    public synchronized List<Libro> fusionarYGuardarLibros(List<Libro> librosRemotos) {
+        List<Libro> locales = cargarLibros();
+        List<Libro> fusionados = fusionarColecciones(locales, librosRemotos);
+        guardarLibros(fusionados);
+        return fusionados;
+    }
+
+    /**
+     * Fusiona la lista actual de deseos con una lista remota, guardando en disco
+     * la versión combinada (resolviendo por ID y timestamp de última modificación).
+     *
+     * @param deseosRemotos Lista de deseos obtenidos de la nube o dispositivo remoto.
+     * @return Lista unificada final resultante de la fusión.
+     */
+    public synchronized List<Libro> fusionarYGuardarDeseos(List<Libro> deseosRemotos) {
+        List<Libro> locales = cargarDeseos();
+        List<Libro> fusionados = fusionarColecciones(locales, deseosRemotos);
+        guardarDeseos(fusionados);
+        return fusionados;
+    }
+
+    /**
+     * Parsea una lista de libros desde una cadena JSON.
+     *
+     * @param json Cadena JSON con la lista de libros.
+     * @return Lista de libros parseados.
+     */
+    public List<Libro> parsearLibros(String json) {
+        if (json == null || json.isBlank()) return new ArrayList<>();
+        Type tipoLista = new TypeToken<ArrayList<Libro>>() {}.getType();
+        List<Libro> lista = gson.fromJson(json, tipoLista);
+        return lista != null ? lista : new ArrayList<>();
+    }
+
+    /**
+     * Parsea una lista de libros desde un Reader de caracteres.
+     *
+     * @param reader Lector con el contenido JSON.
+     * @return Lista de libros parseados.
+     */
+    public List<Libro> parsearLibros(Reader reader) {
+        if (reader == null) return new ArrayList<>();
+        Type tipoLista = new TypeToken<ArrayList<Libro>>() {}.getType();
+        List<Libro> lista = gson.fromJson(reader, tipoLista);
+        return lista != null ? lista : new ArrayList<>();
+    }
+
+    /**
+     * Serializa una lista de libros a formato JSON con rutas relativas portables.
+     *
+     * @param libros Lista de libros a serializar.
+     * @return Cadena JSON formateada.
+     */
+    public String serializarLibros(List<Libro> libros) {
+        List<Libro> paraGuardar = prepararLibrosParaGuardar(libros);
+        return gson.toJson(paraGuardar);
     }
 
     /**
