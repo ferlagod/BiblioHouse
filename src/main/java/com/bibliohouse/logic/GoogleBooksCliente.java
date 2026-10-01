@@ -62,24 +62,27 @@ public class GoogleBooksCliente {
     public static List<Libro> buscarLibros(String terminoDeBusqueda) {
         List<Libro> librosEncontrados = new ArrayList<>();
 
-        String apiKey = ConfigLoader.getProperty("google.books.api.key");
-        if (apiKey == null || apiKey.isEmpty() || "TU_API_KEY_AQUI".equals(apiKey)) {
-            LOGGER.log(Level.WARNING, "No se ha configurado la API key de Google Books en config.properties");
+        if (terminoDeBusqueda == null || terminoDeBusqueda.isBlank()) {
             return librosEncontrados;
         }
 
         try {
             // Codificar el término para URL
-            String terminoCodificado = URLEncoder.encode(terminoDeBusqueda, StandardCharsets.UTF_8);
-            String urlCompleta = String.format("%s?q=%s&maxResults=20&key=%s", API_BASE_URL, terminoCodificado, apiKey);
+            String terminoCodificado = URLEncoder.encode(terminoDeBusqueda.trim(), StandardCharsets.UTF_8);
+            String apiKey = ConfigLoader.getProperty("google.books.api.key");
+            boolean hasApiKey = (apiKey != null && !apiKey.isEmpty() && !"TU_API_KEY_AQUI".equals(apiKey));
 
-            LOGGER.log(Level.INFO, "Realizando búsqueda en Google Books");
+            String urlCompleta = hasApiKey
+                    ? String.format("%s?q=%s&maxResults=20&key=%s", API_BASE_URL, terminoCodificado, apiKey)
+                    : String.format("%s?q=%s&maxResults=20", API_BASE_URL, terminoCodificado);
 
-            // Crear petición HTTP
+            LOGGER.log(Level.INFO, "Realizando búsqueda en Google Books (con key={0})", hasApiKey);
+
+            // Crear petición HTTP con User-Agent estándar
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(urlCompleta))
                     .timeout(Duration.ofSeconds(10))
-                    .header("User-Agent", "BiblioHouse/1.0")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 BiblioHouse/2.1")
                     .header("Accept", "application/json")
                     .build();
 
@@ -160,10 +163,22 @@ public class GoogleBooksCliente {
                 String portadaUrl = "";
                 if (volumeInfo.has("imageLinks")) {
                     JSONObject imageLinks = volumeInfo.getJSONObject("imageLinks");
-                    portadaUrl = imageLinks.optString("thumbnail", "");
+                    if (imageLinks.has("extraLarge")) {
+                        portadaUrl = imageLinks.optString("extraLarge");
+                    } else if (imageLinks.has("large")) {
+                        portadaUrl = imageLinks.optString("large");
+                    } else if (imageLinks.has("medium")) {
+                        portadaUrl = imageLinks.optString("medium");
+                    } else if (imageLinks.has("thumbnail")) {
+                        portadaUrl = imageLinks.optString("thumbnail");
+                    } else if (imageLinks.has("smallThumbnail")) {
+                        portadaUrl = imageLinks.optString("smallThumbnail");
+                    }
                     if (portadaUrl.startsWith("http:")) {
                         portadaUrl = portadaUrl.replace("http:", "https:");
                     }
+                    // Quitar el efecto curl que a veces distorsiona la portada
+                    portadaUrl = portadaUrl.replace("&edge=curl", "");
                 }
 
                 // Páginas

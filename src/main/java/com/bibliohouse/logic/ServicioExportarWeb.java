@@ -276,8 +276,8 @@ public class ServicioExportarWeb {
             return generarPlaceholderSVG(libro.getTitulo(), libro.getAutor());
         }
 
-        File archivo = new File(url);
-        if (!archivo.exists() || !archivo.isFile()) {
+        File archivo = com.bibliohouse.utils.ImageLoader.resolverArchivoLocal(url);
+        if (archivo == null || !archivo.exists() || !archivo.isFile()) {
             return generarPlaceholderSVG(libro.getTitulo(), libro.getAutor());
         }
 

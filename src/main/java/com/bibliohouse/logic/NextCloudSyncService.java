@@ -232,19 +232,33 @@ public class NextCloudSyncService {
             File carpetaLocalCovers = new File(localDir, "covers");
             if (carpetaLocalCovers.exists() && carpetaLocalCovers.isDirectory()) {
                 File[] portadas = carpetaLocalCovers.listFiles();
-                if (portadas != null) {
-                    List<DavResource> resources = sardine.list(remoteCoversUrl);
-                    Set<String> nombresEnRemoto = resources.stream()
-                            .filter(r -> r.getName() != null)
-                            .map(DavResource::getName)
-                            .collect(Collectors.toSet());
+                if (portadas != null && portadas.length > 0) {
+                    Set<String> nombresEnRemoto = new java.util.HashSet<>();
+                    try {
+                        List<DavResource> resources = sardine.list(remoteCoversUrl);
+                        for (DavResource r : resources) {
+                            if (r.getName() != null) {
+                                nombresEnRemoto.add(r.getName().toLowerCase());
+                            }
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de covers, verificando creación: {0}", ex.getMessage());
+                        crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
+                    }
 
                     for (File portada : portadas) {
-                        if (portada.isFile() && !portada.getName().startsWith(".") && !nombresEnRemoto.contains(portada.getName())) {
-                            String remoteFileUrl = remoteCoversUrl + portada.getName();
-                            byte[] imgData = Files.readAllBytes(portada.toPath());
-                            sardine.put(remoteFileUrl, imgData, "image/jpeg");
-                            LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", portada.getName());
+                        if (portada.isFile() && !portada.getName().startsWith(".") && portada.length() > 0) {
+                            String nombre = portada.getName();
+                            if (!nombresEnRemoto.contains(nombre.toLowerCase())) {
+                                try {
+                                    String remoteFileUrl = remoteCoversUrl + encodeUrlSegment(nombre);
+                                    byte[] imgData = Files.readAllBytes(portada.toPath());
+                                    sardine.put(remoteFileUrl, imgData, determinarMimeTypeImagen(nombre));
+                                    LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", nombre);
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.WARNING, "Error al subir portada individual ({0}): {1}", new Object[]{nombre, ex.getMessage()});
+                                }
+                            }
                         }
                     }
                 }
@@ -257,19 +271,32 @@ public class NextCloudSyncService {
             File carpetaLocalEbooks = new File(localDir, "ebooks");
             if (carpetaLocalEbooks.exists() && carpetaLocalEbooks.isDirectory()) {
                 File[] ebooks = carpetaLocalEbooks.listFiles();
-                if (ebooks != null) {
-                    List<DavResource> resourcesEbooks = sardine.list(remoteEbooksUrl);
-                    Set<String> nombresEbooksEnRemoto = resourcesEbooks.stream()
-                            .filter(r -> r.getName() != null)
-                            .map(DavResource::getName)
-                            .collect(Collectors.toSet());
+                if (ebooks != null && ebooks.length > 0) {
+                    Set<String> nombresEbooksEnRemoto = new java.util.HashSet<>();
+                    try {
+                        List<DavResource> resourcesEbooks = sardine.list(remoteEbooksUrl);
+                        for (DavResource r : resourcesEbooks) {
+                            if (r.getName() != null) {
+                                nombresEbooksEnRemoto.add(r.getName().toLowerCase());
+                            }
+                        }
+                    } catch (Exception ex) {
+                        LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de ebooks: {0}", ex.getMessage());
+                    }
 
                     for (File ebook : ebooks) {
-                        if (ebook.isFile() && !ebook.getName().startsWith(".") && !nombresEbooksEnRemoto.contains(ebook.getName())) {
-                            String remoteFileUrl = remoteEbooksUrl + ebook.getName();
-                            byte[] data = Files.readAllBytes(ebook.toPath());
-                            sardine.put(remoteFileUrl, data, "application/octet-stream");
-                            LOGGER.log(Level.INFO, "Nuevo ebook subido (incremental): {0}", ebook.getName());
+                        if (ebook.isFile() && !ebook.getName().startsWith(".") && ebook.length() > 0) {
+                            String nombreEbook = ebook.getName();
+                            if (!nombresEbooksEnRemoto.contains(nombreEbook.toLowerCase())) {
+                                try {
+                                    String remoteFileUrl = remoteEbooksUrl + encodeUrlSegment(nombreEbook);
+                                    byte[] data = Files.readAllBytes(ebook.toPath());
+                                    sardine.put(remoteFileUrl, data, "application/octet-stream");
+                                    LOGGER.log(Level.INFO, "Nuevo ebook subido (incremental): {0}", nombreEbook);
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.WARNING, "Error al subir ebook individual ({0}): {1}", new Object[]{nombreEbook, ex.getMessage()});
+                                }
+                            }
                         }
                     }
                 }
@@ -283,6 +310,15 @@ public class NextCloudSyncService {
             } catch (IOException ignored) {
             }
         }
+    }
+
+    private static String determinarMimeTypeImagen(String nombre) {
+        if (nombre == null) return "image/jpeg";
+        String lower = nombre.toLowerCase();
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".webp")) return "image/webp";
+        if (lower.endsWith(".gif")) return "image/gif";
+        return "image/jpeg";
     }
 
     /**
@@ -346,28 +382,38 @@ public class NextCloudSyncService {
                 carpetaLocalCovers.mkdirs();
             }
 
-            if (sardine.exists(remoteCoversUrl)) {
-                List<DavResource> remoteCovers = sardine.list(remoteCoversUrl);
-                for (DavResource res : remoteCovers) {
-                    if (res.isDirectory()) {
-                        continue;
-                    }
+            try {
+                if (sardine.exists(remoteCoversUrl)) {
+                    List<DavResource> remoteCovers = sardine.list(remoteCoversUrl);
+                    for (DavResource res : remoteCovers) {
+                        String coverName = res.getName();
+                        // Ignorar el propio directorio o elementos ocultos/vacíos
+                        if (coverName == null || coverName.isBlank() || res.isDirectory()
+                                || coverName.equalsIgnoreCase("covers") || coverName.startsWith(".")) {
+                            continue;
+                        }
 
-                    String coverName = res.getName();
-                    File localCover = new File(carpetaLocalCovers, coverName);
+                        File localCover = new File(carpetaLocalCovers, coverName);
 
-                    if (!localCover.exists()) {
-                        String fileUrl = remoteCoversUrl + coverName;
-                        try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localCover)) {
-                            byte[] buffer = new byte[8192];
-                            int bytesRead;
-                            while ((bytesRead = in.read(buffer)) != -1) {
-                                out.write(buffer, 0, bytesRead);
+                        if (!localCover.exists()) {
+                            try {
+                                String fileUrl = remoteCoversUrl + encodeUrlSegment(coverName);
+                                try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localCover)) {
+                                    byte[] buffer = new byte[8192];
+                                    int bytesRead;
+                                    while ((bytesRead = in.read(buffer)) != -1) {
+                                        out.write(buffer, 0, bytesRead);
+                                    }
+                                    LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
+                                }
+                            } catch (Exception ex) {
+                                LOGGER.log(Level.WARNING, "Error al descargar portada individual ({0}): {1}", new Object[]{coverName, ex.getMessage()});
                             }
-                            LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
                         }
                     }
                 }
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error al sincronizar portadas desde NextCloud: {0}", ex.getMessage());
             }
 
             // Sincronización incremental de ebooks (descarga)
@@ -378,28 +424,37 @@ public class NextCloudSyncService {
                 carpetaLocalEbooks.mkdirs();
             }
 
-            if (sardine.exists(remoteEbooksUrl)) {
-                List<DavResource> remoteEbooks = sardine.list(remoteEbooksUrl);
-                for (DavResource res : remoteEbooks) {
-                    if (res.isDirectory()) {
-                        continue;
-                    }
+            try {
+                if (sardine.exists(remoteEbooksUrl)) {
+                    List<DavResource> remoteEbooks = sardine.list(remoteEbooksUrl);
+                    for (DavResource res : remoteEbooks) {
+                        String ebookName = res.getName();
+                        if (ebookName == null || ebookName.isBlank() || res.isDirectory()
+                                || ebookName.equalsIgnoreCase("ebooks") || ebookName.startsWith(".")) {
+                            continue;
+                        }
 
-                    String ebookName = res.getName();
-                    File localEbook = new File(carpetaLocalEbooks, ebookName);
+                        File localEbook = new File(carpetaLocalEbooks, ebookName);
 
-                    if (!localEbook.exists()) {
-                        String fileUrl = remoteEbooksUrl + ebookName;
-                        try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localEbook)) {
-                            byte[] buffer = new byte[8192];
-                            int bytesRead;
-                            while ((bytesRead = in.read(buffer)) != -1) {
-                                out.write(buffer, 0, bytesRead);
+                        if (!localEbook.exists()) {
+                            try {
+                                String fileUrl = remoteEbooksUrl + encodeUrlSegment(ebookName);
+                                try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localEbook)) {
+                                    byte[] buffer = new byte[8192];
+                                    int bytesRead;
+                                    while ((bytesRead = in.read(buffer)) != -1) {
+                                        out.write(buffer, 0, bytesRead);
+                                    }
+                                    LOGGER.log(Level.INFO, "Ebook descargado desde NextCloud: {0}", ebookName);
+                                }
+                            } catch (Exception ex) {
+                                LOGGER.log(Level.WARNING, "Error al descargar ebook individual ({0}): {1}", new Object[]{ebookName, ex.getMessage()});
                             }
-                            LOGGER.log(Level.INFO, "Ebook descargado desde NextCloud: {0}", ebookName);
                         }
                     }
                 }
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error al sincronizar ebooks desde NextCloud: {0}", ex.getMessage());
             }
         } catch (IOException e) {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();

@@ -511,7 +511,10 @@ public class EditarLibroController {
 
                 // 1. Primer intento: Buscar por ISBN (prioridad para edición exacta)
                 if (!isbn.isEmpty()) {
-                    urlFinal = busquedaService.buscarImagenEnApisMasivo(isbn);
+                    urlFinal = busquedaService.buscarImagenPorIsbnDirecto(isbn);
+                    if (urlFinal.isEmpty()) {
+                        urlFinal = busquedaService.buscarImagenEnApisMasivo(isbn);
+                    }
                 }
 
                 // 2. Segundo intento: Buscar por título si el ISBN no dio resultados

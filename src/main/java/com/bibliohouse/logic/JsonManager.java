@@ -491,9 +491,49 @@ public class JsonManager {
 
             String url = libro.getPortadaURL();
             if (url != null && !url.isEmpty() && !url.startsWith("http") && !url.contains("default_cover")) {
-                // Reparamos la ruta para que apunte SIEMPRE a la carpeta 'covers' del PC actual
-                File archivo = new File(url);
-                libro.setPortadaURL(carpetaCovers + File.separator + archivo.getName());
+                // Extraer el nombre de forma limpia soportando tanto separadores Unix como Windows
+                String nombreArchivo = com.bibliohouse.utils.ImageLoader.extraerNombreArchivo(url);
+                File localEsperado = new File(carpetaCovers, nombreArchivo);
+                if (localEsperado.exists() && localEsperado.isFile()) {
+                    libro.setPortadaURL(localEsperado.getAbsolutePath());
+                } else {
+                    // Si no existe con ese nombre exacto, buscar si existe con el ID del libro
+                    boolean encontrado = false;
+                    if (libro.getId() != null && !libro.getId().isBlank()) {
+                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                            File porId = new File(carpetaCovers, libro.getId() + ext);
+                            if (porId.exists() && porId.isFile()) {
+                                libro.setPortadaURL(porId.getAbsolutePath());
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                    // Si tampoco, buscar por ISBN si el libro lo tiene
+                    if (!encontrado && libro.getIsbn() != null && !libro.getIsbn().isBlank()) {
+                        String isbnLimpio = libro.getIsbn().replaceAll("[^0-9Xx]", "");
+                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                            File porIsbn = new File(carpetaCovers, isbnLimpio + ext);
+                            if (porIsbn.exists() && porIsbn.isFile()) {
+                                libro.setPortadaURL(porIsbn.getAbsolutePath());
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!encontrado) {
+                        libro.setPortadaURL(localEsperado.getAbsolutePath());
+                    }
+                }
+            } else if ((url == null || url.isEmpty() || url.contains("default_cover")) && libro.getId() != null) {
+                // Si no tenía portada pero existe un archivo con su ID en covers, recuperarlo
+                for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                    File porId = new File(carpetaCovers, libro.getId() + ext);
+                    if (porId.exists() && porId.isFile()) {
+                        libro.setPortadaURL(porId.getAbsolutePath());
+                        break;
+                    }
+                }
             }
 
             // Retrocompatibilidad: Si es un PDF digital pero no tiene número de páginas

@@ -1140,7 +1140,17 @@ public class PrimaryController implements Initializable {
     @FXML
     private void buscarPortadasFaltantes(ActionEvent event) {
         List<Libro> librosSinPortada = listaLibrosCompleta.stream()
-                .filter(l -> l.getPortadaURL() == null || l.getPortadaURL().isEmpty() || l.getPortadaURL().contains("default_cover"))
+                .filter(l -> {
+                    String p = l.getPortadaURL();
+                    if (p == null || p.isBlank() || p.contains("default_cover")) {
+                        return true;
+                    }
+                    if (!p.startsWith("http://") && !p.startsWith("https://")) {
+                        File local = com.bibliohouse.utils.ImageLoader.resolverArchivoLocal(p);
+                        return local == null || !local.exists();
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
 
         if (librosSinPortada.isEmpty()) {
@@ -1167,9 +1177,21 @@ public class PrimaryController implements Initializable {
                     updateMessage("Buscando: " + libro.getTitulo());
                     updateProgress(i + 1, librosSinPortada.size());
 
-                    String query = (libro.getIsbn() != null && !libro.getIsbn().isEmpty()) ? libro.getIsbn() : libro.getTitulo();
-                    String urlEncontrada = busquedaService.buscarImagenEnApisMasivo(query);
-                    if (urlEncontrada.isEmpty() && libro.getIsbn() != null && !libro.getIsbn().isEmpty()) {
+                    String isbn = (libro.getIsbn() != null) ? libro.getIsbn().trim() : "";
+                    String urlEncontrada = "";
+
+                    // 1. Intento directo y rápido por ISBN
+                    if (!isbn.isEmpty()) {
+                        urlEncontrada = busquedaService.buscarImagenPorIsbnDirecto(isbn);
+                    }
+
+                    // 2. Intento en APIs por ISBN
+                    if (urlEncontrada.isEmpty() && !isbn.isEmpty()) {
+                        urlEncontrada = busquedaService.buscarImagenEnApisMasivo(isbn);
+                    }
+
+                    // 3. Intento en APIs por título
+                    if (urlEncontrada.isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isBlank()) {
                         urlEncontrada = busquedaService.buscarImagenEnApisMasivo(libro.getTitulo());
                     }
 
@@ -1178,7 +1200,7 @@ public class PrimaryController implements Initializable {
                         libro.setPortadaURL(rutaLocal);
                         actualizadas++;
                     }
-                    Thread.sleep(300);
+                    Thread.sleep(150);
                 }
                 return actualizadas;
             }

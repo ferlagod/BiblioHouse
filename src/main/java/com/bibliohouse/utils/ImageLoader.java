@@ -130,6 +130,105 @@ public class ImageLoader {
         }
     }
 
+    private static final java.net.http.HttpClient HTTP_CLIENT = java.net.http.HttpClient.newBuilder()
+            .followRedirects(java.net.http.HttpClient.Redirect.ALWAYS)
+            .connectTimeout(java.time.Duration.ofSeconds(10))
+            .build();
+
+    /**
+     * Extrae el nombre del archivo de forma agnóstica al sistema operativo,
+     * soportando tanto separadores Unix (/) como Windows (\).
+     *
+     * @param ruta Ruta completa o parcial del archivo.
+     * @return Nombre del archivo sin directorios, o cadena vacía si es nulo.
+     */
+    public static String extraerNombreArchivo(String ruta) {
+        if (ruta == null || ruta.isBlank()) {
+            return "";
+        }
+        int lastSlash = Math.max(ruta.lastIndexOf('/'), ruta.lastIndexOf('\\'));
+        return (lastSlash >= 0 && lastSlash < ruta.length() - 1) ? ruta.substring(lastSlash + 1) : ruta;
+    }
+
+    /**
+     * Resuelve un archivo local buscando tanto en la ruta proporcionada como en
+     * el directorio de caché de portadas (covers) con múltiples extensiones.
+     *
+     * @param path Ruta del archivo a buscar.
+     * @return El archivo File existente o null si no se encuentra.
+     */
+    public static File resolverArchivoLocal(String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        File f = new File(path);
+        if (f.exists() && f.isFile()) {
+            return f;
+        }
+        if (cacheDir != null) {
+            String cleanName = extraerNombreArchivo(path);
+            if (!cleanName.isBlank()) {
+                File enCache = new File(cacheDir, cleanName);
+                if (enCache.exists() && enCache.isFile()) {
+                    return enCache;
+                }
+                String baseName = cleanName.contains(".") ? cleanName.substring(0, cleanName.lastIndexOf('.')) : cleanName;
+                for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                    File alternativa = new File(cacheDir, baseName + ext);
+                    if (alternativa.exists() && alternativa.isFile()) {
+                        return alternativa;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Descarga de forma segura y fiable una imagen web a un archivo destino
+     * utilizando HttpClient con redirección automática y User-Agent de navegador.
+     *
+     * @param url URL de la imagen.
+     * @param archivoDestino Archivo local donde se guardará.
+     * @return true si la descarga fue exitosa y el archivo es válido.
+     */
+    public static boolean descargarImagenWeb(String url, File archivoDestino) {
+        if (!isValidUrl(url) || archivoDestino == null) {
+            return false;
+        }
+        try {
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(url))
+                    .timeout(java.time.Duration.ofSeconds(10))
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 BiblioHouse/2.1")
+                    .header("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+                    .GET()
+                    .build();
+
+            java.net.http.HttpResponse<byte[]> response = HTTP_CLIENT.send(request, java.net.http.HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                byte[] bytes = response.body();
+                // Validar que no sea un píxel transparente vacío (< 200 bytes) ni cuerpo corrupto
+                if (bytes != null && bytes.length > 200) {
+                    File parent = archivoDestino.getParentFile();
+                    if (parent != null && !parent.exists()) {
+                        parent.mkdirs();
+                    }
+                    File tmp = new File(archivoDestino.getAbsolutePath() + ".tmp");
+                    Files.write(tmp.toPath(), bytes);
+                    try {
+                        Files.move(tmp.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                    } catch (IOException e) {
+                        Files.move(tmp.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
     /**
      * Carga una imagen de forma asíncrona en un ImageView, aplicando skeleton
      * loading mientras se procesa. Prioriza el uso de la caché en memoria para
@@ -193,25 +292,25 @@ public class ImageLoader {
         String filename = hashUrl(url);
         File cacheFile = new File(cacheDir, filename);
 
-        if (cacheFile.exists()) {
+        if (cacheFile.exists() && cacheFile.length() > 200) {
             handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
         } else {
-            // Descargar en segundo plano y luego cargar
-            Task<Void> downloadTask = new Task<>() {
+            // Descargar en segundo plano con cliente HTTP robusto
+            target.getProperties().put("target_image_key", memoryKey);
+            Task<Boolean> downloadTask = new Task<>() {
                 @Override
-                protected Void call() throws Exception {
-                    java.net.URLConnection conn = new URL(url).openConnection();
-                    conn.setConnectTimeout(5000);
-                    conn.setReadTimeout(5000);
-                    try (InputStream in = conn.getInputStream()) {
-                        Files.copy(in, cacheFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                    return null;
+                protected Boolean call() {
+                    return descargarImagenWeb(url, cacheFile);
                 }
 
                 @Override
                 protected void succeeded() {
-                    handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
+                    if (Boolean.TRUE.equals(getValue()) && cacheFile.exists()) {
+                        handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
+                    } else {
+                        stopSkeleton(target);
+                        loadDefault(target, w, h);
+                    }
                 }
 
                 @Override
@@ -226,7 +325,7 @@ public class ImageLoader {
 
     /**
      * Gestiona la carga de una imagen desde una ruta local. Si el archivo no
-     * existe, detiene el skeleton loading y carga la imagen por defecto.
+     * existe en la ruta dada ni en la carpeta de portadas, carga la imagen por defecto.
      *
      * @param path Ruta local del archivo de imagen.
      * @param target ImageView donde se mostrará la imagen.
@@ -236,8 +335,8 @@ public class ImageLoader {
      * memoria.
      */
     private static void handleLocalImage(String path, ImageView target, double w, double h, String memoryKey) {
-        File file = new File(path);
-        if (!file.exists()) {
+        File file = resolverArchivoLocal(path);
+        if (file == null || !file.exists() || !file.isFile()) {
             stopSkeleton(target);
             loadDefault(target, w, h);
             return;
@@ -257,6 +356,7 @@ public class ImageLoader {
      * memoria.
      */
     private static void loadImageAsync(String uri, ImageView target, double w, double h, String memoryKey) {
+        target.getProperties().put("target_image_key", memoryKey);
         Image image = new Image(uri, w, h, true, true, true);
 
         // Caso rápido: la imagen ya estaba lista al crearse (caché del SO)
@@ -276,13 +376,15 @@ public class ImageLoader {
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0) {
                 javafx.application.Platform.runLater(() -> {
-                    if (!image.isError()) {
-                        stopSkeleton(target);
-                        memoryCache.put(memoryKey, image);
-                        target.setImage(image);
-                    } else {
-                        stopSkeleton(target);
-                        loadDefault(target, w, h);
+                    if (memoryKey.equals(target.getProperties().get("target_image_key"))) {
+                        if (!image.isError()) {
+                            stopSkeleton(target);
+                            memoryCache.put(memoryKey, image);
+                            target.setImage(image);
+                        } else {
+                            stopSkeleton(target);
+                            loadDefault(target, w, h);
+                        }
                     }
                 });
             }
@@ -339,7 +441,11 @@ public class ImageLoader {
      * ruta original si no se pudo procesar.
      */
     public static String hacerPortadaLocalOffline(String urlOrPath, String idLibro, String carpetaUsuario) {
-        if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH)) {
+        if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH) || urlOrPath.contains("default_cover")) {
+            return urlOrPath;
+        }
+
+        if (carpetaUsuario == null || carpetaUsuario.isBlank()) {
             return urlOrPath;
         }
 
@@ -348,33 +454,44 @@ public class ImageLoader {
             dirCovers.mkdirs();
         }
 
+        String safeId = (idLibro != null && !idLibro.isBlank()) ? idLibro : java.util.UUID.randomUUID().toString();
         String extension = urlOrPath.toLowerCase().endsWith(".png") ? ".png" : ".jpg";
-        File archivoDestino = new File(dirCovers, idLibro + extension);
+        File archivoDestino = new File(dirCovers, safeId + extension);
 
         try {
             if (isValidUrl(urlOrPath)) {
-                java.net.URLConnection conn = new URL(urlOrPath).openConnection();
-                conn.setConnectTimeout(5000);
-                conn.setReadTimeout(5000);
-                try (InputStream in = conn.getInputStream()) {
-                    Files.copy(in, archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                boolean descargado = descargarImagenWeb(urlOrPath, archivoDestino);
+                if (descargado && archivoDestino.exists() && archivoDestino.length() > 200) {
+                    return archivoDestino.getAbsolutePath();
                 }
+                // Si la descarga falló pero ya existía un archivo válido con ese ID
+                if (archivoDestino.exists() && archivoDestino.length() > 200) {
+                    return archivoDestino.getAbsolutePath();
+                }
+                return urlOrPath;
             } else {
-                File archivoOrigen = new File(urlOrPath);
-                if (archivoOrigen.exists()) {
+                File archivoOrigen = resolverArchivoLocal(urlOrPath);
+                if (archivoOrigen != null && archivoOrigen.exists() && archivoOrigen.isFile()) {
                     // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
                     String name = archivoOrigen.getName().toLowerCase();
                     if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp")) {
-                        return urlOrPath; // Rechazar archivos que no sean imágenes
+                        return urlOrPath;
                     }
                     if (!archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath())) {
                         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
+                    return archivoDestino.getAbsolutePath();
                 } else {
+                    // Verificar si ya existe en destino con cualquier extensión
+                    for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                        File testFile = new File(dirCovers, safeId + ext);
+                        if (testFile.exists() && testFile.isFile()) {
+                            return testFile.getAbsolutePath();
+                        }
+                    }
                     return urlOrPath;
                 }
             }
-            return archivoDestino.getAbsolutePath();
         } catch (IOException e) {
             return urlOrPath;
         }

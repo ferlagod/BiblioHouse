@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.AccessibleRole;
 import javafx.scene.Node;
 import javafx.scene.Scene;
