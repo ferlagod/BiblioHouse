@@ -44,7 +44,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
 import javafx.animation.PauseTransition;
+import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,6 +59,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
@@ -64,6 +68,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
@@ -108,6 +113,11 @@ public class PrimaryController implements Initializable {
     private Label lblTextoBannerPrestamos;
     @FXML
     private Label lblEstado;
+    @FXML
+    private Button btnSyncRapido;
+
+    private Label lblSyncIcon;
+    private RotateTransition syncRotateTransition;
 
     // --- SUBCONTROLADORES INYECTADOS POR JAVAFX (vía fx:include) ---
     @FXML
@@ -172,6 +182,24 @@ public class PrimaryController implements Initializable {
             actualizarVistasPrestamo();
             checkOverdueLoans();
         });
+        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> {
+            actualizarComboLibrosDisponibles();
+            if (pestanaSagasController != null) {
+                pestanaSagasController.initData(listaLibrosCompleta);
+            }
+            if (pestanaWishlistController != null) {
+                pestanaWishlistController.actualizarPanelDeseos();
+            }
+            checkOverdueLoans();
+        });
+
+        // Configurar botón de sincronización rápida superior
+        if (btnSyncRapido != null) {
+            lblSyncIcon = new Label("🔄");
+            lblSyncIcon.setStyle("-fx-font-size: 11px;");
+            btnSyncRapido.setGraphic(lblSyncIcon);
+            btnSyncRapido.setText(" Sincronizar");
+        }
     }
 
     /**
@@ -238,13 +266,176 @@ public class PrimaryController implements Initializable {
                         });
                     }
                 });
+
+                // Pull on Startup: Comprobación automática en segundo plano sin bloquear la UI
+                iniciarPullOnStartup(syncService, localDir);
+
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, "Error al iniciar servicio de sincronización NextCloud", ex);
             }
         }
     }
 
+    /**
+     * Comprueba en segundo plano si existen cambios más recientes en NextCloud al iniciar.
+     * Si los hay, descarga los datos actualizados y las nuevas portadas sin bloquear la interfaz,
+     * recarga las colecciones y notifica a través de AppEventBus.
+     *
+     * @param syncService Servicio de sincronización configurado con NextCloud.
+     * @param localDir    Directorio local de datos del usuario.
+     */
+    private void iniciarPullOnStartup(NextCloudSyncService syncService, String localDir) {
+        Platform.runLater(this::iniciarAnimacionSincronizacion);
+        Thread pullThread = new Thread(() -> {
+            try {
+                LOGGER.info("NextCloud: Comprobando en segundo plano si hay modificaciones remotas al iniciar...");
+                boolean huboCambios = syncService.sincronizarSiRemotoMasReciente(localDir);
+                if (huboCambios) {
+                    LOGGER.info("NextCloud: Cambios remotos detectados y descargados. Actualizando catálogo...");
+                    Platform.runLater(() -> {
+                        cargarDatos(() -> {
+                            int total = listaLibrosCompleta != null ? listaLibrosCompleta.size() : 0;
+                            AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(total));
+                            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(
+                                    "Biblioteca sincronizada automáticamente desde NextCloud."));
+                            SystemNotificationService.notificarInfo("Sincronización NextCloud",
+                                    "Se han sincronizado nuevos cambios remotos en tu biblioteca.");
+                            detenerAnimacionSincronizacion(true);
+                        });
+                    });
+                } else {
+                    LOGGER.info("NextCloud: Biblioteca local ya se encuentra al día.");
+                    Platform.runLater(() -> detenerAnimacionSincronizacion(true));
+                }
+            } catch (Exception ex) {
+                // Silencioso para no bloquear ni molestar al usuario si no hay conexión a internet
+                LOGGER.log(Level.INFO, "Sincronización al inicio omitida (sin conexión o servidor no disponible): {0}", ex.getMessage());
+                Platform.runLater(() -> detenerAnimacionSincronizacion(false));
+            }
+        }, "NextCloud-PullOnStartup");
+        pullThread.setDaemon(true);
+        pullThread.start();
+    }
+
+    /**
+     * Ejecuta una sincronización bidireccional manual completa al pulsar el botón de la barra superior.
+     * Sube cambios locales, descarga cambios remotos y nuevas portadas con animación visual.
+     */
+    @FXML
+    public void sincronizarNextCloudManual() {
+        String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
+        String ncUser = preferencias.getOrDefault("nextcloud.user", "");
+        java.util.prefs.Preferences osPrefs = java.util.prefs.Preferences.userRoot().node("com/ferlagod/bibliohousefx/nextcloud");
+        String ncPass = com.bibliohouse.utils.SeguridadUtil.desencriptar(osPrefs.get("password", ""));
+
+        if (ncUrl.isBlank() || ncUser.isBlank() || ncPass.isBlank()) {
+            SystemNotificationService.notificarAlerta("NextCloud no configurado",
+                    "Configura tu cuenta NextCloud en Herramientas -> Configuración para sincronizar.");
+            abrirConfiguracion();
+            return;
+        }
+
+        iniciarAnimacionSincronizacion();
+
+        Thread syncThread = new Thread(() -> {
+            try {
+                NextCloudSyncService syncService = new NextCloudSyncService(ncUrl, ncUser, ncPass);
+                final String localDir = this.rutaUsuario;
+
+                // 1. Subir cambios locales pendientes
+                syncService.subirBaseDatos(localDir);
+
+                // 2. Descargar cambios remotos y portadas
+                syncService.descargarBaseDatos(localDir);
+
+                Platform.runLater(() -> {
+                    cargarDatos(() -> {
+                        int total = listaLibrosCompleta != null ? listaLibrosCompleta.size() : 0;
+                        AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(total));
+                        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(
+                                "Sincronización con NextCloud completada con éxito."));
+                        SystemNotificationService.notificarInfo("NextCloud Sincronizado",
+                                "Tu biblioteca está completamente sincronizada con la nube.");
+                        detenerAnimacionSincronizacion(true);
+                    });
+                });
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Error en sincronización manual rápida: {0}", ex.getMessage());
+                Platform.runLater(() -> {
+                    SystemNotificationService.notificarAlerta("Error de Sincronización",
+                            "No se pudo sincronizar con NextCloud: " + ex.getMessage());
+                    detenerAnimacionSincronizacion(false);
+                });
+            }
+        }, "NextCloud-ManualSync");
+        syncThread.setDaemon(true);
+        syncThread.start();
+    }
+
+    /**
+     * Inicia la animación de rotación continua del icono del botón de sincronización rápida.
+     */
+    public void iniciarAnimacionSincronizacion() {
+        if (btnSyncRapido == null) return;
+        btnSyncRapido.setDisable(true);
+        btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error");
+        btnSyncRapido.getStyleClass().add("syncing");
+        btnSyncRapido.setText(" Sincronizando...");
+        if (lblSyncIcon != null) {
+            lblSyncIcon.setText("🔄");
+            if (syncRotateTransition == null) {
+                syncRotateTransition = new RotateTransition(Duration.millis(800), lblSyncIcon);
+                syncRotateTransition.setByAngle(360);
+                syncRotateTransition.setCycleCount(Animation.INDEFINITE);
+                syncRotateTransition.setInterpolator(Interpolator.LINEAR);
+            }
+            syncRotateTransition.playFromStart();
+        }
+    }
+
+    /**
+     * Detiene la animación de sincronización mostrando el estado final (éxito o aviso de reintento).
+     *
+     * @param exito true si la operación terminó con éxito, false si falló.
+     */
+    public void detenerAnimacionSincronizacion(boolean exito) {
+        if (btnSyncRapido == null) return;
+        if (syncRotateTransition != null) {
+            syncRotateTransition.stop();
+        }
+        if (lblSyncIcon != null) {
+            lblSyncIcon.setRotate(0);
+        }
+        btnSyncRapido.getStyleClass().remove("syncing");
+
+        if (exito) {
+            btnSyncRapido.getStyleClass().add("sync-success");
+            btnSyncRapido.setText(" Al día");
+            if (lblSyncIcon != null) lblSyncIcon.setText("✓");
+        } else {
+            btnSyncRapido.getStyleClass().add("sync-error");
+            btnSyncRapido.setText(" Reintentar");
+            if (lblSyncIcon != null) lblSyncIcon.setText("⚠️");
+        }
+
+        PauseTransition resetPause = new PauseTransition(Duration.seconds(exito ? 2.5 : 3.5));
+        resetPause.setOnFinished(e -> {
+            btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error", "syncing");
+            btnSyncRapido.setText(" Sincronizar");
+            if (lblSyncIcon != null) {
+                lblSyncIcon.setText("🔄");
+                lblSyncIcon.setRotate(0);
+            }
+            btnSyncRapido.setDisable(false);
+        });
+        resetPause.play();
+    }
+
     private void cargarDatos() {
+        cargarDatos(null);
+    }
+
+    private void cargarDatos(Runnable onCompletado) {
         javafx.concurrent.Task<Void> loadTask = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() {
@@ -255,9 +446,21 @@ public class PrimaryController implements Initializable {
 
                 Platform.runLater(() -> {
                     listaDeseos = deseos != null ? deseos : new ArrayList<>();
-                    listaLibrosCompleta = FXCollections.observableArrayList(libros != null ? libros : new ArrayList<>());
-                    listaSocios = FXCollections.observableArrayList(socios != null ? socios : new ArrayList<>());
-                    listaPrestamosCompleta = FXCollections.observableArrayList(prestamos != null ? prestamos : new ArrayList<>());
+                    if (listaLibrosCompleta == null) {
+                        listaLibrosCompleta = FXCollections.observableArrayList(libros != null ? libros : new ArrayList<>());
+                    } else {
+                        listaLibrosCompleta.setAll(libros != null ? libros : java.util.Collections.emptyList());
+                    }
+                    if (listaSocios == null) {
+                        listaSocios = FXCollections.observableArrayList(socios != null ? socios : new ArrayList<>());
+                    } else {
+                        listaSocios.setAll(socios != null ? socios : java.util.Collections.emptyList());
+                    }
+                    if (listaPrestamosCompleta == null) {
+                        listaPrestamosCompleta = FXCollections.observableArrayList(prestamos != null ? prestamos : new ArrayList<>());
+                    } else {
+                        listaPrestamosCompleta.setAll(prestamos != null ? prestamos : java.util.Collections.emptyList());
+                    }
 
                     libroService = new LibroService(jsonManager, listaLibrosCompleta);
                     prestamoService = new PrestamoService(jsonManager, listaPrestamosCompleta, listaLibrosCompleta);
@@ -292,6 +495,10 @@ public class PrimaryController implements Initializable {
                     }
 
                     checkOverdueLoans();
+
+                    if (onCompletado != null) {
+                        onCompletado.run();
+                    }
                 });
                 return null;
             }

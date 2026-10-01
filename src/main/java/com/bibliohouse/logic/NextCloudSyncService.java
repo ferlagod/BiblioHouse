@@ -27,7 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -339,6 +342,113 @@ public class NextCloudSyncService {
     }
 
     /**
+     * Comprueba si el recurso remoto de NextCloud es más reciente que el archivo local correspondiente.
+     * Si el archivo local no existe, se considera que el remoto debe descargarse.
+     *
+     * @param remoteModified Fecha de modificación remota (DavResource.getModified()).
+     * @param localFile      Archivo físico local.
+     * @return true si el remoto es más reciente que el local (con un margen de tolerancia de 2 segundos),
+     *         o si el archivo local no existe. false en caso contrario.
+     */
+    static boolean esRecursoRemotoMasReciente(Date remoteModified, File localFile) {
+        if (localFile == null || !localFile.exists()) {
+            return true;
+        }
+        if (remoteModified == null) {
+            return false;
+        }
+        long remoteTime = remoteModified.getTime();
+        long localTime = localFile.lastModified();
+        // Margen de 2000 ms para tolerar diferencias de precisión en sistemas de archivos (FAT32, ext4, etc.)
+        return (remoteTime - localTime) > 2000;
+    }
+
+    /**
+     * Consulta si la versión remota de los archivos JSON de base de datos en NextCloud
+     * es más reciente que la versión local (o si faltan archivos o portadas).
+     *
+     * @param localDir Directorio local donde se encuentran los archivos de datos.
+     * @return true si existen cambios remotos más recientes que los locales, false si está al día.
+     * @throws IOException Si ocurre un error de comunicación con NextCloud.
+     */
+    public boolean esRemotoMasReciente(String localDir) throws IOException {
+        Sardine sardine = SardineFactory.begin(username, password);
+        try {
+            String davBase = resolverDavBase(sardine);
+            String remoteFolderUrl = buildRemoteFolderUrl(davBase);
+
+            if (!sardine.exists(remoteFolderUrl)) {
+                return false;
+            }
+
+            List<DavResource> remoteResources = sardine.list(remoteFolderUrl);
+            Map<String, DavResource> remoteFilesMap = new HashMap<>();
+            for (DavResource res : remoteResources) {
+                if (!res.isDirectory() && res.getName() != null) {
+                    remoteFilesMap.put(res.getName().toLowerCase(), res);
+                }
+            }
+
+            // 1. Comprobar si algún archivo de base de datos es más reciente en NextCloud
+            for (String dbFile : DB_FILES) {
+                DavResource remoteRes = remoteFilesMap.get(dbFile.toLowerCase());
+                if (remoteRes != null) {
+                    File localFile = new File(localDir, dbFile);
+                    if (esRecursoRemotoMasReciente(remoteRes.getModified(), localFile)) {
+                        LOGGER.log(Level.INFO, "Cambio remoto detectado en {0}: remoto ({1}), local ({2})",
+                                new Object[]{dbFile, remoteRes.getModified(),
+                                        localFile.exists() ? new Date(localFile.lastModified()) : "no existe"});
+                        return true;
+                    }
+                }
+            }
+
+            // 2. Comprobar si hay portadas remotas pendientes de descargar
+            String remoteCoversUrl = remoteFolderUrl + "covers/";
+            if (sardine.exists(remoteCoversUrl)) {
+                List<DavResource> remoteCovers = sardine.list(remoteCoversUrl);
+                File localCovers = new File(localDir, "covers");
+                for (DavResource c : remoteCovers) {
+                    String coverName = c.getName();
+                    if (coverName == null || c.isDirectory() || coverName.equalsIgnoreCase("covers") || coverName.startsWith(".")) {
+                        continue;
+                    }
+                    File localCoverFile = new File(localCovers, coverName);
+                    if (!localCoverFile.exists()) {
+                        LOGGER.log(Level.INFO, "Nueva portada remota detectada sin descargar: {0}", coverName);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        } finally {
+            try {
+                sardine.shutdown();
+            } catch (IOException ignored) {}
+        }
+    }
+
+    /**
+     * Sincroniza desde NextCloud (Pull) si la versión remota de la base de datos
+     * es más reciente que la versión local (o si faltan portadas).
+     *
+     * @param localDir Directorio local donde se encuentran los datos del usuario.
+     * @return true si se descargaron cambios remotos, false si la versión local ya estaba al día.
+     * @throws IOException Si ocurre un error de comunicación con NextCloud.
+     */
+    public boolean sincronizarSiRemotoMasReciente(String localDir) throws IOException {
+        if (!esRemotoMasReciente(localDir)) {
+            LOGGER.info("NextCloud Pull: La biblioteca local ya está al día con la nube.");
+            return false;
+        }
+
+        LOGGER.info("NextCloud Pull: Descargando versión remota más reciente...");
+        descargarBaseDatos(localDir);
+        return true;
+    }
+
+    /**
      * Descarga la base de datos desde NextCloud. Crea backups de los archivos
      * locales existentes antes de sobrescribirlos.
      *
@@ -349,9 +459,26 @@ public class NextCloudSyncService {
         Sardine sardine = SardineFactory.begin(username, password);
         try {
             String davBase = resolverDavBase(sardine);
+            String remoteFolderUrl = buildRemoteFolderUrl(davBase);
+
+            Map<String, DavResource> remoteFilesMap = new HashMap<>();
+            try {
+                if (sardine.exists(remoteFolderUrl)) {
+                    List<DavResource> remoteResources = sardine.list(remoteFolderUrl);
+                    for (DavResource res : remoteResources) {
+                        if (!res.isDirectory() && res.getName() != null) {
+                            remoteFilesMap.put(res.getName().toLowerCase(), res);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                LOGGER.log(Level.FINE, "No se pudo pre-listar recursos remotos: {0}", ex.getMessage());
+            }
+
             for (String fileName : DB_FILES) {
                 String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                if (!sardine.exists(remoteFileUrl)) {
+                DavResource remoteRes = remoteFilesMap.get(fileName.toLowerCase());
+                if (remoteRes == null && !sardine.exists(remoteFileUrl)) {
                     LOGGER.log(Level.FINE, "Archivo remoto no encontrado, omitiendo descarga: {0}", fileName);
                     continue;
                 }
@@ -371,6 +498,10 @@ public class NextCloudSyncService {
                         out.write(buffer, 0, bytesRead);
                     }
                     LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
+                }
+
+                if (remoteRes != null && remoteRes.getModified() != null) {
+                    localFile.setLastModified(remoteRes.getModified().getTime());
                 }
             }
 

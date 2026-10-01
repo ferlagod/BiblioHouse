@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,5 +147,53 @@ class TestSincronizacionYPortadas {
         assertEquals("", service.buscarImagenPorIsbnDirecto(null));
         assertEquals("", service.buscarImagenPorIsbnDirecto(""));
         assertEquals("", service.buscarImagenPorIsbnDirecto("12345")); // Menor a 10 dígitos
+    }
+
+    @Test
+    void testNextCloudDeteccionModificacionRemota() throws IOException {
+        File tempFile = new File(userDir, "test_check.json");
+        Files.writeString(tempFile.toPath(), "{\"version\":1}");
+        long localTime = System.currentTimeMillis();
+        tempFile.setLastModified(localTime);
+
+        // 1. Archivo local inexistente -> Debe considerarse que remoto debe descargarse
+        File noExiste = new File(userDir, "no_existe.json");
+        assertTrue(NextCloudSyncService.esRecursoRemotoMasReciente(new Date(localTime), noExiste),
+                "Si el archivo local no existe, debe requerir sincronización.");
+
+        // 2. Fecha remota nula -> No se puede determinar si es más reciente
+        assertFalse(NextCloudSyncService.esRecursoRemotoMasReciente(null, tempFile),
+                "Si la fecha remota es null, no debe considerarse más reciente.");
+
+        // 3. Remoto más reciente por 10 segundos -> Debe detectar modificación
+        Date remotoNuevo = new Date(localTime + 10000);
+        assertTrue(NextCloudSyncService.esRecursoRemotoMasReciente(remotoNuevo, tempFile),
+                "Si el remoto es 10s más nuevo, debe requerir sincronización.");
+
+        // 4. Remoto más antiguo por 10 segundos -> No debe requerir sincronización
+        Date remotoViejo = new Date(localTime - 10000);
+        assertFalse(NextCloudSyncService.esRecursoRemotoMasReciente(remotoViejo, tempFile),
+                "Si el remoto es más antiguo que local, no debe requerir sincronización.");
+
+        // 5. Diferencia dentro del margen de tolerancia (ej: 1 segundo por redondeo FAT/ext4)
+        Date remotoJitter = new Date(localTime + 1000);
+        assertFalse(NextCloudSyncService.esRecursoRemotoMasReciente(remotoJitter, tempFile),
+                "Una diferencia menor o igual a 2000 ms debe considerarse tolerancia y no falso positivo.");
+    }
+
+    @Test
+    void testAppEventBusCatalogoSincronizado() {
+        java.util.concurrent.atomic.AtomicBoolean recibido = new java.util.concurrent.atomic.AtomicBoolean(false);
+        java.util.concurrent.atomic.AtomicInteger librosRecibidos = new java.util.concurrent.atomic.AtomicInteger(-1);
+
+        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> {
+            recibido.set(true);
+            librosRecibidos.set(e.getTotalLibros());
+        });
+
+        AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(42));
+
+        assertTrue(recibido.get(), "El suscriptor debe recibir CatalogoSincronizadoEvent");
+        assertEquals(42, librosRecibidos.get(), "Debe transportar el número total de libros sincronizados");
     }
 }

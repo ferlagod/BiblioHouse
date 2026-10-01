@@ -517,6 +517,7 @@ public class ConfiguracionController {
 
             // Recargar datos en el controlador principal
             mainController.initData(mainController.getUsuarioActual(), mainController.getRutaUsuario());
+            AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent());
 
             // Mostrar alerta de ÉXITO
             mostrarAlerta(resources.getString("config.sync.download.success.title"), resources.getString("config.sync.download.success.content"));

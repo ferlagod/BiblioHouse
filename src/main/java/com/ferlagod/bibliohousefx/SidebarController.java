@@ -99,6 +99,13 @@ public class SidebarController {
             }
         });
         AppEventBus.getInstance().subscribe(AppEventBus.EstanteriasActualizadasEvent.class, e -> cargarListaEstanterias());
+        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> {
+            actualizarRetoAnual();
+            cargarListaEstanterias();
+            if (listaEstanterias != null) {
+                listaEstanterias.refresh();
+            }
+        });
     }
 
     /**

@@ -191,4 +191,39 @@ public class TestUIModernizacion {
         sidebar.initData(null, crearBibliotecaVariada(), prefs, null);
         assertEquals(SidebarController.VISTA_TODOS, sidebar.getEstanteriaSeleccionada());
     }
+
+    @Test
+    @DisplayName("El botón de sincronización rápida debe cambiar su estado visual y animación")
+    public void testBotonSincronizacionRapida() {
+        PrimaryController controller = new PrimaryController();
+        Button btn = new Button();
+        btn.getStyleClass().add("sync-btn-top");
+
+        try {
+            java.lang.reflect.Field field = PrimaryController.class.getDeclaredField("btnSyncRapido");
+            field.setAccessible(true);
+            field.set(controller, btn);
+
+            java.lang.reflect.Field iconField = PrimaryController.class.getDeclaredField("lblSyncIcon");
+            iconField.setAccessible(true);
+            Label icon = new Label("🔄");
+            iconField.set(controller, icon);
+            btn.setGraphic(icon);
+
+            // Iniciar sincronización
+            controller.iniciarAnimacionSincronizacion();
+            assertTrue(btn.isDisabled(), "El botón debe deshabilitarse durante la sincronización");
+            assertTrue(btn.getStyleClass().contains("syncing"), "Debe tener clase CSS 'syncing'");
+            assertTrue(btn.getText().contains("Sincronizando"), "Debe indicar que está sincronizando");
+
+            // Finalizar con éxito
+            controller.detenerAnimacionSincronizacion(true);
+            assertTrue(btn.getStyleClass().contains("sync-success"), "Debe tener clase CSS 'sync-success'");
+            assertTrue(btn.getText().contains("Al día"), "Debe indicar que está al día");
+            assertEquals("✓", icon.getText());
+        } catch (Exception ex) {
+            fail("No debería fallar la prueba del botón de sincronización: " + ex.getMessage());
+        }
+    }
 }
+

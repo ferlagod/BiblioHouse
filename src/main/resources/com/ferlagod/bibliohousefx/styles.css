@@ -532,3 +532,52 @@
     -fx-border-color: #94a3b8;
     -fx-border-width: 2px;
 }
+
+/* =========================================================================
+   BARRA SUPERIOR Y BOTÓN DE SINCRONIZACIÓN RÁPIDA
+   ========================================================================= */
+.top-nav-bar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-width: 0 0 1 0;
+}
+
+.sync-btn-top {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-radius: 14px;
+    -fx-background-radius: 14px;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 3px 12px;
+    -fx-cursor: hand;
+    -fx-text-fill: -color-fg-default;
+}
+
+.sync-btn-top:hover {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.sync-btn-top:pressed {
+    -fx-background-color: -color-accent-muted;
+}
+
+.sync-btn-top.syncing {
+    -fx-opacity: 0.9;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-background-color: -color-accent-subtle;
+}
+
+.sync-btn-top.sync-success {
+    -fx-border-color: #2e7d32;
+    -fx-text-fill: #2e7d32;
+    -fx-background-color: rgba(46, 125, 50, 0.08);
+}
+
+.sync-btn-top.sync-error {
+    -fx-border-color: #c62828;
+    -fx-text-fill: #c62828;
+    -fx-background-color: rgba(198, 40, 40, 0.08);
+}

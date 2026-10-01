@@ -306,5 +306,38 @@ public class AppEventBus {
             return nuevoBundle;
         }
     }
+
+    /**
+     * Evento emitido cuando el catálogo o base de datos ha sido sincronizado
+     * desde una fuente externa (ej. NextCloud pull on startup o descarga remota).
+     */
+    public static class CatalogoSincronizadoEvent {
+        private final int totalLibros;
+
+        /**
+         * Crea una nueva instancia del evento de catálogo sincronizado.
+         */
+        public CatalogoSincronizadoEvent() {
+            this(0);
+        }
+
+        /**
+         * Crea una nueva instancia del evento de catálogo sincronizado indicando el total de libros.
+         *
+         * @param totalLibros Cantidad total de libros en el catálogo tras la sincronización.
+         */
+        public CatalogoSincronizadoEvent(int totalLibros) {
+            this.totalLibros = totalLibros;
+        }
+
+        /**
+         * Obtiene la cantidad total de libros disponibles tras la sincronización.
+         *
+         * @return Total de libros.
+         */
+        public int getTotalLibros() {
+            return totalLibros;
+        }
+    }
 }
 

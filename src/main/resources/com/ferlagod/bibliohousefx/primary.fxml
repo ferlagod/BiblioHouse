@@ -10,6 +10,7 @@
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -20,51 +21,60 @@
         <BorderPane fx:id="mainContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="900.0">
             <top>
                 <VBox>
-                    <MenuBar fx:id="menuBarPrincipal" BorderPane.alignment="CENTER">
-                        <menus>
-                            <Menu fx:id="menuArchivo" text="%menu.file">
-                                <items>
-                                    <MenuItem accelerator="Shortcut+N" onAction="#irAGestionLibros" text="%book.manual.title" />
-                                    <SeparatorMenuItem />
-                                    <MenuItem onAction="#importarBaseDatos" text="%menu.import" />
-                                    <MenuItem onAction="#importarDesdeCSV" text="%menu.import.csv" />
-                                    <MenuItem onAction="#exportarBaseDatos" text="%menu.export" />
-                                    <MenuItem onAction="#exportarPDF" text="%menu.export.pdf" />
-                                    <MenuItem onAction="#exportarWeb" text="%menu.export.web" />
-                                    <SeparatorMenuItem />
-                                    <MenuItem accelerator="Shortcut+Q" onAction="#cerrarAplicacion" text="%menu.exit" />
-                                </items>
-                            </Menu>
-                            <Menu fx:id="menuHerramientas" text="%menu.tools">
-                                <items>
-                                    <MenuItem accelerator="Shortcut+K" onAction="#abrirPaletaComandos" text="Paleta de Comandos / Búsqueda rápida" />
-                                    <SeparatorMenuItem />
-                                    <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
-                                    <MenuItem onAction="#buscarPortadasFaltantes" text="%menu.tools.fetch_covers" />
-                                    <MenuItem onAction="#buscarSagasFaltantes" text="%menu.tools.fetch_sagas" />
-                                    <MenuItem accelerator="Shortcut+," onAction="#abrirConfiguracion" text="%menu.config" />
-                                    <Menu text="%menu.language">
-                                        <items>
-                                            <RadioMenuItem onAction="#cambiarAEspanol" text="%menu.lang.es" />
-                                            <RadioMenuItem onAction="#cambiarAIngles" text="%menu.lang.en" />
-                                            <RadioMenuItem onAction="#cambiarACatalan" text="%menu.lang.ca" />
-                                            <RadioMenuItem onAction="#cambiarAGallego" text="%menu.lang.gl" />
-                                            <RadioMenuItem onAction="#cambiarAEuskera" text="%menu.lang.eu" />
-                                            <RadioMenuItem onAction="#cambiarAPortugues" text="%menu.lang.pt" />
-                                        </items>
-                                    </Menu>
-                                    <MenuItem onAction="#mostrarEstadisticas" text="%menu.stats" />
-                                </items>
-                            </Menu>
-                            <Menu fx:id="menuAyuda" text="%menu.help">
-                                <items>
-                                    <MenuItem accelerator="F1" onAction="#mostrarAyudaManual" text="%menu.manual" />
-                                    <SeparatorMenuItem />
-                                    <MenuItem onAction="#mostrarAcercaDe" text="%menu.about" />
-                                </items>
-                            </Menu>
-                        </menus>
-                    </MenuBar>
+                    <HBox alignment="CENTER_LEFT" styleClass="top-nav-bar">
+                        <MenuBar fx:id="menuBarPrincipal" HBox.hgrow="ALWAYS" style="-fx-background-color: transparent;">
+                            <menus>
+                                <Menu fx:id="menuArchivo" text="%menu.file">
+                                    <items>
+                                        <MenuItem accelerator="Shortcut+N" onAction="#irAGestionLibros" text="%book.manual.title" />
+                                        <SeparatorMenuItem />
+                                        <MenuItem onAction="#importarBaseDatos" text="%menu.import" />
+                                        <MenuItem onAction="#importarDesdeCSV" text="%menu.import.csv" />
+                                        <MenuItem onAction="#exportarBaseDatos" text="%menu.export" />
+                                        <MenuItem onAction="#exportarPDF" text="%menu.export.pdf" />
+                                        <MenuItem onAction="#exportarWeb" text="%menu.export.web" />
+                                        <SeparatorMenuItem />
+                                        <MenuItem accelerator="Shortcut+Q" onAction="#cerrarAplicacion" text="%menu.exit" />
+                                    </items>
+                                </Menu>
+                                <Menu fx:id="menuHerramientas" text="%menu.tools">
+                                    <items>
+                                        <MenuItem accelerator="Shortcut+K" onAction="#abrirPaletaComandos" text="Paleta de Comandos / Búsqueda rápida" />
+                                        <SeparatorMenuItem />
+                                        <MenuItem onAction="#buscarDuplicados" text="%menu.duplicates" />
+                                        <MenuItem onAction="#buscarPortadasFaltantes" text="%menu.tools.fetch_covers" />
+                                        <MenuItem onAction="#buscarSagasFaltantes" text="%menu.tools.fetch_sagas" />
+                                        <MenuItem accelerator="Shortcut+," onAction="#abrirConfiguracion" text="%menu.config" />
+                                        <Menu text="%menu.language">
+                                            <items>
+                                                <RadioMenuItem onAction="#cambiarAEspanol" text="%menu.lang.es" />
+                                                <RadioMenuItem onAction="#cambiarAIngles" text="%menu.lang.en" />
+                                                <RadioMenuItem onAction="#cambiarACatalan" text="%menu.lang.ca" />
+                                                <RadioMenuItem onAction="#cambiarAGallego" text="%menu.lang.gl" />
+                                                <RadioMenuItem onAction="#cambiarAEuskera" text="%menu.lang.eu" />
+                                                <RadioMenuItem onAction="#cambiarAPortugues" text="%menu.lang.pt" />
+                                            </items>
+                                        </Menu>
+                                        <MenuItem onAction="#mostrarEstadisticas" text="%menu.stats" />
+                                    </items>
+                                </Menu>
+                                <Menu fx:id="menuAyuda" text="%menu.help">
+                                    <items>
+                                        <MenuItem accelerator="F1" onAction="#mostrarAyudaManual" text="%menu.manual" />
+                                        <SeparatorMenuItem />
+                                        <MenuItem onAction="#mostrarAcercaDe" text="%menu.about" />
+                                    </items>
+                                </Menu>
+                            </menus>
+                        </MenuBar>
+                        <HBox alignment="CENTER_RIGHT" spacing="10.0" style="-fx-padding: 0 14 0 0;">
+                            <Button fx:id="btnSyncRapido" accessibleRole="BUTTON" accessibleText="Sincronizar biblioteca con NextCloud" onAction="#sincronizarNextCloudManual" styleClass="sync-btn-top" text=" Sincronizar">
+                                <tooltip>
+                                    <Tooltip text="Sincronizar biblioteca y portadas con NextCloud" />
+                                </tooltip>
+                            </Button>
+                        </HBox>
+                    </HBox>
                     <HBox fx:id="bannerPrestamos" managed="false" visible="false" mouseTransparent="true" alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #fff3e0; -fx-padding: 10 20; -fx-border-color: #ffb74d; -fx-border-width: 0 0 1 0;">
                         <Label text="⚠️" style="-fx-font-size: 18px;" />
                         <VBox spacing="2.0" HBox.hgrow="ALWAYS">
