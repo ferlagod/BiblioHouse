@@ -20,6 +20,7 @@ package com.ferlagod.bibliohousefx;
 import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.BusquedaSagas;
 import com.bibliohouse.logic.BusquedaService;
+import com.bibliohouse.logic.EbookMetadataService;
 import com.bibliohouse.logic.ImportarExportarBD;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.Libro;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -156,6 +158,7 @@ public class PrimaryController implements Initializable {
     private final BusquedaService busquedaService = new BusquedaService();
     private final BusquedaSagas busquedaSagas = new BusquedaSagas();
     private final ImportarExportarBD gestorArchivos = new ImportarExportarBD();
+    private final AtomicBoolean busquedaPortadasEnCurso = new AtomicBoolean(false);
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -679,7 +682,11 @@ public class PrimaryController implements Initializable {
      */
     public void setMensajeEstado(String mensaje) {
         if (lblEstado != null) {
-            lblEstado.setText(mensaje);
+            if (Platform.isFxApplicationThread()) {
+                lblEstado.setText(mensaje);
+            } else {
+                Platform.runLater(() -> lblEstado.setText(mensaje));
+            }
         }
     }
 
@@ -1346,6 +1353,11 @@ public class PrimaryController implements Initializable {
 
     @FXML
     private void buscarPortadasFaltantes(ActionEvent event) {
+        if (!busquedaPortadasEnCurso.compareAndSet(false, true)) {
+            notificar("Ya hay una búsqueda de portadas ejecutándose en segundo plano.");
+            return;
+        }
+
         List<Libro> librosSinPortada = listaLibrosCompleta.stream()
                 .filter(l -> {
                     String p = l.getPortadaURL();
@@ -1361,73 +1373,115 @@ public class PrimaryController implements Initializable {
                 .collect(Collectors.toList());
 
         if (librosSinPortada.isEmpty()) {
+            busquedaPortadasEnCurso.set(false);
             mostrarAlertaPublic("Búsqueda de Portadas", "No hay libros pendientes de portada.");
             return;
         }
 
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Búsqueda masiva");
+        confirmacion.setTitle("Búsqueda masiva de portadas");
         confirmacion.setHeaderText("Se van a procesar " + librosSinPortada.size() + " libros.");
-        confirmacion.setContentText("Este proceso conectará con servidores externos. ¿Deseas continuar?");
+        confirmacion.setContentText("El proceso se ejecutará en segundo plano para que puedas seguir leyendo o gestionando tus libros. ¿Deseas iniciar?");
 
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            busquedaPortadasEnCurso.set(false);
             return;
         }
+
+        int total = librosSinPortada.size();
+        String inicioMsg = "Iniciando búsqueda de portadas para " + total + " libros en segundo plano...";
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(inicioMsg));
+        notificar(inicioMsg);
 
         javafx.concurrent.Task<Integer> task = new javafx.concurrent.Task<>() {
             @Override
             protected Integer call() throws Exception {
                 int actualizadas = 0;
-                for (int i = 0; i < librosSinPortada.size(); i++) {
+                for (int i = 0; i < total; i++) {
                     if (isCancelled()) break;
                     Libro libro = librosSinPortada.get(i);
-                    updateMessage("Buscando: " + libro.getTitulo());
-                    updateProgress(i + 1, librosSinPortada.size());
+                    String status = "Buscando portada (" + (i + 1) + "/" + total + "): " + libro.getTitulo();
+                    updateMessage(status);
+                    updateProgress(i + 1, total);
+                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(status));
 
-                    String isbn = (libro.getIsbn() != null) ? libro.getIsbn().trim() : "";
-                    String urlEncontrada = "";
+                    boolean conseguida = false;
 
-                    // 1. Intento directo y rápido por ISBN
-                    if (!isbn.isEmpty()) {
-                        urlEncontrada = busquedaService.buscarImagenPorIsbnDirecto(isbn);
+                    // 1. Si es e-book digital (EPUB / PDF), intentar extracción local instantánea primero
+                    if (libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isBlank()) {
+                        try {
+                            conseguida = EbookMetadataService.asegurarPortadaEbook(libro, rutaUsuario);
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.FINE, "No se pudo extraer portada local incrustada de: " + libro.getTitulo(), ex);
+                        }
                     }
 
-                    // 2. Intento en APIs por ISBN
-                    if (urlEncontrada.isEmpty() && !isbn.isEmpty()) {
-                        urlEncontrada = busquedaService.buscarImagenEnApisMasivo(isbn);
+                    // 2. Si no es e-book o no tenía portada incrustada, buscar en servicios remotos
+                    if (!conseguida) {
+                        String isbn = (libro.getIsbn() != null) ? libro.getIsbn().trim() : "";
+                        String urlEncontrada = "";
+
+                        // 2.1 Intento directo y rápido por ISBN
+                        if (!isbn.isEmpty()) {
+                            urlEncontrada = busquedaService.buscarImagenPorIsbnDirecto(isbn);
+                        }
+
+                        // 2.2 Intento en APIs por ISBN
+                        if (urlEncontrada.isEmpty() && !isbn.isEmpty()) {
+                            urlEncontrada = busquedaService.buscarImagenEnApisMasivo(isbn);
+                        }
+
+                        // 2.3 Intento en APIs por título
+                        if (urlEncontrada.isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isBlank()) {
+                            urlEncontrada = busquedaService.buscarImagenEnApisMasivo(libro.getTitulo());
+                        }
+
+                        if (!urlEncontrada.isEmpty()) {
+                            String rutaLocal = ImageLoader.hacerPortadaLocalOffline(urlEncontrada, libro.getId(), rutaUsuario);
+                            libro.setPortadaURL(rutaLocal);
+                            conseguida = true;
+                        }
                     }
 
-                    // 3. Intento en APIs por título
-                    if (urlEncontrada.isEmpty() && libro.getTitulo() != null && !libro.getTitulo().isBlank()) {
-                        urlEncontrada = busquedaService.buscarImagenEnApisMasivo(libro.getTitulo());
-                    }
-
-                    if (!urlEncontrada.isEmpty()) {
-                        String rutaLocal = ImageLoader.hacerPortadaLocalOffline(urlEncontrada, libro.getId(), rutaUsuario);
-                        libro.setPortadaURL(rutaLocal);
+                    if (conseguida) {
                         actualizadas++;
+                        // Notificar actualización en tiempo real para refrescar portadas en el catálogo
+                        AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
                     }
+
                     Thread.sleep(150);
                 }
                 return actualizadas;
             }
         };
 
-        org.controlsfx.dialog.ProgressDialog progressDialog = new org.controlsfx.dialog.ProgressDialog(task);
-        progressDialog.setTitle("BiblioHouse - Descarga de Portadas");
-        progressDialog.setHeaderText("Procesando colección...");
-        progressDialog.initOwner(getWindow());
-
         task.setOnSucceeded(e -> {
+            busquedaPortadasEnCurso.set(false);
             guardarLibrosEnDisco();
             AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, false));
-            mostrarAlertaPublic("Búsqueda de Portadas", "¡Completado! Se han actualizado " + task.getValue() + " portadas.");
+            int actualizadas = task.getValue() != null ? task.getValue() : 0;
+            String finMsg = "Búsqueda completada: se han actualizado " + actualizadas + " de " + total + " portadas.";
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(finMsg));
+            notificar(finMsg);
         });
 
-        task.setOnFailed(e -> mostrarAlertaPublic("Error", "Ocurrió un error durante la descarga masiva."));
+        task.setOnFailed(e -> {
+            busquedaPortadasEnCurso.set(false);
+            String errorMsg = "Ocurrió un error durante la búsqueda de portadas en segundo plano.";
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(errorMsg));
+            notificar(errorMsg);
+        });
+
+        task.setOnCancelled(e -> {
+            busquedaPortadasEnCurso.set(false);
+            String cancelMsg = "Búsqueda de portadas en segundo plano cancelada.";
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(cancelMsg));
+            notificar(cancelMsg);
+        });
 
         Thread thread = new Thread(task);
         thread.setDaemon(true);
+        thread.setName("bg-cover-searcher");
         thread.start();
     }
 
