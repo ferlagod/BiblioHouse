@@ -112,6 +112,34 @@ class TestSincronizacionYPortadas {
     }
 
     @Test
+    void testJsonGuardaRutaRelativaPortable() throws IOException {
+        Libro libro = new Libro();
+        libro.setId("libro-test-relativo");
+        libro.setTitulo("Libro Portable");
+        // Ruta absoluta local en memoria
+        libro.setPortadaURL("/Users/ferlagod/BiblioHouse/covers/libro-test-relativo.jpg");
+        libro.setRutaArchivoDigital("/Users/ferlagod/BiblioHouse/ebooks/libro-test-relativo.epub");
+
+        List<Libro> lista = new ArrayList<>();
+        lista.add(libro);
+        jsonManager.guardarLibros(lista);
+
+        // Verificamos el contenido en crudo del archivo biblioteca.json
+        File jsonFile = new File(userDir, "biblioteca.json");
+        assertTrue(jsonFile.exists());
+        String contenidoJson = Files.readString(jsonFile.toPath());
+
+        // Debe contener rutas relativas "covers/..." y "ebooks/..."
+        assertTrue(contenidoJson.contains("\"covers/libro-test-relativo.jpg\""),
+                "El JSON debe almacenar la ruta relativa de la portada: " + contenidoJson);
+        assertTrue(contenidoJson.contains("\"ebooks/libro-test-relativo.epub\""),
+                "El JSON debe almacenar la ruta relativa del ebook: " + contenidoJson);
+        // NO debe contener rutas absolutas del sistema de archivos local
+        assertFalse(contenidoJson.contains("/Users/ferlagod"),
+                "El JSON no debe contener rutas absolutas de una máquina específica");
+    }
+
+    @Test
     void testBusquedaDirectaIsbnValidaFormato() {
         BusquedaService service = new BusquedaService();
         // Si el ISBN es nulo o vacío o inválido, debe devolver vacío sin lanzar excepciones

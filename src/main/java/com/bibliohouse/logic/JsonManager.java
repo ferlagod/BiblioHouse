@@ -39,6 +39,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -413,25 +414,150 @@ public class JsonManager {
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
     /**
-     * Guarda la lista de libros en el archivo JSON correspondiente.
+     * Convierte una ruta absoluta de archivo o ruta local en una ruta relativa canónica
+     * (ej. "covers/id.jpg" o "ebooks/id.epub") para persistir en JSON de forma portable entre
+     * diferentes sistemas operativos (Windows, macOS, Linux, Android).
+     *
+     * @param urlOrPath Ruta local o URL remota.
+     * @param subcarpeta Subcarpeta base ("covers" o "ebooks").
+     * @return Ruta relativa portable o la URL remota original.
+     */
+    public static String convertirARutaRelativa(String urlOrPath, String subcarpeta) {
+        if (urlOrPath == null || urlOrPath.isBlank() || urlOrPath.contains("default_cover")) {
+            return "";
+        }
+        if (urlOrPath.startsWith("http://") || urlOrPath.startsWith("https://")) {
+            return urlOrPath;
+        }
+        String nombre = com.bibliohouse.utils.ImageLoader.extraerNombreArchivo(urlOrPath);
+        if (nombre.isBlank()) {
+            return "";
+        }
+        return subcarpeta + "/" + nombre;
+    }
+
+    /**
+     * Prepara una lista de libros para persistencia en JSON, convirtiendo rutas absolutas
+     * locales de portadas y ebooks en rutas relativas universales ("covers/..." y "ebooks/...").
+     * Utiliza clonación defensiva para no mutar los objetos vivos en memoria.
+     *
+     * @param libros Lista de libros a preparar.
+     * @return Lista de libros con rutas relativas listas para serializar.
+     */
+    private List<Libro> prepararLibrosParaGuardar(List<Libro> libros) {
+        if (libros == null) {
+            return Collections.emptyList();
+        }
+        List<Libro> paraGuardar = new ArrayList<>(libros.size());
+        for (Libro original : libros) {
+            if (original == null) continue;
+            Libro copia = gson.fromJson(gson.toJsonTree(original), Libro.class);
+            copia.setPortadaURL(convertirARutaRelativa(original.getPortadaURL(), "covers"));
+            if (original.getRutaArchivoDigital() != null && !original.getRutaArchivoDigital().isBlank()) {
+                copia.setRutaArchivoDigital(convertirARutaRelativa(original.getRutaArchivoDigital(), "ebooks"));
+            }
+            paraGuardar.add(copia);
+        }
+        return paraGuardar;
+    }
+
+    /**
+     * Resuelve las rutas relativas ("covers/..." y "ebooks/...") contenidas en los JSON
+     * contra el directorio de datos local de la aplicación en la máquina actual.
+     *
+     * @param libros Lista de libros cargados.
+     * @param carpetaCovers Directorio local de portadas.
+     * @param carpetaEbooks Directorio local de ebooks.
+     */
+    private void resolverRutasLocales(List<Libro> libros, String carpetaCovers, String carpetaEbooks) {
+        if (libros == null) return;
+        for (Libro libro : libros) {
+            if (libro.getEstanterias() == null) {
+                libro.setEstanterias(new ArrayList<>());
+            }
+
+            // 1. Resolver portada
+            String url = libro.getPortadaURL();
+            if (url != null && !url.isEmpty() && !url.startsWith("http") && !url.contains("default_cover")) {
+                String nombreArchivo = com.bibliohouse.utils.ImageLoader.extraerNombreArchivo(url);
+                File localEsperado = new File(carpetaCovers, nombreArchivo);
+                if (localEsperado.exists() && localEsperado.isFile()) {
+                    libro.setPortadaURL(localEsperado.getAbsolutePath());
+                } else {
+                    boolean encontrado = false;
+                    if (libro.getId() != null && !libro.getId().isBlank()) {
+                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                            File porId = new File(carpetaCovers, libro.getId() + ext);
+                            if (porId.exists() && porId.isFile()) {
+                                libro.setPortadaURL(porId.getAbsolutePath());
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!encontrado && libro.getIsbn() != null && !libro.getIsbn().isBlank()) {
+                        String isbnLimpio = libro.getIsbn().replaceAll("[^0-9Xx]", "");
+                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                            File porIsbn = new File(carpetaCovers, isbnLimpio + ext);
+                            if (porIsbn.exists() && porIsbn.isFile()) {
+                                libro.setPortadaURL(porIsbn.getAbsolutePath());
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!encontrado) {
+                        libro.setPortadaURL(localEsperado.getAbsolutePath());
+                    }
+                }
+            } else if ((url == null || url.isEmpty() || url.contains("default_cover")) && libro.getId() != null) {
+                for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
+                    File porId = new File(carpetaCovers, libro.getId() + ext);
+                    if (porId.exists() && porId.isFile()) {
+                        libro.setPortadaURL(porId.getAbsolutePath());
+                        break;
+                    }
+                }
+            }
+
+            // 2. Resolver archivo digital (ebook)
+            String digital = libro.getRutaArchivoDigital();
+            if (digital != null && !digital.isBlank() && !digital.startsWith("http")) {
+                String nombreEbook = com.bibliohouse.utils.ImageLoader.extraerNombreArchivo(digital);
+                File ebookLocal = new File(carpetaEbooks, nombreEbook);
+                if (ebookLocal.exists() && ebookLocal.isFile()) {
+                    libro.setRutaArchivoDigital(ebookLocal.getAbsolutePath());
+                } else if (libro.getId() != null) {
+                    for (String ext : new String[]{".epub", ".pdf", ".mobi", ".azw3", ".cbz"}) {
+                        File porId = new File(carpetaEbooks, libro.getId() + ext);
+                        if (porId.exists() && porId.isFile()) {
+                            libro.setRutaArchivoDigital(porId.getAbsolutePath());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
+    /**
+     * Guarda la lista de libros en el archivo JSON correspondiente con rutas relativas portables.
      *
      * @param libros Lista de libros a guardar.
      */
     public void guardarLibros(List<Libro> libros) {
-        guardarDatos(libros, databaseFilePath, "libros");
+        List<Libro> paraGuardar = prepararLibrosParaGuardar(libros);
+        guardarDatos(paraGuardar, databaseFilePath, "libros");
     }
 
     /**
-     * Guarda la lista de libros con debounce: toma una copia defensiva
-     * inmediatamente pero retrasa la escritura a disco 500ms. Si se llama de
-     * nuevo antes de que expire el plazo, el guardado anterior se cancela.
-     * Ideal para operaciones rápidas y repetitivas (cambio de estado, etc.).
+     * Guarda la lista de libros con debounce y rutas relativas portables.
      *
      * @param libros Lista de libros a guardar.
      */
     public void guardarLibrosDebounced(List<Libro> libros) {
-        // Copia defensiva inmediata (barata, O(n) punteros)
-        List<Libro> copia = new ArrayList<>(libros);
+        List<Libro> copia = prepararLibrosParaGuardar(libros);
         // Cancelar guardado pendiente si existe
         if (pendingSaveFuture != null && !pendingSaveFuture.isDone()) {
             pendingSaveFuture.cancel(false);
@@ -443,8 +569,8 @@ public class JsonManager {
     }
 
     /**
-     * Carga la lista de libros desde el archivo JSON. Si un libro no tiene
-     * estanterías asignadas, se inicializa como una lista vacía.
+     * Carga la lista de libros desde el archivo JSON. Resuelve las rutas relativas
+     * contra el directorio local de la aplicación.
      *
      * @return Lista de libros cargados.
      */
@@ -458,6 +584,7 @@ public class JsonManager {
         // 2. Definimos rutas
         String carpetaCovers = rutaDatosUsuario + File.separator + "covers";
         String carpetaPortadasAntigua = rutaDatosUsuario + File.separator + "portadas";
+        String carpetaEbooks = rutaDatosUsuario + File.separator + "ebooks";
 
         // --- INICIO RUTINA DE MIGRACIÓN ---
         File oldDir = new File(carpetaPortadasAntigua);
@@ -482,59 +609,11 @@ public class JsonManager {
         }
         // --- FIN RUTINA DE MIGRACIÓN ---
 
-        // 3. Procesamos la lista cargada para reparar rutas dinámicas
+        // 3. Procesamos la lista cargada para resolver rutas relativas a absolutas locales
+        resolverRutasLocales(libros, carpetaCovers, carpetaEbooks);
+
         boolean migracionPaginas = false;
         for (Libro libro : libros) {
-            if (libro.getEstanterias() == null) {
-                libro.setEstanterias(new ArrayList<>());
-            }
-
-            String url = libro.getPortadaURL();
-            if (url != null && !url.isEmpty() && !url.startsWith("http") && !url.contains("default_cover")) {
-                // Extraer el nombre de forma limpia soportando tanto separadores Unix como Windows
-                String nombreArchivo = com.bibliohouse.utils.ImageLoader.extraerNombreArchivo(url);
-                File localEsperado = new File(carpetaCovers, nombreArchivo);
-                if (localEsperado.exists() && localEsperado.isFile()) {
-                    libro.setPortadaURL(localEsperado.getAbsolutePath());
-                } else {
-                    // Si no existe con ese nombre exacto, buscar si existe con el ID del libro
-                    boolean encontrado = false;
-                    if (libro.getId() != null && !libro.getId().isBlank()) {
-                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
-                            File porId = new File(carpetaCovers, libro.getId() + ext);
-                            if (porId.exists() && porId.isFile()) {
-                                libro.setPortadaURL(porId.getAbsolutePath());
-                                encontrado = true;
-                                break;
-                            }
-                        }
-                    }
-                    // Si tampoco, buscar por ISBN si el libro lo tiene
-                    if (!encontrado && libro.getIsbn() != null && !libro.getIsbn().isBlank()) {
-                        String isbnLimpio = libro.getIsbn().replaceAll("[^0-9Xx]", "");
-                        for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
-                            File porIsbn = new File(carpetaCovers, isbnLimpio + ext);
-                            if (porIsbn.exists() && porIsbn.isFile()) {
-                                libro.setPortadaURL(porIsbn.getAbsolutePath());
-                                encontrado = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!encontrado) {
-                        libro.setPortadaURL(localEsperado.getAbsolutePath());
-                    }
-                }
-            } else if ((url == null || url.isEmpty() || url.contains("default_cover")) && libro.getId() != null) {
-                // Si no tenía portada pero existe un archivo con su ID en covers, recuperarlo
-                for (String ext : new String[]{".jpg", ".png", ".jpeg", ".webp"}) {
-                    File porId = new File(carpetaCovers, libro.getId() + ext);
-                    if (porId.exists() && porId.isFile()) {
-                        libro.setPortadaURL(porId.getAbsolutePath());
-                        break;
-                    }
-                }
-            }
 
             // Retrocompatibilidad: Si es un PDF digital pero no tiene número de páginas
             if (libro.isEsDigital() && libro.getPaginasTotales() == 0 && libro.getRutaArchivoDigital() != null) {
@@ -705,7 +784,8 @@ public class JsonManager {
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {
         try (Writer writer = new FileWriter(archivo)) {
-            gson.toJson(libros, writer);
+            List<Libro> paraExportar = prepararLibrosParaGuardar(libros);
+            gson.toJson(paraExportar, writer);
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al exportar libros al archivo: " + archivo.getName(), e);
@@ -772,18 +852,27 @@ public class JsonManager {
      * @param deseos lista de libros que se guardarán en deseos
      */
     public void guardarDeseos(List<Libro> deseos) {
-        guardarDatos(deseos, deseosDatabasePath, "lista de deseos");
+        List<Libro> paraGuardar = prepararLibrosParaGuardar(deseos);
+        guardarDatos(paraGuardar, deseosDatabasePath, "lista de deseos");
     }
 
     /**
      * Carga la lista de deseos desde el archivo de base de datos.
+     * Resuelve las rutas relativas contra el directorio de datos local.
      *
      * @return Lista de libros en la lista de deseos.
      */
     public List<Libro> cargarDeseos() {
         Type tipoLista = new TypeToken<ArrayList<Libro>>() {
         }.getType();
-        return cargarDatos(deseosDatabasePath, tipoLista, "lista de deseos");
+        List<Libro> deseos = cargarDatos(deseosDatabasePath, tipoLista, "lista de deseos");
+        if (deseos != null) {
+            String carpetaCovers = rutaDatosUsuario + File.separator + "covers";
+            String carpetaEbooks = rutaDatosUsuario + File.separator + "ebooks";
+            resolverRutasLocales(deseos, carpetaCovers, carpetaEbooks);
+            return deseos;
+        }
+        return new ArrayList<>();
     }
 
     // --- MÉTODOS MODULARES PARA EL TRACKING DE LECTURA (PERSISTENCIA LIGERA) ---
