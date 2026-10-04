@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Servicio para sincronizar la base de datos local de BiblioHouse con un
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
  * incremental.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class NextCloudSyncService {
 
@@ -253,7 +252,7 @@ public class NextCloudSyncService {
                                 nombresEnRemoto.add(r.getName().toLowerCase());
                             }
                         }
-                    } catch (Exception ex) {
+                    } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de covers, verificando creación: {0}", ex.getMessage());
                         crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
                     }
@@ -267,7 +266,7 @@ public class NextCloudSyncService {
                                     byte[] imgData = Files.readAllBytes(portada.toPath());
                                     sardine.put(remoteFileUrl, imgData, determinarMimeTypeImagen(nombre));
                                     LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", nombre);
-                                } catch (Exception ex) {
+                                } catch (IOException ex) {
                                     LOGGER.log(Level.WARNING, "Error al subir portada individual ({0}): {1}", new Object[]{nombre, ex.getMessage()});
                                 }
                             }
@@ -292,7 +291,7 @@ public class NextCloudSyncService {
                                 nombresEbooksEnRemoto.add(r.getName().toLowerCase());
                             }
                         }
-                    } catch (Exception ex) {
+                    } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de ebooks: {0}", ex.getMessage());
                     }
 
@@ -305,7 +304,7 @@ public class NextCloudSyncService {
                                     byte[] data = Files.readAllBytes(ebook.toPath());
                                     sardine.put(remoteFileUrl, data, "application/octet-stream");
                                     LOGGER.log(Level.INFO, "Nuevo ebook subido (incremental): {0}", nombreEbook);
-                                } catch (Exception ex) {
+                                } catch (IOException ex) {
                                     LOGGER.log(Level.WARNING, "Error al subir ebook individual ({0}): {1}", new Object[]{nombreEbook, ex.getMessage()});
                                 }
                             }
@@ -325,11 +324,19 @@ public class NextCloudSyncService {
     }
 
     private static String determinarMimeTypeImagen(String nombre) {
-        if (nombre == null) return "image/jpeg";
+        if (nombre == null) {
+            return "image/jpeg";
+        }
         String lower = nombre.toLowerCase();
-        if (lower.endsWith(".png")) return "image/png";
-        if (lower.endsWith(".webp")) return "image/webp";
-        if (lower.endsWith(".gif")) return "image/gif";
+        if (lower.endsWith(".png")) {
+            return "image/png";
+        }
+        if (lower.endsWith(".webp")) {
+            return "image/webp";
+        }
+        if (lower.endsWith(".gif")) {
+            return "image/gif";
+        }
         return "image/jpeg";
     }
 
@@ -351,13 +358,16 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Comprueba si el recurso remoto de NextCloud es más reciente que el archivo local correspondiente.
-     * Si el archivo local no existe, se considera que el remoto debe descargarse.
+     * Comprueba si el recurso remoto de NextCloud es más reciente que el
+     * archivo local correspondiente. Si el archivo local no existe, se
+     * considera que el remoto debe descargarse.
      *
-     * @param remoteModified Fecha de modificación remota (DavResource.getModified()).
-     * @param localFile      Archivo físico local.
-     * @return true si el remoto es más reciente que el local (con un margen de tolerancia de 2 segundos),
-     *         o si el archivo local no existe. false en caso contrario.
+     * @param remoteModified Fecha de modificación remota
+     * (DavResource.getModified()).
+     * @param localFile Archivo físico local.
+     * @return true si el remoto es más reciente que el local (con un margen de
+     * tolerancia de 2 segundos), o si el archivo local no existe. false en caso
+     * contrario.
      */
     public static boolean esRecursoRemotoMasReciente(Date remoteModified, File localFile) {
         if (localFile == null || !localFile.exists()) {
@@ -373,11 +383,14 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Consulta si la versión remota de los archivos JSON de base de datos en NextCloud
-     * es más reciente que la versión local (o si faltan archivos o portadas).
+     * Consulta si la versión remota de los archivos JSON de base de datos en
+     * NextCloud es más reciente que la versión local (o si faltan archivos o
+     * portadas).
      *
-     * @param localDir Directorio local donde se encuentran los archivos de datos.
-     * @return true si existen cambios remotos más recientes que los locales, false si está al día.
+     * @param localDir Directorio local donde se encuentran los archivos de
+     * datos.
+     * @return true si existen cambios remotos más recientes que los locales,
+     * false si está al día.
      * @throws IOException Si ocurre un error de comunicación con NextCloud.
      */
     public boolean esRemotoMasReciente(String localDir) throws IOException {
@@ -406,7 +419,7 @@ public class NextCloudSyncService {
                     if (esRecursoRemotoMasReciente(remoteRes.getModified(), localFile)) {
                         LOGGER.log(Level.INFO, "Cambio remoto detectado en {0}: remoto ({1}), local ({2})",
                                 new Object[]{dbFile, remoteRes.getModified(),
-                                        localFile.exists() ? new Date(localFile.lastModified()) : "no existe"});
+                                    localFile.exists() ? new Date(localFile.lastModified()) : "no existe"});
                         return true;
                     }
                 }
@@ -434,16 +447,19 @@ public class NextCloudSyncService {
         } finally {
             try {
                 sardine.shutdown();
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 
     /**
-     * Sincroniza desde NextCloud (Pull) si la versión remota de la base de datos
-     * es más reciente que la versión local (o si faltan portadas).
+     * Sincroniza desde NextCloud (Pull) si la versión remota de la base de
+     * datos es más reciente que la versión local (o si faltan portadas).
      *
-     * @param localDir Directorio local donde se encuentran los datos del usuario.
-     * @return true si se descargaron cambios remotos, false si la versión local ya estaba al día.
+     * @param localDir Directorio local donde se encuentran los datos del
+     * usuario.
+     * @return true si se descargaron cambios remotos, false si la versión local
+     * ya estaba al día.
      * @throws IOException Si ocurre un error de comunicación con NextCloud.
      */
     public boolean sincronizarSiRemotoMasReciente(String localDir) throws IOException {
@@ -480,7 +496,7 @@ public class NextCloudSyncService {
                         }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 LOGGER.log(Level.FINE, "No se pudo pre-listar recursos remotos: {0}", ex.getMessage());
             }
 
@@ -550,13 +566,13 @@ public class NextCloudSyncService {
                                     }
                                     LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
                                 }
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, "Error al descargar portada individual ({0}): {1}", new Object[]{coverName, ex.getMessage()});
                             }
                         }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Error al sincronizar portadas desde NextCloud: {0}", ex.getMessage());
             }
 
@@ -591,13 +607,13 @@ public class NextCloudSyncService {
                                     }
                                     LOGGER.log(Level.INFO, "Ebook descargado desde NextCloud: {0}", ebookName);
                                 }
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, "Error al descargar ebook individual ({0}): {1}", new Object[]{ebookName, ex.getMessage()});
                             }
                         }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Error al sincronizar ebooks desde NextCloud: {0}", ex.getMessage());
             }
         } catch (IOException e) {
@@ -612,20 +628,22 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Fusiona un archivo de libros (biblioteca.json o deseos.json) combinando los datos
-     * locales y remotos por ID y resolviendo conflictos con el timestamp de última modificación.
-     * Guarda la versión unificada en el archivo local y, si hay cambios locales nuevos o se
-     * solicita forzar la subida, actualiza también el servidor NextCloud.
+     * Fusiona un archivo de libros (biblioteca.json o deseos.json) combinando
+     * los datos locales y remotos por ID y resolviendo conflictos con el
+     * timestamp de última modificación. Guarda la versión unificada en el
+     * archivo local y, si hay cambios locales nuevos o se solicita forzar la
+     * subida, actualiza también el servidor NextCloud.
      *
      * @param sardine Cliente Sardine WebDAV.
      * @param remoteFileUrl URL del archivo en NextCloud.
      * @param localFile Archivo físico local.
      * @param remoteRes Recurso WebDAV remoto (puede ser null).
-     * @param forzarSubida true si se debe subir obligatoriamente el resultado unificado a NextCloud.
+     * @param forzarSubida true si se debe subir obligatoriamente el resultado
+     * unificado a NextCloud.
      * @throws IOException Si ocurre un error de lectura/escritura.
      */
     private void fusionarArchivoLibros(Sardine sardine, String remoteFileUrl, File localFile,
-                                       DavResource remoteRes, boolean forzarSubida) throws IOException {
+            DavResource remoteRes, boolean forzarSubida) throws IOException {
         String localDir = localFile.getParent();
         JsonManager jsonMgr = new JsonManager(localDir);
 
@@ -645,8 +663,7 @@ public class NextCloudSyncService {
 
         // 2. Leer libros remotos
         List<Libro> librosRemotos;
-        try (InputStream in = sardine.get(remoteFileUrl);
-             InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+        try (InputStream in = sardine.get(remoteFileUrl); InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
             librosRemotos = jsonMgr.parsearLibros(reader);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error al parsear libros remotos para fusión ({0}): {1}",
@@ -682,8 +699,9 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Comprueba si la colección fusionada aporta libros nuevos o versiones con timestamps
-     * más recientes que los presentes en la colección base de referencia.
+     * Comprueba si la colección fusionada aporta libros nuevos o versiones con
+     * timestamps más recientes que los presentes en la colección base de
+     * referencia.
      *
      * @param fusionados Lista unificada.
      * @param base Lista de referencia (ej. remota).
@@ -706,7 +724,9 @@ public class NextCloudSyncService {
             }
         }
         for (Libro f : fusionados) {
-            if (f == null) continue;
+            if (f == null) {
+                continue;
+            }
             String clave = JsonManager.obtenerClaveUnicaLibro(f);
             Long timeBase = mapaBase.get(clave);
             if (timeBase == null || f.getUltimaModificacion() > timeBase) {

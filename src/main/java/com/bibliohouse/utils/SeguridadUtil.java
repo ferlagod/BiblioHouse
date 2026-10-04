@@ -22,23 +22,31 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
- * Utilidad criptográfica moderna para encriptar y desencriptar cadenas de texto sensibles
- * (como credenciales de NextCloud) usando AES-256-GCM con autenticación de integridad (AEAD),
- * vector de inicialización (IV) criptográfico aleatorio por cada operación y clave maestra
- * persistida en el perfil del usuario.
+ * Utilidad criptográfica moderna para encriptar y desencriptar cadenas de texto
+ * sensibles (como credenciales de NextCloud) usando AES-256-GCM con
+ * autenticación de integridad (AEAD), vector de inicialización (IV)
+ * criptográfico aleatorio por cada operación y clave maestra persistida en el
+ * perfil del usuario.
  *
- * Mantiene compatibilidad transparente hacia atrás con datos cifrados en versiones previas
- * mediante el modo legado AES-ECB.
+ * Mantiene compatibilidad transparente hacia atrás con datos cifrados en
+ * versiones previas mediante el modo legado AES-ECB.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class SeguridadUtil {
 
@@ -54,8 +62,8 @@ public class SeguridadUtil {
     private static SecretKeySpec masterKey;
 
     /**
-     * Obtiene o genera la clave maestra de 256 bits protegida en el almacén de preferencias
-     * del usuario del sistema operativo.
+     * Obtiene o genera la clave maestra de 256 bits protegida en el almacén de
+     * preferencias del usuario del sistema operativo.
      *
      * @return Clave de 256 bits para AES.
      */
@@ -84,7 +92,7 @@ public class SeguridadUtil {
 
             masterKey = new SecretKeySpec(newKeyBytes, KEY_ALGORITHM);
             return masterKey;
-        } catch (Exception e) {
+        } catch (BackingStoreException e) {
             // Fallback determinista seguro en caso de error de acceso a Preferences
             return getFallbackKey();
         }
@@ -96,14 +104,15 @@ public class SeguridadUtil {
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
             byte[] keyBytes = sha.digest(seed.getBytes(StandardCharsets.UTF_8));
             return new SecretKeySpec(keyBytes, KEY_ALGORITHM);
-        } catch (Exception ex) {
+        } catch (NoSuchAlgorithmException ex) {
             throw new RuntimeException("Error inicializando clave de seguridad", ex);
         }
     }
 
     /**
-     * Genera la clave de 128 bits derivada de propiedades del sistema para permitir
-     * descifrar contraseñas previamente almacenadas con el formato legado.
+     * Genera la clave de 128 bits derivada de propiedades del sistema para
+     * permitir descifrar contraseñas previamente almacenadas con el formato
+     * legado.
      *
      * @return Clave secreta para AES legado.
      * @throws Exception Si falla la generación del hash SHA-256.
@@ -122,11 +131,13 @@ public class SeguridadUtil {
     }
 
     /**
-     * Encripta una cadena de texto usando AES-256-GCM con un vector de inicialización (IV)
-     * criptográficamente aleatorio generado para cada cifrado.
+     * Encripta una cadena de texto usando AES-256-GCM con un vector de
+     * inicialización (IV) criptográficamente aleatorio generado para cada
+     * cifrado.
      *
      * @param texto Texto a encriptar.
-     * @return Texto encriptado con prefijo "v2:" y contenido Base64, o el texto original si ocurre un error.
+     * @return Texto encriptado con prefijo "v2:" y contenido Base64, o el texto
+     * original si ocurre un error.
      */
     public static String encriptar(String texto) {
         if (texto == null || texto.isEmpty()) {
@@ -147,18 +158,20 @@ public class SeguridadUtil {
             buffer.put(cipherBytes);
 
             return PREFIX_V2 + Base64.getEncoder().encodeToString(buffer.array());
-        } catch (Exception e) {
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
             return texto; // Fallback: devuelve el texto original
         }
     }
 
     /**
-     * Desencripta una cadena de texto. Detecta automáticamente si el contenido fue
-     * cifrado con el formato moderno AES-256-GCM (prefijo "v2:") o con el formato legado
-     * AES-ECB, proporcionando compatibilidad hacia atrás completa y transparente.
+     * Desencripta una cadena de texto. Detecta automáticamente si el contenido
+     * fue cifrado con el formato moderno AES-256-GCM (prefijo "v2:") o con el
+     * formato legado AES-ECB, proporcionando compatibilidad hacia atrás
+     * completa y transparente.
      *
      * @param textoEncriptado Texto encriptado en Base64.
-     * @return Texto desencriptado, o el texto original si falla la autenticación o descifrado.
+     * @return Texto desencriptado, o el texto original si falla la
+     * autenticación o descifrado.
      */
     public static String desencriptar(String textoEncriptado) {
         if (textoEncriptado == null || textoEncriptado.isEmpty()) {
@@ -184,7 +197,7 @@ public class SeguridadUtil {
 
                 byte[] plainBytes = cipher.doFinal(cipherBytes);
                 return new String(plainBytes, StandardCharsets.UTF_8);
-            } catch (Exception e) {
+            } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
                 return textoEncriptado; // Fallback: devuelve texto original ante manipulación o error
             }
         } else {
@@ -201,12 +214,14 @@ public class SeguridadUtil {
     }
 
     /**
-     * Cifra una cadena usando el algoritmo legado AES-ECB derivado del hardware/usuario.
-     * Método auxiliar de paquete destinado a pruebas unitarias de retrocompatibilidad.
+     * Cifra una cadena usando el algoritmo legado AES-ECB derivado del
+     * hardware/usuario. Método auxiliar de paquete destinado a pruebas
+     * unitarias de retrocompatibilidad.
      *
      * @param texto Cadena en texto plano a cifrar.
      * @return Texto cifrado codificado en Base64.
-     * @throws Exception Si ocurre un fallo durante la inicialización del cifrado.
+     * @throws Exception Si ocurre un fallo durante la inicialización del
+     * cifrado.
      */
     static String encriptarLegado(String texto) throws Exception {
         if (texto == null || texto.isEmpty()) {

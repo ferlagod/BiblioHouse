@@ -26,7 +26,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * del seguimiento de lectura en BiblioHouse.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 class TestPersistenciaProgresoLectura {
 

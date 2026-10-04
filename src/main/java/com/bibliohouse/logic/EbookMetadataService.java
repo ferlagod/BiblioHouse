@@ -20,7 +20,6 @@ package com.bibliohouse.logic;
 import com.bibliohouse.utils.ImageLoader;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,7 +46,7 @@ import org.xml.sax.SAXException;
  * No requiere dependencias externas adicionales.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class EbookMetadataService {
 
@@ -335,8 +333,9 @@ public class EbookMetadataService {
     }
 
     /**
-     * Intenta extraer la portada embebida del EPUB localizando la entrada a través
-     * del manifiesto OPF (EPUB 2 y 3) o mediante búsqueda de contingencia.
+     * Intenta extraer la portada embebida del EPUB localizando la entrada a
+     * través del manifiesto OPF (EPUB 2 y 3) o mediante búsqueda de
+     * contingencia.
      */
     private static void extraerPortadaEpub(ZipFile zip, Document opfDoc, String opfDir,
             Libro libro, String rutaUsuario) {
@@ -466,13 +465,16 @@ public class EbookMetadataService {
     }
 
     /**
-     * Extrae la referencia a una imagen dentro de un documento XHTML de portada en un EPUB.
+     * Extrae la referencia a una imagen dentro de un documento XHTML de portada
+     * en un EPUB.
      */
     private static String extraerImagenDePaginaXhtml(ZipFile zip, String opfDir, String xhtmlHref) {
         try {
             String path = resolverRutaZip(opfDir, xhtmlHref);
             ZipEntry xhtmlEntry = zip.getEntry(path);
-            if (xhtmlEntry == null) xhtmlEntry = zip.getEntry(xhtmlHref);
+            if (xhtmlEntry == null) {
+                xhtmlEntry = zip.getEntry(xhtmlHref);
+            }
             if (xhtmlEntry != null) {
                 try (InputStream is = zip.getInputStream(xhtmlEntry)) {
                     String contenido = new String(is.readAllBytes(), StandardCharsets.UTF_8);
@@ -487,7 +489,8 @@ public class EbookMetadataService {
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (IOException ignored) {
+        }
         return null;
     }
 
@@ -495,10 +498,13 @@ public class EbookMetadataService {
      * Resuelve y normaliza una ruta relativa dentro de un archivo ZIP.
      */
     private static String resolverRutaZip(String baseDir, String relativePath) {
-        if (relativePath == null || relativePath.isBlank()) return null;
+        if (relativePath == null || relativePath.isBlank()) {
+            return null;
+        }
         try {
             relativePath = java.net.URLDecoder.decode(relativePath, StandardCharsets.UTF_8);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         if (baseDir == null || baseDir.isBlank() || relativePath.startsWith("/")) {
             return relativePath.startsWith("/") ? relativePath.substring(1) : relativePath;
         }
@@ -513,8 +519,9 @@ public class EbookMetadataService {
     // ==================== PDF ====================
     /**
      * Extrae la primera página de un PDF como portada y usa el nombre del
-     * archivo como título. Renderiza la primera página a 72 DPI (dimensión estándar
-     * ~600 px) ejecutándose en ~20-30 ms y guardándola optimizada en JPEG al 85%.
+     * archivo como título. Renderiza la primera página a 72 DPI (dimensión
+     * estándar ~600 px) ejecutándose en ~20-30 ms y guardándola optimizada en
+     * JPEG al 85%.
      */
     private static Libro extraerDesdePdf(File archivo, String rutaUsuario) {
         Libro libro = new Libro();
@@ -562,13 +569,15 @@ public class EbookMetadataService {
     }
 
     /**
-     * Extrae la portada de un archivo e-book (.epub o .pdf) y la guarda directamente
-     * en la carpeta covers/ del usuario en formato JPEG comprimido y optimizado.
+     * Extrae la portada de un archivo e-book (.epub o .pdf) y la guarda
+     * directamente en la carpeta covers/ del usuario en formato JPEG comprimido
+     * y optimizado.
      *
      * @param archivoEbook Archivo del libro digital.
      * @param idLibro ID único del libro para nombrar la portada.
      * @param rutaUsuario Carpeta de datos del usuario donde está covers/.
-     * @return Ruta absoluta del archivo de portada guardado (.jpg), o null si falló.
+     * @return Ruta absoluta del archivo de portada guardado (.jpg), o null si
+     * falló.
      */
     public static String extraerPortadaEbook(File archivoEbook, String idLibro, String rutaUsuario) {
         if (archivoEbook == null || !archivoEbook.exists() || idLibro == null || idLibro.isBlank()
@@ -586,18 +595,24 @@ public class EbookMetadataService {
         if (nombre.endsWith(".epub")) {
             try (ZipFile zip = new ZipFile(archivoEbook)) {
                 String opfPath = encontrarOpfPath(zip);
-                if (opfPath == null) opfPath = "content.opf";
+                if (opfPath == null) {
+                    opfPath = "content.opf";
+                }
                 ZipEntry opfEntry = zip.getEntry(opfPath);
                 if (opfEntry == null) {
                     opfPath = buscarEntradaConExtension(zip, ".opf");
-                    if (opfPath != null) opfEntry = zip.getEntry(opfPath);
+                    if (opfPath != null) {
+                        opfEntry = zip.getEntry(opfPath);
+                    }
                 }
 
                 ZipEntry coverEntry = null;
                 if (opfEntry != null) {
                     String opfDir = "";
                     int lastSlash = opfPath.lastIndexOf('/');
-                    if (lastSlash >= 0) opfDir = opfPath.substring(0, lastSlash + 1);
+                    if (lastSlash >= 0) {
+                        opfDir = opfPath.substring(0, lastSlash + 1);
+                    }
                     Document doc = parsearXml(zip.getInputStream(opfEntry));
                     if (doc != null) {
                         coverEntry = buscarCoverEntryEnOpf(zip, doc, opfDir);
@@ -647,12 +662,14 @@ public class EbookMetadataService {
     }
 
     /**
-     * Comprueba si un libro digital carece de portada válida localmente y, si es así,
-     * extrae automáticamente la portada desde su archivo digital (.epub o .pdf).
+     * Comprueba si un libro digital carece de portada válida localmente y, si
+     * es así, extrae automáticamente la portada desde su archivo digital (.epub
+     * o .pdf).
      *
      * @param libro Libro a verificar y actualizar.
      * @param rutaUsuario Carpeta de datos del usuario.
-     * @return true si se extrajo y asignó una nueva portada; false en caso contrario.
+     * @return true si se extrajo y asignó una nueva portada; false en caso
+     * contrario.
      */
     public static boolean asegurarPortadaEbook(Libro libro, String rutaUsuario) {
         if (libro == null || !libro.isEsDigital() || libro.getRutaArchivoDigital() == null || libro.getRutaArchivoDigital().isBlank()) {
@@ -766,7 +783,8 @@ public class EbookMetadataService {
     }
 
     /**
-     * Guarda la portada desde bytes en la carpeta covers/ del usuario, optimizándola con ImageLoader.
+     * Guarda la portada desde bytes en la carpeta covers/ del usuario,
+     * optimizándola con ImageLoader.
      */
     private static void guardarPortadaDesdeBytes(byte[] bytes, Libro libro,
             String rutaUsuario) {

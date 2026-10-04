@@ -33,16 +33,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Servidor HTTP local ultra ligero en loopback (127.0.0.1) basado exclusivamente
- * en las clases estándar de sockets de {@code java.base}.
- * <p>
+ * Servidor HTTP local ultra ligero en loopback (127.0.0.1) basado
+ * exclusivamente en las clases estándar de sockets de {@code java.base}.
+ * 
  * Transmite archivos EPUB al visor WebView por bloques de 64 KB (streaming),
- * eliminando la necesidad de leer archivos de decenas de megabytes en memoria
- * o convertirlos a Base64 en el hilo de interfaz gráfica de JavaFX.
- * </p>
+ * eliminando la necesidad de leer archivos de decenas de megabytes en memoria o
+ * convertirlos a Base64 en el hilo de interfaz gráfica de JavaFX.
+ * 
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class EpubStreamServer {
 
@@ -56,7 +56,8 @@ public class EpubStreamServer {
     private int port;
 
     /**
-     * Construye una nueva instancia del servidor de streaming para el archivo EPUB indicado.
+     * Construye una nueva instancia del servidor de streaming para el archivo
+     * EPUB indicado.
      *
      * @param archivo Archivo EPUB existente en el sistema de archivos local.
      * @throws IllegalArgumentException Si el archivo es nulo o no existe.
@@ -69,9 +70,11 @@ public class EpubStreamServer {
     }
 
     /**
-     * Inicia el servidor HTTP local asignando automáticamente un puerto libre en 127.0.0.1.
+     * Inicia el servidor HTTP local asignando automáticamente un puerto libre
+     * en 127.0.0.1.
      *
-     * @return La URL HTTP local para acceder al recurso (ej.: http://127.0.0.1:54321/book.epub).
+     * @return La URL HTTP local para acceder al recurso (ej.:
+     * http://127.0.0.1:54321/book.epub).
      * @throws IOException Si ocurre un fallo al abrir el ServerSocket.
      */
     public synchronized String start() throws IOException {
@@ -107,8 +110,7 @@ public class EpubStreamServer {
 
     private void handleClient(Socket client) {
         try (client;
-             InputStream in = client.getInputStream();
-             OutputStream out = client.getOutputStream()) {
+                InputStream in = client.getInputStream(); OutputStream out = client.getOutputStream()) {
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             String requestLine = reader.readLine();
@@ -174,14 +176,16 @@ public class EpubStreamServer {
      *
      * @return Número de puerto local.
      */
-     public int getPort() {
+    public int getPort() {
         return port;
     }
 
     /**
-     * Comprueba si el servidor HTTP local se encuentra actualmente en ejecución y aceptando conexiones.
+     * Comprueba si el servidor HTTP local se encuentra actualmente en ejecución
+     * y aceptando conexiones.
      *
-     * @return {@code true} si el socket del servidor está abierto y activo; {@code false} en caso contrario.
+     * @return {@code true} si el socket del servidor está abierto y activo;
+     * {@code false} en caso contrario.
      */
     public boolean isRunning() {
         return running && serverSocket != null && !serverSocket.isClosed();

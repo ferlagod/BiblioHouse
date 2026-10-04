@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * estrellitas.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class DetalleLibroController {
 
@@ -152,14 +152,18 @@ public class DetalleLibroController {
         EstadoLectura estadoLectura = libroActual.getEstadoLecturaEnum();
         lblEstadoLectura.setText(estadoLectura.getEtiqueta());
         switch (estadoLectura) {
-            case LEIDO -> lblEstadoLectura.setStyle(
-                    "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            case LEYENDO -> lblEstadoLectura.setStyle(
-                    "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            case ABANDONADO -> lblEstadoLectura.setStyle(
-                    "-fx-background-color: #f1f3f4; -fx-text-fill: #5f6368; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
-            case PENDIENTE -> lblEstadoLectura.setStyle(
-                    "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+            case LEIDO ->
+                lblEstadoLectura.setStyle(
+                        "-fx-background-color: #e6f4ea; -fx-text-fill: #1e8e3e; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+            case LEYENDO ->
+                lblEstadoLectura.setStyle(
+                        "-fx-background-color: #fff3e0; -fx-text-fill: #e65100; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+            case ABANDONADO ->
+                lblEstadoLectura.setStyle(
+                        "-fx-background-color: #f1f3f4; -fx-text-fill: #5f6368; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
+            case PENDIENTE ->
+                lblEstadoLectura.setStyle(
+                        "-fx-background-color: #fce8e6; -fx-text-fill: #c5221f; -fx-background-radius: 12; -fx-padding: 4 12 4 12; -fx-font-weight: bold;");
         }
         lblEstadoLectura.setVisible(true);
 
@@ -267,8 +271,10 @@ public class DetalleLibroController {
     }
 
     private void actualizarUIProgreso() {
-        if (boxProgreso == null || libroActual == null) return;
-        
+        if (boxProgreso == null || libroActual == null) {
+            return;
+        }
+
         EstadoLectura estado = libroActual.getEstadoLecturaEnum();
         if (estado != EstadoLectura.LEYENDO) {
             boxProgreso.setOpacity(0.5);
@@ -282,40 +288,48 @@ public class DetalleLibroController {
 
         int actual = libroActual.getPaginaActual();
         int totales = libroActual.getPaginasTotales();
-        
+
         double progreso = (totales > 0) ? (double) actual / totales : 0.0;
-        if (progreso > 1.0) progreso = 1.0;
-        if (progreso < 0.0) progreso = 0.0;
-        
+        if (progreso > 1.0) {
+            progreso = 1.0;
+        }
+        if (progreso < 0.0) {
+            progreso = 0.0;
+        }
+
         progressBarLectura.setProgress(progreso);
-        
+
         int porcentaje = (int) (progreso * 100);
         lblPorcentajeProgreso.setText(porcentaje + "%");
-        
+
         txtPaginaActual.setText(String.valueOf(actual));
         lblPaginasTotalesProgreso.setText(LanguageManager.getString("detail.progress.of", "de ") + totales);
     }
 
     @FXML
     private void actualizarProgresoRapido(ActionEvent event) {
-        if (txtPaginaActual == null || libroActual == null) return;
-        
+        if (txtPaginaActual == null || libroActual == null) {
+            return;
+        }
+
         try {
             int nuevaPagina = Integer.parseInt(txtPaginaActual.getText().trim());
-            if (nuevaPagina < 0) nuevaPagina = 0;
+            if (nuevaPagina < 0) {
+                nuevaPagina = 0;
+            }
             if (nuevaPagina > libroActual.getPaginasTotales()) {
                 nuevaPagina = libroActual.getPaginasTotales();
             }
-            
+
             libroActual.setPaginaActual(nuevaPagina);
             this.wasModified = true;
-            
+
             actualizarUIProgreso();
-            
+
             if (onSyncRequested != null) {
                 onSyncRequested.run();
             }
-            
+
         } catch (NumberFormatException e) {
             txtPaginaActual.setText(String.valueOf(libroActual.getPaginaActual()));
         }
@@ -466,7 +480,7 @@ public class DetalleLibroController {
             alert.showAndWait();
             return;
         }
-        
+
         if (archivo.getName().toLowerCase().endsWith(".epub")) {
             // Abrir con lector interno
             try {
@@ -475,11 +489,11 @@ public class DetalleLibroController {
                 Parent root = loader.load();
                 LectorDigitalController controller = loader.getController();
                 controller.setLibro(libroActual);
-                
+
                 if (libroActual.getEstadoLecturaEnum() != EstadoLectura.LEYENDO) {
                     libroActual.setEstadoLecturaEnum(EstadoLectura.LEYENDO);
                 }
-                
+
                 controller.setOnSyncRequested(() -> {
                     actualizarUIProgreso();
                     if (onSyncRequested != null) {
@@ -487,7 +501,7 @@ public class DetalleLibroController {
                     }
                     wasModified = true;
                 });
-                
+
                 Stage stage = new Stage();
                 stage.setTitle(LanguageManager.getString("detail.reader.title", "Lector: ") + libroActual.getTitulo());
                 stage.setScene(new Scene(root, 900, 700));
@@ -521,49 +535,55 @@ public class DetalleLibroController {
 
     @FXML
     private void convertirFormato(ActionEvent event) {
-        if (libroActual == null || libroActual.getRutaArchivoDigital() == null) return;
-        
+        if (libroActual == null || libroActual.getRutaArchivoDigital() == null) {
+            return;
+        }
+
         File archivoOrig = new File(libroActual.getRutaArchivoDigital());
-        if (!archivoOrig.exists()) return;
-        
+        if (!archivoOrig.exists()) {
+            return;
+        }
+
         String nombre = archivoOrig.getName().toLowerCase();
         String targetExt = nombre.endsWith(".epub") ? "pdf" : "epub";
-        
+
         javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
         confirm.setTitle(LanguageManager.getString("detail.convert.title", "Convertir Formato"));
         confirm.setHeaderText(LanguageManager.getString("detail.convert.header", "Conversión usando Calibre"));
         String formatMsg = LanguageManager.getString("detail.convert.content", "Vamos a intentar convertir el archivo a %s.\nEsto requiere que tengas Calibre instalado en tu ordenador y accesible ('ebook-convert' en el PATH).\n\n¿Deseas continuar?");
         confirm.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
-                
+
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
                 realizarConversion(archivoOrig, targetExt);
             }
         });
     }
-    
+
     private void realizarConversion(File archivoOrig, String targetExt) {
         javafx.concurrent.Task<File> task = new javafx.concurrent.Task<>() {
             @Override
             protected File call() throws Exception {
                 String baseName = archivoOrig.getName();
                 int dotIndex = baseName.lastIndexOf('.');
-                if (dotIndex > 0) baseName = baseName.substring(0, dotIndex);
+                if (dotIndex > 0) {
+                    baseName = baseName.substring(0, dotIndex);
+                }
                 String targetName = baseName + "." + targetExt;
                 File targetFile = new File(archivoOrig.getParentFile(), targetName);
-                
+
                 ProcessBuilder pb = new ProcessBuilder("ebook-convert", archivoOrig.getAbsolutePath(), targetFile.getAbsolutePath());
                 pb.redirectErrorStream(true);
                 Process process = pb.start();
                 int exitCode = process.waitFor();
-                
+
                 if (exitCode != 0 || !targetFile.exists()) {
                     throw new Exception("Error en la conversión. Salida del proceso: " + exitCode);
                 }
                 return targetFile;
             }
         };
-        
+
         task.setOnSucceeded(e -> {
             javafx.scene.control.Alert ok = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
             ok.setTitle(LanguageManager.getString("detail.convert.success.title", "Éxito"));
@@ -571,13 +591,15 @@ public class DetalleLibroController {
             String formatMsg = LanguageManager.getString("detail.convert.success.content", "Conversión completada. El archivo ha sido convertido a %s");
             ok.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
             ok.show();
-            
+
             libroActual.setRutaArchivoDigital(task.getValue().getAbsolutePath());
             wasModified = true;
-            if (onSyncRequested != null) onSyncRequested.run();
+            if (onSyncRequested != null) {
+                onSyncRequested.run();
+            }
             cargarDatos();
         });
-        
+
         task.setOnFailed(e -> {
             javafx.scene.control.Alert err = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
             err.setTitle(LanguageManager.getString("detail.convert.error.title", "Error de Conversión"));
@@ -586,7 +608,7 @@ public class DetalleLibroController {
             err.setContentText(String.format(formatMsg, task.getException().getMessage()));
             err.show();
         });
-        
+
         new Thread(task).start();
     }
 

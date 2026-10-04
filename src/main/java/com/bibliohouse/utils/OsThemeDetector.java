@@ -6,10 +6,19 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.utils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,7 +34,7 @@ import javafx.application.Platform;
  * y Linux (GNOME/Freedesktop color-scheme).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class OsThemeDetector {
 
@@ -36,7 +45,8 @@ public class OsThemeDetector {
     private static ScheduledExecutorService scheduler;
 
     /**
-     * Comprueba si el sistema operativo se encuentra actualmente en modo oscuro.
+     * Comprueba si el sistema operativo se encuentra actualmente en modo
+     * oscuro.
      *
      * @return true si el sistema está en modo oscuro, false si es claro.
      */
@@ -95,7 +105,7 @@ public class OsThemeDetector {
                     return dark;
                 }
             }
-        } catch (Throwable t) {
+        } catch (IOException | InterruptedException t) {
             LOGGER.log(Level.FINE, "No se pudo detectar el modo del sistema: {0}", t.getMessage());
         } finally {
             if (process != null && process.isAlive()) {
@@ -106,10 +116,12 @@ public class OsThemeDetector {
     }
 
     /**
-     * Inicia una tarea programada periódica para sincronizar dinámicamente el tema
-     * cuando el usuario cambia el tema del sistema operativo (por ejemplo, al anochecer/amanecer).
+     * Inicia una tarea programada periódica para sincronizar dinámicamente el
+     * tema cuando el usuario cambia el tema del sistema operativo (por ejemplo,
+     * al anochecer/amanecer).
      *
-     * @param onThemeChanged Callback ejecutado en el hilo de JavaFX con el nuevo estado (true = oscuro).
+     * @param onThemeChanged Callback ejecutado en el hilo de JavaFX con el
+     * nuevo estado (true = oscuro).
      */
     public static synchronized void startAutoSync(Consumer<Boolean> onThemeChanged) {
         if (scheduler != null && !scheduler.isShutdown()) {

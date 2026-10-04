@@ -24,7 +24,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -37,13 +36,13 @@ import java.util.concurrent.CompletableFuture;
  * páginas, ajuste del tamaño de fuente y seguimiento del progreso de lectura,
  * que se sincroniza de vuelta al modelo del libro.
  *
- * <p>La comunicación entre JavaFX y el visor JavaScript se realiza mediante
- * un puente {@code javaBridge} inyectado en el contexto del WebView, lo que
+ * La comunicación entre JavaFX y el visor JavaScript se realiza mediante un
+ * puente {@code javaBridge} inyectado en el contexto del WebView, lo que
  * permite que el JS llame a métodos como {@link #updateProgress(int)} y
- * {@link #logError(String)} directamente.</p>
+ * {@link #logError(String)} directamente.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class LectorDigitalController {
 
@@ -65,7 +64,7 @@ public class LectorDigitalController {
      * mostrado en la cabecera y carga el contenido EPUB en el WebView.
      *
      * @param libro El libro a visualizar. Si es {@code null}, no se realiza
-     *              ninguna acción.
+     * ninguna acción.
      */
     public void setLibro(Libro libro) {
         detenerServidor();
@@ -77,20 +76,21 @@ public class LectorDigitalController {
     }
 
     /**
-     * Registra un callback que se ejecutará cada vez que el progreso de
-     * lectura cambie y deba sincronizarse (por ejemplo, para guardar en JSON).
+     * Registra un callback que se ejecutará cada vez que el progreso de lectura
+     * cambie y deba sincronizarse (por ejemplo, para guardar en JSON).
      *
-     * @param onSyncRequested Acción a ejecutar cuando se solicite sincronización.
+     * @param onSyncRequested Acción a ejecutar cuando se solicite
+     * sincronización.
      */
     public void setOnSyncRequested(Runnable onSyncRequested) {
         this.onSyncRequested = onSyncRequested;
     }
 
     /**
-     * Inicia un mini servidor HTTP local en loopback (127.0.0.1) con puerto efímero
-     * para transmitir el archivo EPUB por bloques (streaming) al visor webkit,
-     * evitando cargar archivos de decenas de megabytes en memoria RAM o convertirlos
-     * a Base64.
+     * Inicia un mini servidor HTTP local en loopback (127.0.0.1) con puerto
+     * efímero para transmitir el archivo EPUB por bloques (streaming) al visor
+     * webkit, evitando cargar archivos de decenas de megabytes en memoria RAM o
+     * convertirlos a Base64.
      *
      * @param archivo Archivo EPUB físico en disco.
      * @return URL local para que el visor JavaScript cargue el EPUB.
@@ -116,14 +116,18 @@ public class LectorDigitalController {
 
     /**
      * Carga el visor EPUB en el WebView. Transmite el archivo digital mediante
-     * el servidor HTTP local ligero. Si el streaming falla por restricciones del
-     * sistema, recurre a un fallback asíncrono fuera del hilo de interfaz.
+     * el servidor HTTP local ligero. Si el streaming falla por restricciones
+     * del sistema, recurre a un fallback asíncrono fuera del hilo de interfaz.
      */
     private void cargarLector() {
-        if (libroActual.getRutaArchivoDigital() == null) return;
+        if (libroActual.getRutaArchivoDigital() == null) {
+            return;
+        }
 
         File archivo = new File(libroActual.getRutaArchivoDigital());
-        if (!archivo.exists()) return;
+        if (!archivo.exists()) {
+            return;
+        }
 
         URL urlHTML = getClass().getResource("/com/ferlagod/bibliohousefx/reader/epub_reader.html");
         if (urlHTML == null) {
@@ -145,7 +149,7 @@ public class LectorDigitalController {
                 try {
                     String epubUrl = iniciarServidorLocal(archivo);
                     webViewLector.getEngine().executeScript("openEpubUrl('" + epubUrl + "', " + finalStartPercent + ")");
-                } catch (Exception e) {
+                } catch (IOException e) {
                     System.err.println("Aviso: No se pudo iniciar streaming HTTP local, recurriendo a fallback asíncrono: " + e.getMessage());
                     CompletableFuture.runAsync(() -> {
                         try {
@@ -155,7 +159,7 @@ public class LectorDigitalController {
                                 window.setMember("epubBase64", base64);
                                 webViewLector.getEngine().executeScript("openEpubBase64(window.epubBase64, " + finalStartPercent + ")");
                             });
-                        } catch (Exception ex) {
+                        } catch (IOException ex) {
                             System.err.println("Error en fallback Base64: " + ex.getMessage());
                         }
                     });
@@ -187,11 +191,11 @@ public class LectorDigitalController {
     private void paginaAnterior(ActionEvent event) {
         webViewLector.getEngine().executeScript("prevPage()");
     }
-    
+
     /**
-     * Aumenta el tamaño de la fuente del visor en un 10%. El cambio se
-     * aplica invocando la función JavaScript {@code setFontSize()} con el
-     * nuevo porcentaje.
+     * Aumenta el tamaño de la fuente del visor en un 10%. El cambio se aplica
+     * invocando la función JavaScript {@code setFontSize()} con el nuevo
+     * porcentaje.
      *
      * @param event El evento del botón pulsado.
      */
@@ -202,8 +206,8 @@ public class LectorDigitalController {
     }
 
     /**
-     * Disminuye el tamaño de la fuente del visor en un 10%, con un mínimo
-     * del 50% para evitar que el texto sea ilegible.
+     * Disminuye el tamaño de la fuente del visor en un 10%, con un mínimo del
+     * 50% para evitar que el texto sea ilegible.
      *
      * @param event El evento del botón pulsado.
      */
@@ -225,7 +229,7 @@ public class LectorDigitalController {
      */
     public void updateProgress(int percentage) {
         this.currentPercentage = percentage;
-        
+
         // Actualizar UI
         javafx.application.Platform.runLater(() -> {
             lblProgreso.setText("Progreso: " + percentage + "%");
@@ -245,8 +249,8 @@ public class LectorDigitalController {
     }
 
     /**
-     * Callback invocado desde JavaScript para registrar errores del visor
-     * EPUB en la consola de errores estándar.
+     * Callback invocado desde JavaScript para registrar errores del visor EPUB
+     * en la consola de errores estándar.
      *
      * @param message El mensaje de error a registrar.
      */

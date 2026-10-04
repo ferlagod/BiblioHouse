@@ -27,7 +27,7 @@ import java.util.UUID;
  * el libro, cuándo se lo llevó y cuándo lo devolvió (si es que ya lo devolvió).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class Prestamo {
 
@@ -80,8 +80,9 @@ public class Prestamo {
     }
 
     /**
-     * Constructor súper útil que crea un préstamo pasándole directamente el 
-     * Libro y el Socio. Él solito saca los datos de ambos y le pone la fecha de hoy.
+     * Constructor súper útil que crea un préstamo pasándole directamente el
+     * Libro y el Socio. Él solito saca los datos de ambos y le pone la fecha de
+     * hoy.
      *
      * @param libro El libro que le estamos prestando.
      * @param socio La persona que se lo lleva a casa.
@@ -181,7 +182,8 @@ public class Prestamo {
     }
 
     /**
-     * Nos dice qué día nos devolvió el libro (si es que lo ha devuelto, si no, da null).
+     * Nos dice qué día nos devolvió el libro (si es que lo ha devuelto, si no,
+     * da null).
      *
      * @return La fecha de devolución, o null si aún lo tiene secuestrado.
      */
@@ -190,8 +192,9 @@ public class Prestamo {
     }
 
     /**
-     * Nos da la fecha de devolución en un texto bonito para enseñar en la pantalla.
-     * Si no lo ha devuelto todavía, nos devuelve la palabra "Pendiente".
+     * Nos da la fecha de devolución en un texto bonito para enseñar en la
+     * pantalla. Si no lo ha devuelto todavía, nos devuelve la palabra
+     * "Pendiente".
      *
      * @return La fecha bonita o el texto "Pendiente".
      */
@@ -266,4 +269,3 @@ public class Prestamo {
         return Objects.hash(libroId, numeroSocio, fechaPrestamo);
     }
 }
-

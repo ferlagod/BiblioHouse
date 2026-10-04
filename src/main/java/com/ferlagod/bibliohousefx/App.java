@@ -31,7 +31,7 @@ import java.io.IOException;
  * elegimos idioma y mostramos la primera pantalla, la de login.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class App extends Application {
 
@@ -69,7 +69,8 @@ public class App extends Application {
     }
 
     /**
-     * Obtiene el locale actual configurado en la aplicación delegando en LanguageManager.
+     * Obtiene el locale actual configurado en la aplicación delegando en
+     * LanguageManager.
      *
      * @return Objeto {@link java.util.Locale} que representa el locale actual.
      */
@@ -94,7 +95,6 @@ public class App extends Application {
      * Devuelve el ResourceBundle actual para usar traducciones desde código
      * Java delegando en LanguageManager.
      *
-     * @return el ResourceBundle activo.
      */
     public static final String DENSITY_COMPACT = "Compacto";
     public static final String DENSITY_STANDARD = "Estándar";
@@ -112,13 +112,15 @@ public class App extends Application {
     }
 
     /**
-     * Registra una escena para mantener sincronizada su escala de densidad y tema
-     * visual de accesibilidad en tiempo real.
+     * Registra una escena para mantener sincronizada su escala de densidad y
+     * tema visual de accesibilidad en tiempo real.
      *
      * @param sc Escena a registrar.
      */
     public static void registerScene(Scene sc) {
-        if (sc == null) return;
+        if (sc == null) {
+            return;
+        }
         activeScenes.add(sc);
         sc.rootProperty().addListener((obs, oldR, newR) -> {
             if (newR != null) {
@@ -132,9 +134,13 @@ public class App extends Application {
 
     /**
      * Aplica la escala tipográfica y de espaciado a una escena específica.
+     * @param sc Escala tipográfica
+     * @param density Espacio de una escena
      */
     public static void applyDensityToScene(Scene sc, String density) {
-        if (sc == null || sc.getRoot() == null) return;
+        if (sc == null || sc.getRoot() == null) {
+            return;
+        }
         Parent root = sc.getRoot();
         root.getStyleClass().removeAll("density-compact", "density-standard", "density-accessible");
         String styleClass;
@@ -152,16 +158,23 @@ public class App extends Application {
         root.getStyleClass().add(styleClass);
 
         String curStyle = root.getStyle();
-        if (curStyle == null) curStyle = "";
+        if (curStyle == null) {
+            curStyle = "";
+        }
         curStyle = curStyle.replaceAll("-fx-font-size:[^;]+;?", "").trim();
         root.setStyle((curStyle.isEmpty() ? "" : curStyle + " ") + "-fx-font-size: " + fontSize + "px;");
     }
 
     /**
-     * Aplica las clases de alto contraste según el tema activo a una escena específica.
+     * Aplica las clases de alto contraste según el tema activo a una escena
+     * específica.
+     * @param sc Clases de contraste
+     * @param themeName Tema activo
      */
     public static void applyThemeToScene(Scene sc, String themeName) {
-        if (sc == null || sc.getRoot() == null) return;
+        if (sc == null || sc.getRoot() == null) {
+            return;
+        }
         Parent root = sc.getRoot();
         root.getStyleClass().removeAll("theme-high-contrast-light", "theme-high-contrast-dark", "high-contrast");
         if (themeName != null && (themeName.contains("Alto Contraste") || themeName.contains("High Contrast"))) {
@@ -175,9 +188,11 @@ public class App extends Application {
     }
 
     /**
-     * Aplica globalmente una densidad / escala de interfaz en toda la aplicación.
+     * Aplica globalmente una densidad / escala de interfaz en toda la
+     * aplicación.
      *
-     * @param density Densidad elegida ("Compacto", "Estándar", "Grande / Accesible").
+     * @param density Densidad elegida ("Compacto", "Estándar", "Grande /
+     * Accesible").
      */
     public static void applyDensity(String density) {
         currentDensity = density != null ? density : DENSITY_STANDARD;
@@ -191,6 +206,7 @@ public class App extends Application {
 
     /**
      * Devuelve la densidad tipográfica actual configurada.
+     * @return Densidad de la tipografía
      */
     public static String getCurrentDensity() {
         return currentDensity;
@@ -198,6 +214,7 @@ public class App extends Application {
 
     /**
      * Devuelve el tema visual actual configurado.
+     * @return Tema visual actual
      */
     public static String getCurrentTheme() {
         return currentTheme;
@@ -219,22 +236,31 @@ public class App extends Application {
             String os = System.getProperty("os.name", "").toLowerCase();
             if (os.contains("mac")) {
                 stylesheet = dark ? new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet()
-                                  : new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+                        : new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
             } else {
                 stylesheet = dark ? new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet()
-                                  : new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+                        : new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
             }
         } else {
             stylesheet = switch (currentTheme) {
-                case "Oscuro (Primer Dark)" -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
-                case "Nord Claro (Nord Light)" -> new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
-                case "Nord Oscuro (Nord Dark)" -> new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
-                case "Cupertino Claro (macOS Light)" -> new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
-                case "Cupertino Oscuro (macOS Dark)" -> new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
-                case "Dracula" -> new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
-                case THEME_HIGH_CONTRAST_LIGHT -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
-                case THEME_HIGH_CONTRAST_DARK -> new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
-                default -> new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+                case "Oscuro (Primer Dark)" ->
+                    new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
+                case "Nord Claro (Nord Light)" ->
+                    new atlantafx.base.theme.NordLight().getUserAgentStylesheet();
+                case "Nord Oscuro (Nord Dark)" ->
+                    new atlantafx.base.theme.NordDark().getUserAgentStylesheet();
+                case "Cupertino Claro (macOS Light)" ->
+                    new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
+                case "Cupertino Oscuro (macOS Dark)" ->
+                    new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet();
+                case "Dracula" ->
+                    new atlantafx.base.theme.Dracula().getUserAgentStylesheet();
+                case THEME_HIGH_CONTRAST_LIGHT ->
+                    new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
+                case THEME_HIGH_CONTRAST_DARK ->
+                    new atlantafx.base.theme.PrimerDark().getUserAgentStylesheet();
+                default ->
+                    new atlantafx.base.theme.PrimerLight().getUserAgentStylesheet();
             };
         }
         Application.setUserAgentStylesheet(stylesheet);
@@ -416,13 +442,16 @@ public class App extends Application {
         LOGGER.info("[App] Deteniendo aplicación...");
         try {
             com.bibliohouse.utils.ImageLoader.shutdown();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         try {
             com.bibliohouse.utils.SystemNotificationService.shutdown();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         try {
             com.bibliohouse.utils.OsThemeDetector.shutdown();
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         LOGGER.info("[App] Bye bye!");
         System.exit(0);
     }

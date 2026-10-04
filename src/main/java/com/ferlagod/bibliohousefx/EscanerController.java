@@ -53,7 +53,7 @@ import org.opencv.videoio.Videoio;
  * COMPATIBILIDAD CON APPLE SILICON (M1/M2/M3).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class EscanerController {
 
@@ -246,8 +246,9 @@ public class EscanerController {
     }
 
     /**
-     * Convierte una Mat de OpenCV a BufferedImage reutilizando el buffer de bytes
-     * y la instancia de BufferedImage para minimizar la sobrecarga del Garbage Collector.
+     * Convierte una Mat de OpenCV a BufferedImage reutilizando el buffer de
+     * bytes y la instancia de BufferedImage para minimizar la sobrecarga del
+     * Garbage Collector.
      *
      * @param original La Mat de OpenCV a convertir.
      * @return La imagen convertida a BufferedImage.
@@ -290,7 +291,8 @@ public class EscanerController {
     }
 
     /**
-     * Obtiene el búfer reutilizable de bytes empleado para la transferencia de fotogramas de OpenCV.
+     * Obtiene el búfer reutilizable de bytes empleado para la transferencia de
+     * fotogramas de OpenCV.
      *
      * @return Array de bytes reutilizable.
      */
@@ -299,7 +301,8 @@ public class EscanerController {
     }
 
     /**
-     * Obtiene la instancia reutilizable de {@link BufferedImage} que evita asignaciones de memoria a 30 FPS.
+     * Obtiene la instancia reutilizable de {@link BufferedImage} que evita
+     * asignaciones de memoria a 30 FPS.
      *
      * @return Instancia de {@link BufferedImage} reutilizada.
      */

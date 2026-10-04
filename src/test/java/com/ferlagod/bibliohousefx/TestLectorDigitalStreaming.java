@@ -27,15 +27,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para validar el servidor HTTP embebido de streaming
- * de archivos EPUB en LectorDigitalController.
+ * Pruebas unitarias para validar el servidor HTTP embebido de streaming de
+ * archivos EPUB en LectorDigitalController.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 class TestLectorDigitalStreaming {
 

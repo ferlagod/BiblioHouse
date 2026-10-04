@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * cambios en disco.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class LibroService {
 
@@ -39,7 +39,7 @@ public class LibroService {
     /**
      * Crea una nueva instancia de LibroService.
      *
-     * @param jsonManager         Gestor de persistencia para guardar los cambios.
+     * @param jsonManager Gestor de persistencia para guardar los cambios.
      * @param listaLibrosCompleta Lista completa de libros de la biblioteca.
      */
     public LibroService(JsonManager jsonManager, List<Libro> listaLibrosCompleta) {
@@ -54,7 +54,7 @@ public class LibroService {
      * los duplicados se eliminan.
      *
      * @return Un informe con los libros fusionados, o null si no se encontraron
-     *         duplicados.
+     * duplicados.
      */
     public String buscarYFusionarDuplicados() {
         if (listaLibrosCompleta == null || listaLibrosCompleta.isEmpty()) {
@@ -121,7 +121,7 @@ public class LibroService {
      * especificada. Asegura que el stock no sea negativo y guarda los cambios
      * en disco.
      *
-     * @param libro     Libro cuyo stock se actualizará.
+     * @param libro Libro cuyo stock se actualizará.
      * @param variacion Cantidad a sumar (positiva) o restar (negativa).
      */
     public void actualizarStock(Libro libro, int variacion) {

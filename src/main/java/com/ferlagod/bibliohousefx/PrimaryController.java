@@ -70,7 +70,6 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
@@ -83,11 +82,11 @@ import javafx.util.Duration;
 import org.controlsfx.control.NotificationPane;
 import com.bibliohouse.utils.SystemNotificationService;
 
-
 /**
- * Controlador principal y orquestador de BiblioHouse. Coordina la carga de datos,
- * el menú global, los atajos de teclado y la comunicación entre los subcontroladores
- * modulares (Sidebar, Catálogo, Gestión de Libros, Préstamos, Historial, Wishlist y Sagas).
+ * Controlador principal y orquestador de BiblioHouse. Coordina la carga de
+ * datos, el menú global, los atajos de teclado y la comunicación entre los
+ * subcontroladores modulares (Sidebar, Catálogo, Gestión de Libros, Préstamos,
+ * Historial, Wishlist y Sagas).
  *
  * @author ferlagod (Fernando Lago Dávila)
  * @version 2.1
@@ -280,12 +279,13 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Comprueba en segundo plano si existen cambios más recientes en NextCloud al iniciar.
-     * Si los hay, descarga los datos actualizados y las nuevas portadas sin bloquear la interfaz,
-     * recarga las colecciones y notifica a través de AppEventBus.
+     * Comprueba en segundo plano si existen cambios más recientes en NextCloud
+     * al iniciar. Si los hay, descarga los datos actualizados y las nuevas
+     * portadas sin bloquear la interfaz, recarga las colecciones y notifica a
+     * través de AppEventBus.
      *
      * @param syncService Servicio de sincronización configurado con NextCloud.
-     * @param localDir    Directorio local de datos del usuario.
+     * @param localDir Directorio local de datos del usuario.
      */
     private void iniciarPullOnStartup(NextCloudSyncService syncService, String localDir) {
         Platform.runLater(this::iniciarAnimacionSincronizacion);
@@ -310,7 +310,7 @@ public class PrimaryController implements Initializable {
                     LOGGER.info("NextCloud: Biblioteca local ya se encuentra al día.");
                     Platform.runLater(() -> detenerAnimacionSincronizacion(true));
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 // Silencioso para no bloquear ni molestar al usuario si no hay conexión a internet
                 LOGGER.log(Level.INFO, "Sincronización al inicio omitida (sin conexión o servidor no disponible): {0}", ex.getMessage());
                 Platform.runLater(() -> detenerAnimacionSincronizacion(false));
@@ -321,8 +321,9 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Ejecuta una sincronización bidireccional manual completa al pulsar el botón de la barra superior.
-     * Sube cambios locales, descarga cambios remotos y nuevas portadas con animación visual.
+     * Ejecuta una sincronización bidireccional manual completa al pulsar el
+     * botón de la barra superior. Sube cambios locales, descarga cambios
+     * remotos y nuevas portadas con animación visual.
      */
     @FXML
     public void sincronizarNextCloudManual() {
@@ -362,7 +363,7 @@ public class PrimaryController implements Initializable {
                         detenerAnimacionSincronizacion(true);
                     });
                 });
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Error en sincronización manual rápida: {0}", ex.getMessage());
                 Platform.runLater(() -> {
                     SystemNotificationService.notificarAlerta("Error de Sincronización",
@@ -376,10 +377,13 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Inicia la animación de rotación continua del icono del botón de sincronización rápida.
+     * Inicia la animación de rotación continua del icono del botón de
+     * sincronización rápida.
      */
     public void iniciarAnimacionSincronizacion() {
-        if (btnSyncRapido == null) return;
+        if (btnSyncRapido == null) {
+            return;
+        }
         btnSyncRapido.setDisable(true);
         btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error");
         btnSyncRapido.getStyleClass().add("syncing");
@@ -397,12 +401,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Detiene la animación de sincronización mostrando el estado final (éxito o aviso de reintento).
+     * Detiene la animación de sincronización mostrando el estado final (éxito o
+     * aviso de reintento).
      *
      * @param exito true si la operación terminó con éxito, false si falló.
      */
     public void detenerAnimacionSincronizacion(boolean exito) {
-        if (btnSyncRapido == null) return;
+        if (btnSyncRapido == null) {
+            return;
+        }
         if (syncRotateTransition != null) {
             syncRotateTransition.stop();
         }
@@ -414,11 +421,15 @@ public class PrimaryController implements Initializable {
         if (exito) {
             btnSyncRapido.getStyleClass().add("sync-success");
             btnSyncRapido.setText(" Al día");
-            if (lblSyncIcon != null) lblSyncIcon.setText("✓");
+            if (lblSyncIcon != null) {
+                lblSyncIcon.setText("✓");
+            }
         } else {
             btnSyncRapido.getStyleClass().add("sync-error");
             btnSyncRapido.setText(" Reintentar");
-            if (lblSyncIcon != null) lblSyncIcon.setText("⚠️");
+            if (lblSyncIcon != null) {
+                lblSyncIcon.setText("⚠️");
+            }
         }
 
         PauseTransition resetPause = new PauseTransition(Duration.seconds(exito ? 2.5 : 3.5));
@@ -515,7 +526,6 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // ATAJOS DE TECLADO Y PREFERENCIAS
     // =========================================================================
-
     private void configurarIntegracionSistema() {
         if (menuBarPrincipal != null) {
             // Se mantiene dentro de la ventana de la app para que siempre muestre la marca BiblioHouse
@@ -579,7 +589,9 @@ public class PrimaryController implements Initializable {
     }
 
     public void abrirDetalleLibroDirecto(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         this.libroSeleccionado = libro;
         seleccionarPestanaDirecta(1);
         if (gestionLibrosController != null) {
@@ -622,7 +634,6 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // MÉTODOS PÚBLICOS DE ACCESO Y COORDINACIÓN
     // =========================================================================
-
     public String getUsuarioActual() {
         return usuarioActual;
     }
@@ -648,7 +659,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Establece el límite de días permitidos para un préstamo antes de considerarlo vencido.
+     * Establece el límite de días permitidos para un préstamo antes de
+     * considerarlo vencido.
      *
      * @param days Número de días de margen.
      */
@@ -658,7 +670,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Establece el libro actualmente seleccionado por el usuario en cualquiera de las vistas.
+     * Establece el libro actualmente seleccionado por el usuario en cualquiera
+     * de las vistas.
      *
      * @param libro Libro seleccionado.
      */
@@ -676,7 +689,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Actualiza el texto mostrado en la barra de estado inferior de la ventana principal.
+     * Actualiza el texto mostrado en la barra de estado inferior de la ventana
+     * principal.
      *
      * @param mensaje Mensaje de estado.
      */
@@ -691,7 +705,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Muestra una notificación emergente temporal animada en la parte inferior de la ventana.
+     * Muestra una notificación emergente temporal animada en la parte inferior
+     * de la ventana.
      *
      * @param mensaje Texto descriptivo a notificar.
      */
@@ -707,9 +722,11 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Obtiene la ventana nativa (Window / Stage) contenedora de la escena principal.
+     * Obtiene la ventana nativa (Window / Stage) contenedora de la escena
+     * principal.
      *
-     * @return Instancia de {@link Window} o {@code null} si aún no está asociada.
+     * @return Instancia de {@link Window} o {@code null} si aún no está
+     * asociada.
      */
     public Window getWindow() {
         if (mainContainer != null && mainContainer.getScene() != null) {
@@ -719,10 +736,11 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Configura la escena en el escenario especificado aplicando la hoja de estilos global.
+     * Configura la escena en el escenario especificado aplicando la hoja de
+     * estilos global.
      *
      * @param stage Escenario (Stage) a configurar.
-     * @param root  Nodo raíz cargado del FXML.
+     * @param root Nodo raíz cargado del FXML.
      */
     public void setScene(Stage stage, Parent root) {
         Scene scene = new Scene(root);
@@ -733,9 +751,10 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Muestra una alerta informativa garantizando su ejecución en el hilo gráfico de JavaFX.
+     * Muestra una alerta informativa garantizando su ejecución en el hilo
+     * gráfico de JavaFX.
      *
-     * @param titulo  Título de la ventana de diálogo.
+     * @param titulo Título de la ventana de diálogo.
      * @param mensaje Contenido textual de la alerta.
      */
     public void mostrarAlertaPublic(String titulo, String mensaje) {
@@ -749,7 +768,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Solicita la persistencia en disco de los libros en segundo plano con control de concurrencia debounced.
+     * Solicita la persistencia en disco de los libros en segundo plano con
+     * control de concurrencia debounced.
      */
     public void guardarLibrosEnDisco() {
         if (jsonManager != null && listaLibrosCompleta != null) {
@@ -760,9 +780,9 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // GESTIÓN DE PRÉSTAMOS Y SOCIOS
     // =========================================================================
-
     /**
-     * Obtiene una sublista filtrada con los libros poseídos que tienen stock disponible (> 0).
+     * Obtiene una sublista filtrada con los libros poseídos que tienen stock
+     * disponible (> 0).
      *
      * @return Lista observable de libros disponibles para prestar.
      */
@@ -774,7 +794,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Refresca el desplegable de libros disponibles en el formulario de préstamos.
+     * Refresca el desplegable de libros disponibles en el formulario de
+     * préstamos.
      */
     public void actualizarComboLibrosDisponibles() {
         if (pestanaPrestamosController != null) {
@@ -783,7 +804,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Recarga la lista de socios desde el archivo JSON y refresca el controlador de préstamos.
+     * Recarga la lista de socios desde el archivo JSON y refresca el
+     * controlador de préstamos.
      */
     public void recargarDatosPrestamos() {
         List<Socio> socios = jsonManager.cargarSocios();
@@ -795,7 +817,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Actualiza los predicados de filtrado de préstamos activos e históricos y refresca la cuadrícula.
+     * Actualiza los predicados de filtrado de préstamos activos e históricos y
+     * refresca la cuadrícula.
      */
     public void actualizarVistasPrestamo() {
         if (filteredPrestamos != null) {
@@ -811,12 +834,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Cambia a la pestaña de préstamos y preselecciona el libro indicado en el formulario.
+     * Cambia a la pestaña de préstamos y preselecciona el libro indicado en el
+     * formulario.
      *
      * @param libro Libro para el que se va a emitir un préstamo.
      */
     public void prepararPrestamoLibro(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         if (mainTabPane != null && tabPrestamos != null) {
             mainTabPane.getSelectionModel().select(tabPrestamos);
         }
@@ -826,12 +852,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Cambia a la pestaña de préstamos y preselecciona el socio indicado en el formulario.
+     * Cambia a la pestaña de préstamos y preselecciona el socio indicado en el
+     * formulario.
      *
      * @param socio Socio para el que se va a emitir un préstamo.
      */
     public void prepararPrestamoSocio(Socio socio) {
-        if (socio == null) return;
+        if (socio == null) {
+            return;
+        }
         if (mainTabPane != null && tabPrestamos != null) {
             mainTabPane.getSelectionModel().select(tabPrestamos);
         }
@@ -875,7 +904,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Despliega el diálogo modal para crear y registrar un nuevo socio en la base de datos local.
+     * Despliega el diálogo modal para crear y registrar un nuevo socio en la
+     * base de datos local.
      */
     public void nuevoSocioPublic() {
         try {
@@ -903,8 +933,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Despliega la ventana de administración integral de socios, permitiendo editar, eliminar
-     * o ver el historial de préstamos asociados.
+     * Despliega la ventana de administración integral de socios, permitiendo
+     * editar, eliminar o ver el historial de préstamos asociados.
      */
     public void gestionarSociosPublic() {
         try {
@@ -929,10 +959,10 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // WISHLIST Y DETALLE DE LIBROS
     // =========================================================================
-
     /**
-     * Traslada un libro de la lista de deseos a la biblioteca personal como libro poseído (stock 1)
-     * y actualiza ambas listas en disco y en el bus de eventos.
+     * Traslada un libro de la lista de deseos a la biblioteca personal como
+     * libro poseído (stock 1) y actualiza ambas listas en disco y en el bus de
+     * eventos.
      *
      * @param libro Libro deseado adquirido por el usuario.
      */
@@ -955,7 +985,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Solicita una búsqueda rápida de libros para incorporar directamente a la lista de deseos.
+     * Solicita una búsqueda rápida de libros para incorporar directamente a la
+     * lista de deseos.
      */
     public void buscarLibroParaDeseos() {
         TextInputDialog dialog = new TextInputDialog();
@@ -971,13 +1002,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Abre la ventana modal de visualización detallada del libro con ficha completa,
-     * notas de lectura, avance y portadas.
+     * Abre la ventana modal de visualización detallada del libro con ficha
+     * completa, notas de lectura, avance y portadas.
      *
      * @param libro Libro del que se mostrarán los detalles.
      */
     public void mostrarDetalleLibro(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("detalle_libro.fxml"));
             loader.setResources(this.resources);
@@ -1014,7 +1047,9 @@ public class PrimaryController implements Initializable {
      * @param libro Libro a editar.
      */
     public void editarLibro(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("editar_libro.fxml"));
             loader.setResources(this.resources);
@@ -1044,13 +1079,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Permite seleccionar una nueva imagen de portada desde el explorador de archivos
-     * y la asocia al libro indicado.
+     * Permite seleccionar una nueva imagen de portada desde el explorador de
+     * archivos y la asocia al libro indicado.
      *
      * @param libro Libro al que se le cambiará la portada.
      */
     public void cambiarPortada(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar Portada para: " + libro.getTitulo());
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.webp"));
@@ -1066,12 +1103,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Elimina un ejemplar o la totalidad de un libro tras confirmación interactiva del usuario.
+     * Elimina un ejemplar o la totalidad de un libro tras confirmación
+     * interactiva del usuario.
      *
      * @param libro Libro que se va a eliminar.
      */
     public void eliminarLibro(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         if (libro.getCantidad() > 1) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Gestión de Stock");
@@ -1108,12 +1148,15 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Genera un archivo PDF con la etiqueta física que incluye código de barras para lomos y estanterías.
+     * Genera un archivo PDF con la etiqueta física que incluye código de barras
+     * para lomos y estanterías.
      *
      * @param libro Libro físico del que se generará la etiqueta.
      */
     public void generarEtiquetaFisica(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
         if (libro.isEsDigital()) {
             mostrarAlertaPublic("Sin libros físicos", "El libro seleccionado es digital. Las etiquetas solo se generan para libros físicos.");
             return;
@@ -1131,7 +1174,8 @@ public class PrimaryController implements Initializable {
                 notificar("PDF con etiqueta generado con éxito.");
                 try {
                     java.awt.Desktop.getDesktop().open(file);
-                } catch (Exception ignored) {}
+                } catch (IOException ignored) {
+                }
             } catch (Exception e) {
                 mostrarAlertaPublic("Error", "Hubo un problema al generar la etiqueta: " + e.getMessage());
             }
@@ -1139,7 +1183,8 @@ public class PrimaryController implements Initializable {
     }
 
     /**
-     * Abre el lector digital integrado en caso de archivos EPUB o abre la aplicación predeterminada del sistema.
+     * Abre el lector digital integrado en caso de archivos EPUB o abre la
+     * aplicación predeterminada del sistema.
      *
      * @param libro Libro digital a leer.
      */
@@ -1181,10 +1226,11 @@ public class PrimaryController implements Initializable {
                     controller.detenerServidor();
                 });
                 stage.show();
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 try {
                     java.awt.Desktop.getDesktop().open(archivo);
-                } catch (Exception ignored) {}
+                } catch (IOException ignored) {
+                }
             }
         } else {
             try {
@@ -1198,12 +1244,13 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // MENÚ ARCHIVO
     // =========================================================================
-
     @FXML
     private void importarBaseDatos(ActionEvent event) {
         gestorArchivos.importarBaseDatos(getWindow(), jsonManager, listaLibrosCompleta, () -> {
             AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, true));
-            if (sidebarController != null) sidebarController.cargarListaEstanterias();
+            if (sidebarController != null) {
+                sidebarController.cargarListaEstanterias();
+            }
             actualizarComboLibrosDisponibles();
         });
     }
@@ -1235,8 +1282,8 @@ public class PrimaryController implements Initializable {
             if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 int anadidos = 0;
                 for (Libro nuevo : librosImportados) {
-                    boolean existe = listaLibrosCompleta.stream().anyMatch(l ->
-                            (nuevo.getIsbn() != null && !nuevo.getIsbn().isEmpty() && nuevo.getIsbn().equals(l.getIsbn()))
+                    boolean existe = listaLibrosCompleta.stream().anyMatch(l
+                            -> (nuevo.getIsbn() != null && !nuevo.getIsbn().isEmpty() && nuevo.getIsbn().equals(l.getIsbn()))
                             || (nuevo.getTitulo().equalsIgnoreCase(l.getTitulo()) && nuevo.getAutor().equalsIgnoreCase(l.getAutor())));
                     if (!existe) {
                         listaLibrosCompleta.add(nuevo);
@@ -1325,7 +1372,6 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // MENÚ HERRAMIENTAS Y AYUDA
     // =========================================================================
-
     @FXML
     private void buscarDuplicados(ActionEvent event) {
         String reporte = libroService.buscarYFusionarDuplicados();
@@ -1398,7 +1444,9 @@ public class PrimaryController implements Initializable {
             protected Integer call() throws Exception {
                 int actualizadas = 0;
                 for (int i = 0; i < total; i++) {
-                    if (isCancelled()) break;
+                    if (isCancelled()) {
+                        break;
+                    }
                     Libro libro = librosSinPortada.get(i);
                     String status = "Buscando portada (" + (i + 1) + "/" + total + "): " + libro.getTitulo();
                     updateMessage(status);
@@ -1581,13 +1629,35 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // CAMBIO DE IDIOMA (I18N)
     // =========================================================================
+    @FXML
+    private void cambiarAEspanol() {
+        cambiarIdioma("es");
+    }
 
-    @FXML private void cambiarAEspanol() { cambiarIdioma("es"); }
-    @FXML private void cambiarAIngles() { cambiarIdioma("en"); }
-    @FXML private void cambiarACatalan() { cambiarIdioma("ca"); }
-    @FXML private void cambiarAGallego() { cambiarIdioma("gl"); }
-    @FXML private void cambiarAEuskera() { cambiarIdioma("eu"); }
-    @FXML private void cambiarAPortugues() { cambiarIdioma("pt"); }
+    @FXML
+    private void cambiarAIngles() {
+        cambiarIdioma("en");
+    }
+
+    @FXML
+    private void cambiarACatalan() {
+        cambiarIdioma("ca");
+    }
+
+    @FXML
+    private void cambiarAGallego() {
+        cambiarIdioma("gl");
+    }
+
+    @FXML
+    private void cambiarAEuskera() {
+        cambiarIdioma("eu");
+    }
+
+    @FXML
+    private void cambiarAPortugues() {
+        cambiarIdioma("pt");
+    }
 
     private void cambiarIdioma(String codigoLang) {
         try {
@@ -1604,9 +1674,10 @@ public class PrimaryController implements Initializable {
     // =========================================================================
     // SOPORTE PARA COMBOBOX FILTRABLES (Para PrestamosController)
     // =========================================================================
-
     public <T> void setupFilteringComboBoxPublic(ComboBox<T> comboBox, java.util.function.Function<T, String> displayFunc) {
-        if (comboBox == null) return;
+        if (comboBox == null) {
+            return;
+        }
         comboBox.setEditable(true);
         ObservableList<T> originalItems = FXCollections.observableArrayList(comboBox.getItems());
 

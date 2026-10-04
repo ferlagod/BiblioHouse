@@ -30,7 +30,7 @@ import javafx.scene.web.WebView;
  * con el contenido HTML correspondiente al idioma seleccionado.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class HelpController implements Initializable {
 

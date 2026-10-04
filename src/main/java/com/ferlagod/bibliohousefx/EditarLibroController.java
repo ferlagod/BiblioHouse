@@ -23,7 +23,6 @@ import java.util.List;
 import com.bibliohouse.logic.EbookMetadataService;
 import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.Libro;
-import java.util.concurrent.ExecutionException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -45,7 +44,7 @@ import javafx.stage.Stage;
  * autor, portada o gestionar las estanterías.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class EditarLibroController {
 

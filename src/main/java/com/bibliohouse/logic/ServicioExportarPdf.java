@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * todo bien formateado. Útil para tener un backup en papel o para compartir.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class ServicioExportarPdf {
 
@@ -239,7 +239,7 @@ public class ServicioExportarPdf {
                         contentStream = new PDPageContentStream(document, page); // Abrimos nueva página
                         yPosition = page.getMediaBox().getHeight() - MARGIN;
                     }
-                    
+
                     yPosition = agregarLibro(contentStream, libro, yPosition, page.getMediaBox().getWidth());
                 }
             } finally {
@@ -366,8 +366,8 @@ public class ServicioExportarPdf {
 
     /**
      * Limpia el texto para evitar problemas con caracteres especiales en PDF.
-     * Utiliza PdfFontHelper para permitir todos los caracteres Unicode soportados
-     * por la fuente TrueType sin mutilar tildes ni eñes.
+     * Utiliza PdfFontHelper para permitir todos los caracteres Unicode
+     * soportados por la fuente TrueType sin mutilar tildes ni eñes.
      *
      * @param texto Texto original.
      * @return Texto limpio compatible con PDF.

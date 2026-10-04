@@ -6,6 +6,14 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.ferlagod.bibliohousefx;
 
@@ -18,23 +26,24 @@ import javafx.scene.control.MenuBar;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para validar las características de integración nativa con el sistema:
- * detección automática de tema claro/oscuro del SO, servicio de notificaciones nativas,
- * items de la paleta de comandos Spotlight/Raycast y barra de menús global.
+ * Pruebas unitarias para validar las características de integración nativa con
+ * el sistema: detección automática de tema claro/oscuro del SO, servicio de
+ * notificaciones nativas, items de la paleta de comandos Spotlight/Raycast y
+ * barra de menús global.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class TestIntegracionSistema {
 
     @BeforeAll
     public static void initJavaFX() {
         try {
-            Platform.startup(() -> {});
+            Platform.startup(() -> {
+            });
         } catch (IllegalStateException ignored) {
             // Toolkit ya inicializado
         }

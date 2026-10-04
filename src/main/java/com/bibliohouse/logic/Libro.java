@@ -30,7 +30,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class Libro {
 
@@ -89,7 +89,7 @@ public class Libro {
     private long ultimaModificacion = System.currentTimeMillis();
 
     /**
-     * Constructor vacío. Nos sirve para crear un libro sin datos y que el 
+     * Constructor vacío. Nos sirve para crear un libro sin datos y que el
      * programa no se enfade al cargar cosas. Ya le pone un ID aleatorio.
      */
     public Libro() {
@@ -101,7 +101,7 @@ public class Libro {
     }
 
     /**
-     * Constructor para crear el libro con todos los datos de golpe, ideal 
+     * Constructor para crear el libro con todos los datos de golpe, ideal
      * cuando ya sabemos todo sobre él.
      *
      * @param titulo El nombre del libro.
@@ -137,8 +137,8 @@ public class Libro {
     }
 
     /**
-     * Constructor más cortito. Lo usamos cuando guardamos el libro pero 
-     * todavía no lo hemos leído ni puntuado. Nos pone las estrellas a 0.
+     * Constructor más cortito. Lo usamos cuando guardamos el libro pero todavía
+     * no lo hemos leído ni puntuado. Nos pone las estrellas a 0.
      *
      * @param titulo El nombre del libro.
      * @param autor Quien lo ha escrito.
@@ -166,8 +166,8 @@ public class Libro {
     }
 
     /**
-     * Sirve para cambiar el ID del libro. NOTA: ¡Cuidado! Normalmente 
-     * solo lo usa GSON al cargar, no lo toques a mano a menos que sepas qué haces.
+     * Sirve para cambiar el ID del libro. NOTA: ¡Cuidado! Normalmente solo lo
+     * usa GSON al cargar, no lo toques a mano a menos que sepas qué haces.
      *
      * @param id El nuevo ID a guardar.
      */
@@ -284,7 +284,8 @@ public class Libro {
     }
 
     /**
-     * Nos devuelve la ruta (URL o archivo) donde está guardada la foto de portada.
+     * Nos devuelve la ruta (URL o archivo) donde está guardada la foto de
+     * portada.
      *
      * @return La URL o ruta de la portada.
      */
@@ -320,7 +321,8 @@ public class Libro {
     }
 
     /**
-     * Nos devuelve todo el texto de la reseña que hayamos escrito sobre el libro.
+     * Nos devuelve todo el texto de la reseña que hayamos escrito sobre el
+     * libro.
      *
      * @return Lo que pensamos del libro.
      */
@@ -338,8 +340,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice en qué estanterías virtuales hemos metido este libro.
-     * Un libro puede estar en varias.
+     * Nos dice en qué estanterías virtuales hemos metido este libro. Un libro
+     * puede estar en varias.
      *
      * @return Una lista con las estanterías.
      */
@@ -375,8 +377,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice con un 'verdadero' o 'falso' si ya hemos leído este libro.
-     * En realidad, mira si el "estadoLectura" es igual a "Leído".
+     * Nos dice con un 'verdadero' o 'falso' si ya hemos leído este libro. En
+     * realidad, mira si el "estadoLectura" es igual a "Leído".
      *
      * @return true si ya nos lo hemos acabado.
      */
@@ -385,8 +387,8 @@ public class Libro {
     }
 
     /**
-     * Nos permite marcar a mano si ya nos hemos leído el libro o no.
-     * Si lo marcamos como leído, el programa lo sincroniza para que cuadre todo.
+     * Nos permite marcar a mano si ya nos hemos leído el libro o no. Si lo
+     * marcamos como leído, el programa lo sincroniza para que cuadre todo.
      *
      * @param leido true si ya lo hemos terminado.
      */
@@ -402,7 +404,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice en qué estado se encuentra nuestra lectura como enum fuertemente tipado.
+     * Nos dice en qué estado se encuentra nuestra lectura como enum fuertemente
+     * tipado.
      *
      * @return El {@link EstadoLectura} del libro.
      */
@@ -424,7 +427,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice en qué estado se encuentra nuestra lectura (ej: 'Leído', 'Leyendo', 'Pendiente').
+     * Nos dice en qué estado se encuentra nuestra lectura (ej: 'Leído',
+     * 'Leyendo', 'Pendiente').
      *
      * @return El estado de lectura canónico en español.
      */
@@ -436,10 +440,12 @@ public class Libro {
     }
 
     /**
-     * Sirve para decirle al programa cómo va nuestra lectura y actualizar el estado.
-     * Parsea de forma tolerante cadenas en cualquier idioma soportado y las normaliza.
+     * Sirve para decirle al programa cómo va nuestra lectura y actualizar el
+     * estado. Parsea de forma tolerante cadenas en cualquier idioma soportado y
+     * las normaliza.
      *
-     * @param estadoLectura El nuevo estado (ej: 'Leído', 'Read', 'Leyendo', 'Reading').
+     * @param estadoLectura El nuevo estado (ej: 'Leído', 'Read', 'Leyendo',
+     * 'Reading').
      */
     public void setEstadoLectura(String estadoLectura) {
         setEstadoLecturaEnum(EstadoLectura.fromString(estadoLectura));
@@ -464,7 +470,8 @@ public class Libro {
     }
 
     /**
-     * Nos chiva si este libro lo tenemos de verdad o si solo está en la lista de deseos.
+     * Nos chiva si este libro lo tenemos de verdad o si solo está en la lista
+     * de deseos.
      *
      * @return true si lo tenemos, false si es solo un deseo.
      */
@@ -473,7 +480,8 @@ public class Libro {
     }
 
     /**
-     * Nos permite marcar que ya hemos comprado el libro, o pasarlo a lista de deseos.
+     * Nos permite marcar que ya hemos comprado el libro, o pasarlo a lista de
+     * deseos.
      *
      * @param poseido true si ya lo tenemos nosotros.
      */
@@ -500,7 +508,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice qué número de libro es dentro de su saga (por si es el 1, el 2 o el 2.5).
+     * Nos dice qué número de libro es dentro de su saga (por si es el 1, el 2 o
+     * el 2.5).
      *
      * @return El número en la serie.
      */
@@ -519,7 +528,8 @@ public class Libro {
 
     // --- E-BOOK / ARCHIVO DIGITAL ---
     /**
-     * Nos devuelve la ruta en nuestro ordenador de dónde está guardado el archivo digital.
+     * Nos devuelve la ruta en nuestro ordenador de dónde está guardado el
+     * archivo digital.
      *
      * @return La ruta del PDF, EPUB, etc., o null si no hay archivo.
      */
@@ -574,7 +584,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice cuántas páginas tiene en total el libro para calcular cuánto falta.
+     * Nos dice cuántas páginas tiene en total el libro para calcular cuánto
+     * falta.
      *
      * @return El número total de páginas.
      */
@@ -592,7 +603,8 @@ public class Libro {
     }
 
     /**
-     * Nos devuelve todas las notas o citas que hayamos ido guardando mientras leíamos.
+     * Nos devuelve todas las notas o citas que hayamos ido guardando mientras
+     * leíamos.
      *
      * @return Una lista con nuestras notas del diario.
      */
@@ -613,8 +625,9 @@ public class Libro {
     }
 
     /**
-     * Nos da solo el nombre suelto del archivo digital (ej: "harrypotter.epub"),
-     * quitándole toda la ruta larga e incómoda del disco duro.
+     * Nos da solo el nombre suelto del archivo digital (ej:
+     * "harrypotter.epub"), quitándole toda la ruta larga e incómoda del disco
+     * duro.
      *
      * @return El nombre del archivo cortito o null si no hay.
      */
@@ -626,7 +639,7 @@ public class Libro {
     }
 
     /**
-     * Nos dice qué tipo de archivo es el libro (por ejemplo EPUB, PDF) pero 
+     * Nos dice qué tipo de archivo es el libro (por ejemplo EPUB, PDF) pero
      * puesto en letras mayúsculas para que quede bonito.
      *
      * @return El formato del archivo o null si no existe.
@@ -657,7 +670,7 @@ public class Libro {
     }
 
     /**
-     * Nos saca solo el nombre del archivo de la portada que hemos puesto, 
+     * Nos saca solo el nombre del archivo de la portada que hemos puesto,
      * quitándole la ruta larga que tiene delante.
      *
      * @return El nombre del archivo de imagen (ej: "foto.jpg").
@@ -671,7 +684,8 @@ public class Libro {
     }
 
     /**
-     * Nos dice dónde está guardado exactamente este libro en papel (ej: "Salón, Estante 3").
+     * Nos dice dónde está guardado exactamente este libro en papel (ej: "Salón,
+     * Estante 3").
      *
      * @return La ubicación física o null.
      */
@@ -689,7 +703,8 @@ public class Libro {
     }
 
     /**
-     * Obtiene la marca de tiempo (milisegundos) de última modificación del libro.
+     * Obtiene la marca de tiempo (milisegundos) de última modificación del
+     * libro.
      *
      * @return Timestamp de última modificación.
      */
@@ -707,7 +722,8 @@ public class Libro {
     }
 
     /**
-     * Actualiza la marca de tiempo de última modificación al instante actual del sistema.
+     * Actualiza la marca de tiempo de última modificación al instante actual
+     * del sistema.
      */
     public void marcarModificado() {
         this.ultimaModificacion = System.currentTimeMillis();
@@ -742,4 +758,3 @@ public class Libro {
         return Objects.hash(titulo, autor);
     }
 }
-

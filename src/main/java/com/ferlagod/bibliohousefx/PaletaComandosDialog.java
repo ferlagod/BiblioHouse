@@ -6,6 +6,14 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.ferlagod.bibliohousefx;
 
@@ -34,15 +42,17 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 
 /**
- * Paleta de comandos flotante y búsqueda global rápida (estilo Spotlight / Raycast).
- * Se activa mediante el atajo universal Shortcut+K (Cmd+K en macOS / Ctrl+K en Windows/Linux).
+ * Paleta de comandos flotante y búsqueda global rápida (estilo Spotlight /
+ * Raycast). Se activa mediante el atajo universal Shortcut+K (Cmd+K en macOS /
+ * Ctrl+K en Windows/Linux).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class PaletaComandosDialog {
 
     public static class PaletaItem {
+
         private final String icono;
         private final String titulo;
         private final String subtitulo;
@@ -57,11 +67,25 @@ public class PaletaComandosDialog {
             this.accion = accion;
         }
 
-        public String getIcono() { return icono; }
-        public String getTitulo() { return titulo; }
-        public String getSubtitulo() { return subtitulo; }
-        public String getAtajo() { return atajo; }
-        public Runnable getAccion() { return accion; }
+        public String getIcono() {
+            return icono;
+        }
+
+        public String getTitulo() {
+            return titulo;
+        }
+
+        public String getSubtitulo() {
+            return subtitulo;
+        }
+
+        public String getAtajo() {
+            return atajo;
+        }
+
+        public Runnable getAccion() {
+            return accion;
+        }
     }
 
     public static void mostrar(PrimaryController mainController) {

@@ -23,7 +23,7 @@ package com.bibliohouse.logic;
  * apellidos, DNI, etc.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class Socio {
 
@@ -34,14 +34,15 @@ public class Socio {
     private int numeroSocio; // Un número único para identificarlo 
 
     /**
-     * Constructor vacío. Nos sirve para crear un socio sin datos iniciales
-     * y poder ir llenándolos después poco a poco.
+     * Constructor vacío. Nos sirve para crear un socio sin datos iniciales y
+     * poder ir llenándolos después poco a poco.
      */
     public Socio() {
     }
 
     /**
-     * Constructor que nos permite crear un socio dándole todos sus datos de una sola vez.
+     * Constructor que nos permite crear un socio dándole todos sus datos de una
+     * sola vez.
      *
      * @param nombre El nombre de la persona.
      * @param apellidos Los apellidos de la persona.
@@ -141,7 +142,8 @@ public class Socio {
     }
 
     /**
-     * Nos devuelve el número único que identifica a este socio en la biblioteca.
+     * Nos devuelve el número único que identifica a este socio en la
+     * biblioteca.
      *
      * @return El número de socio.
      */
@@ -159,8 +161,9 @@ public class Socio {
     }
 
     /**
-     * Nos devuelve una cadena de texto lista para mostrar en pantalla, por ejemplo
-     * en los desplegables (JComboBox). Queda algo así como "1 - Juan Pérez".
+     * Nos devuelve una cadena de texto lista para mostrar en pantalla, por
+     * ejemplo en los desplegables (JComboBox). Queda algo así como "1 - Juan
+     * Pérez".
      *
      * @return Un texto combinando el número, el nombre y los apellidos.
      */
@@ -195,4 +198,3 @@ public class Socio {
         return (dni != null && !dni.isBlank()) ? dni.trim().toUpperCase().hashCode() : 0;
     }
 }
-

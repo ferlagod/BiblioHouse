@@ -29,7 +29,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -38,7 +37,7 @@ import java.util.ResourceBundle;
  * animaciones de entrada y la simulación de carga inicial.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class SplashController implements Initializable {
 

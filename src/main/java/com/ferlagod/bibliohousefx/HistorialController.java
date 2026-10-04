@@ -30,7 +30,7 @@ import javafx.scene.control.TableView;
  * devueltos con información del libro, socio y fechas.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class HistorialController {
 

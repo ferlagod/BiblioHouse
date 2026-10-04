@@ -57,7 +57,7 @@ import javafx.stage.Stage;
  * de código de barras o rellenar la ficha de un libro manualmente.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class GestionLibrosController {
 
@@ -106,19 +106,19 @@ public class GestionLibrosController {
     }
 
     /**
-     * Inicializa las dependencias principales, la lista de libros, el servicio de búsqueda online,
-     * el directorio de usuario y los paquetes de idioma.
+     * Inicializa las dependencias principales, la lista de libros, el servicio
+     * de búsqueda online, el directorio de usuario y los paquetes de idioma.
      *
-     * @param mainController   Controlador principal de la aplicación.
-     * @param jsonManager      Gestor de persistencia JSON.
-     * @param listaLibros      Lista observable de todos los libros del usuario.
-     * @param busquedaService  Servicio para consultas multifuente asíncronas.
-     * @param rutaUsuario      Ruta del directorio de datos del usuario actual.
-     * @param resources        Paquete de recursos para cadenas localizadas.
+     * @param mainController Controlador principal de la aplicación.
+     * @param jsonManager Gestor de persistencia JSON.
+     * @param listaLibros Lista observable de todos los libros del usuario.
+     * @param busquedaService Servicio para consultas multifuente asíncronas.
+     * @param rutaUsuario Ruta del directorio de datos del usuario actual.
+     * @param resources Paquete de recursos para cadenas localizadas.
      */
     public void initData(PrimaryController mainController, JsonManager jsonManager,
-                         ObservableList<Libro> listaLibros, BusquedaService busquedaService,
-                         String rutaUsuario, ResourceBundle resources) {
+            ObservableList<Libro> listaLibros, BusquedaService busquedaService,
+            String rutaUsuario, ResourceBundle resources) {
         this.mainController = mainController;
         this.jsonManager = jsonManager;
         this.listaLibrosCompleta = listaLibros;
@@ -130,32 +130,37 @@ public class GestionLibrosController {
     // =========================================================================
     // BÚSQUEDA EN APIS Y ESCÁNER
     // =========================================================================
-
     /**
-     * Realiza una búsqueda asíncrona en los servicios externos online (OpenLibrary, Google Books, Inventaire)
-     * a partir del texto o ISBN introducido en la caja de búsqueda.
+     * Realiza una búsqueda asíncrona en los servicios externos online
+     * (OpenLibrary, Google Books, Inventaire) a partir del texto o ISBN
+     * introducido en la caja de búsqueda.
      *
-     * @param event Evento de acción disparado por el botón de búsqueda o pulsar Intro.
+     * @param event Evento de acción disparado por el botón de búsqueda o pulsar
+     * Intro.
      */
     @FXML
     public void buscarLibroOpenLibrary(ActionEvent event) {
-        if (txtBusquedaOpenLibrary == null) return;
+        if (txtBusquedaOpenLibrary == null) {
+            return;
+        }
         String query = txtBusquedaOpenLibrary.getText().trim();
-        if (query.isEmpty()) return;
+        if (query.isEmpty()) {
+            return;
+        }
 
         txtBusquedaOpenLibrary.setDisable(true);
         AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Buscando en catálogo online..."));
 
         busquedaService.ejecutarBusquedaGlobalAsync(query)
                 .thenAccept(resultados -> Platform.runLater(() -> {
-                    txtBusquedaOpenLibrary.setDisable(false);
-                    if (resultados.isEmpty()) {
-                        mostrarAlerta("Sin resultados", "No se encontraron libros para: " + query);
-                    } else {
-                        abrirVentanaResultados(resultados);
-                    }
-                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Listo."));
-                }))
+            txtBusquedaOpenLibrary.setDisable(false);
+            if (resultados.isEmpty()) {
+                mostrarAlerta("Sin resultados", "No se encontraron libros para: " + query);
+            } else {
+                abrirVentanaResultados(resultados);
+            }
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Listo."));
+        }))
                 .exceptionally(ex -> {
                     LOGGER.log(Level.SEVERE, "Error en búsqueda de libros", ex);
                     Platform.runLater(() -> {
@@ -168,8 +173,8 @@ public class GestionLibrosController {
     }
 
     /**
-     * Abre la ventana modal del escáner de código de barras mediante la cámara web
-     * utilizando OpenCV y ZXing.
+     * Abre la ventana modal del escáner de código de barras mediante la cámara
+     * web utilizando OpenCV y ZXing.
      *
      * @param event Evento disparado al pulsar el botón del escáner.
      */
@@ -206,8 +211,9 @@ public class GestionLibrosController {
     }
 
     /**
-     * Despliega la ventana modal con la lista de libros encontrados en la búsqueda externa
-     * para que el usuario seleccione el deseado y autorellene la ficha.
+     * Despliega la ventana modal con la lista de libros encontrados en la
+     * búsqueda externa para que el usuario seleccione el deseado y autorellene
+     * la ficha.
      *
      * @param resultados Lista de libros devueltos por el servicio de búsqueda.
      */
@@ -236,13 +242,15 @@ public class GestionLibrosController {
     }
 
     /**
-     * Rellena automáticamente los campos del formulario manual con los datos de un libro
-     * obtenido de la búsqueda externa o del catálogo.
+     * Rellena automáticamente los campos del formulario manual con los datos de
+     * un libro obtenido de la búsqueda externa o del catálogo.
      *
      * @param libro Libro con los datos a volcar en los campos de texto.
      */
     public void rellenarFormularioManual(Libro libro) {
-        if (libro == null) return;
+        if (libro == null) {
+            return;
+        }
 
         txtTitulo.setText(libro.getTitulo() != null ? libro.getTitulo() : "");
         txtAutor.setText(libro.getAutor() != null ? libro.getAutor() : "");
@@ -263,8 +271,9 @@ public class GestionLibrosController {
     }
 
     /**
-     * Abre un selector de archivos nativo para que el usuario escoja una imagen de portada local
-     * (PNG, JPG, JPEG, WEBP) y la previsualiza en el formulario.
+     * Abre un selector de archivos nativo para que el usuario escoja una imagen
+     * de portada local (PNG, JPG, JPEG, WEBP) y la previsualiza en el
+     * formulario.
      *
      * @param event Evento disparado por el botón de selección de portada.
      */
@@ -283,7 +292,8 @@ public class GestionLibrosController {
     }
 
     /**
-     * Limpia y restablece todos los campos del formulario manual a sus valores predeterminados.
+     * Limpia y restablece todos los campos del formulario manual a sus valores
+     * predeterminados.
      */
     @FXML
     public void limpiarCamposManuales() {
@@ -304,8 +314,9 @@ public class GestionLibrosController {
     }
 
     /**
-     * Valida los datos introducidos, gestiona posibles duplicados mediante diálogo interactivo,
-     * copia la portada a la carpeta offline local, asigna estanterías y persiste el libro nuevo.
+     * Valida los datos introducidos, gestiona posibles duplicados mediante
+     * diálogo interactivo, copia la portada a la carpeta offline local, asigna
+     * estanterías y persiste el libro nuevo.
      *
      * @param event Evento disparado al pulsar el botón "Añadir Libro".
      */
@@ -328,7 +339,8 @@ public class GestionLibrosController {
             if (!txtOrden.getText().isEmpty()) {
                 orden = Double.parseDouble(txtOrden.getText().replace(",", "."));
             }
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
 
         // Comprobar si ya existe
         Libro libroExistente = null;
@@ -403,7 +415,9 @@ public class GestionLibrosController {
 
         // Asignar estantería
         List<String> allShelves = jsonManager != null ? jsonManager.cargarEstanterias() : new ArrayList<>();
-        if (allShelves == null) allShelves = new ArrayList<>();
+        if (allShelves == null) {
+            allShelves = new ArrayList<>();
+        }
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("asignar_estanteria.fxml"));
@@ -454,7 +468,7 @@ public class GestionLibrosController {
     /**
      * Muestra un cuadro de diálogo informativo modal.
      *
-     * @param titulo  Título de la ventana de alerta.
+     * @param titulo Título de la ventana de alerta.
      * @param mensaje Texto explicativo del diálogo.
      */
     private void mostrarAlerta(String titulo, String mensaje) {

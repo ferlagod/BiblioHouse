@@ -28,18 +28,17 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para validar los contratos equals() y hashCode()
- * en los modelos de dominio (Libro, Socio, Prestamo, NotaLectura).
+ * Pruebas unitarias para validar los contratos equals() y hashCode() en los
+ * modelos de dominio (Libro, Socio, Prestamo, NotaLectura).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 class TestModelosDominioEqualsHashCode {
 
     // =========================================================================
     // PRUEBAS DE LIBRO
     // =========================================================================
-
     @Test
     @DisplayName("Libro: igualdad y hashCode por UUID (id)")
     void testLibroEqualsPorId() {
@@ -99,7 +98,6 @@ class TestModelosDominioEqualsHashCode {
     // =========================================================================
     // PRUEBAS DE SOCIO
     // =========================================================================
-
     @Test
     @DisplayName("Socio: igualdad y hashCode por numeroSocio")
     void testSocioEqualsPorNumeroSocio() {
@@ -146,7 +144,6 @@ class TestModelosDominioEqualsHashCode {
     // =========================================================================
     // PRUEBAS DE PRESTAMO
     // =========================================================================
-
     @Test
     @DisplayName("Prestamo: igualdad por UUID (id)")
     void testPrestamoEqualsPorId() {
@@ -191,7 +188,6 @@ class TestModelosDominioEqualsHashCode {
     // =========================================================================
     // PRUEBAS DE NOTA LECTURA
     // =========================================================================
-
     @Test
     @DisplayName("NotaLectura: igualdad por ID")
     void testNotaLecturaEquals() {

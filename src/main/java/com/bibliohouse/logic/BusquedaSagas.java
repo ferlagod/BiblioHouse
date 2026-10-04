@@ -33,7 +33,7 @@ import javafx.scene.control.ProgressBar;
  * de usuario mediante callbacks al finalizar el proceso.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class BusquedaSagas {
 

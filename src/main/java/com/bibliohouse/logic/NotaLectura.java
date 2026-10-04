@@ -22,12 +22,12 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Esta clase sirve para guardar una nota o cita que tomamos mientras leemos un libro.
- * Aquí guardamos lo que escribimos, de qué página lo sacamos y la fecha en la que
- * lo hicimos. ¡Como tener un diario de lectura!
+ * Esta clase sirve para guardar una nota o cita que tomamos mientras leemos un
+ * libro. Aquí guardamos lo que escribimos, de qué página lo sacamos y la fecha
+ * en la que lo hicimos. ¡Como tener un diario de lectura!
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class NotaLectura {
 
@@ -52,9 +52,9 @@ public class NotaLectura {
     private int paginaReferencia;
 
     /**
-     * Constructor vacío.
-     * Nos sirve para crear una nota desde cero. Ya le pone un número
-     * de identificación (ID) único para que no se pierda y la hora actual.
+     * Constructor vacío. Nos sirve para crear una nota desde cero. Ya le pone
+     * un número de identificación (ID) único para que no se pierda y la hora
+     * actual.
      */
     public NotaLectura() {
         this.id = UUID.randomUUID().toString();
@@ -62,8 +62,8 @@ public class NotaLectura {
     }
 
     /**
-     * Constructor para crear una nota de golpe cuando ya sabemos todos los datos.
-     * También le pone él solito la fecha de ahora mismo y su ID.
+     * Constructor para crear una nota de golpe cuando ya sabemos todos los
+     * datos. También le pone él solito la fecha de ahora mismo y su ID.
      *
      * @param tipo Si es una CITA o una NOTA tuya.
      * @param texto Lo que quieres dejar escrito.
@@ -114,7 +114,8 @@ public class NotaLectura {
     }
 
     /**
-     * Nos chiva qué tipo de contenido es, si es una CITA literal o una NOTA nuestra.
+     * Nos chiva qué tipo de contenido es, si es una CITA literal o una NOTA
+     * nuestra.
      *
      * @return El tipo de nota (CITA o NOTA).
      */

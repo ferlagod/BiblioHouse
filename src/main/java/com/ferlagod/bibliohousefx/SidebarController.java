@@ -46,7 +46,7 @@ import javafx.scene.layout.VBox;
  * los filtros por categoría y el widget interactivo del reto de lectura anual.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class SidebarController {
 
@@ -80,8 +80,9 @@ public class SidebarController {
     private ResourceBundle resources;
 
     /**
-     * Inicializa el controlador suscribiéndose a los eventos reactivos de libros modificados,
-     * eliminados y estanterías actualizadas a través de {@link AppEventBus}.
+     * Inicializa el controlador suscribiéndose a los eventos reactivos de
+     * libros modificados, eliminados y estanterías actualizadas a través de
+     * {@link AppEventBus}.
      */
     @FXML
     public void initialize() {
@@ -117,7 +118,7 @@ public class SidebarController {
      * @param resources Textos localizados.
      */
     public void initData(JsonManager jsonManager, ObservableList<Libro> listaLibros,
-                         Map<String, String> preferencias, ResourceBundle resources) {
+            Map<String, String> preferencias, ResourceBundle resources) {
         this.jsonManager = jsonManager;
         this.listaLibrosCompleta = listaLibros;
         this.preferencias = preferencias;
@@ -129,7 +130,8 @@ public class SidebarController {
     }
 
     /**
-     * Configura la escucha de selección de estanterías y publica el evento en el bus.
+     * Configura la escucha de selección de estanterías y publica el evento en
+     * el bus.
      */
     private void configurarEventosSeleccion() {
         if (listaEstanterias != null) {
@@ -142,7 +144,8 @@ public class SidebarController {
     }
 
     /**
-     * Carga y refresca las estanterías en el ListView con sus iconos representativos y contadores numéricos.
+     * Carga y refresca las estanterías en el ListView con sus iconos
+     * representativos y contadores numéricos.
      */
     public void cargarListaEstanterias() {
         if (listaEstanterias == null || jsonManager == null) {
@@ -178,10 +181,14 @@ public class SidebarController {
                     fila.setPadding(new Insets(2, 4, 2, 4));
 
                     String icono = switch (item) {
-                        case VISTA_TODOS -> "📚";
-                        case VISTA_DESEOS -> "⭐";
-                        case VISTA_DIGITAL -> "📱";
-                        default -> "📁";
+                        case VISTA_TODOS ->
+                            "📚";
+                        case VISTA_DESEOS ->
+                            "⭐";
+                        case VISTA_DIGITAL ->
+                            "📱";
+                        default ->
+                            "📁";
                     };
                     Label lblIcono = new Label(icono);
                     lblIcono.setStyle("-fx-font-size: 13px;");
@@ -208,19 +215,24 @@ public class SidebarController {
     }
 
     /**
-     * Cuenta dinámicamente los libros correspondientes a una categoría o estantería.
+     * Cuenta dinámicamente los libros correspondientes a una categoría o
+     * estantería.
      */
     private long contarLibrosEnEstanteria(String item) {
         if (listaLibrosCompleta == null) {
             return 0;
         }
         return switch (item) {
-            case VISTA_TODOS -> listaLibrosCompleta.stream().filter(Libro::isPoseido).count();
-            case VISTA_DESEOS -> listaLibrosCompleta.stream().filter(l -> !l.isPoseido()).count();
-            case VISTA_DIGITAL -> listaLibrosCompleta.stream().filter(l -> l.isPoseido() && l.isEsDigital()).count();
-            default -> listaLibrosCompleta.stream()
-                    .filter(l -> l.isPoseido() && l.getEstanterias() != null && l.getEstanterias().contains(item))
-                    .count();
+            case VISTA_TODOS ->
+                listaLibrosCompleta.stream().filter(Libro::isPoseido).count();
+            case VISTA_DESEOS ->
+                listaLibrosCompleta.stream().filter(l -> !l.isPoseido()).count();
+            case VISTA_DIGITAL ->
+                listaLibrosCompleta.stream().filter(l -> l.isPoseido() && l.isEsDigital()).count();
+            default ->
+                listaLibrosCompleta.stream()
+                .filter(l -> l.isPoseido() && l.getEstanterias() != null && l.getEstanterias().contains(item))
+                .count();
         };
     }
 
@@ -281,7 +293,8 @@ public class SidebarController {
     }
 
     /**
-     * Actualiza la visibilidad y el porcentaje de avance del widget de reto anual.
+     * Actualiza la visibilidad y el porcentaje de avance del widget de reto
+     * anual.
      */
     public void actualizarRetoAnual() {
         if (widgetRetoAnual == null) {

@@ -25,12 +25,12 @@ import java.util.function.Consumer;
 import javafx.application.Platform;
 
 /**
- * Bus de eventos ligero y desacoplado para la comunicación entre componentes
- * y controladores en BiblioHouse. Permite la suscripción tipada y asegura que
- * los manejadores que actualicen la interfaz se invoquen en el hilo de JavaFX.
+ * Bus de eventos ligero y desacoplado para la comunicación entre componentes y
+ * controladores en BiblioHouse. Permite la suscripción tipada y asegura que los
+ * manejadores que actualicen la interfaz se invoquen en el hilo de JavaFX.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class AppEventBus {
 
@@ -41,7 +41,8 @@ public class AppEventBus {
     }
 
     /**
-     * Obtiene la instancia única (singleton) del bus de eventos de la aplicación.
+     * Obtiene la instancia única (singleton) del bus de eventos de la
+     * aplicación.
      *
      * @return Instancia singleton de {@link AppEventBus}.
      */
@@ -76,7 +77,8 @@ public class AppEventBus {
 
     /**
      * Publica un evento a todos los suscriptores registrados. Si se está en
-     * otro hilo y es relevante para la UI, se asegura el despacho en el hilo FX.
+     * otro hilo y es relevante para la UI, se asegura el despacho en el hilo
+     * FX.
      *
      * @param <T> Tipo de evento.
      * @param event Instancia del evento a publicar.
@@ -122,19 +124,22 @@ public class AppEventBus {
     // =========================================================================
     // EVENTOS CONCRETOS
     // =========================================================================
-
     /**
-     * Evento emitido cuando un libro ha sido añadido o modificado en la biblioteca.
+     * Evento emitido cuando un libro ha sido añadido o modificado en la
+     * biblioteca.
      */
     public static class LibroModificadoEvent {
+
         private final Libro libro;
         private final boolean esNuevo;
 
         /**
-         * Crea una nueva instancia del evento de modificación o creación de libro.
+         * Crea una nueva instancia del evento de modificación o creación de
+         * libro.
          *
-         * @param libro   El libro modificado o añadido.
-         * @param esNuevo Indica si el libro acaba de registrarse como nuevo (true) o si fue editado (false).
+         * @param libro El libro modificado o añadido.
+         * @param esNuevo Indica si el libro acaba de registrarse como nuevo
+         * (true) o si fue editado (false).
          */
         public LibroModificadoEvent(Libro libro, boolean esNuevo) {
             this.libro = libro;
@@ -153,7 +158,8 @@ public class AppEventBus {
         /**
          * Indica si el libro fue recién creado o modificado.
          *
-         * @return {@code true} si es un libro recién añadido; {@code false} si fue actualizado.
+         * @return {@code true} si es un libro recién añadido; {@code false} si
+         * fue actualizado.
          */
         public boolean isEsNuevo() {
             return esNuevo;
@@ -164,6 +170,7 @@ public class AppEventBus {
      * Evento emitido cuando un libro ha sido eliminado de la biblioteca.
      */
     public static class LibroEliminadoEvent {
+
         private final Libro libro;
 
         /**
@@ -186,15 +193,18 @@ public class AppEventBus {
     }
 
     /**
-     * Evento emitido cuando el usuario selecciona una estantería o categoría en la barra lateral.
+     * Evento emitido cuando el usuario selecciona una estantería o categoría en
+     * la barra lateral.
      */
     public static class FiltroEstanteriaEvent {
+
         private final String estanteria;
 
         /**
          * Crea un nuevo evento de cambio de filtro de estantería.
          *
-         * @param estanteria Nombre de la estantería o categoría seleccionada (ej. "Todos los libros", "Ciencia Ficción").
+         * @param estanteria Nombre de la estantería o categoría seleccionada
+         * (ej. "Todos los libros", "Ciencia Ficción").
          */
         public FiltroEstanteriaEvent(String estanteria) {
             this.estanteria = estanteria;
@@ -211,15 +221,18 @@ public class AppEventBus {
     }
 
     /**
-     * Evento emitido cuando cambia la lista de estanterías del usuario (creación, edición o borrado).
+     * Evento emitido cuando cambia la lista de estanterías del usuario
+     * (creación, edición o borrado).
      */
     public static class EstanteriasActualizadasEvent {
+
         private final List<String> estanterias;
 
         /**
          * Crea un evento de estanterías actualizadas con la nueva lista.
          *
-         * @param estanterias Lista completa y actualizada de nombres de estanterías.
+         * @param estanterias Lista completa y actualizada de nombres de
+         * estanterías.
          */
         public EstanteriasActualizadasEvent(List<String> estanterias) {
             this.estanterias = estanterias;
@@ -239,16 +252,20 @@ public class AppEventBus {
      * Evento emitido cuando se crea, edita o devuelve un préstamo de un libro.
      */
     public static class PrestamoModificadoEvent {
+
         /**
-         * Constructor predeterminado para el evento de modificación de préstamos.
+         * Constructor predeterminado para el evento de modificación de
+         * préstamos.
          */
-        public PrestamoModificadoEvent() {}
+        public PrestamoModificadoEvent() {
+        }
     }
 
     /**
      * Evento emitido para actualizar el mensaje de la barra de estado inferior.
      */
     public static class StatusMessageEvent {
+
         private final String mensaje;
 
         /**
@@ -274,14 +291,16 @@ public class AppEventBus {
      * Evento emitido cuando cambia el idioma o locale de la aplicación.
      */
     public static class IdiomaCambiadoEvent {
+
         private final java.util.Locale nuevoLocale;
         private final java.util.ResourceBundle nuevoBundle;
 
         /**
          * Crea un evento de cambio de idioma.
          *
-         * @param nuevoLocale  Nuevo {@link java.util.Locale} establecido.
-         * @param nuevoBundle  Nuevo {@link java.util.ResourceBundle} cargado para traducciones.
+         * @param nuevoLocale Nuevo {@link java.util.Locale} establecido.
+         * @param nuevoBundle Nuevo {@link java.util.ResourceBundle} cargado
+         * para traducciones.
          */
         public IdiomaCambiadoEvent(java.util.Locale nuevoLocale, java.util.ResourceBundle nuevoBundle) {
             this.nuevoLocale = nuevoLocale;
@@ -309,9 +328,11 @@ public class AppEventBus {
 
     /**
      * Evento emitido cuando el catálogo o base de datos ha sido sincronizado
-     * desde una fuente externa (ej. NextCloud pull on startup o descarga remota).
+     * desde una fuente externa (ej. NextCloud pull on startup o descarga
+     * remota).
      */
     public static class CatalogoSincronizadoEvent {
+
         private final int totalLibros;
 
         /**
@@ -322,16 +343,19 @@ public class AppEventBus {
         }
 
         /**
-         * Crea una nueva instancia del evento de catálogo sincronizado indicando el total de libros.
+         * Crea una nueva instancia del evento de catálogo sincronizado
+         * indicando el total de libros.
          *
-         * @param totalLibros Cantidad total de libros en el catálogo tras la sincronización.
+         * @param totalLibros Cantidad total de libros en el catálogo tras la
+         * sincronización.
          */
         public CatalogoSincronizadoEvent(int totalLibros) {
             this.totalLibros = totalLibros;
         }
 
         /**
-         * Obtiene la cantidad total de libros disponibles tras la sincronización.
+         * Obtiene la cantidad total de libros disponibles tras la
+         * sincronización.
          *
          * @return Total de libros.
          */
@@ -340,4 +364,3 @@ public class AppEventBus {
         }
     }
 }
-

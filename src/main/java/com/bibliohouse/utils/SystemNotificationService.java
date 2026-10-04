@@ -6,6 +6,14 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.utils;
 
@@ -20,11 +28,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Servicio unificado de notificaciones nativas para el sistema operativo
- * (macOS Notification Center vía osascript, Linux libnotify vía notify-send, y Windows Action Center vía SystemTray).
+ * Servicio unificado de notificaciones nativas para el sistema operativo (macOS
+ * Notification Center vía osascript, Linux libnotify vía notify-send, y Windows
+ * Action Center vía SystemTray).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class SystemNotificationService {
 
@@ -33,7 +42,8 @@ public class SystemNotificationService {
     private static boolean initialized = false;
 
     /**
-     * Inicializa el servicio de notificaciones nativas de forma segura y sin bloquear hilos.
+     * Inicializa el servicio de notificaciones nativas de forma segura y sin
+     * bloquear hilos.
      */
     public static synchronized void initialize() {
         if (initialized) {
@@ -79,9 +89,9 @@ public class SystemNotificationService {
     /**
      * Envía una notificación nativa al sistema operativo.
      *
-     * @param titulo  Título de la notificación.
+     * @param titulo Título de la notificación.
      * @param mensaje Cuerpo de la notificación.
-     * @param tipo    Tipo de mensaje (INFO, WARNING, ERROR).
+     * @param tipo Tipo de mensaje (INFO, WARNING, ERROR).
      */
     public static void notificar(String titulo, String mensaje, MessageType tipo) {
         if (!initialized) {
@@ -145,7 +155,7 @@ public class SystemNotificationService {
     /**
      * Envía una notificación informativa nativa con título personalizado.
      *
-     * @param titulo  Título de la notificación.
+     * @param titulo Título de la notificación.
      * @param mensaje Mensaje a mostrar.
      */
     public static void notificarInfo(String titulo, String mensaje) {
@@ -155,7 +165,7 @@ public class SystemNotificationService {
     /**
      * Envía una notificación de advertencia nativa al sistema operativo.
      *
-     * @param titulo  Título de la alerta.
+     * @param titulo Título de la alerta.
      * @param mensaje Detalle del aviso.
      */
     public static void notificarAlerta(String titulo, String mensaje) {
@@ -163,7 +173,8 @@ public class SystemNotificationService {
     }
 
     /**
-     * Libera el icono de la bandeja del sistema y sus recursos al cerrar la aplicación.
+     * Libera el icono de la bandeja del sistema y sus recursos al cerrar la
+     * aplicación.
      */
     public static synchronized void shutdown() {
         if (trayIcon != null && SystemTray.isSupported()) {

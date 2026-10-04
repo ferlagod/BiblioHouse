@@ -55,7 +55,7 @@ import javafx.stage.Stage;
  * el tema, la ruta de datos, etc.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class ConfiguracionController {
 
@@ -395,7 +395,7 @@ public class ConfiguracionController {
                 // Hay un error de autenticación, URL, etc.
                 lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
                 lblNextcloudStatus.setText(resources.getString("config.sync.test.error"));
-                
+
                 // Mostrar alerta de ERROR
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle(resources.getString("config.sync.test.error.title"));

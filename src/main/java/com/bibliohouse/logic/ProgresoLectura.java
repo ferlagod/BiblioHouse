@@ -23,10 +23,11 @@ import java.util.Objects;
 
 /**
  * Modelo ligero para persistir el avance y seguimiento de lectura de un libro
- * sin necesidad de re-serializar la totalidad de los metadatos de la biblioteca.
+ * sin necesidad de re-serializar la totalidad de los metadatos de la
+ * biblioteca.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class ProgresoLectura {
 
@@ -36,18 +37,19 @@ public class ProgresoLectura {
     private String fechaUltimaLectura;
 
     /**
-     * Constructor por defecto requerido para serialización y deserialización JSON.
-     * Inicializa la página actual y totales en cero.
+     * Constructor por defecto requerido para serialización y deserialización
+     * JSON. Inicializa la página actual y totales en cero.
      */
     public ProgresoLectura() {
         this(0, 0);
     }
 
     /**
-     * Crea una nueva instancia de progreso de lectura con las páginas especificadas.
-     * Calcula automáticamente el porcentaje y registra la marca de tiempo actual.
+     * Crea una nueva instancia de progreso de lectura con las páginas
+     * especificadas. Calcula automáticamente el porcentaje y registra la marca
+     * de tiempo actual.
      *
-     * @param paginaActual   Página actual alcanzada por el lector.
+     * @param paginaActual Página actual alcanzada por el lector.
      * @param paginasTotales Número total de páginas del libro.
      */
     public ProgresoLectura(int paginaActual, int paginasTotales) {
@@ -67,7 +69,8 @@ public class ProgresoLectura {
     }
 
     /**
-     * Establece la página actual leída y recalcula el porcentaje y fecha de lectura.
+     * Establece la página actual leída y recalcula el porcentaje y fecha de
+     * lectura.
      *
      * @param paginaActual Nueva página alcanzada.
      */
@@ -114,7 +117,8 @@ public class ProgresoLectura {
     }
 
     /**
-     * Obtiene la fecha y hora de la última sesión de lectura en formato ISO-8601.
+     * Obtiene la fecha y hora de la última sesión de lectura en formato
+     * ISO-8601.
      *
      * @return Cadena con la fecha y hora en formato ISO.
      */
@@ -138,8 +142,12 @@ public class ProgresoLectura {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ProgresoLectura that = (ProgresoLectura) o;
         return paginaActual == that.paginaActual && paginasTotales == that.paginasTotales;
     }
@@ -151,11 +159,11 @@ public class ProgresoLectura {
 
     @Override
     public String toString() {
-        return "ProgresoLectura{" +
-                "paginaActual=" + paginaActual +
-                ", paginasTotales=" + paginasTotales +
-                ", porcentaje=" + porcentaje +
-                ", fechaUltimaLectura='" + fechaUltimaLectura + '\'' +
-                '}';
+        return "ProgresoLectura{"
+                + "paginaActual=" + paginaActual
+                + ", paginasTotales=" + paginasTotales
+                + ", porcentaje=" + porcentaje
+                + ", fechaUltimaLectura='" + fechaUltimaLectura + '\''
+                + '}';
     }
 }

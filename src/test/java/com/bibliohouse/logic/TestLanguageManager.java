@@ -25,14 +25,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Pruebas unitarias para LanguageManager y su sincronización con App y AppEventBus.
+ * Pruebas unitarias para LanguageManager y su sincronización con App y
+ * AppEventBus.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 class TestLanguageManager {
 

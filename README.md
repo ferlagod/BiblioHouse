@@ -1,6 +1,6 @@
 # ![BiblioHouse Logo](https://imgur.com/ibLRiqI.png) BiblioHouse
 
-[![Version: 2.1.0](https://img.shields.io/badge/Version-2.1.0-blue.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)
+[![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-blue.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg?style=flat-square)](https://adoptium.net/)
 [![JavaFX 21.0.5](https://img.shields.io/badge/JavaFX-21.0.5-blue.svg?style=flat-square)](https://openjfx.io/)
 [![Tests](https://img.shields.io/badge/Tests-58%2F58%20Passing-brightgreen.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)
@@ -13,11 +13,18 @@
 
 ## ✨ Características Principales
 
+### ⚡ Productividad, Búsqueda y Accesibilidad (Novedades v2.2)
+* **Paleta de Comandos Universal (`Ctrl+K` / `Cmd+K`):** Acceso instantáneo flotante estilo Spotlight / Raycast para buscar libros por título, autor o género y ejecutar acciones directas desde cualquier lugar.
+* **Accesibilidad Universal y Ergonomía Visual (WCAG AA/AAA):** Selector dinámico de densidad y escala tipográfica (*Compacto*, *Estándar*, *Grande / Accesible*), temas oficiales de **Alto Contraste Claro** y **Alto Contraste Oscuro**, detección automática del tema del sistema operativo y navegación accesible por teclado en el catálogo.
+* **Notificaciones Nativas del Sistema:** Avisos de escritorio integrados (macOS Notification Center, Windows Notifications y Linux libnotify) para alertar de préstamos vencidos y estado de sincronización.
+* **Atajos de Teclado y Menú Nativo macOS:** Atajos universales estándar (`Cmd/Ctrl+K`, `Cmd/Ctrl+,`, `Cmd/Ctrl+N`, `Cmd/Ctrl+F`, `Cmd/Ctrl+L`, `Cmd/Ctrl+1..6`) e integración plena con la barra superior del sistema en macOS.
+
 ### 📚 Catálogo, Organización y Lectura
 * **Cuadrícula Visual Interactiva y Paginación Fluida:** Explora tus libros con portadas de alta calidad, insignias de estado y un sistema de **virtualización/paginación configurable** (24, 48, 96 o vista completa) para manejar colecciones de miles de ejemplares sin caídas de rendimiento.
 * **Lector Digital Integrado con Streaming Local:** Lee tus archivos **EPUB** directamente dentro de la aplicación mediante un mini servidor HTTP loopback por bloques (*streaming* de 64 KB), eliminando bloqueos de pantalla y reduciendo el consumo de memoria en libros pesados o ilustrados.
+* **Extracción Local de Portadas de E-Books (Offline):** Extracción automática local de portadas incrustadas en archivos **EPUB** y **PDF** (con Apache PDFBox) sin necesidad de conexión a internet.
 * **Seguimiento de Lectura (Reading Tracker):** Visualiza barras de avance de páginas en cada tarjeta, actualiza tu progreso de lectura en tiempo real y guárdalo atómicamente con persistencia ligera sin reescribir toda la biblioteca.
-* **Reto Anual de Lectura:** Configura tu objetivo de libros leídos para el año en curso y sigue tu porcentaje de avance con el widget reactivo de la barra lateral.
+* **Reto Anual de Lectura:** Configura tu objetivo de libros leídos para el año en curso y sigue tu porcentaje de avance con el widget reactivo renovado de la barra lateral.
 * **Gestor de Sagas y Series:** Agrupa tus libros por series literarias y detecta visualmente las entregas faltantes para completar tus colecciones.
 * **Lista de Deseos (Wishlist):** Gestiona tus futuras adquisiciones en un panel independiente que no altera las estadísticas de tu colección. Muévelos a tu estantería con un solo clic al comprarlos.
 * **Importación CSV Inteligente:** Migra fácilmente tu biblioteca desde **Goodreads** o **Bookwyrm**, conservando calificaciones, fechas y estados de lectura.
@@ -25,11 +32,13 @@
 ### 🔍 Detección, Escáner y Metadatos
 * **Búsqueda Multifuente Concurrente:** Consulta simultáneamente en **OpenLibrary**, **Google Books** e **Inventaire** para autocompletar portadas, sinopsis, géneros, autores y número de páginas.
 * **Escáner de Código de Barras a 30 FPS:** Captura códigos ISBN en ráfaga usando tu cámara web con **OpenCV** y **ZXing**, optimizado para reutilizar búferes nativos y minimizar la presión sobre el recolector de basura.
+* **Búsqueda Asíncrona de Portadas:** Búsqueda en segundo plano no bloqueante para encontrar portadas faltantes sin congelar la ventana.
 * **Drag & Drop de E-books y Portadas:** Arrastra archivos EPUB, PDF o imágenes directamente sobre la ventana para importar libros o actualizar carátulas al instante.
 
 ### 🔒 Privacidad, Sincronización y Modo Offline
 * **Cifrado AES-256-GCM:** Protección criptográfica con clave maestra de 256 bits, vector de inicialización (IV) aleatorio por operación y autenticación de integridad (AEAD) para tus credenciales de sincronización.
-* **Sincronización con NextCloud:** Copia de seguridad y sincronización bidireccional automática mediante WebDAV con tu nube privada.
+* **Sincronización Bidireccional Automática al Iniciar:** Comprueba cambios remotos en tu servidor **NextCloud/WebDAV** al arrancar la app y descarga novedades en segundo plano de forma silenciosa.
+* **Rutas Portables y Relativas:** Almacenamiento agnóstico del sistema operativo en `biblioteca.json` para facilitar la migración entre macOS, Windows y Linux.
 * **Portadas 100% Offline:** Descarga y almacenamiento local de portadas para consultar tu catálogo con total normalidad sin conexión a internet.
 
 ### 🏷️ Préstamos, Socios y Exportación

@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Manual de Usuario Integral - BiblioHouse</title>
+        <title>Manual de Usuario Integral - BiblioHouse v2.2</title>
         <style>
             :root {
                 --bg-color: #f8f9fa;
@@ -13,7 +13,7 @@
                 --h2-color: #343a40;
                 --h3-color: #495057;
                 --box-bg: #ffffff;
-                --box-shadow: rgba(0, 0, 0, 0.1);
+                --box-shadow: rgba(0, 0, 0, 0.08);
                 --code-bg: #e9ecef;
                 --border-color: #dee2e6;
                 --link-color: #0d6efd;
@@ -21,6 +21,8 @@
                 --alert-bg: #cce5ff;
                 --alert-text: #004085;
                 --alert-border: #b8daff;
+                --badge-bg: #e7f1ff;
+                --badge-text: #0a58ca;
             }
 
             /* Solución de problemas de contraste en tema oscuro */
@@ -32,7 +34,7 @@
                     --h2-color: #e9ecef;
                     --h3-color: #ced4da;
                     --box-bg: #343a40;
-                    --box-shadow: rgba(0, 0, 0, 0.5);
+                    --box-shadow: rgba(0, 0, 0, 0.45);
                     --code-bg: #495057;
                     --border-color: #495057;
                     --link-color: #6ea8fe;
@@ -40,9 +42,10 @@
                     --alert-bg: #004085;
                     --alert-text: #cce5ff;
                     --alert-border: #0056b3;
+                    --badge-bg: #0d3c61;
+                    --badge-text: #a5d8ff;
                 }
 
-                /* Reducir brillo de capturas para no deslumbrar (contraste accesible) */
                 img {
                     filter: brightness(0.85) contrast(1.1);
                 }
@@ -53,7 +56,7 @@
                 line-height: 1.6;
                 color: var(--text-color);
                 background-color: var(--bg-color);
-                max-width: 1000px;
+                max-width: 1020px;
                 margin: 0 auto;
                 padding: 30px 20px;
                 transition: background-color 0.3s, color 0.3s;
@@ -63,7 +66,22 @@
                 color: var(--heading-color);
                 border-bottom: 2px solid var(--heading-color);
                 padding-bottom: 10px;
-                font-size: 2.5rem;
+                font-size: 2.4rem;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .badge-version {
+                font-size: 0.45em;
+                background-color: var(--badge-bg);
+                color: var(--badge-text);
+                padding: 4px 10px;
+                border-radius: 20px;
+                border: 1px solid var(--heading-color);
+                vertical-align: middle;
+                font-weight: 600;
             }
 
             h2 {
@@ -71,12 +89,13 @@
                 margin-top: 40px;
                 border-left: 5px solid var(--heading-color);
                 padding-left: 15px;
-                font-size: 1.8rem;
+                font-size: 1.7rem;
             }
 
             h3 {
                 color: var(--h3-color);
                 margin-top: 25px;
+                font-size: 1.25rem;
             }
 
             a {
@@ -91,9 +110,9 @@
 
             .feature-box {
                 background: var(--box-bg);
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px var(--box-shadow);
+                padding: 22px;
+                border-radius: 10px;
+                box-shadow: 0 4px 10px var(--box-shadow);
                 margin-bottom: 25px;
                 border: 1px solid var(--border-color);
             }
@@ -110,7 +129,7 @@
             kbd {
                 border: 1px solid var(--border-color);
                 box-shadow: 0 2px 0 var(--border-color);
-                font-weight: bold;
+                font-weight: 600;
             }
 
             img {
@@ -121,15 +140,6 @@
                 margin: 20px auto;
                 display: block;
                 border: 1px solid var(--border-color);
-            }
-
-            .image-caption {
-                text-align: center;
-                font-size: 0.9em;
-                color: var(--h3-color);
-                margin-top: -10px;
-                margin-bottom: 20px;
-                font-style: italic;
             }
 
             table {
@@ -161,17 +171,20 @@
                 border-radius: 8px;
                 box-shadow: 0 2px 5px var(--box-shadow);
                 border: 1px solid var(--border-color);
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 8px 20px;
             }
 
             nav li {
-                margin-bottom: 10px;
+                margin-bottom: 6px;
             }
 
             .alert {
                 padding: 15px;
                 margin: 20px 0;
                 border: 1px solid var(--alert-border);
-                border-radius: 6px;
+                border-radius: 8px;
                 background-color: var(--alert-bg);
                 color: var(--alert-text);
             }
@@ -206,380 +219,354 @@
                 font-weight: bold;
             }
 
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                border: 0;
+            .tag-new {
+                background-color: #198754;
+                color: #ffffff;
+                font-size: 0.72em;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                margin-left: 6px;
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .tag-updated {
+                background-color: #0d6efd;
+                color: #ffffff;
+                font-size: 0.72em;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                margin-left: 6px;
+                display: inline-block;
+                vertical-align: middle;
             }
         </style>
     </head>
 
     <body>
-        <h1>Manual de Usuario - BiblioHouse</h1>
+        <h1>Manual de Usuario - BiblioHouse <span class="badge-version">v2.2</span></h1>
 
         <div class="alert">
-            <strong>Nota de Accesibilidad:</strong> Este manual soporta navegación por teclado interactiva (usa
-            <kbd>Tab</kbd>). Todas las imágenes poseen descripciones alternativas (alt-text) para lectores de pantalla. El
-            sistema de tema dinámico garantiza un ratio de contraste WCAG óptimo de 4.5:1 tanto en modo claro como oscuro.
+            <strong>Nota de Accesibilidad y Novedades v2.2:</strong> Este manual soporta navegación accesible por teclado (<kbd>Tab</kbd> / <kbd>Enter</kbd>). BiblioHouse v2.2 incorpora la <strong>Paleta de Comandos Universal (<kbd>Ctrl+K</kbd> / <kbd>Cmd+K</kbd>)</strong>, extracción local de portadas de libros electrónicos sin internet, sincronización bidireccional automática al inicio, escala tipográfica personalizable (Compacto, Estándar, Grande/Accesible), temas de Alto Contraste WCAG AA/AAA y notificaciones nativas de escritorio.
         </div>
 
         <nav aria-label="Índice de contenidos">
-            <h2>Índice</h2>
+            <h2>Índice de Contenidos</h2>
             <ul>
-                <li><a href="#introduccion">1. Introducción rápida</a></li>
-                <li><a href="#primeros-pasos">2. Primeros pasos (Bienvenida y Acceso)</a></li>
-                <li><a href="#navegacion">3. Navegación y Estructura</a></li>
-                <li><a href="#funcionalidades">4. Funcionalidades Principales</a></li>
-                <li><a href="#lector-ebooks">5. Lector de E-books Incorporado</a></li>
-                <li><a href="#diario-lectura">6. Diario de Lectura y Ubicaciones</a></li>
-                <li><a href="#configuracion">7. Configuración</a></li>
-                <li><a href="#gestion-datos">8. Gestión de Datos (Importar, Exportar y Backup)</a></li>
-                <li><a href="#sincronizacion">9. Sincronización con NextCloud</a></li>
-                <li><a href="#solucion-problemas">10. Solución de Problemas Comunes (Troubleshooting)</a></li>
-                <li><a href="#funciones-avanzadas">11. Funciones Avanzadas</a></li>
-                <li><a href="#glosario">12. Glosario de términos</a></li>
-                <li><a href="#contacto">13. Contacto y Soporte</a></li>
+                <li><a href="#introduccion">1. Introducción Rápida</a></li>
+                <li><a href="#paleta-comandos">2. Paleta de Comandos y Atajos <span class="tag-new">v2.2</span></a></li>
+                <li><a href="#primeros-pasos">3. Primeros Pasos (Acceso y Bienvenida)</a></li>
+                <li><a href="#navegacion">4. Navegación y Estructura Visual</a></li>
+                <li><a href="#funcionalidades">5. Funcionalidades del Catálogo <span class="tag-updated">v2.2</span></a></li>
+                <li><a href="#lector-ebooks">6. Lector de E-books y Portadas Locales <span class="tag-updated">v2.2</span></a></li>
+                <li><a href="#diario-lectura">7. Diario de Lectura y Gestión Física</a></li>
+                <li><a href="#prestamos">8. Préstamos Inteligentes y Socios</a></li>
+                <li><a href="#configuracion">9. Configuración y Accesibilidad <span class="tag-updated">v2.2</span></a></li>
+                <li><a href="#gestion-datos">10. Gestión de Datos (Importar y Exportar)</a></li>
+                <li><a href="#sincronizacion">11. Sincronización NextCloud al Inicio <span class="tag-updated">v2.2</span></a></li>
+                <li><a href="#solucion-problemas">12. Solución de Problemas (Troubleshooting)</a></li>
+                <li><a href="#contacto">13. Contacto y Soporte Oficial</a></li>
             </ul>
         </nav>
 
-        <h2 id="introduccion">1. Introducción rápida</h2>
+        <h2 id="introduccion">1. Introducción Rápida</h2>
         <div class="feature-box">
-            <p><strong>Qué hace la app:</strong> BiblioHouse es tu gestor de biblioteca personal definitivo. Organiza libros
-                físicos y digitales, lee tus e-books nativamente, gestiona a quién se los prestas (con alertas de retraso),
-                controla qué volúmenes te faltan en tus sagas favoritas, escribe tu propio diario de lectura, localiza la estantería exacta de cada libro 
-                y sincroniza todo con tu servidor NextCloud, sin depender de la nube de terceros.</p>
-            <p><strong>Para quién es:</strong> Diseñado desde cero para lectores novatos y bibliotecarios avanzados. No
-                requiere conocimientos técnicos previos.</p>
-            <p><strong>Requisitos mínimos:</strong> Windows, macOS o Linux moderno. Java 21+ instalado. 500 MB de disco.
-                Resolución de pantalla 1024x768.</p>
-            <p><strong>Idiomas (100% Soportados):</strong> Castellano (es), English (en), Català (ca), Português (pt),
-                Galego (gl), Euskara (eu). Puedes cambiarlo desde el menú <em>Herramientas</em> &gt; <em>Idioma</em> o
-                desde <em>Herramientas</em> &gt; <em>Configuración</em> &gt; pestaña <em>General</em>.</p>
+            <p><strong>Qué es BiblioHouse:</strong> Es un gestor de biblioteca personal moderno, rápido, privado y de código abierto desarrollado en Java 21 y JavaFX. Permite catalogar tanto libros impresos como digitales, leer archivos EPUB sin salir de la aplicación, gestionar préstamos con avisos automáticos, seguir retos de lectura anuales y sincronizar tu colección mediante tu nube privada NextCloud/WebDAV con total soberanía sobre tus datos.</p>
+            <p><strong>Para quién es:</strong> Para cualquier lector, bibliófilo o investigador que busque ordenar su biblioteca sin complicaciones técnicas y con un diseño estético, fluido y accesible.</p>
+            <p><strong>Requisitos del sistema:</strong> macOS (Intel o Apple Silicon), Windows 10/11 o Linux. Java 21+ instalado. 500 MB de espacio disponible en disco.</p>
+            <p><strong>Idiomas soportados (100%):</strong> Español (es), Galego (gl), Català (ca), Euskara (eu), English (en) y Português (pt). Cambia de idioma al instante desde el menú <em>Herramientas</em> &gt; <em>Idioma</em> o desde <em>Configuración</em>.</p>
         </div>
 
-        <h2 id="primeros-pasos">2. Primeros pasos (Bienvenida y Acceso)</h2>
-        <p><em>Tiempo estimado: 2 minutos</em></p>
-
-        <h3>Pantalla de Splash y Carga</h3>
-        <p>Al hacer doble clic en el icono de BiblioHouse, verás una ventana de carga (Splash Screen) con el logo de la
-            aplicación. Esto indica que la base de datos se está inicializando.</p>
-
-        <h3>Pantalla de Bienvenida</h3>
-        <p>Tras la carga, verás la pantalla de Bienvenida con dos opciones:</p>
-        <ul>
-            <li><strong>Iniciar con Registro:</strong> Te lleva a la pantalla de Login/Registro para crear una cuenta de
-                usuario local protegida con contraseña. Recomendado para proteger tu colección.</li>
-            <li><strong>Iniciar sin Registro (Modo Invitado):</strong> Entra directamente sin contraseña. Los datos se
-                guardan en tu ordenador pero serán accesibles para cualquier persona que use el equipo. Ideal para probar la
-                app rápidamente.</li>
-        </ul>
-
-        <h3>Registro e Inicio de Sesión</h3>
-        <p>Si eliges "Iniciar con Registro", llegarás a la pantalla de Login:</p>
-        <ul class="step-list">
-            <li>En la pantalla de Login, haz clic en el enlace inferior <strong>"Crear cuenta"</strong>.</li>
-            <li>Introduce tu <strong>Nombre de Usuario</strong>, <strong>Contraseña</strong> y confírmala. Haz clic en
-                <em>Registrarse</em>.</li>
-            <li>La aplicación te devolverá al inicio de sesión. Ingresa tus datos recién creados y pulsa
-                <strong>Siguiente</strong>.</li>
-        </ul>
-        <p>La próxima vez que abras la app, se te pedirá tu usuario y contraseña directamente.</p>
-
-        <h2 id="navegacion">3. Navegación y Estructura</h2>
-        <p>La ventana principal se divide en estas áreas:</p>
-        <ul>
-            <li><strong>Barra de Menús (Superior):</strong> Contiene los menús <em>Archivo</em>, <em>Herramientas</em> y
-                <em>Ayuda</em>. Desde aquí accedes a importar/exportar, duplicados, configuración, idioma, estadísticas y
-                este manual.</li>
-            <li><strong>Panel Lateral Izquierdo — "Mis Estanterías":</strong> Muestra categorías temáticas (Novela, Ciencia
-                Ficción, Fantasía, etc.) y categorías virtuales ("E-books", "Lista de Deseos"). Al seleccionar una
-                estantería, la vista principal se filtra para mostrar solo los libros de esa categoría.
-                <br/><strong>Widget de Reto de Lectura:</strong> En la parte inferior del panel lateral aparece un widget
-                con barra de progreso que muestra tu avance en el Reto de Lectura Anual (ver sección
-                <a href="#funciones-avanzadas">Funciones Avanzadas</a>).</li>
-            <li><strong>Panel Central — Pestañas:</strong> El área de trabajo con las siguientes pestañas:
-                <ul>
-                    <li><strong>Mis Libros:</strong> Galería visual con portadas de tu colección.</li>
-                    <li><strong>Añadir / Gestionar:</strong> Buscar libros en OpenLibrary, escanear por cámara y añadir
-                        manualmente.</li>
-                    <li><strong>Préstamos Activos:</strong> Registrar y controlar préstamos a socios.</li>
-                    <li><strong>Historial:</strong> Registro de todos los préstamos devueltos.</li>
-                    <li><strong>Lista de Deseos:</strong> Libros que quieres conseguir.</li>
-                    <li><strong>Sagas:</strong> Agrupar libros por colecciones o sagas.</li>
-                </ul>
-            </li>
-            <li><strong>Barra de Estado (Inferior):</strong> Muestra mensajes del sistema como "Bienvenido, Juan" o el
-                número de libros filtrados.</li>
-        </ul>
-
-        <h2 id="funcionalidades">4. Funcionalidades Principales</h2>
-        <p>Explicación exhaustiva de todas las pestañas y sus funciones.</p>
-
+        <h2 id="paleta-comandos">2. Paleta de Comandos y Atajos Rápidos <span class="tag-new">v2.2</span></h2>
         <div class="feature-box">
-            <h3>Pestaña 1: Mis Libros (Galería de Portadas)</h3>
-            <p><strong>Propósito:</strong> Visualizar tu colección completa de forma atractiva.</p>
-            <p><strong>Funcionamiento:</strong> Muestra todas las portadas de tus libros en un panel de tipo galería. Usa la
-                barra de búsqueda superior derecha para filtrar por título o autor. Al seleccionar una estantería del panel
-                izquierdo, la galería se filtra automáticamente.</p>
-            <p><strong>Menú contextual:</strong> Haz clic derecho sobre cualquier libro para acceder a las opciones:</p>
+            <p>BiblioHouse 2.2 estrena una <strong>Paleta de Comandos flotante</strong> de búsqueda universal (al estilo Spotlight de macOS o Raycast) accesible instantáneamente desde cualquier pantalla pulsando <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) o <kbd>⌘</kbd>+<kbd>K</kbd> (macOS).</p>
+            
+            <h3>¿Qué puedes hacer desde la Paleta de Comandos?</h3>
             <ul>
-                <li><strong>📖 Leer E-book:</strong> Abre el archivo EPUB con el lector integrado nativo de BiblioHouse (solo para libros digitales).</li>
-                <li><strong>Prestar este libro:</strong> Inicia un préstamo rápido.</li>
-                <li><strong>Editar detalles:</strong> Abre la pantalla de edición completa.</li>
-                <li><strong>Cambiar portada:</strong> Seleccionar una imagen local como portada.</li>
-                <li><strong>Marcar como…:</strong> Cambiar el estado de lectura (📋 Pendiente, 📖 Leyendo, ✅ Leído).</li>
-                <li><strong>🖨️ Generar Etiqueta QR (PDF):</strong> Crea un PDF con un código QR que enlaza a los detalles de tu libro (solo para libros físicos).</li>
-                <li><strong>Eliminar libro:</strong> Borrar el libro de tu colección.</li>
-            </ul>
-            <p><strong>Doble clic:</strong> Al hacer doble clic en un libro se abre la <strong>Ficha de Detalle</strong> en
-                modo solo lectura. En ella verás la portada, datos básicos y el nuevo <em>Diario de Lectura</em>.</p>
-            <p><strong>Importar E-books (Drag &amp; Drop):</strong> Arrastra un archivo <strong>EPUB, PDF o MOBI</strong>
-                directamente sobre el panel de "Mis Libros". BiblioHouse extraerá automáticamente los metadatos (título,
-                autor, portada) y lo añadirá a tu colección. El panel se resaltará con un borde punteado azul para indicar
-                que puedes soltar el archivo.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pestaña 2: Añadir / Gestionar</h3>
-            <p><strong>Propósito:</strong> Añadir libros nuevos a tu biblioteca de tres formas distintas.</p>
-
-            <h3>Método 1: Búsqueda en OpenLibrary</h3>
-            <ul class="step-list">
-                <li>En la barra de búsqueda superior, escribe el título o ISBN del libro (ej. 9788445000663).</li>
-                <li>Pulsa el botón <strong>🔍</strong> o presiona <kbd>Enter</kbd>.</li>
-                <li>Aparecerá la ventana de <em>Resultados de Búsqueda</em> con datos de OpenLibrary, Google Books e
-                    Inventaire.</li>
-                <li>Haz clic en el resultado que prefieras y pulsa <strong>"Importar a Biblioteca"</strong> o
-                    <strong>"Añadir a Deseos"</strong>.</li>
-            </ul>
-
-            <h3>Método 2: Escáner por Cámara Web</h3>
-            <p>Pulsa el botón <strong>📷</strong> (junto a la barra de búsqueda). Muestra el código de barras del libro a tu
-                webcam. La app lo detectará, emitirá un pitido y lo buscará automáticamente.</p>
-
-            <h3>Método 3: Añadir Manualmente</h3>
-            <p>En el formulario inferior "Añadir manualmente", rellena los campos (Título, Autor, etc.), elige la portada y las 
-                ubicaciones exactas. Luego pulsa <strong>"Añadir a Biblioteca"</strong>.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pantalla de Edición de Libro</h3>
-            <p>Al pulsar "Editar detalles", se abre una ventana con todos los campos del libro:</p>
-            <ul>
-                <li><strong>Datos Generales:</strong> Título, Autor, Editorial, Género, Año, ISBN, Serie/Saga y Orden.</li>
-                <li><strong>Ubicación física:</strong> Ahora puedes especificar la estantería exacta y la balda en la que tienes el libro en tu casa.</li>
-                <li><strong>Estanterías Lógicas:</strong> Añade o crea estanterías temáticas (Fantasía, Novela...) y asígnalas.</li>
-                <li><strong>Digital / Formatos:</strong> Selecciona si tienes el libro en archivo EPUB o MOBI e integra el conversor usando Calibre.</li>
-            </ul>
-            <p>Pulsa <strong>Guardar Cambios</strong> para confirmar.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pestaña 3: Préstamos Activos (Préstamos Inteligentes)</h3>
-            <p><strong>Propósito:</strong> Registrar a quién le prestas tus libros y controlar devoluciones.</p>
-            <p>BiblioHouse cuenta con <strong>Alertas Inteligentes</strong>: Si inicias la app o vas a la pestaña principal y tienes préstamos que se han excedido en su fecha límite (por defecto, más de 30 días), la app mostrará un banner de aviso inmediato (ej. <em>"Tienes 2 libros pendientes de devolución cuyo plazo ha vencido"</em>).</p>
-            <ul class="step-list">
-                <li>Selecciona un <strong>Libro</strong> y un <strong>Socio</strong> del desplegable.</li>
-                <li>Pulsa <strong>"Realizar Préstamo"</strong>.</li>
-                <li>Para registrar la devolución, selecciona el préstamo y pulsa <strong>"Marcar como Devuelto"</strong>. El
-                    préstamo pasará a la pestaña de Historial.</li>
-            </ul>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pestaña 4: Historial</h3>
-            <p><strong>Propósito:</strong> Consultar el registro histórico de todos los préstamos finalizados, con sus respectivas fechas de inicio y devolución.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pestaña 5: Lista de Deseos</h3>
-            <p><strong>Propósito:</strong> Guardar libros que quieres conseguir sin mezclarlos con tu colección principal. Cuando los consigas, haz clic derecho en ellos y selecciona "Marcar como conseguido".</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Pestaña 6: Sagas y Colecciones</h3>
-            <p><strong>Propósito:</strong> Agrupar libros que pertenecen a una misma serie o colección.</p>
-            <p>La pestaña tiene un panel dividido en dos: "Mis Colecciones" a la izquierda, y los tomos de la saga a la derecha.</p>
-            <p><strong>Menú contextual:</strong> Al hacer clic en un libro específico dentro de una saga, ahora puedes seleccionar <em>"Desvincular libro de la saga"</em> para sacarlo de la colección sin eliminar el libro de tu base de datos principal.</p>
-            <p><strong>Aviso de Tomos faltantes:</strong> Si BiblioHouse detecta que tienes el Tomo 1 y el Tomo 3 de una saga, te avisará con una tarjeta temporal de "Falta el Tomo 2" para que sepas que tu colección está incompleta.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Gestión de Socios</h3>
-            <p>Accede desde la pestaña Préstamos Activos &gt; botón <strong>"Gestionar Socios"</strong>. Puedes crear, editar y generar un PDF con los carnets de cada socio registrado.</p>
-        </div>
-
-        <div class="feature-box">
-            <h3>Estadísticas</h3>
-            <p>Accede desde el menú <em>Herramientas</em> &gt; <em>Estadísticas</em>. Disfruta de un análisis gráfico avanzado con tu progreso anual, gráfico de tarta por géneros y top 10 autores.</p>
-        </div>
-        
-        <h2 id="lector-ebooks">5. Lector de E-books Incorporado</h2>
-        <div class="feature-box">
-            <p>BiblioHouse incluye ahora un <strong>Lector de archivos EPUB completamente nativo</strong>, diseñado para que no necesites salir de la app para leer.</p>
-            <ul>
-                <li>Para abrirlo, haz clic derecho sobre un libro digital en "Mis Libros" y selecciona <strong>"📖 Leer E-book"</strong>.</li>
-                <li><strong>Sincronización de progreso:</strong> La aplicación guardará automáticamente el porcentaje de lectura por donde vayas, de manera que la próxima vez que lo abras o sincronices con Nextcloud, continuarás exactamente por la misma página.</li>
-                <li>Si el libro estaba como "Pendiente", la app cambiará su estado automáticamente a "Leyendo".</li>
-                <li>Cuenta con un diseño limpio, similar al de los e-readers comerciales, optimizando los márgenes y colores para la lectura.</li>
-            </ul>
-        </div>
-        
-        <h2 id="diario-lectura">6. Diario de Lectura y Ubicaciones Exactas</h2>
-        <div class="feature-box">
-            <p>BiblioHouse transforma la experiencia de catalogación en una verdadera bitácora de lectura personal:</p>
-            <ul>
-                <li><strong>Diario de Lectura:</strong> Al hacer doble clic en un libro (Ficha de Detalle), encontrarás una sección en el panel lateral para añadir <strong>Notas</strong> y <strong>Citas</strong> literales (con su número de página respectivo). Perfecto para apuntar reflexiones mientras lees o destacar pasajes memorables.</li>
-                <li><strong>Gestión Física Avanzada:</strong> ¿Tienes cajas en el trastero y no sabes dónde está tu ejemplar de *El Señor de los Anillos*? Usa el campo "Ubicación" (ej. "Estantería del Salón, Balda 3"). </li>
-                <li><strong>Etiquetas de códigos QR:</strong> Haz clic derecho en el libro > "Generar Etiqueta QR (PDF)". Imprime estas etiquetas para pegarlas en el lomo o interior de tus libros físicos y escanea el código con el móvil para ver todos los detalles de la obra.</li>
-            </ul>
-        </div>
-
-        <h2 id="configuracion">7. Configuración</h2>
-        <p>Accede mediante el menú <em>Herramientas</em> &gt; <em>Configuración</em>. Se divide en cuatro pestañas:</p>
-
-        <div class="feature-box">
-            <h3>Pestaña General</h3>
-            <ul>
-                <li><strong>Preferencias de Usuario:</strong> Pedir confirmación antes de eliminar, Días límite de préstamo (por defecto 30), etc.</li>
-                <li><strong>Apariencia e Idiomas:</strong>
+                <li><strong>Buscar cualquier libro al instante:</strong> Escribe cualquier fragmento del título, autor o género y pulsa <kbd>Enter</kbd> para abrir su ficha completa de detalles directamente.</li>
+                <li><strong>Acciones rápidas de biblioteca:</strong>
                     <ul>
-                        <li><strong>Idioma:</strong> Castellano, English, Català, Galego, Euskara y Português. Las traducciones han sido integradas en toda la interfaz sin necesidad de reiniciar la app.</li>
-                        <li><strong>Tema Visual:</strong>
-                            <ul>
-                                <li><strong>Claro/Oscuro (Primer):</strong> Tema clásico estilo GitHub.</li>
-                                <li><strong>Nord Claro/Oscuro:</strong> Tonos fríos y árticos que reducen la fatiga visual.</li>
-                                <li><strong>Cupertino Claro/Oscuro:</strong> Estética fluida similar a macOS.</li>
-                                <li><strong>Dracula:</strong> Tema oscuro vibrante con acentos en cian y rosa, amado por programadores.</li>
-                            </ul>
-                        </li>
+                        <li>➕ <em>Añadir Nuevo Libro</em> (<kbd>Ctrl/⌘+N</kbd>)</li>
+                        <li>📷 <em>Escanear Código de Barras con la Cámara Web</em></li>
+                        <li>⚙️ <em>Abrir Configuración y Preferencias</em> (<kbd>Ctrl/⌘+,</kbd>)</li>
+                        <li>📊 <em>Ver Estadísticas de Biblioteca</em></li>
+                        <li>📄 <em>Exportar Catálogo a PDF</em></li>
+                        <li>🌐 <em>Exportar Catálogo Web HTML</em></li>
+                        <li>🔍 <em>Buscar Libros Duplicados</em></li>
                     </ul>
+                </li>
+                <li><strong>Saltar entre pestañas al instante:</strong> Escribe "Préstamos", "Deseos", "Sagas" o usa los atajos directos <kbd>Ctrl/⌘+1</kbd> a <kbd>Ctrl/⌘+6</kbd>.</li>
+            </ul>
+
+            <h3>Tabla de Atajos de Teclado Universales</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Atajo (Windows / Linux)</th>
+                        <th>Atajo (macOS)</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>K</kbd></td>
+                        <td><strong>Abrir Paleta de Comandos Universal</strong> (Buscar libros y acciones)</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>,</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>,</kbd></td>
+                        <td>Abrir ventana de <strong>Configuración</strong></td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>N</kbd></td>
+                        <td>Ir a la pestaña <strong>Añadir / Gestionar Libros</strong></td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>F</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>F</kbd></td>
+                        <td>Poner el foco en el campo de búsqueda rápida de catálogo</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>L</kbd></td>
+                        <td>Ir a la pestaña de <strong>Préstamos Activos</strong></td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>1</kbd> a <kbd>6</kbd></td>
+                        <td><kbd>⌘</kbd> + <kbd>1</kbd> a <kbd>6</kbd></td>
+                        <td>Cambiar directamente entre las 6 pestañas principales</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>F1</kbd></td>
+                        <td><kbd>F1</kbd></td>
+                        <td>Abrir este <strong>Manual de Ayuda</strong></td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Esc</kbd></td>
+                        <td><kbd>Esc</kbd></td>
+                        <td>Cerrar la Paleta de Comandos o cualquier ventana modal abierta</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 id="primeros-pasos">3. Primeros Pasos (Acceso y Bienvenida)</h2>
+        <div class="feature-box">
+            <p>Al abrir BiblioHouse encontrarás dos modos de inicio:</p>
+            <ul>
+                <li><strong>Modo con Cuenta Local (Recomendado):</strong> Permite proteger tu colección mediante usuario y contraseña con cifrado local. Tus claves no salen jamás de tu dispositivo.</li>
+                <li><strong>Modo Invitado (Sin Registro):</strong> Accede a la biblioteca directamente sin contraseña. Los datos se almacenan en tu equipo con total normalidad, ideal para pruebas rápidas.</li>
+            </ul>
+            <p>Si es la primera vez que entras, pulsa en el enlace <em>"Crear cuenta"</em>, asigna un nombre y una contraseña segura, e inicia sesión.</p>
+        </div>
+
+        <h2 id="navegacion">4. Navegación y Estructura Visual</h2>
+        <div class="feature-box">
+            <p>La interfaz principal de BiblioHouse v2.2 está organizada para máxima agilidad y limpieza:</p>
+            <ul>
+                <li><strong>Barra de Menús Superior:</strong> Compatible con la barra de menú nativa de macOS (Apple Menu Bar) y menús contextuales en Windows/Linux:
+                    <ul>
+                        <li><em>Archivo:</em> Importar/Exportar copias de seguridad (JSON), importar CSV y exportar a PDF o Catálogo Web.</li>
+                        <li><em>Herramientas:</em> Selector de idioma rápido, Estadísticas, Detección de Duplicados, <strong>Buscar portadas faltantes en segundo plano</strong> y Configuración.</li>
+                        <li><em>Ayuda:</em> Manual de Usuario interactivo y panel "Acerca de".</li>
+                    </ul>
+                </li>
+                <li><strong>Botón de Sincronización Rápida (Barra Superior):</strong> Junto a los datos del usuario, un botón interactivo permite forzar una sincronización bidireccional con tu servidor NextCloud en cualquier momento, con animación de progreso en vivo.</li>
+                <li><strong>Panel Lateral Izquierdo ("Mis Estanterías"):</strong> Filtra tu catálogo por categorías temáticas (Ficción, Ensayo, Poesía...) o estanterías lógicas ("E-books", "Lista de Deseos").
+                    <br><strong>Widget del Reto Anual de Lectura:</strong> Rediseñado con un indicador gráfico moderno que refleja en tiempo real el porcentaje y número de libros leídos respecto al objetivo anual fijado.</li>
+                <li><strong>Área de Trabajo Central (Pestañas):</strong>
+                    <ol>
+                        <li><strong>Mis Libros:</strong> Cuadrícula visual de portadas rediseñada, paginación configurable y vista en tabla/lista.</li>
+                        <li><strong>Añadir / Gestionar:</strong> Búsqueda en OpenLibrary/Google Books/Inventaire, escáner por webcam y formulario manual.</li>
+                        <li><strong>Préstamos Activos:</strong> Gestión de préstamos con notificaciones de vencimiento.</li>
+                        <li><strong>Historial:</strong> Registro completo de préstamos devueltos y estadísticas de lectura.</li>
+                        <li><strong>Lista de Deseos:</strong> Libros que planeas adquirir en el futuro.</li>
+                        <li><strong>Sagas y Series:</strong> Colecciones completas con detección de volúmenes faltantes.</li>
+                    </ol>
                 </li>
             </ul>
         </div>
 
+        <h2 id="funcionalidades">5. Funcionalidades del Catálogo <span class="tag-updated">v2.2</span></h2>
         <div class="feature-box">
-            <h3>Pestaña Datos</h3>
-            <p>Aquí puedes consultar la <strong>ubicación local</strong> de los archivos y realizar una copia de seguridad en formato ZIP. En la <strong>Zona de Peligro</strong> puedes limpiar tu base de datos o hacer un borrado total (Restaurar de fábrica).</p>
+            <h3>Pestaña Mis Libros (Galería de Portadas y Paginación)</h3>
+            <p>En BiblioHouse v2.2, las tarjetas del catálogo han sido rediseñadas con tipografía clara, bordes suaves y micro-animaciones al pasar el cursor:</p>
+            <ul>
+                <li><strong>Insignias de Estado:</strong> Distingue con claridad si un libro está <em>📋 Pendiente</em>, <em>📖 Leyendo</em> o <em>✅ Leído</em>.</li>
+                <li><strong>Barra de Progreso de Lectura Integrada:</strong> Si estás leyendo un libro digital o has registrado páginas leídas, la tarjeta muestra una barra de progreso que indica el porcentaje exacto completado.</li>
+                <li><strong>Paginación Virtualizada:</strong> Para mantener la aplicación ultrarrápida incluso con colecciones de miles de ejemplares, puedes elegir mostrar <strong>24, 48, 96 o Todos los libros</strong> por página mediante el selector inferior.</li>
+                <li><strong>Navegación Accesible por Teclado:</strong> Puedes navegar entre las tarjetas de libros utilizando las teclas de flechas (<kbd>←</kbd>, <kbd>→</kbd>, <kbd>↑</kbd>, <kbd>↓</kbd>). La tarjeta enfocada muestra un contorno visual accesible. Pulsa <kbd>Enter</kbd> para ver la ficha completa o <kbd>Espacio</kbd> para abrir el menú de acciones.</li>
+            </ul>
+
+            <h3>Menú Contextual (Clic Derecho en un Libro)</h3>
+            <ul>
+                <li><strong>📖 Leer E-book:</strong> Abre el lector integrado (disponible si el libro dispone de archivo EPUB).</li>
+                <li><strong>🤝 Prestar este libro:</strong> Inicia un préstamo rápido asociándolo a un socio.</li>
+                <li><strong>✏️ Editar detalles:</strong> Permite modificar datos, portadas, notas, géneros, estantería lógica y balda física.</li>
+                <li><strong>🖼️ Cambiar portada:</strong> Permite seleccionar una imagen local como nueva carátula.</li>
+                <li><strong>🏷️ Marcar estado:</strong> Cambia rápidamente entre Pendiente, Leyendo o Leído.</li>
+                <li><strong>🖨️ Generar Etiqueta QR (PDF):</strong> Crea una ficha imprimible con código QR para pegar en el libro físico.</li>
+                <li><strong>🗑️ Eliminar libro:</strong> Borra el ejemplar de la colección tras pedir confirmación.</li>
+            </ul>
+
+            <h3>Búsqueda de Portadas Faltantes No Bloqueante <span class="tag-new">v2.2</span></h3>
+            <p>Desde el menú <em>Herramientas</em> &gt; <em>"Buscar portadas faltantes"</em>, BiblioHouse revisa todos los libros de tu biblioteca que no tengan carátula. En la versión 2.2, este proceso se realiza íntegramente en segundo plano sin congelar la ventana: busca primero si el libro tiene un e-book local (EPUB o PDF) para extraer su portada automáticamente, y en su defecto consulta las APIs en línea.</p>
         </div>
 
+        <h2 id="lector-ebooks">6. Lector de E-books y Portadas Locales <span class="tag-updated">v2.2</span></h2>
         <div class="feature-box">
-            <h3>Pestaña Sincronización (NextCloud)</h3>
-            <p>Configura tu servidor privado NextCloud. Esta opción también <strong>sincroniza tus portadas y notas automáticamente</strong> en segundo plano cada vez que realizas un cambio.</p>
-        </div>
+            <h3>Lector Digital Integrado de E-books (EPUB)</h3>
+            <p>BiblioHouse cuenta con un motor de lectura nativo que te permite disfrutar de tus libros sin salir de la aplicación:</p>
+            <ul>
+                <li><strong>Streaming Local por Bloques de 64 KB:</strong> Gracias a su mini-servidor local HTTP loopback, los libros de gran tamaño o con muchas ilustraciones cargan de forma instantánea sin saturar la memoria RAM.</li>
+                <li><strong>Guardado Atómico de Progreso:</strong> A medida que avanzas páginas, BiblioHouse registra tu posición exacta sin sobreescribir pesadamente toda la biblioteca. Al reabrir el libro o sincronizar entre ordenadores, retomarás la lectura exactamente en la misma página.</li>
+            </ul>
 
-        <h2 id="gestion-datos">8. Gestión de Datos (Importar, Exportar y Backup)</h2>
-        <p>Todas las opciones de importación y exportación están en el menú <em>Archivo</em>:</p>
-        <ul>
-            <li><strong>Importar base de datos:</strong> Carga un archivo JSON de BiblioHouse exportado previamente.</li>
-            <li><strong>Importar desde CSV:</strong> Importa libros masivamente usando plantillas CSV.</li>
-            <li><strong>Exportar Informe PDF:</strong> Genera reportes profesionales aplicando múltiples filtros cruzados (Géneros, años, estanterías).</li>
-            <li><strong>Exportar Catálogo Web (HTML):</strong> Genera una página web con toda tu colección y sus portadas incrustadas (ideal para enviar a tus amigos por WhatsApp o Telegram).</li>
-        </ul>
-
-        <h2 id="sincronizacion">9. Sincronización con NextCloud</h2>
-        <div class="feature-box">
-            <p><strong>Propósito:</strong> Mantener una copia sincronizada de tu biblioteca (con tus e-books y portadas) en tu propio servidor NextCloud
-                vía WebDAV.</p>
-            <p>Accede desde <em>Herramientas</em> &gt; <em>Configuración</em> &gt; pestaña <em>Sincronización</em>.</p>
-            <ul class="step-list">
-                <li>Introduce la <strong>URL del servidor</strong> (ej.
-                    <code>https://tu-nextcloud.ejemplo.com</code>).</li>
-                <li>Introduce tu <strong>Usuario</strong> de NextCloud y tu <strong>Contraseña de aplicación</strong> (generada en los ajustes de seguridad de Nextcloud, nunca introduzcas tu clave principal de Nextcloud aquí).</li>
-                <li>Pulsa <strong>"Probar conexión"</strong> y luego usa las opciones manuales para subir o bajar datos si es la primera vez.</li>
+            <h3>Extracción Local de Portadas de E-Books <span class="tag-new">v2.2</span></h3>
+            <p>¡Ya no dependes de internet para tener portadas de tus libros digitales! BiblioHouse v2.2 incorpora <code>EbookMetadataService</code>:</p>
+            <ul>
+                <li><strong>Archivos EPUB:</strong> Analiza el paquete interno (ZIP + OPF) y extrae la carátula original incrustada en alta resolución.</li>
+                <li><strong>Archivos PDF:</strong> Renderiza localmente la primera página con Apache PDFBox para generar una portada limpia y precisa.</li>
+                <li><strong>Arrastrar y Soltar (Drag &amp; Drop):</strong> Basta con arrastrar un archivo <code>.epub</code> o <code>.pdf</code> sobre la pestaña "Mis Libros" o sobre el formulario de edición: la app extraerá el título, autor y portada automáticamente en tu disco local.</li>
             </ul>
         </div>
 
-        <h2 id="solucion-problemas">10. Solución de Problemas Comunes (Troubleshooting)</h2>
-        <p>Esta tabla cubre el 90% de los incidentes reales reportados por usuarios.</p>
+        <h2 id="diario-lectura">7. Diario de Lectura y Gestión Física</h2>
+        <div class="feature-box">
+            <p>Haz doble clic en cualquier libro para acceder a su ficha detallada:</p>
+            <ul>
+                <li><strong>Diario de Lectura:</strong> Apunta reflexiones, citas textuales y notas personales indicando el número de página. Tus notas quedan guardadas en tu base de datos local y se sincronizan con NextCloud.</li>
+                <li><strong>Ubicación Física Exacta:</strong> Si tienes una biblioteca física extensa en casa o en el trabajo, especifica en qué habitación, estantería y balda se encuentra cada ejemplar (ej. <em>"Salón - Estantería Roble - Balda 2"</em>).</li>
+                <li><strong>Etiquetas QR imprimibles:</strong> Genera etiquetas en PDF con código QR para identificar visualmente tus libros físicos con el móvil.</li>
+            </ul>
+        </div>
 
+        <h2 id="prestamos">8. Préstamos Inteligentes y Socios</h2>
+        <div class="feature-box">
+            <p>Lleva el control exacto de a quién dejas tus libros favoritos:</p>
+            <ul>
+                <li><strong>Alertas Inteligentes y Notificaciones Nativas <span class="tag-updated">v2.2</span>:</strong> Si un préstamo excede el plazo establecido (por defecto 30 días, configurable), BiblioHouse muestra un aviso visual destacado al iniciar la app y envía una <strong>notificación nativa del sistema operativo</strong> en tu escritorio.</li>
+                <li><strong>Ficha de Socios y Carnets PDF:</strong> Registra a tus familiares y amigos con sus datos de contacto y genera carnets identificativos con código de barras para imprimir.</li>
+                <li><strong>Historial Completo:</strong> Consulta todos los préstamos devueltos, fechas y tiempo que tardaron en devolvértelo.</li>
+            </ul>
+        </div>
+
+        <h2 id="configuracion">9. Configuración y Accesibilidad <span class="tag-updated">v2.2</span></h2>
+        <div class="feature-box">
+            <p>Accede mediante el menú <em>Herramientas</em> &gt; <em>Configuración</em> (<kbd>Ctrl/⌘+,</kbd>):</p>
+
+            <h3>Accesibilidad y Ergonomía Visual (WCAG AA/AAA)</h3>
+            <ul>
+                <li><strong>Selector de Densidad y Escala Tipográfica <span class="tag-new">v2.2</span>:</strong>
+                    <ul>
+                        <li><strong>Compacto:</strong> Reduce el tamaño de fuente y márgenes. Ideal para pantallas portátiles o monitores con resoluciones contenidas.</li>
+                        <li><strong>Estándar:</strong> Escala por defecto equilibrada para la mayoría de pantallas.</li>
+                        <li><strong>Grande / Accesible:</strong> Aumenta la tipografía y los espacios interactivos para garantizar una lectura cómoda sin fatiga visual.</li>
+                    </ul>
+                </li>
+                <li><strong>Detección Automática del Tema del Sistema <span class="tag-new">v2.2</span>:</strong>
+                    Selecciona <em>"Automático (Sistema)"</em> para que BiblioHouse sincronice su aspecto claro u oscuro con el tema general de macOS, Windows o Linux.</li>
+                <li><strong>Temas de Alto Contraste <span class="tag-new">v2.2</span>:</strong>
+                    Incluye los nuevos temas <em>"Alto Contraste Claro"</em> y <em>"Alto Contraste Oscuro"</em> diseñados específicamente con relaciones de contraste reforzadas para personas con baja visión.</li>
+                <li><strong>Temas Visuales AtlantaFX:</strong> Escoge entre Claro/Oscuro (Primer), Nord Claro/Oscuro, Cupertino Claro/Oscuro (estilo macOS) y Dracula.</li>
+            </ul>
+
+            <h3>Opciones Generales</h3>
+            <ul>
+                <li>Confirmación antes de eliminar libros.</li>
+                <li>Días límite para la devolución de préstamos (por defecto 30).</li>
+                <li>Arranque con ventana maximizada.</li>
+            </ul>
+        </div>
+
+        <h2 id="gestion-datos">10. Gestión de Datos (Importar y Exportar)</h2>
+        <div class="feature-box">
+            <p>Todas las opciones se encuentran en el menú superior <em>Archivo</em>:</p>
+            <ul>
+                <li><strong>Copia de Seguridad y Restauración (JSON):</strong> Exporta tu biblioteca completa a un único archivo portable para guardarlo en un pendrive o migrarlo a otro equipo.</li>
+                <li><strong>Importación CSV (Goodreads / Bookwyrm):</strong> Importa bibliotecas masivas conservando valoraciones, fechas de lectura y estados.</li>
+                <li><strong>Exportar Informe PDF Maquetado:</strong> Genera documentos PDF profesionales aplicando filtros por género, año o estantería con tipografía TrueType (Roboto) incrustada.</li>
+                <li><strong>Exportar Catálogo Web (HTML Interactivo):</strong> Genera un sitio web autocontenido con todo tu catálogo y portadas listo para compartir con tus amigos o subir a tu servidor web personal.</li>
+            </ul>
+        </div>
+
+        <h2 id="sincronizacion">11. Sincronización NextCloud al Inicio <span class="tag-updated">v2.2</span></h2>
+        <div class="feature-box">
+            <p>Conecta BiblioHouse a tu nube privada NextCloud para mantener tus libros sincronizados entre todos tus ordenadores:</p>
+            
+            <h3>Sincronización Bidireccional Automática al Iniciar (Pull on Startup) <span class="tag-new">v2.2</span></h3>
+            <p>En BiblioHouse v2.2 ya no necesitas acordarte de descargar los cambios: cada vez que abras la aplicación en tu portátil o PC de sobremesa, el sistema comprueba en segundo plano si hay modificaciones más recientes en tu servidor NextCloud. Si las hay, descarga las novedades y las nuevas portadas de forma silenciosa sin interrumpir tu trabajo y te avisa con una notificación nativa.</p>
+
+            <h3>Rutas Portables y Relativas <span class="tag-new">v2.2</span></h3>
+            <p>La base de datos <code>biblioteca.json</code> ahora almacena las rutas de portadas y e-books de forma relativa y portable, lo que permite alternar la sincronización entre distintos sistemas operativos (ej. de macOS a Windows o Linux) sin que se rompan los enlaces a las imágenes locales.</p>
+
+            <h3>Configuración Paso a Paso:</h3>
+            <ul class="step-list">
+                <li>Ve a <em>Herramientas</em> &gt; <em>Configuración</em> &gt; pestaña <em>Sincronización</em>.</li>
+                <li>Introduce la URL de tu servidor (ej. <code>https://nube.tu-servidor.com</code>).</li>
+                <li>Introduce tu nombre de usuario y genera una <strong>Contraseña de Aplicación</strong> en la sección de Seguridad de NextCloud (nunca utilices tu contraseña maestra).</li>
+                <li>Pulsa <strong>"Probar conexión"</strong> y guarda los cambios. Tus credenciales quedarán protegidas con cifrado AES-256-GCM.</li>
+            </ul>
+        </div>
+
+        <h2 id="solucion-problemas">12. Solución de Problemas (Troubleshooting)</h2>
         <table>
             <thead>
                 <tr>
-                    <th>SÍNTOMA / PROBLEMA</th>
-                    <th>CAUSA PROBABLE</th>
-                    <th>SOLUCIÓN PASO A PASO</th>
+                    <th>Síntoma / Problema</th>
+                    <th>Causa Probable</th>
+                    <th>Solución Recomendada</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Olvidé mi contraseña local de la app.</strong></td>
-                    <td>Al ser local y privada, no hay servidor de recuperación.</td>
-                    <td>Borra el archivo oculto <code>users.json</code> en la carpeta de instalación de BiblioHouse para forzar un nuevo registro (no se perderán tus libros).</td>
+                    <td><strong>No se abre la paleta con <kbd>Ctrl+K</kbd></strong></td>
+                    <td>En ordenadores Mac se utiliza la tecla <kbd>⌘ Command</kbd> + <kbd>K</kbd>.</td>
+                    <td>Usa <kbd>Cmd+K</kbd> en macOS o haz clic en la barra de búsqueda de la pantalla principal.</td>
                 </tr>
                 <tr>
-                    <td><strong>Buscador de ISBN se queda cargando</strong></td>
-                    <td>Servidores de OpenLibrary colapsados.</td>
-                    <td>Cancela la búsqueda y añade el libro manualmente.</td>
+                    <td><strong>La letra se ve demasiado pequeña o grande</strong></td>
+                    <td>La densidad tipográfica no se ajusta a tu pantalla.</td>
+                    <td>Ve a <em>Herramientas</em> &gt; <em>Configuración</em> y cambia la <strong>Densidad de Interfaz</strong> entre Compacto, Estándar o Grande.</td>
                 </tr>
                 <tr>
-                    <td><strong>Error de conversión a EPUB</strong></td>
-                    <td>El programa no encuentra el ejecutable de Calibre.</td>
-                    <td>Instala Calibre en tu PC y asegúrate de que esté incluido en las variables del sistema (PATH).</td>
+                    <td><strong>Un libro digital no muestra portada</strong></td>
+                    <td>El archivo EPUB no contiene carátula estándar o no se pudo descargar.</td>
+                    <td>Usa <em>Herramientas</em> &gt; <strong>"Buscar portadas faltantes"</strong> o arrastra una imagen JPG/PNG sobre el libro para asignarla.</td>
                 </tr>
                 <tr>
-                    <td><strong>"Error al exportar PDF"</strong></td>
-                    <td>La carpeta de destino requiere permisos de administrador.</td>
-                    <td>Guarda el informe o carnet directamente en el "Escritorio" en su lugar.</td>
+                    <td><strong>La sincronización al inicio tarda en completarse</strong></td>
+                    <td>Conexión a internet inestable o servidor ocupado.</td>
+                    <td>La sincronización se realiza en segundo plano y no congela la aplicación; puedes seguir leyendo y catalogando con normalidad.</td>
                 </tr>
                 <tr>
-                    <td><strong>Faltan Portadas</strong></td>
-                    <td>Internet falló durante la descarga.</td>
-                    <td>Ve al menú <em>Herramientas</em> &gt; <strong>"Buscar portadas faltantes"</strong>.</td>
+                    <td><strong>Olvidé la contraseña de mi cuenta local</strong></td>
+                    <td>Por privacidad no se envían datos a ningún servidor externo.</td>
+                    <td>Elimina el archivo <code>users.json</code> de la carpeta de datos de usuario para crear un nuevo acceso sin perder tus libros.</td>
                 </tr>
             </tbody>
         </table>
 
-        <h2 id="funciones-avanzadas">11. Funciones Avanzadas (Para Power-Users)</h2>
-        <ul class="step-list">
-            <li><strong>Atajos de Teclado:</strong>
-                <ul>
-                    <li><kbd>Ctrl</kbd>+<kbd>N</kbd> / <kbd>⌘</kbd>+<kbd>N</kbd> — Ir a "Añadir/Gestionar".</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>⌘</kbd>+<kbd>F</kbd> — Buscar en OpenLibrary.</li>
-                    <li><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>⌘</kbd>+<kbd>L</kbd> — Pestaña de Préstamos Activos.</li>
-                    <li><kbd>F1</kbd> — Abrir este Manual de Usuario.</li>
-                </ul>
-            </li>
-            <li><strong>Drag &amp; Drop Visual (Portadas):</strong> Arrastra imágenes de internet directamente encima de la miniatura de tu libro.</li>
-            <li><strong>Modo Ráfaga (Barcode):</strong> Con un escáner láser USB enfoca el campo ISBN. Puedes catalogar
-                decenas de libros por minuto.</li>
-            <li><strong>Reto de Lectura Anual:</strong> En el panel lateral, puedes configurar cuántos libros deseas leer este año, la app recalcula tu progreso con cada libro que marques como "Leído".</li>
-        </ul>
-
-        <h2 id="glosario">12. Glosario de términos</h2>
-        <ul>
-            <li><strong>ISBN:</strong> Número Internacional Normalizado del Libro de 13 dígitos.</li>
-            <li><strong>OpenLibrary:</strong> Base de datos pública usada para importar metadatos gratuitamente.</li>
-            <li><strong>NextCloud:</strong> Nube privada para sincronizar tus datos de BiblioHouse de manera segura.</li>
-            <li><strong>EPUB:</strong> Formato abierto universal de lectura para libros electrónicos.</li>
-            <li><strong>Saga/Colección:</strong> Agrupación de libros que pertenecen a una misma serie literaria.</li>
-        </ul>
-
-        <h2 id="contacto">13. Contacto y Soporte</h2>
+        <h2 id="contacto">13. Contacto y Soporte Oficial</h2>
         <div class="feature-box">
-            <p><strong>Qué información facilitar:</strong> Indica siempre
-                si usas Windows, Mac o Linux, la versión de Java instalada (<code>java --version</code>) y cómo
-                reproducir el fallo paso a paso.</p>
-            <p><strong>Canales Oficiales:</strong></p>
+            <p><strong>Cómo reportar un error o sugerencia:</strong> Indica siempre el sistema operativo utilizado (macOS, Windows o Linux), versión de Java y los pasos exactos para reproducir el comportamiento.</p>
             <ul>
-                <li><strong>Soporte Técnico (Bugs):</strong> <a href="mailto:proyectos@oniros.eu">proyectos@oniros.eu</a>
-                </li>
-                <li><strong>Foro y Consultas:</strong> <a href="https://ferlagod.eu" target="_blank">bferlagod.eu</a>
-                </li>
-                <li><strong>Apoyar el proyecto:</strong> <a href="https://liberapay.com/ferlagod./"
-                                                            target="_blank">Liberapay</a></li>
+                <li><strong>Soporte Técnico y Errores:</strong> <a href="mailto:proyectos@oniros.eu">proyectos@oniros.eu</a></li>
+                <li><strong>Sitio Web Oficial y Novedades:</strong> <a href="https://ferlagod.eu" target="_blank">ferlagod.eu</a></li>
+                <li><strong>Repositorio de Código Abierto:</strong> <a href="https://forjalibre.eu/ferlagod/BiblioHouse" target="_blank">forjalibre.eu/ferlagod/BiblioHouse</a></li>
+                <li><strong>Apoyar el Proyecto:</strong> <a href="https://liberapay.com/ferlagod./" target="_blank">Donar en Liberapay</a></li>
             </ul>
         </div>
 
         <hr>
         <p style="text-align: center; color: var(--h3-color); font-size: 0.9em;">
-            <em>BiblioHouse v2.0 - Desarrollado por ferlagod. Manual adaptado garantizando 100% de cobertura y
-                accesibilidad en 6 idiomas.</em>
+            <em>BiblioHouse v2.2 - Desarrollado con dedicación por Fernando Lago Dávila (ferlagod). Manual adaptado garantizando 100% de cobertura y accesibilidad en 6 idiomas.</em>
         </p>
 
     </body>

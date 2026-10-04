@@ -20,14 +20,14 @@ package com.bibliohouse.logic;
 import java.text.Normalizer;
 
 /**
- * Enumeración que define los estados de lectura posibles de un libro
- * en el dominio de BiblioHouse.
+ * Enumeración que define los estados de lectura posibles de un libro en el
+ * dominio de BiblioHouse.
  *
  * Desacopla la lógica interna y de persistencia de las cadenas traducidas
  * mostradas en la interfaz de usuario.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public enum EstadoLectura {
 
@@ -55,21 +55,24 @@ public enum EstadoLectura {
     }
 
     /**
-     * Devuelve el nombre canónico en español (útil para serialización y compatibilidad).
+     * Devuelve el nombre canónico en español (útil para serialización y
+     * compatibilidad).
      *
-     * @return El nombre en español ("Pendiente", "Leyendo", "Leído", "Abandonado").
+     * @return El nombre en español ("Pendiente", "Leyendo", "Leído",
+     * "Abandonado").
      */
     public String getEtiquetaEspanol() {
         return etiquetaEspanol;
     }
 
     /**
-     * Parsea de forma segura y tolerante cualquier texto o representación previa
-     * en cualquier idioma soportado (español, inglés, gallego, catalán, euskera, portugués),
-     * ignorando mayúsculas, minúsculas y tildes.
+     * Parsea de forma segura y tolerante cualquier texto o representación
+     * previa en cualquier idioma soportado (español, inglés, gallego, catalán,
+     * euskera, portugués), ignorando mayúsculas, minúsculas y tildes.
      *
      * @param texto Cadena a analizar.
-     * @return El {@link EstadoLectura} correspondiente (por defecto {@link #PENDIENTE}).
+     * @return El {@link EstadoLectura} correspondiente (por defecto
+     * {@link #PENDIENTE}).
      */
     public static EstadoLectura fromString(String texto) {
         if (texto == null || texto.isBlank()) {
@@ -91,10 +94,14 @@ public enum EstadoLectura {
 
         // 3. Mapeo multilingüe tolerante
         return switch (norm) {
-            case "leido", "read", "llegit", "irakurrita", "lido" -> LEIDO;
-            case "leyendo", "reading", "llegint", "irakurtzen", "lendo" -> LEYENDO;
-            case "abandonado", "abandoned", "abandonat", "utzia" -> ABANDONADO;
-            default -> PENDIENTE; // "pendiente", "pending", "pendent", "zain", etc.
+            case "leido", "read", "llegit", "irakurrita", "lido" ->
+                LEIDO;
+            case "leyendo", "reading", "llegint", "irakurtzen", "lendo" ->
+                LEYENDO;
+            case "abandonado", "abandoned", "abandonat", "utzia" ->
+                ABANDONADO;
+            default ->
+                PENDIENTE; // "pendiente", "pending", "pendent", "zain", etc.
         };
     }
 

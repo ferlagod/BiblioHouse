@@ -1,3 +1,20 @@
+/*
+ * BiblioHouse - Un gestor de biblioteca personal.
+ * Copyright (C) 2026 Fernando Lago Dávila
+ *
+ * Este programa es software libre: usted puede redistribuirlo y/o modificarlo
+ * bajo los términos de la Licencia Pública General de GNU tal como se publica
+ * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
+ * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
+ */
 package com.bibliohouse.logic;
 
 import com.google.zxing.BarcodeFormat;
@@ -6,7 +23,6 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -15,7 +31,6 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import com.bibliohouse.utils.PdfFontHelper;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.HashMap;
@@ -23,18 +38,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Servicio para generar PDFs con códigos QR de los libros físicos.
- * Permite imprimir etiquetas con información detallada de cada libro.
+ * Servicio para generar PDFs con códigos QR de los libros físicos. Permite
+ * imprimir etiquetas con información detallada de cada libro.
+ * 
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.2
  */
 public class ServicioEtiquetasFisicas {
 
     /**
-     * Genera un archivo PDF que contiene una cuadrícula de etiquetas.
-     * Cada etiqueta incluye un código QR con los metadatos del libro,
-     * así como el título, autor y ubicación en texto claro.
+     * Genera un archivo PDF que contiene una cuadrícula de etiquetas. Cada
+     * etiqueta incluye un código QR con los metadatos del libro, así como el
+     * título, autor y ubicación en texto claro.
      *
      * @param libros Lista de libros físicos a incluir en las etiquetas.
-     * @param archivoDestino Archivo PDF de destino donde se guardará el resultado.
+     * @param archivoDestino Archivo PDF de destino donde se guardará el
+     * resultado.
      * @throws Exception Si ocurre un error al procesar el código QR o el PDF.
      */
     public static void generarEtiquetasPDF(List<Libro> libros, File archivoDestino) throws Exception {
@@ -56,7 +75,7 @@ public class ServicioEtiquetasFisicas {
             float spacingY = 20;
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
-            
+
             for (Libro libro : libros) {
                 // Generate QR Code image
                 BufferedImage qrImage = generarQR(libro, 120, 120);
@@ -66,7 +85,7 @@ public class ServicioEtiquetasFisicas {
                 contentStream.setStrokingColor(java.awt.Color.LIGHT_GRAY);
                 contentStream.addRect(currentX, currentY - rectHeight, rectWidth, rectHeight);
                 contentStream.stroke();
-                
+
                 contentStream.setNonStrokingColor(java.awt.Color.BLACK);
 
                 // Draw QR Code
@@ -76,22 +95,28 @@ public class ServicioEtiquetasFisicas {
                 contentStream.beginText();
                 contentStream.setFont(fontBold, 10);
                 contentStream.newLineAtOffset(currentX + 10, currentY - 15);
-                
+
                 String titulo = libro.getTitulo();
-                if (titulo.length() > 22) titulo = titulo.substring(0, 19) + "...";
+                if (titulo.length() > 22) {
+                    titulo = titulo.substring(0, 19) + "...";
+                }
                 contentStream.showText(PdfFontHelper.sanitizarTexto(titulo, fontBold));
-                
+
                 contentStream.setFont(fontRegular, 8);
                 contentStream.newLineAtOffset(0, -12);
                 String autor = libro.getAutor() != null ? libro.getAutor() : "";
-                if (autor.length() > 25) autor = autor.substring(0, 22) + "...";
+                if (autor.length() > 25) {
+                    autor = autor.substring(0, 22) + "...";
+                }
                 contentStream.showText(PdfFontHelper.sanitizarTexto(autor, fontRegular));
 
                 contentStream.newLineAtOffset(0, -12);
                 String ubic = libro.getUbicacionFisica() != null ? libro.getUbicacionFisica() : "";
-                if (ubic.length() > 25) ubic = ubic.substring(0, 22) + "...";
+                if (ubic.length() > 25) {
+                    ubic = ubic.substring(0, 22) + "...";
+                }
                 contentStream.showText(PdfFontHelper.sanitizarTexto(ubic, fontRegular));
-                
+
                 contentStream.endText();
 
                 // Move to next label position
@@ -99,7 +124,7 @@ public class ServicioEtiquetasFisicas {
                 if (currentX + rectWidth > page.getMediaBox().getWidth() - 50) {
                     currentX = startX;
                     currentY -= rectHeight + spacingY;
-                    
+
                     if (currentY - rectHeight < 50) {
                         contentStream.close();
                         page = new PDPage(PDRectangle.A4);
@@ -131,14 +156,15 @@ public class ServicioEtiquetasFisicas {
     }
 
     /**
-     * Genera un código QR en formato de imagen con los datos de un libro.
-     * Los metadatos se agrupan en un texto plano codificado en UTF-8.
+     * Genera un código QR en formato de imagen con los datos de un libro. Los
+     * metadatos se agrupan en un texto plano codificado en UTF-8.
      *
      * @param libro El libro físico del cual generar el código QR.
      * @param width El ancho de la imagen a generar.
      * @param height El alto de la imagen a generar.
      * @return Una imagen (BufferedImage) con el código QR renderizado.
-     * @throws Exception Si hay algún problema durante la generación o codificación.
+     * @throws Exception Si hay algún problema durante la generación o
+     * codificación.
      */
     private static BufferedImage generarQR(Libro libro, int width, int height) throws Exception {
         StringBuilder qrData = new StringBuilder();

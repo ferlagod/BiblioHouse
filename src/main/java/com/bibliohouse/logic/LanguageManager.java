@@ -26,14 +26,14 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 /**
- * Fuente única de verdad para la gestión de internacionalización (i18n)
- * e idiomas en BiblioHouse.
+ * Fuente única de verdad para la gestión de internacionalización (i18n) e
+ * idiomas en BiblioHouse.
  *
- * Sincroniza las preferencias del sistema, mantiene el ResourceBundle activo
- * y notifica a los componentes visuales mediante AppEventBus.
+ * Sincroniza las preferencias del sistema, mantiene el ResourceBundle activo y
+ * notifica a los componentes visuales mediante AppEventBus.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class LanguageManager {
 
@@ -87,7 +87,8 @@ public class LanguageManager {
      * Carga el archivo de idioma correspondiente al locale especificado.
      *
      * @param locale El locale objetivo.
-     * @param notificarEventBus Si true, emite IdiomaCambiadoEvent en el bus de eventos.
+     * @param notificarEventBus Si true, emite IdiomaCambiadoEvent en el bus de
+     * eventos.
      */
     private static synchronized void cargarIdioma(Locale locale, boolean notificarEventBus) {
         currentLocale = locale;
@@ -133,8 +134,9 @@ public class LanguageManager {
     }
 
     /**
-     * Establece el idioma activo a partir de su código de idioma ISO (ej: "es", "en", "gl", "ca", "eu", "pt").
-     * Guarda la preferencia en todos los nodos correspondientes y notifica al bus de eventos.
+     * Establece el idioma activo a partir de su código de idioma ISO (ej: "es",
+     * "en", "gl", "ca", "eu", "pt"). Guarda la preferencia en todos los nodos
+     * correspondientes y notifica al bus de eventos.
      *
      * @param langCode Código del idioma.
      */

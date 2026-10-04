@@ -6,6 +6,14 @@
  * bajo los términos de la Licencia Pública General de GNU tal como se publica
  * por la Free Software Foundation, ya sea la versión 3 de la Licencia, o
  * (a su opción) cualquier versión posterior.
+ *
+ * Este programa se distribuye con la esperanza de que sea útil, pero
+ * SIN NINGUNA GARANTÍA; sin siquiera la garantía implícita de
+ * COMERCIABILIDAD o APTITUD PARA UN PROPÓSITO PARTICULAR. Vea la
+ * Licencia Pública General de GNU para más detalles.
+ *
+ * Usted debería haber recibido una copia de la Licencia Pública General de GNU
+ * junto con este programa. Si no es así, vea <https://www.gnu.org/licenses/>.
  */
 package com.bibliohouse.logic;
 
@@ -18,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -28,7 +35,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -38,10 +44,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pruebas unitarias para validar la extracción local y optimizada de portadas
- * incrustadas en archivos de e-books (EPUB mediante manifiesto OPF y PDF vía PDFBox).
+ * incrustadas en archivos de e-books (EPUB mediante manifiesto OPF y PDF vía
+ * PDFBox).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class TestExtraccionPortadasEbook {
 
@@ -59,7 +66,8 @@ public class TestExtraccionPortadasEbook {
     }
 
     /**
-     * Crea un archivo EPUB sintético válido con container.xml, content.opf y una portada de alta resolución.
+     * Crea un archivo EPUB sintético válido con container.xml, content.opf y
+     * una portada de alta resolución.
      */
     private File crearEpubDePrueba(String nombreArchivo, int width, int height) throws IOException {
         File epubFile = tempDir.resolve(nombreArchivo).toFile();

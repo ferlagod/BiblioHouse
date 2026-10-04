@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -57,7 +56,7 @@ import java.util.logging.Logger;
  * deserialización de objetos.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  *
  */
 public class JsonManager {
@@ -153,7 +152,7 @@ public class JsonManager {
         /**
          * Convierte un String de JSON a una fecha LocalDate.
          *
-         * @param json    El JSON con la fecha en formato String.
+         * @param json El JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de la serialización.
          * @return La fecha parseada desde el String.
@@ -167,7 +166,7 @@ public class JsonManager {
         /**
          * Convierte un JsonPrimitive (String) a un objeto LocalDate.
          *
-         * @param json    JSON con la fecha en formato String.
+         * @param json JSON con la fecha en formato String.
          * @param typeOfT Tipo del objeto.
          * @param context Contexto de deserialización.
          * @return Objeto LocalDate parseado desde el String.
@@ -184,7 +183,7 @@ public class JsonManager {
      * Constructor de JsonManager.Recibe la ruta de datos del usuario.
      *
      * @param rutaDatosUsuario La ruta completa a la carpeta de datos del
-     *                         usuario actual.
+     * usuario actual.
      */
     public JsonManager(String rutaDatosUsuario) {
         if (rutaDatosUsuario == null || rutaDatosUsuario.isEmpty()) {
@@ -272,17 +271,17 @@ public class JsonManager {
      * Método genérico para guardar cualquier lista de objetos en un archivo
      * JSON.
      *
-     * @param lista    La lista de objetos que queremos guardar.
-     * @param path     La ruta del archivo donde se guardará.
+     * @param lista La lista de objetos que queremos guardar.
+     * @param path La ruta del archivo donde se guardará.
      * @param tipoDato Un String que describe qué tipo de datos estamos
-     *                 guardando.
+     * guardando.
      */
     /**
      * Método genérico para guardar cualquier objeto (lista, mapa, etc.) en un
      * archivo JSON de forma atómica y segura con backup.
      *
-     * @param objeto   El objeto a serializar.
-     * @param path     La ruta del archivo donde se guardará.
+     * @param objeto El objeto a serializar.
+     * @param path La ruta del archivo donde se guardará.
      * @param tipoDato Descripción del dato para el logging.
      */
     private synchronized void guardarObjeto(Object objeto, String path, String tipoDato) {
@@ -343,10 +342,10 @@ public class JsonManager {
      * Método genérico para guardar cualquier lista de objetos en un archivo
      * JSON.
      *
-     * @param lista    La lista de objetos que queremos guardar.
-     * @param path     La ruta del archivo donde se guardará.
+     * @param lista La lista de objetos que queremos guardar.
+     * @param path La ruta del archivo donde se guardará.
      * @param tipoDato Un String que describe qué tipo de datos estamos
-     *                 guardando.
+     * guardando.
      */
     private synchronized <T> void guardarDatos(List<T> lista, String path, String tipoDato) {
         guardarObjeto(lista, path, tipoDato);
@@ -355,9 +354,9 @@ public class JsonManager {
     /**
      * Método genérico para cargar un objeto o mapa desde un archivo JSON.
      *
-     * @param path       La ruta del archivo.
+     * @param path La ruta del archivo.
      * @param tipoObjeto El tipo del objeto esperado.
-     * @param tipoDato   Descripción del dato para el logging.
+     * @param tipoDato Descripción del dato para el logging.
      * @return El objeto deserializado, o {@code null} si falla o no existe.
      */
     private <T> T cargarObjeto(String path, Type tipoObjeto, String tipoDato) {
@@ -369,7 +368,7 @@ public class JsonManager {
             try (FileReader reader = new FileReader(file)) {
                 T obj = gson.fromJson(reader, tipoObjeto);
                 if (obj != null) {
-                    LOGGER.log(Level.FINE, "Cargado {0} desde {1}", new Object[] { tipoDato, path });
+                    LOGGER.log(Level.FINE, "Cargado {0} desde {1}", new Object[]{tipoDato, path});
                     return obj;
                 }
             } catch (Exception e) {
@@ -383,7 +382,7 @@ public class JsonManager {
                 T obj = gson.fromJson(reader, tipoObjeto);
                 if (obj != null) {
                     LOGGER.log(Level.WARNING, "RECUPERADO: Cargado {0} desde BACKUP {1}",
-                            new Object[] { tipoDato, backupFile.getPath() });
+                            new Object[]{tipoDato, backupFile.getPath()});
                     return obj;
                 }
             } catch (Exception e) {
@@ -395,14 +394,15 @@ public class JsonManager {
     }
 
     /**
-     * Método genérico para cargar datos desde un archivo JSON en forma de lista.
+     * Método genérico para cargar datos desde un archivo JSON en forma de
+     * lista.
      *
-     * @param path      La ruta del archivo que queremos cargar.
+     * @param path La ruta del archivo que queremos cargar.
      * @param tipoLista El tipo de la lista que esperamos.
-     * @param tipoDato  Un String que describe qué tipo de datos estamos
-     *                  cargando.
+     * @param tipoDato Un String que describe qué tipo de datos estamos
+     * cargando.
      * @return La lista de objetos cargados desde el archivo. Si hay error,
-     *         devuelve una lista vacía.
+     * devuelve una lista vacía.
      */
     private <T> List<T> cargarDatos(String path, Type tipoLista, String tipoDato) {
         List<T> resultado = cargarObjeto(path, tipoLista, tipoDato);
@@ -416,9 +416,10 @@ public class JsonManager {
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
     /**
-     * Convierte una ruta absoluta de archivo o ruta local en una ruta relativa canónica
-     * (ej. "covers/id.jpg" o "ebooks/id.epub") para persistir en JSON de forma portable entre
-     * diferentes sistemas operativos (Windows, macOS, Linux, Android).
+     * Convierte una ruta absoluta de archivo o ruta local en una ruta relativa
+     * canónica (ej. "covers/id.jpg" o "ebooks/id.epub") para persistir en JSON
+     * de forma portable entre diferentes sistemas operativos (Windows, macOS,
+     * Linux, Android).
      *
      * @param urlOrPath Ruta local o URL remota.
      * @param subcarpeta Subcarpeta base ("covers" o "ebooks").
@@ -439,9 +440,10 @@ public class JsonManager {
     }
 
     /**
-     * Prepara una lista de libros para persistencia en JSON, convirtiendo rutas absolutas
-     * locales de portadas y ebooks en rutas relativas universales ("covers/..." y "ebooks/...").
-     * Utiliza clonación defensiva para no mutar los objetos vivos en memoria.
+     * Prepara una lista de libros para persistencia en JSON, convirtiendo rutas
+     * absolutas locales de portadas y ebooks en rutas relativas universales
+     * ("covers/..." y "ebooks/..."). Utiliza clonación defensiva para no mutar
+     * los objetos vivos en memoria.
      *
      * @param libros Lista de libros a preparar.
      * @return Lista de libros con rutas relativas listas para serializar.
@@ -452,7 +454,9 @@ public class JsonManager {
         }
         List<Libro> paraGuardar = new ArrayList<>(libros.size());
         for (Libro original : libros) {
-            if (original == null) continue;
+            if (original == null) {
+                continue;
+            }
             Libro copia = gson.fromJson(gson.toJsonTree(original), Libro.class);
             copia.setPortadaURL(convertirARutaRelativa(original.getPortadaURL(), "covers"));
             if (original.getRutaArchivoDigital() != null && !original.getRutaArchivoDigital().isBlank()) {
@@ -464,14 +468,18 @@ public class JsonManager {
     }
 
     /**
-     * Fusiona dos colecciones de libros (por ejemplo, local y remota de NextCloud)
-     * resolviendo conflictos por identificador único (ID) y timestamp de última modificación.
-     * Si un libro existe en ambas colecciones, se conserva la versión con el timestamp más reciente.
-     * Si un libro solo existe en una de las colecciones, se incluye en la colección unificada.
+     * Fusiona dos colecciones de libros (por ejemplo, local y remota de
+     * NextCloud) resolviendo conflictos por identificador único (ID) y
+     * timestamp de última modificación. Si un libro existe en ambas
+     * colecciones, se conserva la versión con el timestamp más reciente. Si un
+     * libro solo existe en una de las colecciones, se incluye en la colección
+     * unificada.
      *
      * @param locales Lista de libros de la biblioteca local.
-     * @param remotas Lista de libros provenientes del almacenamiento remoto o móvil.
-     * @return Lista unificada y sin duplicados con los libros más actualizados de ambos lados.
+     * @param remotas Lista de libros provenientes del almacenamiento remoto o
+     * móvil.
+     * @return Lista unificada y sin duplicados con los libros más actualizados
+     * de ambos lados.
      */
     public static List<Libro> fusionarColecciones(List<Libro> locales, List<Libro> remotas) {
         if (locales == null && remotas == null) {
@@ -488,14 +496,18 @@ public class JsonManager {
 
         // 1. Indexar libros locales
         for (Libro local : locales) {
-            if (local == null) continue;
+            if (local == null) {
+                continue;
+            }
             String clave = obtenerClaveUnicaLibro(local);
             mapaFusion.put(clave, local);
         }
 
         // 2. Fusionar libros remotos
         for (Libro remoto : remotas) {
-            if (remoto == null) continue;
+            if (remoto == null) {
+                continue;
+            }
             String clave = obtenerClaveUnicaLibro(remoto);
             Libro localExistente = mapaFusion.get(clave);
 
@@ -517,14 +529,16 @@ public class JsonManager {
     }
 
     /**
-     * Obtiene la clave de identificación única canónica para un libro durante el merge.
-     * Prioriza ID (UUID), con fallback a ISBN o Título+Autor.
+     * Obtiene la clave de identificación única canónica para un libro durante
+     * el merge. Prioriza ID (UUID), con fallback a ISBN o Título+Autor.
      *
      * @param libro El libro a indexar.
      * @return Clave única representativa.
      */
     public static String obtenerClaveUnicaLibro(Libro libro) {
-        if (libro == null) return "";
+        if (libro == null) {
+            return "";
+        }
         if (libro.getId() != null && !libro.getId().isBlank()) {
             return libro.getId().trim();
         }
@@ -536,10 +550,12 @@ public class JsonManager {
     }
 
     /**
-     * Fusiona la lista actual de libros con una lista remota, guardando en disco
-     * la versión combinada (resolviendo por ID y timestamp de última modificación).
+     * Fusiona la lista actual de libros con una lista remota, guardando en
+     * disco la versión combinada (resolviendo por ID y timestamp de última
+     * modificación).
      *
-     * @param librosRemotos Lista de libros obtenidos de la nube o dispositivo remoto.
+     * @param librosRemotos Lista de libros obtenidos de la nube o dispositivo
+     * remoto.
      * @return Lista unificada final resultante de la fusión.
      */
     public synchronized List<Libro> fusionarYGuardarLibros(List<Libro> librosRemotos) {
@@ -550,10 +566,12 @@ public class JsonManager {
     }
 
     /**
-     * Fusiona la lista actual de deseos con una lista remota, guardando en disco
-     * la versión combinada (resolviendo por ID y timestamp de última modificación).
+     * Fusiona la lista actual de deseos con una lista remota, guardando en
+     * disco la versión combinada (resolviendo por ID y timestamp de última
+     * modificación).
      *
-     * @param deseosRemotos Lista de deseos obtenidos de la nube o dispositivo remoto.
+     * @param deseosRemotos Lista de deseos obtenidos de la nube o dispositivo
+     * remoto.
      * @return Lista unificada final resultante de la fusión.
      */
     public synchronized List<Libro> fusionarYGuardarDeseos(List<Libro> deseosRemotos) {
@@ -570,8 +588,11 @@ public class JsonManager {
      * @return Lista de libros parseados.
      */
     public List<Libro> parsearLibros(String json) {
-        if (json == null || json.isBlank()) return new ArrayList<>();
-        Type tipoLista = new TypeToken<ArrayList<Libro>>() {}.getType();
+        if (json == null || json.isBlank()) {
+            return new ArrayList<>();
+        }
+        Type tipoLista = new TypeToken<ArrayList<Libro>>() {
+        }.getType();
         List<Libro> lista = gson.fromJson(json, tipoLista);
         return lista != null ? lista : new ArrayList<>();
     }
@@ -583,14 +604,18 @@ public class JsonManager {
      * @return Lista de libros parseados.
      */
     public List<Libro> parsearLibros(Reader reader) {
-        if (reader == null) return new ArrayList<>();
-        Type tipoLista = new TypeToken<ArrayList<Libro>>() {}.getType();
+        if (reader == null) {
+            return new ArrayList<>();
+        }
+        Type tipoLista = new TypeToken<ArrayList<Libro>>() {
+        }.getType();
         List<Libro> lista = gson.fromJson(reader, tipoLista);
         return lista != null ? lista : new ArrayList<>();
     }
 
     /**
-     * Serializa una lista de libros a formato JSON con rutas relativas portables.
+     * Serializa una lista de libros a formato JSON con rutas relativas
+     * portables.
      *
      * @param libros Lista de libros a serializar.
      * @return Cadena JSON formateada.
@@ -601,15 +626,18 @@ public class JsonManager {
     }
 
     /**
-     * Resuelve las rutas relativas ("covers/..." y "ebooks/...") contenidas en los JSON
-     * contra el directorio de datos local de la aplicación en la máquina actual.
+     * Resuelve las rutas relativas ("covers/..." y "ebooks/...") contenidas en
+     * los JSON contra el directorio de datos local de la aplicación en la
+     * máquina actual.
      *
      * @param libros Lista de libros cargados.
      * @param carpetaCovers Directorio local de portadas.
      * @param carpetaEbooks Directorio local de ebooks.
      */
     private void resolverRutasLocales(List<Libro> libros, String carpetaCovers, String carpetaEbooks) {
-        if (libros == null) return;
+        if (libros == null) {
+            return;
+        }
         for (Libro libro : libros) {
             if (libro.getEstanterias() == null) {
                 libro.setEstanterias(new ArrayList<>());
@@ -681,7 +709,8 @@ public class JsonManager {
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS LIBROS ---
     /**
-     * Guarda la lista de libros en el archivo JSON correspondiente con rutas relativas portables.
+     * Guarda la lista de libros en el archivo JSON correspondiente con rutas
+     * relativas portables.
      *
      * @param libros Lista de libros a guardar.
      */
@@ -708,8 +737,8 @@ public class JsonManager {
     }
 
     /**
-     * Carga la lista de libros desde el archivo JSON. Resuelve las rutas relativas
-     * contra el directorio local de la aplicación.
+     * Carga la lista de libros desde el archivo JSON. Resuelve las rutas
+     * relativas contra el directorio local de la aplicación.
      *
      * @return Lista de libros cargados.
      */
@@ -865,7 +894,7 @@ public class JsonManager {
      * Carga la lista de nombres de estanterías desde un archivo JSON.
      *
      * @return Una lista de Strings con las estanterías. Devuelve una lista
-     *         vacía si no se encuentra el archivo.
+     * vacía si no se encuentra el archivo.
      */
     public List<String> cargarEstanterias() {
         Type tipoLista = new TypeToken<ArrayList<String>>() {
@@ -930,7 +959,7 @@ public class JsonManager {
      * usuario (Exportar).
      *
      * @param archivo El archivo destino.
-     * @param libros  La lista de libros a guardar.
+     * @param libros La lista de libros a guardar.
      * @return true si se guardó correctamente, false si falló.
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {
@@ -1008,8 +1037,8 @@ public class JsonManager {
     }
 
     /**
-     * Carga la lista de deseos desde el archivo de base de datos.
-     * Resuelve las rutas relativas contra el directorio de datos local.
+     * Carga la lista de deseos desde el archivo de base de datos. Resuelve las
+     * rutas relativas contra el directorio de datos local.
      *
      * @return Lista de libros en la lista de deseos.
      */
@@ -1027,10 +1056,10 @@ public class JsonManager {
     }
 
     // --- MÉTODOS MODULARES PARA EL TRACKING DE LECTURA (PERSISTENCIA LIGERA) ---
-
     /**
      * Carga el mapa de progreso de lectura desde el archivo JSON secundario
-     * {@code progreso_lectura.json}. Almacena los resultados en caché en memoria.
+     * {@code progreso_lectura.json}. Almacena los resultados en caché en
+     * memoria.
      *
      * @return Mapa asociativo de ID de libro a su {@link ProgresoLectura}.
      */
@@ -1050,12 +1079,14 @@ public class JsonManager {
      * ultraligero {@code progreso_lectura.json}, sin reescribir ni tocar el
      * archivo principal {@code biblioteca.json}.
      *
-     * @param libroId        Identificador único (UUID) del libro.
-     * @param paginaActual   Página alcanzada por el usuario.
+     * @param libroId Identificador único (UUID) del libro.
+     * @param paginaActual Página alcanzada por el usuario.
      * @param paginasTotales Páginas totales del libro.
      */
     public void guardarProgresoLectura(String libroId, int paginaActual, int paginasTotales) {
-        if (libroId == null || libroId.isBlank()) return;
+        if (libroId == null || libroId.isBlank()) {
+            return;
+        }
         cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
         guardarObjeto(new HashMap<>(cacheProgresos), progresoLecturaFilePath, "progreso de lectura");
     }
@@ -1069,12 +1100,14 @@ public class JsonManager {
      * escrituras masivas de megabytes en disco.
      * </p>
      *
-     * @param libroId        Identificador único (UUID) del libro.
-     * @param paginaActual   Página actual alcanzada.
+     * @param libroId Identificador único (UUID) del libro.
+     * @param paginaActual Página actual alcanzada.
      * @param paginasTotales Páginas totales del libro.
      */
     public void guardarProgresoLecturaDebounced(String libroId, int paginaActual, int paginasTotales) {
-        if (libroId == null || libroId.isBlank()) return;
+        if (libroId == null || libroId.isBlank()) {
+            return;
+        }
         cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
 
         if (pendingProgresoSaveFuture != null && !pendingProgresoSaveFuture.isDone()) {

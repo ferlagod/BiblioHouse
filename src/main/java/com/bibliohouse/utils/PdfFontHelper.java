@@ -17,6 +17,7 @@
  */
 package com.bibliohouse.utils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,15 +30,15 @@ import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 /**
  * Utilidad centralizada para la carga de fuentes tipográficas y sanitización de
  * texto en documentos PDF generados con Apache PDFBox.
- * <p>
- * Permite cargar tipografías TrueType (como Roboto) mediante {@link PDType0Font}
- * con soporte Unicode nativo, evitando mutilar textos con acentos, tildes, eñes
- * y caracteres internacionales, y proporcionando un fallback robusto en caso de
- * ausencia de recursos.
- * </p>
+ * 
+ * Permite cargar tipografías TrueType (como Roboto) mediante
+ * {@link PDType0Font} con soporte Unicode nativo, evitando mutilar textos con
+ * acentos, tildes, eñes y caracteres internacionales, y proporcionando un
+ * fallback robusto en caso de ausencia de recursos.
+ * 
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public final class PdfFontHelper {
 
@@ -51,10 +52,12 @@ public final class PdfFontHelper {
     }
 
     /**
-     * Carga la fuente estándar regular en formato TrueType (Unicode) para el documento PDF.
-     * Si no se encuentra el recurso o falla la carga, recurre a HELVETICA.
+     * Carga la fuente estándar regular en formato TrueType (Unicode) para el
+     * documento PDF. Si no se encuentra el recurso o falla la carga, recurre a
+     * HELVETICA.
      *
-     * @param document El documento {@link PDDocument} en el que se incrustará la fuente.
+     * @param document El documento {@link PDDocument} en el que se incrustará
+     * la fuente.
      * @return La fuente {@link PDFont} lista para su uso.
      */
     public static PDFont loadRegularFont(PDDocument document) {
@@ -69,10 +72,12 @@ public final class PdfFontHelper {
     }
 
     /**
-     * Carga la fuente estándar en negrita en formato TrueType (Unicode) para el documento PDF.
-     * Si no se encuentra el recurso o falla la carga, recurre a HELVETICA_BOLD.
+     * Carga la fuente estándar en negrita en formato TrueType (Unicode) para el
+     * documento PDF. Si no se encuentra el recurso o falla la carga, recurre a
+     * HELVETICA_BOLD.
      *
-     * @param document El documento {@link PDDocument} en el que se incrustará la fuente.
+     * @param document El documento {@link PDDocument} en el que se incrustará
+     * la fuente.
      * @return La fuente {@link PDFont} en negrita lista para su uso.
      */
     public static PDFont loadBoldFont(PDDocument document) {
@@ -92,8 +97,9 @@ public final class PdfFontHelper {
      * provoque una excepción {@link IllegalArgumentException}.
      *
      * @param texto El texto original que se desea renderizar.
-     * @param font  La fuente tipográfica utilizada para el renderizado.
-     * @return Texto seguro para invocar en {@code contentStream.showText(texto)}.
+     * @param font La fuente tipográfica utilizada para el renderizado.
+     * @return Texto seguro para invocar en
+     * {@code contentStream.showText(texto)}.
      */
     public static String sanitizarTexto(String texto, PDFont font) {
         if (texto == null || texto.isEmpty()) {
@@ -115,7 +121,7 @@ public final class PdfFontHelper {
             try {
                 font.encode(charStr);
                 sb.append(charStr);
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 // Carácter no soportado en la fuente (ej. emoji exótico): sustituir por espacio
                 sb.append(' ');
             }

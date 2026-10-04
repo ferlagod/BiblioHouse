@@ -35,7 +35,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -57,7 +56,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -78,7 +76,7 @@ import javafx.util.Duration;
  * menú contextual sobre cada libro.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class CatalogoGridController {
 
@@ -284,19 +282,21 @@ public class CatalogoGridController {
     }
 
     /**
-     * Inicializa las dependencias, listas observables, rutas y recursos localizados
-     * requeridos por la vista de cuadrícula del catálogo de libros.
+     * Inicializa las dependencias, listas observables, rutas y recursos
+     * localizados requeridos por la vista de cuadrícula del catálogo de libros.
      *
-     * @param mainController Controlador principal de la ventana (PrimaryController).
-     * @param jsonManager    Gestor de persistencia en disco de datos JSON.
-     * @param listaLibros    Lista observable que contiene la totalidad de libros del usuario.
-     * @param listaDeseos    Lista de libros deseados pero no poseídos.
-     * @param rutaUsuario    Directorio raíz del perfil del usuario en disco.
-     * @param resources      Paquete de recursos para textos internacionalizados.
+     * @param mainController Controlador principal de la ventana
+     * (PrimaryController).
+     * @param jsonManager Gestor de persistencia en disco de datos JSON.
+     * @param listaLibros Lista observable que contiene la totalidad de libros
+     * del usuario.
+     * @param listaDeseos Lista de libros deseados pero no poseídos.
+     * @param rutaUsuario Directorio raíz del perfil del usuario en disco.
+     * @param resources Paquete de recursos para textos internacionalizados.
      */
     public void initData(PrimaryController mainController, JsonManager jsonManager,
-                         ObservableList<Libro> listaLibros, List<Libro> listaDeseos,
-                         String rutaUsuario, ResourceBundle resources) {
+            ObservableList<Libro> listaLibros, List<Libro> listaDeseos,
+            String rutaUsuario, ResourceBundle resources) {
         this.mainController = mainController;
         this.jsonManager = jsonManager;
         this.listaLibrosCompleta = listaLibros;
@@ -312,7 +312,6 @@ public class CatalogoGridController {
     // =========================================================================
     // ORDENACIÓN
     // =========================================================================
-
     /**
      * Ordena los libros alfabéticamente por título de forma ascendente (A - Z)
      * y reinicia la paginación a la primera página.
@@ -336,8 +335,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Ordena los libros alfabéticamente por autor de la A a la Z
-     * y reinicia la paginación a la primera página.
+     * Ordena los libros alfabéticamente por autor de la A a la Z y reinicia la
+     * paginación a la primera página.
      */
     @FXML
     public void ordenarPorAutor() {
@@ -347,8 +346,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Ordena los libros por año de publicación de más reciente a más antiguo
-     * y reinicia la paginación a la primera página.
+     * Ordena los libros por año de publicación de más reciente a más antiguo y
+     * reinicia la paginación a la primera página.
      */
     @FXML
     public void ordenarPorAnio() {
@@ -362,13 +361,15 @@ public class CatalogoGridController {
     }
 
     /**
-     * Ordena los libros por orden de inserción o modificación más reciente
-     * y reinicia la paginación a la primera página.
+     * Ordena los libros por orden de inserción o modificación más reciente y
+     * reinicia la paginación a la primera página.
      */
     @FXML
     public void ordenarPorReciente() {
         currentComparator = (l1, l2) -> {
-            if (listaLibrosCompleta == null) return 0;
+            if (listaLibrosCompleta == null) {
+                return 0;
+            }
             int i1 = listaLibrosCompleta.indexOf(l1);
             int i2 = listaLibrosCompleta.indexOf(l2);
             return Integer.compare(i2, i1); // Descendente
@@ -380,9 +381,9 @@ public class CatalogoGridController {
     // =========================================================================
     // NAVEGACIÓN Y PAGINACIÓN
     // =========================================================================
-
     /**
-     * Salta a la primera página de la cuadrícula de libros y desplaza la vista hacia arriba.
+     * Salta a la primera página de la cuadrícula de libros y desplaza la vista
+     * hacia arriba.
      */
     @FXML
     public void irPrimeraPagina() {
@@ -394,7 +395,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Retrocede a la página anterior de la cuadrícula de libros si no se está en la primera.
+     * Retrocede a la página anterior de la cuadrícula de libros si no se está
+     * en la primera.
      */
     @FXML
     public void irPaginaAnterior() {
@@ -406,7 +408,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Avanza a la página siguiente de la cuadrícula de libros si hay páginas posteriores disponibles.
+     * Avanza a la página siguiente de la cuadrícula de libros si hay páginas
+     * posteriores disponibles.
      */
     @FXML
     public void irPaginaSiguiente() {
@@ -430,7 +433,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Desplaza suavemente el ScrollPane de libros a la posición superior inicial.
+     * Desplaza suavemente el ScrollPane de libros a la posición superior
+     * inicial.
      */
     private void scrollearArriba() {
         if (scrollMisLibros != null) {
@@ -439,12 +443,14 @@ public class CatalogoGridController {
     }
 
     /**
-     * Actualiza las etiquetas de información de paginación y el estado de habilitación
-     * de los botones de navegación anterior/siguiente/primera/última página.
+     * Actualiza las etiquetas de información de paginación y el estado de
+     * habilitación de los botones de navegación
+     * anterior/siguiente/primera/última página.
      *
      * @param inicio Índice del primer libro mostrado en la página actual.
-     * @param fin    Índice del último libro mostrado en la página actual.
-     * @param total  Número total de libros tras aplicar los filtros de búsqueda y estantería.
+     * @param fin Índice del último libro mostrado en la página actual.
+     * @param total Número total de libros tras aplicar los filtros de búsqueda
+     * y estantería.
      */
     private void actualizarBarraPaginacion(int inicio, int fin, int total) {
         if (boxPaginacion == null) {
@@ -455,10 +461,18 @@ public class CatalogoGridController {
             if (lblInfoPaginacion != null) {
                 lblInfoPaginacion.setText("0 libros");
             }
-            if (btnPrimeraPagina != null) btnPrimeraPagina.setDisable(true);
-            if (btnAnterior != null) btnAnterior.setDisable(true);
-            if (btnSiguiente != null) btnSiguiente.setDisable(true);
-            if (btnUltima != null) btnUltima.setDisable(true);
+            if (btnPrimeraPagina != null) {
+                btnPrimeraPagina.setDisable(true);
+            }
+            if (btnAnterior != null) {
+                btnAnterior.setDisable(true);
+            }
+            if (btnSiguiente != null) {
+                btnSiguiente.setDisable(true);
+            }
+            if (btnUltima != null) {
+                btnUltima.setDisable(true);
+            }
             return;
         }
 
@@ -470,18 +484,26 @@ public class CatalogoGridController {
         boolean puedeRetroceder = paginaActual > 1;
         boolean puedeAvanzar = paginaActual < totalPaginas;
 
-        if (btnPrimeraPagina != null) btnPrimeraPagina.setDisable(!puedeRetroceder);
-        if (btnAnterior != null) btnAnterior.setDisable(!puedeRetroceder);
-        if (btnSiguiente != null) btnSiguiente.setDisable(!puedeAvanzar);
-        if (btnUltima != null) btnUltima.setDisable(!puedeAvanzar);
+        if (btnPrimeraPagina != null) {
+            btnPrimeraPagina.setDisable(!puedeRetroceder);
+        }
+        if (btnAnterior != null) {
+            btnAnterior.setDisable(!puedeRetroceder);
+        }
+        if (btnSiguiente != null) {
+            btnSiguiente.setDisable(!puedeAvanzar);
+        }
+        if (btnUltima != null) {
+            btnUltima.setDisable(!puedeAvanzar);
+        }
     }
 
     // =========================================================================
     // SELECTOR DE VISTA Y CHIPS DE FILTRADO
     // =========================================================================
-
     /**
-     * Configura las columnas, celdas y eventos de interacción de la vista de tabla compacta.
+     * Configura las columnas, celdas y eventos de interacción de la vista de
+     * tabla compacta.
      */
     private void configurarTablaMisLibros() {
         if (tablaMisLibros == null) {
@@ -491,6 +513,7 @@ public class CatalogoGridController {
         colPortada.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPortadaURL()));
         colPortada.setCellFactory(col -> new TableCell<>() {
             private final ImageView imgView = new ImageView();
+
             {
                 imgView.setFitWidth(28);
                 imgView.setFitHeight(40);
@@ -500,6 +523,7 @@ public class CatalogoGridController {
                 imgView.setClip(clip);
                 setAlignment(Pos.CENTER);
             }
+
             @Override
             protected void updateItem(String url, boolean empty) {
                 super.updateItem(url, empty);
@@ -543,10 +567,14 @@ public class CatalogoGridController {
                     Label badge = new Label(estado.getEtiqueta());
                     badge.getStyleClass().add("table-status-badge");
                     switch (estado) {
-                        case LEIDO -> badge.getStyleClass().add("badge-leido");
-                        case LEYENDO -> badge.getStyleClass().add("badge-leyendo");
-                        case ABANDONADO -> badge.getStyleClass().add("badge-abandonado");
-                        default -> badge.setStyle("-fx-background-color: -color-bg-subtle; -fx-text-fill: -color-fg-muted; -fx-padding: 2 7; -fx-background-radius: 10;");
+                        case LEIDO ->
+                            badge.getStyleClass().add("badge-leido");
+                        case LEYENDO ->
+                            badge.getStyleClass().add("badge-leyendo");
+                        case ABANDONADO ->
+                            badge.getStyleClass().add("badge-abandonado");
+                        default ->
+                            badge.setStyle("-fx-background-color: -color-bg-subtle; -fx-text-fill: -color-fg-muted; -fx-padding: 2 7; -fx-background-radius: 10;");
                     }
                     setAlignment(Pos.CENTER);
                     setGraphic(badge);
@@ -598,8 +626,12 @@ public class CatalogoGridController {
                 } else {
                     int stars = Math.max(1, Math.min(5, calificacion));
                     StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < stars; i++) sb.append("★");
-                    for (int i = stars; i < 5; i++) sb.append("☆");
+                    for (int i = 0; i < stars; i++) {
+                        sb.append("★");
+                    }
+                    for (int i = stars; i < 5; i++) {
+                        sb.append("☆");
+                    }
                     setText(sb.toString());
                     setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
                 }
@@ -715,7 +747,6 @@ public class CatalogoGridController {
     // =========================================================================
     // RENDERIZADO DE LA CUADRÍCULA
     // =========================================================================
-
     /**
      * Dibuja las tarjetas de libros respetando el filtro lateral de estantería,
      * el texto de búsqueda rápida y la paginación activa.
@@ -745,11 +776,16 @@ public class CatalogoGridController {
                 .filter(l -> {
                     // Filtro rápido de chips
                     return switch (filtroChipActual) {
-                        case LEYENDO -> l.getEstadoLecturaEnum() == EstadoLectura.LEYENDO;
-                        case LEIDOS -> l.getEstadoLecturaEnum() == EstadoLectura.LEIDO;
-                        case PENDIENTES -> l.getEstadoLecturaEnum() == EstadoLectura.PENDIENTE;
-                        case DIGITALES -> l.isEsDigital();
-                        default -> true;
+                        case LEYENDO ->
+                            l.getEstadoLecturaEnum() == EstadoLectura.LEYENDO;
+                        case LEIDOS ->
+                            l.getEstadoLecturaEnum() == EstadoLectura.LEIDO;
+                        case PENDIENTES ->
+                            l.getEstadoLecturaEnum() == EstadoLectura.PENDIENTE;
+                        case DIGITALES ->
+                            l.isEsDigital();
+                        default ->
+                            true;
                     };
                 })
                 .filter(l -> {
@@ -1138,8 +1174,12 @@ public class CatalogoGridController {
         if (stars > 0) {
             stars = Math.max(1, Math.min(5, stars));
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < stars; i++) sb.append("★");
-            for (int i = 0; i < 5 - stars; i++) sb.append("☆");
+            for (int i = 0; i < stars; i++) {
+                sb.append("★");
+            }
+            for (int i = 0; i < 5 - stars; i++) {
+                sb.append("☆");
+            }
             Label lblRating = new Label(sb.toString());
             lblRating.setAccessibleRole(AccessibleRole.TEXT);
             lblRating.setAccessibleText("Calificación: " + stars + " de 5 estrellas");
@@ -1176,7 +1216,9 @@ public class CatalogoGridController {
     }
 
     private void navegarTarjetaSiguiente(Node actual) {
-        if (panelMisLibros == null) return;
+        if (panelMisLibros == null) {
+            return;
+        }
         int idx = panelMisLibros.getChildren().indexOf(actual);
         if (idx >= 0 && idx < panelMisLibros.getChildren().size() - 1) {
             Node siguiente = panelMisLibros.getChildren().get(idx + 1);
@@ -1186,7 +1228,9 @@ public class CatalogoGridController {
     }
 
     private void navegarTarjetaAnterior(Node actual) {
-        if (panelMisLibros == null) return;
+        if (panelMisLibros == null) {
+            return;
+        }
         int idx = panelMisLibros.getChildren().indexOf(actual);
         if (idx > 0) {
             Node anterior = panelMisLibros.getChildren().get(idx - 1);
@@ -1196,9 +1240,13 @@ public class CatalogoGridController {
     }
 
     private void navegarTarjetaFila(Node actual, boolean abajo) {
-        if (panelMisLibros == null || panelMisLibros.getChildren().isEmpty()) return;
+        if (panelMisLibros == null || panelMisLibros.getChildren().isEmpty()) {
+            return;
+        }
         javafx.geometry.Bounds curBounds = actual.getBoundsInParent();
-        if (curBounds == null) return;
+        if (curBounds == null) {
+            return;
+        }
         double curY = curBounds.getMinY();
         double curCenterX = (curBounds.getMinX() + curBounds.getMaxX()) / 2.0;
 
@@ -1264,7 +1312,9 @@ public class CatalogoGridController {
     }
 
     private void asegurarVisibilidadEnScroll(Node target) {
-        if (scrollMisLibros == null || target == null || panelMisLibros == null) return;
+        if (scrollMisLibros == null || target == null || panelMisLibros == null) {
+            return;
+        }
         try {
             javafx.geometry.Bounds bounds = target.getBoundsInParent();
             if (bounds != null && panelMisLibros.getBoundsInLocal() != null && scrollMisLibros.getViewportBounds() != null) {
@@ -1283,7 +1333,6 @@ public class CatalogoGridController {
     // =========================================================================
     // MENÚ CONTEXTUAL DE LIBROS
     // =========================================================================
-
     /**
      * Inicializa la instancia compartida del menú contextual de libros.
      */
@@ -1292,14 +1341,17 @@ public class CatalogoGridController {
     }
 
     /**
-     * Construye dinámicamente y despliega el menú contextual sobre la tarjeta del libro,
-     * adaptando las opciones disponibles según si el libro es digital o físico (leer,
-     * prestar, editar, cambiar portada, cambiar estado de lectura, imprimir etiqueta, eliminar).
+     * Construye dinámicamente y despliega el menú contextual sobre la tarjeta
+     * del libro, adaptando las opciones disponibles según si el libro es
+     * digital o físico (leer, prestar, editar, cambiar portada, cambiar estado
+     * de lectura, imprimir etiqueta, eliminar).
      *
-     * @param owner   Nodo gráfico propietario sobre el que se despliega el menú.
-     * @param libro   Libro sobre el que se ejecutarán las acciones.
-     * @param screenX Coordenada X absoluta de la pantalla donde se produjo el evento.
-     * @param screenY Coordenada Y absoluta de la pantalla donde se produjo el evento.
+     * @param owner Nodo gráfico propietario sobre el que se despliega el menú.
+     * @param libro Libro sobre el que se ejecutarán las acciones.
+     * @param screenX Coordenada X absoluta de la pantalla donde se produjo el
+     * evento.
+     * @param screenY Coordenada Y absoluta de la pantalla donde se produjo el
+     * evento.
      */
     private void mostrarContextMenu(Node owner, Libro libro, double screenX, double screenY) {
         if (contextMenuLibros == null) {
@@ -1380,10 +1432,11 @@ public class CatalogoGridController {
     }
 
     /**
-     * Actualiza el estado de lectura de un libro (Pendiente, Leyendo, Leído, Abandonado),
-     * persistiendo el cambio con debounce y notificando al bus de eventos de la aplicación.
+     * Actualiza el estado de lectura de un libro (Pendiente, Leyendo, Leído,
+     * Abandonado), persistiendo el cambio con debounce y notificando al bus de
+     * eventos de la aplicación.
      *
-     * @param libro       Libro cuyo estado será modificado.
+     * @param libro Libro cuyo estado será modificado.
      * @param nuevoEstado Nuevo {@link EstadoLectura} a aplicar.
      */
     private void cambiarEstadoLectura(Libro libro, EstadoLectura nuevoEstado) {
@@ -1397,7 +1450,8 @@ public class CatalogoGridController {
     }
 
     /**
-     * Solicita al controlador principal abrir la ventana con la ficha de detalle del libro.
+     * Solicita al controlador principal abrir la ventana con la ficha de
+     * detalle del libro.
      *
      * @param libro Libro seleccionado por el usuario.
      */
@@ -1410,10 +1464,10 @@ public class CatalogoGridController {
     // =========================================================================
     // DRAG & DROP DE E-BOOKS
     // =========================================================================
-
     /**
-     * Configura el comportamiento de arrastrar y soltar (Drag & Drop) sobre el panel
-     * del catálogo para permitir la importación directa y automática de archivos e-book (EPUB, PDF, MOBI).
+     * Configura el comportamiento de arrastrar y soltar (Drag & Drop) sobre el
+     * panel del catálogo para permitir la importación directa y automática de
+     * archivos e-book (EPUB, PDF, MOBI).
      */
     private void configurarDragAndDrop() {
         if (panelMisLibros == null) {

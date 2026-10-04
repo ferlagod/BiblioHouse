@@ -41,7 +41,7 @@ import org.json.JSONObject;
  * Cliente para conectar con Google Books. Si OpenLib no va, usamos esto.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class GoogleBooksCliente {
 

@@ -29,16 +29,16 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pruebas unitarias para validar la solución a las caídas por codificación de
  * caracteres en Apache PDFBox, asegurando compatibilidad completa con acentos,
- * eñes, diéresis y caracteres internacionales sin lanzar IllegalArgumentException.
+ * eñes, diéresis y caracteres internacionales sin lanzar
+ * IllegalArgumentException.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 class TestCodificacionPdfBox {
 

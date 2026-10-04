@@ -52,7 +52,7 @@ import javafx.util.Duration;
  * Clase para cargar imágenes de forma asíncrona con caché multinivel.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class ImageLoader {
 
@@ -200,7 +200,8 @@ public class ImageLoader {
 
     /**
      * Descarga de forma segura y fiable una imagen web a un archivo destino
-     * utilizando HttpClient con redirección automática y User-Agent de navegador.
+     * utilizando HttpClient con redirección automática y User-Agent de
+     * navegador.
      *
      * @param url URL de la imagen.
      * @param archivoDestino Archivo local donde se guardará.
@@ -238,19 +239,20 @@ public class ImageLoader {
                     return true;
                 }
             }
-        } catch (Exception ignored) {
+        } catch (IOException | InterruptedException ignored) {
         }
         return false;
     }
 
     /**
      * Carga una imagen de forma asíncrona en un ImageView, aplicando skeleton
-     * loading mientras se procesa. Prioriza el uso de la caché en memoria para
-     * evitar recargas innecesarias.
+     * loading mientras se procesa.Prioriza el uso de la caché en memoria para
+ evitar recargas innecesarias.
      *
      * @param urlOrPath Ruta local o URL de la imagen a cargar.
      * @param target ImageView donde se mostrará la imagen.
      * @param w Ancho deseado para la imagen
+     * @param h Alto deseado para la imagen
      */
     public static void load(String urlOrPath, ImageView target, double w, double h) {
         if (target == null) {
@@ -339,7 +341,8 @@ public class ImageLoader {
 
     /**
      * Gestiona la carga de una imagen desde una ruta local. Si el archivo no
-     * existe en la ruta dada ni en la carpeta de portadas, carga la imagen por defecto.
+     * existe en la ruta dada ni en la carpeta de portadas, carga la imagen por
+     * defecto.
      *
      * @param path Ruta local del archivo de imagen.
      * @param target ImageView donde se mostrará la imagen.
@@ -458,13 +461,16 @@ public class ImageLoader {
      * Guarda una portada de libro localmente en la carpeta de usuario, ya sea
      * descargándola desde una URL o copiándola desde una ruta local.
      * Redimensiona automáticamente la imagen a un estándar de biblioteca
-     * (máximo 600 px de ancho y 900 px de alto, manteniendo el ratio de aspecto)
-     * y la guarda comprimida en JPEG con calidad al 85%.
+     * (máximo 600 px de ancho y 900 px de alto, manteniendo el ratio de
+     * aspecto) y la guarda comprimida en JPEG con calidad al 85%.
      *
      * @param urlOrPath URL o ruta local de la portada original.
-     * @param idLibro Identificador único del libro, usado como nombre de archivo.
-     * @param carpetaUsuario Ruta de la carpeta del usuario donde se guardará la portada.
-     * @return Ruta absoluta del archivo de portada guardado localmente, o la ruta original si no se pudo procesar.
+     * @param idLibro Identificador único del libro, usado como nombre de
+     * archivo.
+     * @param carpetaUsuario Ruta de la carpeta del usuario donde se guardará la
+     * portada.
+     * @return Ruta absoluta del archivo de portada guardado localmente, o la
+     * ruta original si no se pudo procesar.
      */
     public static String hacerPortadaLocalOffline(String urlOrPath, String idLibro, String carpetaUsuario) {
         if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.equals(DEFAULT_IMAGE_PATH) || urlOrPath.contains("default_cover")) {
@@ -491,7 +497,8 @@ public class ImageLoader {
                     boolean optimizado = redimensionarYComprimirPortada(tmpDescarga, archivoDestino);
                     try {
                         Files.deleteIfExists(tmpDescarga.toPath());
-                    } catch (Exception ignored) {}
+                    } catch (IOException ignored) {
+                    }
 
                     if (optimizado && archivoDestino.exists() && archivoDestino.length() > 200) {
                         limpiarPortadasObsoletasConMismoId(dirCovers, safeId, ".jpg");
@@ -511,7 +518,8 @@ public class ImageLoader {
                         if (archivoOrigen.getCanonicalPath().equals(archivoDestino.getCanonicalPath()) && archivoOrigen.length() < 120_000) {
                             return archivoDestino.getAbsolutePath();
                         }
-                    } catch (IOException ignored) {}
+                    } catch (IOException ignored) {
+                    }
 
                     // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
                     String name = archivoOrigen.getName().toLowerCase();
@@ -549,9 +557,10 @@ public class ImageLoader {
     }
 
     /**
-     * Redimensiona una imagen al tamaño estándar de portada (máximo 600px de ancho y 900px de alto,
-     * conservando la relación de aspecto) y la guarda comprimida en formato JPEG al 85%.
-     * Si la imagen original es menor a estas dimensiones, no se escala hacia arriba.
+     * Redimensiona una imagen al tamaño estándar de portada (máximo 600px de
+     * ancho y 900px de alto, conservando la relación de aspecto) y la guarda
+     * comprimida en formato JPEG al 85%. Si la imagen original es menor a estas
+     * dimensiones, no se escala hacia arriba.
      *
      * @param imagenOriginal Imagen en memoria a redimensionar y comprimir.
      * @param archivoDestino Archivo de destino donde se guardará.
@@ -612,19 +621,22 @@ public class ImageLoader {
                         StandardCopyOption.REPLACE_EXISTING);
             }
             return true;
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             try {
                 Files.deleteIfExists(tmpFile.toPath());
-            } catch (Exception ignored) {}
+            } catch (IOException ignored) {
+            }
             return false;
         }
     }
 
     /**
-     * Carga un archivo de imagen desde disco, lo redimensiona y lo comprime en formato JPEG al 85%.
+     * Carga un archivo de imagen desde disco, lo redimensiona y lo comprime en
+     * formato JPEG al 85%.
      *
      * @param archivoOrigen Archivo de imagen original (JPEG, PNG, WebP, etc.).
-     * @param archivoDestino Archivo final donde se guardará la portada optimizada.
+     * @param archivoDestino Archivo final donde se guardará la portada
+     * optimizada.
      * @return true si la operación se completó exitosamente.
      */
     public static boolean redimensionarYComprimirPortada(File archivoOrigen, File archivoDestino) {
@@ -636,15 +648,18 @@ public class ImageLoader {
             if (img != null) {
                 return redimensionarYComprimirPortada(img, archivoDestino);
             }
-        } catch (Exception ignored) {}
+        } catch (IOException ignored) {
+        }
         return false;
     }
 
     /**
-     * Lee una imagen desde un flujo de entrada (InputStream), la redimensiona y la comprime en formato JPEG al 85%.
+     * Lee una imagen desde un flujo de entrada (InputStream), la redimensiona y
+     * la comprime en formato JPEG al 85%.
      *
      * @param inputStream Flujo con los bytes de la imagen.
-     * @param archivoDestino Archivo final donde se guardará la portada optimizada.
+     * @param archivoDestino Archivo final donde se guardará la portada
+     * optimizada.
      * @return true si la operación se completó exitosamente.
      */
     public static boolean redimensionarYComprimirPortada(InputStream inputStream, File archivoDestino) {
@@ -656,12 +671,14 @@ public class ImageLoader {
             if (img != null) {
                 return redimensionarYComprimirPortada(img, archivoDestino);
             }
-        } catch (Exception ignored) {}
+        } catch (IOException ignored) {
+        }
         return false;
     }
 
     /**
-     * Escribe un BufferedImage en disco en formato JPEG con el factor de calidad indicado.
+     * Escribe un BufferedImage en disco en formato JPEG con el factor de
+     * calidad indicado.
      *
      * @param imagen Imagen a persistir.
      * @param destino Archivo destino.
@@ -690,8 +707,9 @@ public class ImageLoader {
     }
 
     /**
-     * Elimina archivos de portada anteriores con el mismo identificador pero diferente extensión
-     * (por ejemplo, eliminando una versión previa .png de 8 MB al generar el nuevo .jpg de 50 KB).
+     * Elimina archivos de portada anteriores con el mismo identificador pero
+     * diferente extensión (por ejemplo, eliminando una versión previa .png de 8
+     * MB al generar el nuevo .jpg de 50 KB).
      */
     private static void limpiarPortadasObsoletasConMismoId(File dirCovers, String safeId, String extensionActual) {
         for (String ext : new String[]{".png", ".jpeg", ".webp"}) {
@@ -700,7 +718,8 @@ public class ImageLoader {
                 if (oldFile.exists() && oldFile.isFile()) {
                     try {
                         Files.deleteIfExists(oldFile.toPath());
-                    } catch (Exception ignored) {}
+                    } catch (IOException ignored) {
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.bibliohouse.logic;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -13,7 +14,7 @@ import java.util.logging.Logger;
  * (Google Books, OpenLibrary, Inventaire).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.2
  */
 public class BusquedaService {
 
@@ -62,11 +63,13 @@ public class BusquedaService {
             .build();
 
     /**
-     * Comprueba de forma instantánea si OpenLibrary dispone de una portada directa para un ISBN.
-     * Es significativamente más rápido (< 400ms) que realizar una búsqueda semántica completa.
+     * Comprueba de forma instantánea si OpenLibrary dispone de una portada
+     * directa para un ISBN. Es significativamente más rápido (< 400ms) que
+     * realizar una búsqueda semántica completa.
      *
      * @param isbn ISBN-10 o ISBN-13 del libro.
-     * @return URL de la portada si existe, o cadena vacía si no está disponible.
+     * @return URL de la portada si existe, o cadena vacía si no está
+     * disponible.
      */
     public String buscarImagenPorIsbnDirecto(String isbn) {
         if (isbn == null || isbn.isBlank()) {
@@ -95,7 +98,7 @@ public class BusquedaService {
                     return url;
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.FINE, "No se pudo consultar portada directa por ISBN: {0}", e.getMessage());
         }
         return "";
@@ -103,7 +106,8 @@ public class BusquedaService {
 
     /**
      * Motor de búsqueda masiva silencioso para recuperar portadas faltantes.
-     * Rastrea primero por ISBN directo si aplica, y luego las 3 APIs en paralelo.
+     * Rastrea primero por ISBN directo si aplica, y luego las 3 APIs en
+     * paralelo.
      *
      * @param query El título o ISBN a buscar.
      * @return La URL de la portada encontrada, o cadena vacía si no encuentra
