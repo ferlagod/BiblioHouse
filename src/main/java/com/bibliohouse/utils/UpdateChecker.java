@@ -28,7 +28,7 @@ import javafx.application.Platform;
 
 /**
  * Clase para comprobar actualizaciones de la aplicación BiblioHouse. Consulta
- * la API de Forgejo para verificar si existe una versión más reciente que la
+ * la API de GitHub para verificar si existe una versión más reciente que la
  * actual y notifica el resultado mediante un callback.
  *
  * @author ferlagod (Fernando Lago Dávila)
@@ -36,10 +36,10 @@ import javafx.application.Platform;
  */
 public class UpdateChecker {
 
-    // API de Forgejo para tu repositorio
-    private static final String API_URL = "https://github.com/ferlagod/BiblioHouse/releases/latest";
+    // API de GitHub para tu repositorio
+    private static final String API_URL = "https://api.github.com/repos/ferlagod/BiblioHouse/releases/latest";
     // Versión actual de la aplicación. 
-    private static final String VERSION_ACTUAL = "2.1";
+    private static final String VERSION_ACTUAL = "2.2";
 
     /**
      * Comprueba si hay una versión más reciente de la aplicación.
@@ -53,11 +53,13 @@ public class UpdateChecker {
             try {
                 HttpClient client = HttpClient.newBuilder()
                         .connectTimeout(java.time.Duration.ofSeconds(5))
+                        .followRedirects(HttpClient.Redirect.NORMAL)
                         .build();
 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(API_URL))
-                        .header("Accept", "application/json")
+                        .header("Accept", "application/vnd.github+json")
+                        .header("User-Agent", "BiblioHouse-App")
                         .GET()
                         .build();
 
