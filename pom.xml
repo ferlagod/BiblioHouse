@@ -216,7 +216,6 @@
                 <configuration>
                     <mainClass>com.ferlagod.bibliohousefx/com.ferlagod.bibliohousefx.App</mainClass>
                     <options>
-                        <option>-Xdock:name=BiblioHouse</option>
                         <option>-Dapple.awt.application.name=BiblioHouse</option>
                         <option>-Dcom.apple.mrj.application.apple.menu.about.name=BiblioHouse</option>
                     </options>
@@ -354,6 +353,27 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>macos-dock</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <configuration>
+                            <options combine.children="append">
+                                <option>-Xdock:name=BiblioHouse</option>
+                            </options>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>package-mac</id>
             <activation>
