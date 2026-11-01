@@ -249,4 +249,22 @@ class TestMejorasRevision {
         assertEquals("z", cargados.get(0).getId());
         otro.shutdown();
     }
+
+    @Test
+    @DisplayName("Volcar el progreso sin cambios no reescribe el archivo (evita el bucle de sincronización)")
+    void testFlushProgresoSinCambiosNoReescribe() throws IOException {
+        JsonManager jm = new JsonManager(userDir.getAbsolutePath());
+        jm.guardarProgresoLecturaDebounced("libro-1", 10, 100);
+        jm.flushPendientesSinSincronizar();
+
+        File progreso = new File(jm.getProgresoLecturaPath());
+        assertTrue(progreso.exists(), "El progreso pendiente debe escribirse");
+        Files.delete(progreso.toPath());
+
+        // Sin cambios nuevos, un segundo volcado no debe tocar el disco
+        jm.flushPendientesSinSincronizar();
+        jm.flushProgresoLectura();
+        assertFalse(progreso.exists(), "Sin cambios no debe reescribirse el progreso");
+        jm.shutdown();
+    }
 }

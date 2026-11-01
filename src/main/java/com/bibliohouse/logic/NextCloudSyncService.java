@@ -262,14 +262,29 @@ public class NextCloudSyncService {
         return sincronizar(localDir, false);
     }
 
+    /**
+     * Evita que se solapen dos sincronizaciones (p. ej. la comprobación al
+     * arrancar y la automática), que competirían por los mismos archivos.
+     */
+    private static final java.util.concurrent.locks.ReentrantLock SYNC_LOCK = new java.util.concurrent.locks.ReentrantLock();
+
     private boolean sincronizar(String localDir, boolean subida) throws IOException {
+        SYNC_LOCK.lock();
+        try {
+            return sincronizarBloqueado(localDir, subida);
+        } finally {
+            SYNC_LOCK.unlock();
+        }
+    }
+
+    private boolean sincronizarBloqueado(String localDir, boolean subida) throws IOException {
         Sardine sardine = SardineFactory.begin(username, password);
         boolean gestorTemporal = jsonManager == null
                 || !new File(jsonManager.getRutaDatosUsuario()).getAbsoluteFile().equals(new File(localDir).getAbsoluteFile());
         JsonManager gestor = gestorTemporal ? new JsonManager(localDir) : jsonManager;
         try {
             // Que lo que la interfaz tenga pendiente esté en disco antes de fusionar
-            gestor.flushPendientes();
+            gestor.flushPendientesSinSincronizar();
 
             String davBase = resolverDavBase(sardine);
             String remoteFolderUrl = buildRemoteFolderUrl(davBase);

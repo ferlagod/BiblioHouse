@@ -223,7 +223,7 @@ public class SagasController {
         String prefixTomo = LanguageManager.getString("sagas.tomo", "Tomo ");
         String numTomo = libro.getOrdenEnSerie() > 0 ? prefixTomo + formatarTomo(libro.getOrdenEnSerie()) : "";
         Label lblNumero = new Label(numTomo);
-        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-text-muted;");
+        lblNumero.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;");
 
         // Imagen de portada
         ImageView img = new ImageView();
@@ -327,7 +327,7 @@ public class SagasController {
             nombre.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: -color-fg-default;");
 
             info = new javafx.scene.control.Label();
-            info.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-text-muted;");
+            info.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;");
 
             contenido.getChildren().addAll(nombre, info);
 

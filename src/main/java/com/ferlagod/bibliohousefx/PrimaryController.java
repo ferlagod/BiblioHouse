@@ -161,6 +161,12 @@ public class PrimaryController implements Initializable {
     private final ImportarExportarBD gestorArchivos = new ImportarExportarBD();
     private final AtomicBoolean busquedaPortadasEnCurso = new AtomicBoolean(false);
 
+    /**
+     * Si la última sincronización automática falló, para no repetir la
+     * notificación de error en cada intento.
+     */
+    private final AtomicBoolean autoSyncFallando = new AtomicBoolean(false);
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.resources = rb;
@@ -290,17 +296,26 @@ public class PrimaryController implements Initializable {
                 jsonManager.setAutoSyncTask(() -> {
                     try {
                         boolean cambiosRemotos = syncService.subirBaseDatos(localDir);
+                        autoSyncFallando.set(false);
+                        // Sincronización automática correcta: aviso discreto en la barra
+                        // de estado, sin notificación del sistema
                         Platform.runLater(() -> {
                             if (cambiosRemotos) {
-                                recargarTrasSincronizacion("Biblioteca actualizada con cambios de NextCloud.");
+                                recargarTrasSincronizacion(LanguageManager.getString("ui.biblioteca_actualizada_con_cambios_nextcloud",
+                                        "Biblioteca actualizada con cambios de NextCloud."));
+                            } else {
+                                setMensajeEstado(LanguageManager.getString("ui.copia_de_seguridad_en_la_nube",
+                                        "Copia de seguridad en la nube completada con éxito."));
                             }
-                            SystemNotificationService.notificarInfo(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"), LanguageManager.getString("ui.copia_de_seguridad_en_la_nube", "Copia de seguridad en la nube completada con éxito."));
                         });
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "Auto-sync fallido: {0}", ex.getMessage());
-                        Platform.runLater(() -> {
-                            SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"), LanguageManager.getString("ui.error_al_sincronizar_con_nextcloud", "Error al sincronizar con NextCloud: ") + ex.getMessage());
-                        });
+                        // Solo se notifica el primer fallo seguido (p. ej. sin conexión)
+                        if (!autoSyncFallando.getAndSet(true)) {
+                            Platform.runLater(() -> {
+                                SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"), LanguageManager.getString("ui.error_al_sincronizar_con_nextcloud", "Error al sincronizar con NextCloud: ") + ex.getMessage());
+                            });
+                        }
                     }
                 });
 

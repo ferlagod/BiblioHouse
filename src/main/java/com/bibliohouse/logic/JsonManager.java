@@ -108,6 +108,25 @@ public class JsonManager {
     private final Map<String, ProgresoLectura> cacheProgresos = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
+     * Indica si hay progreso de lectura en memoria aún sin escribir, para no
+     * reescribir el archivo (ni disparar una sincronización) cuando no ha
+     * cambiado nada.
+     */
+    private final java.util.concurrent.atomic.AtomicBoolean progresoPendiente = new java.util.concurrent.atomic.AtomicBoolean(false);
+
+    /**
+     * Activo mientras la propia sincronización vuelca datos a disco: esos
+     * guardados no deben programar otra sincronización (provocaría un bucle).
+     */
+    private static final ThreadLocal<Boolean> SUPRIMIR_SYNC = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /**
+     * Espera tras el último guardado antes de sincronizar con NextCloud. Agrupa
+     * ráfagas de cambios (p. ej. pasar páginas leyendo) en una sola subida.
+     */
+    private static final long ESPERA_AUTOSYNC_SEGUNDOS = 15;
+
+    /**
      * Ebooks de los que ya se intentó extraer la portada sin éxito en esta
      * sesión.
      */
@@ -186,6 +205,19 @@ public class JsonManager {
         }
         ejecutarGuardadoPendiente();
         flushProgresoLectura();
+    }
+
+    /**
+     * Como {@link #flushPendientes()}, pero sin programar una sincronización:
+     * lo usa la propia sincronización antes de fusionar con la nube.
+     */
+    public void flushPendientesSinSincronizar() {
+        SUPRIMIR_SYNC.set(Boolean.TRUE);
+        try {
+            flushPendientes();
+        } finally {
+            SUPRIMIR_SYNC.remove();
+        }
     }
 
     /**
@@ -454,11 +486,11 @@ public class JsonManager {
         }
 
         // 3. Lanzar sincronización si existe
-        if (dispararSync && autoSyncTask != null && !syncScheduler.isShutdown()) {
+        if (dispararSync && !SUPRIMIR_SYNC.get() && autoSyncTask != null && !syncScheduler.isShutdown()) {
             if (pendingSyncFuture != null && !pendingSyncFuture.isDone()) {
                 pendingSyncFuture.cancel(false);
             }
-            pendingSyncFuture = syncScheduler.schedule(autoSyncTask, 2, TimeUnit.SECONDS);
+            pendingSyncFuture = syncScheduler.schedule(autoSyncTask, ESPERA_AUTOSYNC_SEGUNDOS, TimeUnit.SECONDS);
         }
     }
 
@@ -1520,6 +1552,7 @@ public class JsonManager {
             return;
         }
         cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
+        progresoPendiente.set(false);
         guardarObjeto(new HashMap<>(cacheProgresos), progresoLecturaFilePath, "progreso de lectura");
     }
 
@@ -1541,15 +1574,17 @@ public class JsonManager {
             return;
         }
         cacheProgresos.put(libroId, new ProgresoLectura(paginaActual, paginasTotales));
+        progresoPendiente.set(true);
 
         if (pendingProgresoSaveFuture != null && !pendingProgresoSaveFuture.isDone()) {
             pendingProgresoSaveFuture.cancel(false);
         }
+        if (syncScheduler.isShutdown()) {
+            flushProgresoLectura();
+            return;
+        }
 
-        Map<String, ProgresoLectura> copia = new HashMap<>(cacheProgresos);
-        pendingProgresoSaveFuture = syncScheduler.schedule(
-                () -> guardarObjeto(copia, progresoLecturaFilePath, "progreso de lectura"),
-                400, TimeUnit.MILLISECONDS);
+        pendingProgresoSaveFuture = syncScheduler.schedule(this::flushProgresoLectura, 400, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -1560,7 +1595,9 @@ public class JsonManager {
         if (pendingProgresoSaveFuture != null && !pendingProgresoSaveFuture.isDone()) {
             pendingProgresoSaveFuture.cancel(false);
         }
-        if (!cacheProgresos.isEmpty()) {
+        // Solo si hay cambios sin escribir: reescribirlo sin motivo dispararía
+        // una sincronización tras otra
+        if (progresoPendiente.getAndSet(false) && !cacheProgresos.isEmpty()) {
             guardarObjeto(new HashMap<>(cacheProgresos), progresoLecturaFilePath, "progreso de lectura");
         }
     }
