@@ -131,7 +131,9 @@ public class Autentificacion {
      */
     private static boolean checkLegacy(String password, String legacyHash) {
         String inputHash = hashSha256(password);
-        return legacyHash.equals(inputHash);
+        // Comparación en tiempo constante (no revela cuántos caracteres coinciden)
+        return inputHash != null && MessageDigest.isEqual(
+                legacyHash.getBytes(StandardCharsets.UTF_8), inputHash.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

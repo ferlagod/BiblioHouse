@@ -51,7 +51,7 @@ public class SystemNotificationService {
         }
         initialized = true;
 
-        String os = System.getProperty("os.name", "").toLowerCase();
+        String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
         // En macOS y Linux usamos notificaciones directas del SO sin cargar AWT
         if (os.contains("mac") || os.contains("linux")) {
             LOGGER.info("[SystemNotificationService] Notificaciones nativas activas para " + os);
@@ -97,7 +97,7 @@ public class SystemNotificationService {
         if (!initialized) {
             initialize();
         }
-        String os = System.getProperty("os.name", "").toLowerCase();
+        String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
         String safeTitulo = (titulo != null ? titulo : "BiblioHouse").replace("\"", "'");
         String safeMensaje = (mensaje != null ? mensaje : "").replace("\"", "'");
 

@@ -29,11 +29,14 @@
     var rendition = null;
 
     function logToHtml(msg) {
-        document.getElementById('errorLog').innerHTML += msg + "<br/>";
-        if (window.javaBridge) window.javaBridge.logError(msg);
+        // textContent (no innerHTML): los mensajes pueden contener texto del EPUB
+        var linea = document.createElement('div');
+        linea.textContent = String(msg);
+        document.getElementById('errorLog').appendChild(linea);
+        if (window.javaBridge) window.javaBridge.logError(String(msg));
     }
 
-    function configurarLibro(bookInstance, startPercentage) {
+    function configurarLibro(bookInstance, startPercentage, cachedLocations) {
         book = bookInstance;
         logToHtml("Instancia creada. Renderizando...");
         rendition = book.renderTo("viewer", {
@@ -43,8 +46,20 @@
         });
 
         book.ready.then(function() {
+          if (cachedLocations) {
+            try {
+              book.locations.load(cachedLocations);
+              logToHtml("Localizaciones cargadas desde caché.");
+              return book.locations;
+            } catch (e) {
+              logToHtml("Caché de localizaciones no válida, regenerando...");
+            }
+          }
           logToHtml("Libro listo. Generando localizaciones...");
-          return book.locations.generate(1600);
+          return book.locations.generate(1600).then(function(locs) {
+            if (window.javaBridge) window.javaBridge.guardarLocalizaciones(book.locations.save());
+            return locs;
+          });
         }).then(function(locations) {
           logToHtml("Localizaciones generadas. Mostrando página...");
           if (startPercentage && startPercentage > 0) {
@@ -54,7 +69,7 @@
             rendition.display();
           }
           // Limpiar log si todo ha ido bien
-          document.getElementById('errorLog').innerHTML = "";
+          document.getElementById('errorLog').textContent = "";
         }).catch(function(err) {
             logToHtml("Error en ready/locations: " + err);
         });
@@ -69,17 +84,17 @@
         });
     }
 
-    function openEpubUrl(epubUrl, startPercentage) {
+    function openEpubUrl(epubUrl, startPercentage, cachedLocations) {
       try {
         logToHtml("Iniciando carga de EPUB desde URL: " + epubUrl);
         var bookInstance = ePub(epubUrl);
-        configurarLibro(bookInstance, startPercentage);
+        configurarLibro(bookInstance, startPercentage, cachedLocations);
       } catch (err) {
         logToHtml("Error abriendo EPUB desde URL (Excepción): " + err);
       }
     }
 
-    function openEpubBase64(base64Data, startPercentage) {
+    function openEpubBase64(base64Data, startPercentage, cachedLocations) {
       try {
         logToHtml("Iniciando carga de EPUB...");
         var binaryString = window.atob(base64Data);
@@ -91,7 +106,7 @@
         
         logToHtml("ArrayBuffer creado. Instanciando ePub...");
         var bookInstance = ePub(arrayBuffer);
-        configurarLibro(bookInstance, startPercentage);
+        configurarLibro(bookInstance, startPercentage, cachedLocations);
       } catch (err) {
         logToHtml("Error abriendo EPUB (Excepción): " + err);
       }

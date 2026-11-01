@@ -21,16 +21,17 @@ import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.SardineFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +54,8 @@ public class NextCloudSyncService {
     private static final Logger LOGGER = Logger.getLogger(NextCloudSyncService.class.getName());
 
     private static final String[] DB_FILES = {
+        // Las marcas de borrado van primero: el resto de fusiones las usan
+        JsonManager.ARCHIVO_ELIMINADOS,
         "biblioteca.json",
         "prestamos.json",
         "socios.json",
@@ -71,6 +74,12 @@ public class NextCloudSyncService {
     private final String password;
     private String davBaseUrl;
     private final String usernameEncoded;
+
+    /**
+     * Gestor de datos de la interfaz. Si se usa el mismo que la aplicación, las
+     * fusiones comparten su bloqueo y no compiten con los guardados de la UI.
+     */
+    private JsonManager jsonManager;
 
     /**
      * Crea una nueva instancia del servicio de sincronización.
@@ -95,7 +104,7 @@ public class NextCloudSyncService {
         String extractedUrl = extractBaseUrl(serverUrl.trim());
 
         // OWASP A02: Bloquear credenciales en texto plano sobre HTTP
-        if (extractedUrl.startsWith("http://") && !extractedUrl.contains("localhost") && !extractedUrl.contains("127.0.0.1")) {
+        if (!extractedUrl.startsWith("https://") && !(extractedUrl.startsWith("http://") && esHostLocal(extractedUrl))) {
             throw new IllegalArgumentException("Se requiere HTTPS para conexiones NextCloud externas (evita robo de credenciales).");
         }
 
@@ -103,6 +112,26 @@ public class NextCloudSyncService {
         this.username = username.trim();
         this.usernameEncoded = encodeUrlSegment(this.username);
         this.password = password;
+    }
+
+    /**
+     * Indica el gestor de datos que debe usarse al fusionar. Si no se indica
+     * (o es de otra carpeta), se crea uno temporal para cada sincronización.
+     *
+     * @param jsonManager Gestor de datos activo de la aplicación.
+     */
+    public void setJsonManager(JsonManager jsonManager) {
+        this.jsonManager = jsonManager;
+    }
+
+    private static boolean esHostLocal(String url) {
+        try {
+            String host = new java.net.URI(url).getHost();
+            return host != null && (host.equalsIgnoreCase("localhost") || host.equals("127.0.0.1")
+                    || host.equals("[::1]") || host.equals("::1"));
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     private static String extractBaseUrl(String url) {
@@ -207,119 +236,287 @@ public class NextCloudSyncService {
     }
 
     /**
-     * Sube la base de datos local a NextCloud. Crea los directorios necesarios
-     * y sincroniza archivos JSON y portadas de forma incremental.
+     * Sube la base de datos local a NextCloud. Los archivos de datos se
+     * fusionan elemento a elemento con la versión remota antes de subirse, y
+     * las portadas y ebooks nuevos se suben de forma incremental.
      *
      * @param localDir Directorio local donde están los archivos a sincronizar.
+     * @return {@code true} si la fusión ha modificado los datos locales (hay
+     * que recargar la interfaz).
      * @throws IOException Si ocurre un error durante la subida.
      */
-    public void subirBaseDatos(String localDir) throws IOException {
+    public boolean subirBaseDatos(String localDir) throws IOException {
+        return sincronizar(localDir, true);
+    }
+
+    /**
+     * Descarga la base de datos desde NextCloud. Los archivos de datos se
+     * fusionan con los locales (y se vuelven a subir si la nube no tenía los
+     * cambios locales); las portadas y ebooks que falten se descargan.
+     *
+     * @param localDir Directorio local donde guardar los archivos descargados.
+     * @return {@code true} si han cambiado los datos locales.
+     * @throws IOException Si ocurre un error durante la descarga.
+     */
+    public boolean descargarBaseDatos(String localDir) throws IOException {
+        return sincronizar(localDir, false);
+    }
+
+    private boolean sincronizar(String localDir, boolean subida) throws IOException {
         Sardine sardine = SardineFactory.begin(username, password);
+        boolean gestorTemporal = jsonManager == null
+                || !new File(jsonManager.getRutaDatosUsuario()).getAbsoluteFile().equals(new File(localDir).getAbsoluteFile());
+        JsonManager gestor = gestorTemporal ? new JsonManager(localDir) : jsonManager;
         try {
+            // Que lo que la interfaz tenga pendiente esté en disco antes de fusionar
+            gestor.flushPendientes();
+
             String davBase = resolverDavBase(sardine);
             String remoteFolderUrl = buildRemoteFolderUrl(davBase);
             String remoteCoversUrl = remoteFolderUrl + "covers/";
+            String remoteEbooksUrl = remoteFolderUrl + "ebooks/";
 
             crearDirectorioSiNoExiste(sardine, remoteFolderUrl);
-            crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
 
-            // Sincronizar archivos JSON
+            Map<String, DavResource> remoteFilesMap = new HashMap<>();
+            try {
+                for (DavResource res : sardine.list(remoteFolderUrl)) {
+                    if (!res.isDirectory() && res.getName() != null) {
+                        remoteFilesMap.put(res.getName().toLowerCase(java.util.Locale.ROOT), res);
+                    }
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, "No se pudo pre-listar recursos remotos: {0}", ex.getMessage());
+            }
+
+            boolean localCambiado = false;
             for (String fileName : DB_FILES) {
-                File localFile = new File(localDir, fileName);
-                if (localFile.exists() && localFile.length() > 0) {
-                    String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                    if ((fileName.equals("biblioteca.json") || fileName.equals("deseos.json")) && sardine.exists(remoteFileUrl)) {
-                        // Fusión previa antes de sobreescribir en NextCloud
-                        fusionarArchivoLibros(sardine, remoteFileUrl, localFile, null, true);
-                    } else {
-                        byte[] fileData = Files.readAllBytes(localFile.toPath());
-                        sardine.put(remoteFileUrl, fileData, "application/json");
-                        LOGGER.log(Level.INFO, "JSON sincronizado: {0}", fileName);
-                    }
-                }
+                DavResource remoteRes = remoteFilesMap.get(fileName.toLowerCase(java.util.Locale.ROOT));
+                localCambiado |= sincronizarArchivoDatos(sardine, gestor, davBase, localDir, fileName, remoteRes, subida);
             }
 
-            // Sincronización incremental de portadas
-            File carpetaLocalCovers = new File(localDir, "covers");
-            if (carpetaLocalCovers.exists() && carpetaLocalCovers.isDirectory()) {
-                File[] portadas = carpetaLocalCovers.listFiles();
-                if (portadas != null && portadas.length > 0) {
-                    Set<String> nombresEnRemoto = new java.util.HashSet<>();
-                    try {
-                        List<DavResource> resources = sardine.list(remoteCoversUrl);
-                        for (DavResource r : resources) {
-                            if (r.getName() != null) {
-                                nombresEnRemoto.add(r.getName().toLowerCase());
-                            }
-                        }
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de covers, verificando creación: {0}", ex.getMessage());
-                        crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
-                    }
-
-                    for (File portada : portadas) {
-                        if (portada.isFile() && !portada.getName().startsWith(".") && portada.length() > 0) {
-                            String nombre = portada.getName();
-                            if (!nombresEnRemoto.contains(nombre.toLowerCase())) {
-                                try {
-                                    String remoteFileUrl = remoteCoversUrl + encodeUrlSegment(nombre);
-                                    byte[] imgData = Files.readAllBytes(portada.toPath());
-                                    sardine.put(remoteFileUrl, imgData, determinarMimeTypeImagen(nombre));
-                                    LOGGER.log(Level.INFO, "Nueva portada subida (incremental): {0}", nombre);
-                                } catch (IOException ex) {
-                                    LOGGER.log(Level.WARNING, "Error al subir portada individual ({0}): {1}", new Object[]{nombre, ex.getMessage()});
-                                }
-                            }
-                        }
-                    }
-                }
+            if (subida) {
+                crearDirectorioSiNoExiste(sardine, remoteCoversUrl);
+                crearDirectorioSiNoExiste(sardine, remoteEbooksUrl);
+                subirArchivosNuevos(sardine, new File(localDir, "covers"), remoteCoversUrl, true);
+                subirArchivosNuevos(sardine, new File(localDir, "ebooks"), remoteEbooksUrl, false);
+            } else {
+                localCambiado |= descargarArchivosNuevos(sardine, remoteCoversUrl, new File(localDir, "covers"), "covers");
+                localCambiado |= descargarArchivosNuevos(sardine, remoteEbooksUrl, new File(localDir, "ebooks"), "ebooks");
             }
-
-            // Sincronización incremental de ebooks
-            String remoteEbooksUrl = remoteFolderUrl + "ebooks/";
-            crearDirectorioSiNoExiste(sardine, remoteEbooksUrl);
-
-            File carpetaLocalEbooks = new File(localDir, "ebooks");
-            if (carpetaLocalEbooks.exists() && carpetaLocalEbooks.isDirectory()) {
-                File[] ebooks = carpetaLocalEbooks.listFiles();
-                if (ebooks != null && ebooks.length > 0) {
-                    Set<String> nombresEbooksEnRemoto = new java.util.HashSet<>();
-                    try {
-                        List<DavResource> resourcesEbooks = sardine.list(remoteEbooksUrl);
-                        for (DavResource r : resourcesEbooks) {
-                            if (r.getName() != null) {
-                                nombresEbooksEnRemoto.add(r.getName().toLowerCase());
-                            }
-                        }
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.WARNING, "No se pudo listar directorio remoto de ebooks: {0}", ex.getMessage());
-                    }
-
-                    for (File ebook : ebooks) {
-                        if (ebook.isFile() && !ebook.getName().startsWith(".") && ebook.length() > 0) {
-                            String nombreEbook = ebook.getName();
-                            if (!nombresEbooksEnRemoto.contains(nombreEbook.toLowerCase())) {
-                                try {
-                                    String remoteFileUrl = remoteEbooksUrl + encodeUrlSegment(nombreEbook);
-                                    byte[] data = Files.readAllBytes(ebook.toPath());
-                                    sardine.put(remoteFileUrl, data, "application/octet-stream");
-                                    LOGGER.log(Level.INFO, "Nuevo ebook subido (incremental): {0}", nombreEbook);
-                                } catch (IOException ex) {
-                                    LOGGER.log(Level.WARNING, "Error al subir ebook individual ({0}): {1}", new Object[]{nombreEbook, ex.getMessage()});
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            return localCambiado;
         } catch (IOException e) {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            throw new IOException("Error de red con NextCloud: " + msg, e);
+            throw new IOException((subida ? "Error de red con NextCloud: " : "Error al descargar desde NextCloud: ") + msg, e);
         } finally {
             try {
                 sardine.shutdown();
             } catch (IOException ignored) {
             }
+            if (gestorTemporal) {
+                gestor.shutdown();
+            }
+        }
+    }
+
+    /**
+     * Sincroniza un archivo JSON de datos. Los fusionables se combinan con la
+     * versión remota y, si el resultado difiere de lo que hay en la nube, se
+     * sube. El resto se sube (en subida) o se descarga si el remoto es más
+     * reciente (en descarga).
+     *
+     * @return {@code true} si ha cambiado el archivo local.
+     */
+    private boolean sincronizarArchivoDatos(Sardine sardine, JsonManager gestor, String davBase, String localDir,
+            String fileName, DavResource remoteRes, boolean subida) throws IOException {
+        File localFile = new File(localDir, fileName);
+        String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
+
+        byte[] remotoBytes = null;
+        if (remoteRes != null) {
+            try (InputStream in = sardine.get(remoteFileUrl)) {
+                remotoBytes = in.readAllBytes();
+            }
+        }
+
+        boolean localCambiado = false;
+        if (JsonManager.ARCHIVOS_FUSIONABLES.contains(fileName)) {
+            if (remotoBytes != null && remotoBytes.length > 0) {
+                try (Reader reader = new InputStreamReader(new ByteArrayInputStream(remotoBytes), StandardCharsets.UTF_8)) {
+                    localCambiado = gestor.fusionarConRemoto(fileName, reader);
+                } catch (com.google.gson.JsonParseException | IllegalStateException e) {
+                    LOGGER.log(Level.WARNING, "Contenido remoto de {0} no válido; se conserva la versión local: {1}",
+                            new Object[]{fileName, e.getMessage()});
+                }
+            }
+            subirSiDistinto(sardine, remoteFileUrl, localFile, remotoBytes, remoteRes);
+        } else if (subida) {
+            subirSiDistinto(sardine, remoteFileUrl, localFile, remotoBytes, remoteRes);
+        } else if (remotoBytes != null && remotoBytes.length > 0 && remoteRes != null
+                && esRecursoRemotoMasReciente(remoteRes.getModified(), localFile)) {
+            if (localFile.exists()) {
+                Files.copy(localFile.toPath(), new File(localDir, fileName + ".bak").toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+            escribirAtomico(localFile, remotoBytes);
+            if (remoteRes.getModified() != null) {
+                localFile.setLastModified(remoteRes.getModified().getTime());
+            }
+            LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
+            localCambiado = true;
+        }
+        return localCambiado;
+    }
+
+    /**
+     * Sube el archivo local si su contenido difiere del remoto. Si coinciden,
+     * alinea la fecha local con la remota para no provocar descargas
+     * innecesarias.
+     */
+    private void subirSiDistinto(Sardine sardine, String remoteFileUrl, File localFile,
+            byte[] remotoBytes, DavResource remoteRes) throws IOException {
+        if (!localFile.exists() || localFile.length() == 0) {
+            return;
+        }
+        byte[] localBytes = Files.readAllBytes(localFile.toPath());
+        if (!Arrays.equals(localBytes, remotoBytes)) {
+            sardine.put(remoteFileUrl, localBytes, "application/json");
+            LOGGER.log(Level.INFO, "JSON sincronizado: {0}", localFile.getName());
+        } else if (remoteRes != null && remoteRes.getModified() != null) {
+            localFile.setLastModified(remoteRes.getModified().getTime());
+        }
+    }
+
+    /**
+     * Sube los archivos de una carpeta local que todavía no existen en el
+     * directorio remoto. Se envían por streaming, sin cargarlos en memoria.
+     */
+    private void subirArchivosNuevos(Sardine sardine, File carpetaLocal, String remoteDirUrl, boolean sonImagenes) {
+        File[] archivos = carpetaLocal.listFiles();
+        if (archivos == null || archivos.length == 0) {
+            return;
+        }
+        Set<String> nombresEnRemoto = new java.util.HashSet<>();
+        try {
+            for (DavResource r : sardine.list(remoteDirUrl)) {
+                if (r.getName() != null) {
+                    nombresEnRemoto.add(r.getName().toLowerCase(java.util.Locale.ROOT));
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "No se pudo listar el directorio remoto {0}: {1}", new Object[]{remoteDirUrl, ex.getMessage()});
+        }
+
+        for (File archivo : archivos) {
+            String nombre = archivo.getName();
+            if (!archivo.isFile() || archivo.length() == 0 || !esNombreArchivoSeguro(nombre) || nombre.endsWith(".tmp")
+                    || nombresEnRemoto.contains(nombre.toLowerCase(java.util.Locale.ROOT))) {
+                continue;
+            }
+            try {
+                String mime = sonImagenes ? determinarMimeTypeImagen(nombre) : "application/octet-stream";
+                sardine.put(remoteDirUrl + encodeUrlSegment(nombre), archivo, mime);
+                LOGGER.log(Level.INFO, "Archivo subido (incremental): {0}", nombre);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Error al subir {0}: {1}", new Object[]{nombre, ex.getMessage()});
+            }
+        }
+    }
+
+    /**
+     * Descarga los archivos remotos que faltan en la carpeta local. Los nombres
+     * remotos se validan para que nunca puedan escribir fuera de la carpeta, y
+     * cada descarga se escribe primero en un temporal para no dejar archivos a
+     * medias si se corta la conexión.
+     *
+     * @return {@code true} si se ha descargado algún archivo.
+     */
+    private boolean descargarArchivosNuevos(Sardine sardine, String remoteDirUrl, File carpetaLocal, String nombreCarpeta) {
+        boolean descargado = false;
+        try {
+            if (!sardine.exists(remoteDirUrl)) {
+                return false;
+            }
+            if (!carpetaLocal.exists()) {
+                carpetaLocal.mkdirs();
+            }
+            for (DavResource res : sardine.list(remoteDirUrl)) {
+                String nombre = res.getName();
+                if (res.isDirectory() || nombre == null || nombre.equalsIgnoreCase(nombreCarpeta)) {
+                    continue;
+                }
+                File destino = resolverDentroDe(carpetaLocal, nombre);
+                if (destino == null) {
+                    LOGGER.log(Level.WARNING, "Nombre de archivo remoto rechazado por seguridad: {0}", nombre);
+                    continue;
+                }
+                if (destino.exists()) {
+                    continue;
+                }
+                try (InputStream in = sardine.get(remoteDirUrl + encodeUrlSegment(nombre))) {
+                    escribirAtomico(destino, in);
+                    descargado = true;
+                    LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}/{1}", new Object[]{nombreCarpeta, nombre});
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, "Error al descargar {0}: {1}", new Object[]{nombre, ex.getMessage()});
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Error al sincronizar {0} desde NextCloud: {1}", new Object[]{nombreCarpeta, ex.getMessage()});
+        }
+        return descargado;
+    }
+
+    /**
+     * Indica si un nombre recibido del servidor es un nombre de archivo simple
+     * (sin separadores, sin "..", sin unidad de Windows ni ocultos).
+     *
+     * @param nombre Nombre a comprobar.
+     * @return {@code true} si es seguro usarlo como nombre de archivo local.
+     */
+    public static boolean esNombreArchivoSeguro(String nombre) {
+        return nombre != null && !nombre.isBlank()
+                && !nombre.startsWith(".")
+                && !nombre.contains("/") && !nombre.contains("\\")
+                && !nombre.contains(":") && nombre.indexOf('\0') < 0;
+    }
+
+    /**
+     * Resuelve un nombre remoto dentro de una carpeta local, devolviendo
+     * {@code null} si el resultado quedara fuera de ella.
+     *
+     * @param carpeta Carpeta local de destino.
+     * @param nombre Nombre del archivo remoto.
+     * @return Archivo destino o {@code null} si el nombre no es seguro.
+     */
+    public static File resolverDentroDe(File carpeta, String nombre) {
+        if (!esNombreArchivoSeguro(nombre)) {
+            return null;
+        }
+        try {
+            File base = carpeta.getCanonicalFile();
+            File destino = new File(base, nombre).getCanonicalFile();
+            return base.equals(destino.getParentFile()) ? destino : null;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static void escribirAtomico(File destino, byte[] datos) throws IOException {
+        escribirAtomico(destino, new ByteArrayInputStream(datos));
+    }
+
+    private static void escribirAtomico(File destino, InputStream in) throws IOException {
+        File tmp = new File(destino.getParentFile(), "." + destino.getName() + ".part");
+        try {
+            Files.copy(in, tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            try {
+                Files.move(tmp.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                Files.move(tmp.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tmp.toPath());
         }
     }
 
@@ -327,7 +524,7 @@ public class NextCloudSyncService {
         if (nombre == null) {
             return "image/jpeg";
         }
-        String lower = nombre.toLowerCase();
+        String lower = nombre.toLowerCase(java.util.Locale.ROOT);
         if (lower.endsWith(".png")) {
             return "image/png";
         }
@@ -407,13 +604,13 @@ public class NextCloudSyncService {
             Map<String, DavResource> remoteFilesMap = new HashMap<>();
             for (DavResource res : remoteResources) {
                 if (!res.isDirectory() && res.getName() != null) {
-                    remoteFilesMap.put(res.getName().toLowerCase(), res);
+                    remoteFilesMap.put(res.getName().toLowerCase(java.util.Locale.ROOT), res);
                 }
             }
 
             // 1. Comprobar si algún archivo de base de datos es más reciente en NextCloud
             for (String dbFile : DB_FILES) {
-                DavResource remoteRes = remoteFilesMap.get(dbFile.toLowerCase());
+                DavResource remoteRes = remoteFilesMap.get(dbFile.toLowerCase(java.util.Locale.ROOT));
                 if (remoteRes != null) {
                     File localFile = new File(localDir, dbFile);
                     if (esRecursoRemotoMasReciente(remoteRes.getModified(), localFile)) {
@@ -432,7 +629,7 @@ public class NextCloudSyncService {
                 File localCovers = new File(localDir, "covers");
                 for (DavResource c : remoteCovers) {
                     String coverName = c.getName();
-                    if (coverName == null || c.isDirectory() || coverName.equalsIgnoreCase("covers") || coverName.startsWith(".")) {
+                    if (c.isDirectory() || !esNombreArchivoSeguro(coverName) || coverName.equalsIgnoreCase("covers")) {
                         continue;
                     }
                     File localCoverFile = new File(localCovers, coverName);
@@ -471,231 +668,6 @@ public class NextCloudSyncService {
         LOGGER.info("NextCloud Pull: Descargando versión remota más reciente...");
         descargarBaseDatos(localDir);
         return true;
-    }
-
-    /**
-     * Descarga la base de datos desde NextCloud. Crea backups de los archivos
-     * locales existentes antes de sobrescribirlos.
-     *
-     * @param localDir Directorio local donde guardar los archivos descargados.
-     * @throws IOException Si ocurre un error durante la descarga.
-     */
-    public void descargarBaseDatos(String localDir) throws IOException {
-        Sardine sardine = SardineFactory.begin(username, password);
-        try {
-            String davBase = resolverDavBase(sardine);
-            String remoteFolderUrl = buildRemoteFolderUrl(davBase);
-
-            Map<String, DavResource> remoteFilesMap = new HashMap<>();
-            try {
-                if (sardine.exists(remoteFolderUrl)) {
-                    List<DavResource> remoteResources = sardine.list(remoteFolderUrl);
-                    for (DavResource res : remoteResources) {
-                        if (!res.isDirectory() && res.getName() != null) {
-                            remoteFilesMap.put(res.getName().toLowerCase(), res);
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, "No se pudo pre-listar recursos remotos: {0}", ex.getMessage());
-            }
-
-            for (String fileName : DB_FILES) {
-                String remoteFileUrl = buildRemoteFileUrl(davBase, fileName);
-                DavResource remoteRes = remoteFilesMap.get(fileName.toLowerCase());
-                if (remoteRes == null && !sardine.exists(remoteFileUrl)) {
-                    LOGGER.log(Level.FINE, "Archivo remoto no encontrado, omitiendo descarga: {0}", fileName);
-                    continue;
-                }
-
-                File localFile = new File(localDir, fileName);
-                if (localFile.exists()) {
-                    File backup = new File(localDir, fileName + ".bak");
-                    Files.copy(localFile.toPath(), backup.toPath(),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    LOGGER.log(Level.FINE, "Backup creado: {0}.bak", fileName);
-                }
-
-                if ((fileName.equals("biblioteca.json") || fileName.equals("deseos.json")) && localFile.exists() && localFile.length() > 0) {
-                    fusionarArchivoLibros(sardine, remoteFileUrl, localFile, remoteRes, false);
-                } else {
-                    try (InputStream in = sardine.get(remoteFileUrl); FileOutputStream out = new FileOutputStream(localFile)) {
-                        byte[] buffer = new byte[8192];
-                        int bytesRead;
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            out.write(buffer, 0, bytesRead);
-                        }
-                        LOGGER.log(Level.INFO, "Descargado desde NextCloud: {0}", fileName);
-                    }
-
-                    if (remoteRes != null && remoteRes.getModified() != null) {
-                        localFile.setLastModified(remoteRes.getModified().getTime());
-                    }
-                }
-            }
-
-            // Sincronización incremental de portadas (descarga)
-            String remoteCoversUrl = buildRemoteFolderUrl(davBase) + "covers/";
-            File carpetaLocalCovers = new File(localDir, "covers");
-
-            if (!carpetaLocalCovers.exists()) {
-                carpetaLocalCovers.mkdirs();
-            }
-
-            try {
-                if (sardine.exists(remoteCoversUrl)) {
-                    List<DavResource> remoteCovers = sardine.list(remoteCoversUrl);
-                    for (DavResource res : remoteCovers) {
-                        String coverName = res.getName();
-                        // Ignorar el propio directorio o elementos ocultos/vacíos
-                        if (coverName == null || coverName.isBlank() || res.isDirectory()
-                                || coverName.equalsIgnoreCase("covers") || coverName.startsWith(".")) {
-                            continue;
-                        }
-
-                        File localCover = new File(carpetaLocalCovers, coverName);
-
-                        if (!localCover.exists()) {
-                            try {
-                                String fileUrl = remoteCoversUrl + encodeUrlSegment(coverName);
-                                try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localCover)) {
-                                    byte[] buffer = new byte[8192];
-                                    int bytesRead;
-                                    while ((bytesRead = in.read(buffer)) != -1) {
-                                        out.write(buffer, 0, bytesRead);
-                                    }
-                                    LOGGER.log(Level.INFO, "Portada descargada desde NextCloud: {0}", coverName);
-                                }
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, "Error al descargar portada individual ({0}): {1}", new Object[]{coverName, ex.getMessage()});
-                            }
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Error al sincronizar portadas desde NextCloud: {0}", ex.getMessage());
-            }
-
-            // Sincronización incremental de ebooks (descarga)
-            String remoteEbooksUrl = buildRemoteFolderUrl(davBase) + "ebooks/";
-            File carpetaLocalEbooks = new File(localDir, "ebooks");
-
-            if (!carpetaLocalEbooks.exists()) {
-                carpetaLocalEbooks.mkdirs();
-            }
-
-            try {
-                if (sardine.exists(remoteEbooksUrl)) {
-                    List<DavResource> remoteEbooks = sardine.list(remoteEbooksUrl);
-                    for (DavResource res : remoteEbooks) {
-                        String ebookName = res.getName();
-                        if (ebookName == null || ebookName.isBlank() || res.isDirectory()
-                                || ebookName.equalsIgnoreCase("ebooks") || ebookName.startsWith(".")) {
-                            continue;
-                        }
-
-                        File localEbook = new File(carpetaLocalEbooks, ebookName);
-
-                        if (!localEbook.exists()) {
-                            try {
-                                String fileUrl = remoteEbooksUrl + encodeUrlSegment(ebookName);
-                                try (InputStream in = sardine.get(fileUrl); FileOutputStream out = new FileOutputStream(localEbook)) {
-                                    byte[] buffer = new byte[8192];
-                                    int bytesRead;
-                                    while ((bytesRead = in.read(buffer)) != -1) {
-                                        out.write(buffer, 0, bytesRead);
-                                    }
-                                    LOGGER.log(Level.INFO, "Ebook descargado desde NextCloud: {0}", ebookName);
-                                }
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, "Error al descargar ebook individual ({0}): {1}", new Object[]{ebookName, ex.getMessage()});
-                            }
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Error al sincronizar ebooks desde NextCloud: {0}", ex.getMessage());
-            }
-        } catch (IOException e) {
-            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
-            throw new IOException("Error al descargar desde NextCloud: " + msg, e);
-        } finally {
-            try {
-                sardine.shutdown();
-            } catch (IOException ignored) {
-            }
-        }
-    }
-
-    /**
-     * Fusiona un archivo de libros (biblioteca.json o deseos.json) combinando
-     * los datos locales y remotos por ID y resolviendo conflictos con el
-     * timestamp de última modificación. Guarda la versión unificada en el
-     * archivo local y, si hay cambios locales nuevos o se solicita forzar la
-     * subida, actualiza también el servidor NextCloud.
-     *
-     * @param sardine Cliente Sardine WebDAV.
-     * @param remoteFileUrl URL del archivo en NextCloud.
-     * @param localFile Archivo físico local.
-     * @param remoteRes Recurso WebDAV remoto (puede ser null).
-     * @param forzarSubida true si se debe subir obligatoriamente el resultado
-     * unificado a NextCloud.
-     * @throws IOException Si ocurre un error de lectura/escritura.
-     */
-    private void fusionarArchivoLibros(Sardine sardine, String remoteFileUrl, File localFile,
-            DavResource remoteRes, boolean forzarSubida) throws IOException {
-        String localDir = localFile.getParent();
-        JsonManager jsonMgr = new JsonManager(localDir);
-
-        // 1. Leer libros locales
-        List<Libro> librosLocales;
-        if (localFile.exists() && localFile.length() > 0) {
-            try (FileReader reader = new FileReader(localFile, StandardCharsets.UTF_8)) {
-                librosLocales = jsonMgr.parsearLibros(reader);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Error al parsear libros locales para fusión ({0}): {1}",
-                        new Object[]{localFile.getName(), e.getMessage()});
-                librosLocales = new ArrayList<>();
-            }
-        } else {
-            librosLocales = new ArrayList<>();
-        }
-
-        // 2. Leer libros remotos
-        List<Libro> librosRemotos;
-        try (InputStream in = sardine.get(remoteFileUrl); InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-            librosRemotos = jsonMgr.parsearLibros(reader);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error al parsear libros remotos para fusión ({0}): {1}",
-                    new Object[]{localFile.getName(), e.getMessage()});
-            librosRemotos = new ArrayList<>();
-        }
-
-        // 3. Fusionar colecciones (por ID / clave canónica y timestamp de modificación)
-        List<Libro> fusionados = JsonManager.fusionarColecciones(librosLocales, librosRemotos);
-
-        // 4. Guardar archivo local unificado
-        if (localFile.getName().equals("biblioteca.json")) {
-            jsonMgr.guardarLibros(fusionados);
-        } else if (localFile.getName().equals("deseos.json")) {
-            jsonMgr.guardarDeseos(fusionados);
-        } else {
-            byte[] mergedBytes = jsonMgr.serializarLibros(fusionados).getBytes(StandardCharsets.UTF_8);
-            Files.write(localFile.toPath(), mergedBytes);
-        }
-
-        // 5. Actualizar en NextCloud si se fuerza la subida o si la fusión contiene cambios locales más recientes
-        boolean remoteNecesitaActualizacion = forzarSubida || coleccionTieneCambiosNuevos(fusionados, librosRemotos);
-        if (remoteNecesitaActualizacion) {
-            byte[] finalBytes = jsonMgr.serializarLibros(fusionados).getBytes(StandardCharsets.UTF_8);
-            sardine.put(remoteFileUrl, finalBytes, "application/json");
-            LOGGER.log(Level.INFO, "NextCloud actualizado con datos unificados para {0}", localFile.getName());
-        } else if (remoteRes != null && remoteRes.getModified() != null) {
-            localFile.setLastModified(remoteRes.getModified().getTime());
-        }
-
-        LOGGER.log(Level.INFO, "Fusión por ID completada para {0}: {1} libros locales + {2} remotos -> {3} unificados.",
-                new Object[]{localFile.getName(), librosLocales.size(), librosRemotos.size(), fusionados.size()});
     }
 
     /**

@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -160,17 +162,17 @@ public class EditarLibroController {
                     success = true;
                 } else {
                     // Verificamos de forma sencilla si es una imagen por la extensión
-                    String nombre = file.getName().toLowerCase();
+                    String nombre = file.getName().toLowerCase(java.util.Locale.ROOT);
                     if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png") || nombre.endsWith(".gif")) {
                         try {
                             rutaPortadaActual = file.getAbsolutePath();
                             com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
                             success = true;
                         } catch (Exception e) {
-                            mostrarAlerta("Error", "No se pudo cargar la imagen soltada.");
+                            mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_cargar_la_imagen", "No se pudo cargar la imagen soltada."));
                         }
                     } else {
-                        mostrarAlerta("Formato incorrecto", "Solo se aceptan archivos de imagen (.jpg, .png, .gif) o e-books (.epub, .pdf, .mobi).");
+                        mostrarAlerta(LanguageManager.getString("ui.formato_incorrecto", "Formato incorrecto"), LanguageManager.getString("ui.solo_se_aceptan_archivos_de_imagen", "Solo se aceptan archivos de imagen (.jpg, .png, .gif) o e-books (.epub, .pdf, .mobi)."));
                     }
                 }
             }
@@ -295,7 +297,7 @@ public class EditarLibroController {
     @FXML
     private void cambiarPortada(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar Portada");
+        fileChooser.setTitle(LanguageManager.getString("ui.seleccionar_portada", "Seleccionar Portada"));
 
         // Filtro para ver solo imágenes
         fileChooser.getExtensionFilters().addAll(
@@ -315,7 +317,7 @@ public class EditarLibroController {
                 com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
 
             } catch (Exception e) {
-                mostrarAlerta("Error", "No se pudo cargar la imagen seleccionada.");
+                mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_cargar_la_imagen_2", "No se pudo cargar la imagen seleccionada."));
             }
         }
     }
@@ -373,7 +375,7 @@ public class EditarLibroController {
     private void guardar(ActionEvent event) {
         // Validaciones básicas
         if (txtTitulo.getText().isEmpty()) {
-            mostrarAlerta("Error", "El título no puede estar vacío.");
+            mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.el_titulo_no_puede_estar_vacio", "El título no puede estar vacío."));
             return;
         }
 
@@ -496,7 +498,7 @@ public class EditarLibroController {
         String titulo = txtTitulo.getText().trim();
 
         if (isbn.isEmpty() && titulo.isEmpty()) {
-            mostrarAlerta("Atención", "Necesitas tener escrito al menos el Título o el ISBN para poder buscar la portada.");
+            mostrarAlerta(LanguageManager.getString("ui.atencion", "Atención"), LanguageManager.getString("ui.necesitas_tener_escrito_al_menos_el", "Necesitas tener escrito al menos el Título o el ISBN para poder buscar la portada."));
             return;
         }
 
@@ -535,14 +537,14 @@ public class EditarLibroController {
                         rutaPortadaActual = rutaLocal;
                         com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
                     } else {
-                        mostrarAlerta("Sin resultados", "Ninguna de las tres bases de datos (Google, OpenLibrary, Inventaire) tiene una portada registrada para esta búsqueda. Tendrás que descargarla y añadirla manualmente.");
+                        mostrarAlerta(LanguageManager.getString("ui.sin_resultados", "Sin resultados"), LanguageManager.getString("ui.ninguna_de_las_tres_bases_de", "Ninguna de las tres bases de datos (Google, OpenLibrary, Inventaire) tiene una portada registrada para esta búsqueda. Tendrás que descargarla y añadirla manualmente."));
                     }
                 });
 
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() -> {
                     btnBuscarPortada.setDisable(false);
-                    mostrarAlerta("Error", "Error al conectar con los servidores.");
+                    mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.error_al_conectar_con_los_servidores", "Error al conectar con los servidores."));
                 });
             }
         });
@@ -560,7 +562,7 @@ public class EditarLibroController {
     @FXML
     private void adjuntarArchivoDigital(javafx.event.ActionEvent event) {
         javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
-        fileChooser.setTitle("Adjuntar archivo digital");
+        fileChooser.setTitle(LanguageManager.getString("ui.adjuntar_archivo_digital", "Adjuntar archivo digital"));
 
         fileChooser.getExtensionFilters().addAll(
                 new javafx.stage.FileChooser.ExtensionFilter("E-books", "*.epub", "*.pdf", "*.mobi"),
@@ -606,7 +608,7 @@ public class EditarLibroController {
                 lblArchivoDigital.setText(f.getName());
                 lblArchivoDigital.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 12px;");
             } else {
-                lblArchivoDigital.setText("Ninguno");
+                lblArchivoDigital.setText(LanguageManager.getString("ui.ninguno", "Ninguno"));
                 lblArchivoDigital.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 12px;");
             }
         }

@@ -481,7 +481,7 @@ public class DetalleLibroController {
             return;
         }
 
-        if (archivo.getName().toLowerCase().endsWith(".epub")) {
+        if (archivo.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".epub")) {
             // Abrir con lector interno
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
@@ -521,7 +521,7 @@ public class DetalleLibroController {
 
     private void abrirExterno(File archivo) {
         try {
-            java.awt.Desktop.getDesktop().open(archivo);
+            com.bibliohouse.utils.AbrirExterno.abrir(archivo);
         } catch (IOException e) {
             LOGGER.log(java.util.logging.Level.WARNING, "No se pudo abrir el archivo digital", e);
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
@@ -544,14 +544,14 @@ public class DetalleLibroController {
             return;
         }
 
-        String nombre = archivoOrig.getName().toLowerCase();
+        String nombre = archivoOrig.getName().toLowerCase(java.util.Locale.ROOT);
         String targetExt = nombre.endsWith(".epub") ? "pdf" : "epub";
 
         javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
         confirm.setTitle(LanguageManager.getString("detail.convert.title", "Convertir Formato"));
         confirm.setHeaderText(LanguageManager.getString("detail.convert.header", "Conversión usando Calibre"));
         String formatMsg = LanguageManager.getString("detail.convert.content", "Vamos a intentar convertir el archivo a %s.\nEsto requiere que tengas Calibre instalado en tu ordenador y accesible ('ebook-convert' en el PATH).\n\n¿Deseas continuar?");
-        confirm.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
+        confirm.setContentText(String.format(formatMsg, targetExt.toUpperCase(java.util.Locale.ROOT)));
 
         confirm.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
@@ -589,7 +589,7 @@ public class DetalleLibroController {
             ok.setTitle(LanguageManager.getString("detail.convert.success.title", "Éxito"));
             ok.setHeaderText(null);
             String formatMsg = LanguageManager.getString("detail.convert.success.content", "Conversión completada. El archivo ha sido convertido a %s");
-            ok.setContentText(String.format(formatMsg, targetExt.toUpperCase()));
+            ok.setContentText(String.format(formatMsg, targetExt.toUpperCase(java.util.Locale.ROOT)));
             ok.show();
 
             libroActual.setRutaArchivoDigital(task.getValue().getAbsolutePath());
@@ -609,7 +609,7 @@ public class DetalleLibroController {
             err.show();
         });
 
-        new Thread(task).start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 
     @FXML

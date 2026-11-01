@@ -95,7 +95,7 @@ public class ConfiguracionLogs {
      * @param dir El directorio a ocultar.
      */
     private static void ocultarDirectorio(File dir) {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
         try {
             if (os.contains("mac")) {
                 // En macOS usamos el comando chflags

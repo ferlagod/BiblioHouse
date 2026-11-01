@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Autentificacion;
 import com.bibliohouse.logic.JsonManager;
 import java.io.File;
@@ -137,7 +139,12 @@ public class LoginController {
         String pass = txtLoginPass.getText();
 
         if (user.isEmpty() || pass.isEmpty()) {
-            setError(lblLoginError, "Por favor, rellena todos los campos.");
+            setError(lblLoginError, LanguageManager.getString("ui.por_favor_rellena_todos_los_campos", "Por favor, rellena todos los campos."));
+            return;
+        }
+        // Mismas reglas que al registrarse (descarta ".", "..", rutas, etc.)
+        if (!user.matches("^[a-zA-Z0-9_]+$")) {
+            setError(lblLoginError, LanguageManager.getString("ui.nombre_de_usuario_no_valido", "Nombre de usuario no válido."));
             return;
         }
 
@@ -148,39 +155,62 @@ public class LoginController {
             userDir = new File(base, user).getCanonicalFile();
             if (!userDir.getPath().startsWith(base.getPath() + File.separator)
                     && !userDir.equals(base)) {
-                setError(lblLoginError, "Nombre de usuario no válido.");
+                setError(lblLoginError, LanguageManager.getString("ui.nombre_de_usuario_no_valido", "Nombre de usuario no válido."));
                 return;
             }
         } catch (IOException e) {
-            setError(lblLoginError, "Error al verificar el usuario.");
+            setError(lblLoginError, LanguageManager.getString("ui.error_al_verificar_el_usuario", "Error al verificar el usuario."));
             return;
         }
 
         File authFile = new File(userDir, AUTH_FILE_NAME);
 
         if (!userDir.exists() || !authFile.exists()) {
-            setError(lblLoginError, "El usuario no existe. Crea una cuenta primero.");
+            setError(lblLoginError, LanguageManager.getString("ui.el_usuario_no_existe_crea_una", "El usuario no existe. Crea una cuenta primero."));
             return;
         }
 
-        // Verificar contraseña
+        String storedHash;
         try (FileReader reader = new FileReader(authFile)) {
             Properties props = new Properties();
             props.load(reader);
-            String storedHash = props.getProperty("passwordHash");
+            storedHash = props.getProperty("passwordHash");
+        } catch (IOException e) {
+            setError(lblLoginError, LanguageManager.getString("ui.error_al_leer_datos_del_usuario", "Error al leer datos del usuario."));
+            return;
+        }
 
-            if (Autentificacion.checkPassword(pass, storedHash)) {
+        // Verificar contraseña en segundo plano: BCrypt tarda ~300 ms a
+        // propósito y congelaría la ventana si se hiciera en el hilo de la UI
+        final String rutaUsuario = userDir.getAbsolutePath();
+        javafx.concurrent.Task<Boolean> verificacion = new javafx.concurrent.Task<>() {
+            @Override
+            protected Boolean call() {
+                boolean ok = Autentificacion.checkPassword(pass, storedHash);
                 // SEC-01: Migración silenciosa SHA-256 → BCrypt en el primer login
-                if (Autentificacion.isLegacyHash(storedHash)) {
+                if (ok && Autentificacion.isLegacyHash(storedHash)) {
                     migrateHashIfLegacy(authFile, pass);
                 }
-                entrarALaApp(user, userDir.getAbsolutePath());
-            } else {
-                setError(lblLoginError, "Contraseña incorrecta.");
+                return ok;
             }
-        } catch (IOException e) {
-            setError(lblLoginError, "Error al leer datos del usuario.");
-        }
+        };
+        cardLogin.setDisable(true);
+        lblLoginError.setVisible(false);
+        verificacion.setOnSucceeded(e -> {
+            cardLogin.setDisable(false);
+            if (Boolean.TRUE.equals(verificacion.getValue())) {
+                entrarALaApp(user, rutaUsuario);
+            } else {
+                setError(lblLoginError, LanguageManager.getString("ui.contrasena_incorrecta", "Contraseña incorrecta."));
+                txtLoginPass.clear();
+                txtLoginPass.requestFocus();
+            }
+        });
+        verificacion.setOnFailed(e -> {
+            cardLogin.setDisable(false);
+            setError(lblLoginError, LanguageManager.getString("ui.error_al_verificar_la_contrasena", "Error al verificar la contraseña."));
+        });
+        com.bibliohouse.utils.Hilos.ejecutar(verificacion);
     }
 
     // --- LÓGICA DE REGISTRO ---
@@ -199,32 +229,61 @@ public class LoginController {
 
         // Validaciones
         if (user.isEmpty() || pass.isEmpty()) {
-            setError(lblRegError, "Rellena todos los campos.");
+            setError(lblRegError, LanguageManager.getString("ui.rellena_todos_los_campos", "Rellena todos los campos."));
             return;
         }
         if (!user.matches("^[a-zA-Z0-9_]+$")) {
-            setError(lblRegError, "El usuario solo puede tener letras, números y _");
+            setError(lblRegError, LanguageManager.getString("ui.el_usuario_solo_puede_tener_letras", "El usuario solo puede tener letras, números y _"));
             return;
         }
         // SEC-04: Mínimo 8 caracteres para nuevas cuentas
         if (pass.length() < 8) {
-            setError(lblRegError, "La contraseña debe tener al menos 8 caracteres.");
+            setError(lblRegError, LanguageManager.getString("ui.la_contrasena_debe_tener_al_menos", "La contraseña debe tener al menos 8 caracteres."));
             return;
         }
         if (!pass.equals(confirm)) {
-            setError(lblRegError, "Las contraseñas no coinciden.");
+            setError(lblRegError, LanguageManager.getString("ui.las_contrasenas_no_coinciden", "Las contraseñas no coinciden."));
             return;
         }
 
         File userDir = new File(USERS_BASE_PATH, user);
         if (userDir.exists()) {
-            setError(lblRegError, "Este usuario ya existe.");
+            setError(lblRegError, LanguageManager.getString("ui.este_usuario_ya_existe", "Este usuario ya existe."));
             return;
         }
 
-        // Crear usuario
+        // El hash BCrypt se calcula en segundo plano para no congelar la ventana
+        cardRegister.setDisable(true);
+        javafx.concurrent.Task<String> hashTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected String call() {
+                return Autentificacion.hashPassword(pass);
+            }
+        };
+        hashTask.setOnSucceeded(e -> {
+            cardRegister.setDisable(false);
+            crearUsuario(user, userDir, hashTask.getValue());
+        });
+        hashTask.setOnFailed(e -> {
+            cardRegister.setDisable(false);
+            setError(lblRegError, LanguageManager.getString("ui.no_se_pudo_crear_el_usuario", "No se pudo crear el usuario."));
+        });
+        com.bibliohouse.utils.Hilos.ejecutar(hashTask);
+    }
+
+    /**
+     * Crea en disco la carpeta y el archivo de autenticación del usuario.
+     *
+     * @param user Nombre de usuario.
+     * @param userDir Carpeta del usuario.
+     * @param hash Hash BCrypt de su contraseña.
+     */
+    private void crearUsuario(String user, File userDir, String hash) {
+        if (userDir.exists()) {
+            setError(lblRegError, LanguageManager.getString("ui.este_usuario_ya_existe", "Este usuario ya existe."));
+            return;
+        }
         if (userDir.mkdirs()) {
-            String hash = Autentificacion.hashPassword(pass);
             File authFile = new File(userDir, AUTH_FILE_NAME);
 
             Properties props = new Properties();
@@ -233,7 +292,7 @@ public class LoginController {
             try (FileWriter writer = new FileWriter(authFile)) {
                 props.store(writer, "BiblioHouse User Auth");
             } catch (IOException e) {
-                setError(lblRegError, "Error al guardar el usuario en disco.");
+                setError(lblRegError, LanguageManager.getString("ui.error_al_guardar_el_usuario_en", "Error al guardar el usuario en disco."));
                 userDir.delete(); // Seguro porque aún no hay subdirectorios
                 return;
             }
@@ -243,16 +302,16 @@ public class LoginController {
 
             // Mensaje de éxito
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Cuenta creada");
+            alert.setTitle(LanguageManager.getString("ui.cuenta_creada", "Cuenta creada"));
             alert.setHeaderText(null);
-            alert.setContentText("¡Usuario creado con éxito! Ahora puedes iniciar sesión.");
+            alert.setContentText(LanguageManager.getString("ui.usuario_creado_con_exito_ahora_puedes", "¡Usuario creado con éxito! Ahora puedes iniciar sesión."));
             alert.showAndWait();
 
             // Volver al login automáticamente
             mostrarLogin(null);
             txtLoginUser.setText(user); // Rellenar usuario por comodidad
         } else {
-            setError(lblRegError, "No se pudo crear la carpeta del usuario.");
+            setError(lblRegError, LanguageManager.getString("ui.no_se_pudo_crear_la_carpeta", "No se pudo crear la carpeta del usuario."));
         }
     }
 
@@ -314,6 +373,7 @@ public class LoginController {
 
             // 3. Guardamos la lista en el archivo .json del usuario
             newMgr.guardarEstanterias(defaultShelves);
+            newMgr.shutdown();
             LOGGER.log(Level.INFO, "Estanterías por defecto creadas en: {0}", path);
 
         } catch (Exception e) {
@@ -340,11 +400,11 @@ public class LoginController {
         } catch (IOException e) {
             // Mostrar alerta real en lugar de solo texto
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error Crítico");
-            alert.setHeaderText("No se pudo iniciar la aplicación");
-            alert.setContentText("Detalles del error: " + e.getMessage());
+            alert.setTitle(LanguageManager.getString("ui.error_critico", "Error Crítico"));
+            alert.setHeaderText(LanguageManager.getString("ui.no_se_pudo_iniciar_la_aplicacion", "No se pudo iniciar la aplicación"));
+            alert.setContentText(LanguageManager.getString("ui.detalles_del_error", "Detalles del error: ") + e.getMessage());
             alert.showAndWait();
-            setError(lblLoginError, "Error crítico: " + e.getMessage());
+            setError(lblLoginError, LanguageManager.getString("ui.error_critico_2", "Error crítico: ") + e.getMessage());
         }
     }
 

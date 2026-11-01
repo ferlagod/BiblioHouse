@@ -50,6 +50,13 @@ import org.xml.sax.SAXException;
  */
 public class EbookMetadataService {
 
+    /**
+     * Límites de lectura de entradas del ZIP de un EPUB, para que un archivo
+     * malicioso no agote la memoria.
+     */
+    private static final int MAX_XHTML_BYTES = 5 * 1024 * 1024;
+    private static final int MAX_PORTADA_BYTES = 30 * 1024 * 1024;
+
     private static final Logger LOGGER = Logger.getLogger(EbookMetadataService.class.getName());
 
     /**
@@ -83,7 +90,7 @@ public class EbookMetadataService {
         }
 
         // Extraer extensión original
-        String name = archivoOrigen.getName().toLowerCase();
+        String name = archivoOrigen.getName().toLowerCase(java.util.Locale.ROOT);
         String extension = "";
         if (name.endsWith(".epub")) {
             extension = ".epub";
@@ -121,7 +128,7 @@ public class EbookMetadataService {
         if (archivo == null || !archivo.isFile()) {
             return false;
         }
-        String nombre = archivo.getName().toLowerCase();
+        String nombre = archivo.getName().toLowerCase(java.util.Locale.ROOT);
         for (String ext : EXTENSIONES_EBOOK) {
             if (nombre.endsWith(ext)) {
                 return true;
@@ -143,7 +150,7 @@ public class EbookMetadataService {
             return null;
         }
 
-        String nombre = archivo.getName().toLowerCase();
+        String nombre = archivo.getName().toLowerCase(java.util.Locale.ROOT);
         Libro libro;
 
         if (nombre.endsWith(".epub")) {
@@ -255,7 +262,7 @@ public class EbookMetadataService {
      */
     private static String buscarEntradaConExtension(ZipFile zip, String extension) {
         return zip.stream()
-                .filter(e -> e.getName().toLowerCase().endsWith(extension))
+                .filter(e -> e.getName().toLowerCase(java.util.Locale.ROOT).endsWith(extension))
                 .map(ZipEntry::getName)
                 .findFirst()
                 .orElse(null);
@@ -346,7 +353,7 @@ public class EbookMetadataService {
             if (coverEntry == null) {
                 coverEntry = zip.stream()
                         .filter(e -> {
-                            String n = e.getName().toLowerCase();
+                            String n = e.getName().toLowerCase(java.util.Locale.ROOT);
                             return (n.endsWith("/cover.jpg") || n.endsWith("/cover.jpeg")
                                     || n.endsWith("/cover.png") || n.endsWith("/cover.webp")
                                     || n.equals("cover.jpg") || n.equals("cover.jpeg")
@@ -415,9 +422,9 @@ public class EbookMetadataService {
                     String mediaType = item.getAttribute("media-type");
                     String id = item.getAttribute("id");
                     String href = item.getAttribute("href");
-                    if (mediaType != null && mediaType.toLowerCase().startsWith("image/")) {
-                        if ((id != null && id.toLowerCase().contains("cover"))
-                                || (href != null && href.toLowerCase().contains("cover"))) {
+                    if (mediaType != null && mediaType.toLowerCase(java.util.Locale.ROOT).startsWith("image/")) {
+                        if ((id != null && id.toLowerCase(java.util.Locale.ROOT).contains("cover"))
+                                || (href != null && href.toLowerCase(java.util.Locale.ROOT).contains("cover"))) {
                             coverHref = href;
                             break;
                         }
@@ -433,7 +440,7 @@ public class EbookMetadataService {
                     if ("cover".equalsIgnoreCase(ref.getAttribute("type"))) {
                         String refHref = ref.getAttribute("href");
                         if (refHref != null && !refHref.isBlank()) {
-                            String lower = refHref.toLowerCase();
+                            String lower = refHref.toLowerCase(java.util.Locale.ROOT);
                             if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp")) {
                                 coverHref = refHref;
                                 break;
@@ -477,7 +484,8 @@ public class EbookMetadataService {
             }
             if (xhtmlEntry != null) {
                 try (InputStream is = zip.getInputStream(xhtmlEntry)) {
-                    String contenido = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    // Tope de lectura: un EPUB manipulado podría declarar entradas gigantes (zip bomb)
+                    String contenido = new String(is.readNBytes(MAX_XHTML_BYTES), StandardCharsets.UTF_8);
                     java.util.regex.Matcher m = java.util.regex.Pattern.compile(
                             "(?i)<(?:img|image)[^>]+(?:src|href)=[\"']([^\"']+\\.(?:jpg|jpeg|png|webp))[\"']"
                     ).matcher(contenido);
@@ -585,7 +593,7 @@ public class EbookMetadataService {
             return null;
         }
 
-        String nombre = archivoEbook.getName().toLowerCase();
+        String nombre = archivoEbook.getName().toLowerCase(java.util.Locale.ROOT);
         File coversDir = new File(rutaUsuario, "covers");
         if (!coversDir.exists()) {
             coversDir.mkdirs();
@@ -622,7 +630,7 @@ public class EbookMetadataService {
                 if (coverEntry == null) {
                     coverEntry = zip.stream()
                             .filter(e -> {
-                                String n = e.getName().toLowerCase();
+                                String n = e.getName().toLowerCase(java.util.Locale.ROOT);
                                 return (n.endsWith("/cover.jpg") || n.endsWith("/cover.jpeg")
                                         || n.endsWith("/cover.png") || n.endsWith("/cover.webp")
                                         || n.equals("cover.jpg") || n.equals("cover.jpeg")
@@ -732,8 +740,16 @@ public class EbookMetadataService {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(false);
-            // Seguridad: desactivar DTDs externas
+            // Seguridad (XXE): un EPUB es contenido no fiable. Se prohíben los
+            // DOCTYPE y cualquier entidad externa para que no pueda leer
+            // archivos locales ni hacer peticiones de red.
+            factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             return builder.parse(is);
         } catch (IOException | ParserConfigurationException | SAXException e) {
@@ -772,7 +788,7 @@ public class EbookMetadataService {
             if (ok && archivoDestino.exists() && archivoDestino.length() > 200) {
                 libro.setPortadaURL(archivoDestino.getAbsolutePath());
             } else {
-                byte[] bytes = is.readAllBytes();
+                byte[] bytes = is.readNBytes(MAX_PORTADA_BYTES);
                 if (bytes.length > 200) {
                     guardarPortadaDesdeBytes(bytes, libro, rutaUsuario);
                 }

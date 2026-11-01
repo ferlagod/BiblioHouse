@@ -83,14 +83,14 @@ public enum EstadoLectura {
 
         // 1. Coincidencia exacta con nombre de constante enum
         try {
-            return EstadoLectura.valueOf(trimmed.toUpperCase());
+            return EstadoLectura.valueOf(trimmed.toUpperCase(java.util.Locale.ROOT));
         } catch (IllegalArgumentException ignored) {
         }
 
         // 2. Normalización eliminando acentos y convirtiendo a minúsculas
         String norm = Normalizer.normalize(trimmed, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-                .toLowerCase();
+                .toLowerCase(java.util.Locale.ROOT);
 
         // 3. Mapeo multilingüe tolerante
         return switch (norm) {

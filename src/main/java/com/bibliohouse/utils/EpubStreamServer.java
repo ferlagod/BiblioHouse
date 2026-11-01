@@ -48,12 +48,28 @@ public class EpubStreamServer {
 
     private static final Logger LOGGER = Logger.getLogger(EpubStreamServer.class.getName());
     private static final int BUFFER_SIZE = 65536;
+    private static final int MAX_CONEXIONES = 4;
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
 
     private final File archivo;
     private ServerSocket serverSocket;
     private Thread listenerThread;
     private volatile boolean running = false;
     private int port;
+
+    /**
+     * Ruta secreta aleatoria. Sin ella el servidor responde 404, de modo que
+     * otras páginas web abiertas en el equipo no pueden leer el libro aunque
+     * descubran el puerto (la cabecera CORS abierta es necesaria para el
+     * visor, pero sin el token no sirve de nada).
+     */
+    private final String token;
+
+    /**
+     * Pool acotado de hilos para atender peticiones (en vez de un hilo nuevo
+     * por conexión sin límite).
+     */
+    private java.util.concurrent.ExecutorService workers;
 
     /**
      * Construye una nueva instancia del servidor de streaming para el archivo
@@ -67,6 +83,9 @@ public class EpubStreamServer {
             throw new IllegalArgumentException("El archivo EPUB no existe o es nulo");
         }
         this.archivo = archivo;
+        byte[] bytes = new byte[16];
+        RANDOM.nextBytes(bytes);
+        this.token = java.util.HexFormat.of().formatHex(bytes);
     }
 
     /**
@@ -85,6 +104,11 @@ public class EpubStreamServer {
         serverSocket = new ServerSocket(0, 10, InetAddress.getByName("127.0.0.1"));
         this.port = serverSocket.getLocalPort();
         this.running = true;
+        workers = java.util.concurrent.Executors.newFixedThreadPool(MAX_CONEXIONES, r -> {
+            Thread t = new Thread(r, "epub-stream-client");
+            t.setDaemon(true);
+            return t;
+        });
 
         listenerThread = new Thread(this::listenLoop, "epub-stream-server");
         listenerThread.setDaemon(true);
@@ -98,9 +122,10 @@ public class EpubStreamServer {
         while (running && serverSocket != null && !serverSocket.isClosed()) {
             try {
                 Socket client = serverSocket.accept();
-                Thread worker = new Thread(() -> handleClient(client), "epub-stream-client");
-                worker.setDaemon(true);
-                worker.start();
+                client.setSoTimeout(15000);
+                workers.execute(() -> handleClient(client));
+            } catch (java.util.concurrent.RejectedExecutionException e) {
+                break;
             } catch (IOException e) {
                 // Socket cerrado intencionadamente al detener el servidor
                 break;
@@ -124,17 +149,29 @@ public class EpubStreamServer {
                 // Consumir hasta la línea en blanco
             }
 
+            // Formato esperado: "GET /<token>/book.epub HTTP/1.1"
+            String[] partes = requestLine.split(" ");
+            String ruta = partes.length >= 2 ? partes[1] : "";
+            String metodo = partes[0];
+            if (!ruta.equals("/" + token + "/book.epub") || !(metodo.equals("GET") || metodo.equals("HEAD"))) {
+                out.write(("HTTP/1.1 404 Not Found\r\n"
+                        + "Content-Length: 0\r\n"
+                        + "Connection: close\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                return;
+            }
+
             long length = archivo.length();
             String responseHeaders = "HTTP/1.1 200 OK\r\n"
                     + "Content-Type: application/epub+zip\r\n"
                     + "Content-Length: " + length + "\r\n"
                     + "Access-Control-Allow-Origin: *\r\n"
-                    + "Accept-Ranges: bytes\r\n"
+                    + "Cache-Control: no-store\r\n"
                     + "Connection: close\r\n\r\n";
 
             out.write(responseHeaders.getBytes(StandardCharsets.UTF_8));
 
-            if (!requestLine.startsWith("HEAD")) {
+            if (!metodo.equals("HEAD")) {
                 try (InputStream fis = new BufferedInputStream(new FileInputStream(archivo))) {
                     byte[] buffer = new byte[BUFFER_SIZE];
                     int bytesRead;
@@ -154,6 +191,9 @@ public class EpubStreamServer {
      */
     public synchronized void stop() {
         running = false;
+        if (workers != null) {
+            workers.shutdownNow();
+        }
         if (serverSocket != null && !serverSocket.isClosed()) {
             try {
                 serverSocket.close();
@@ -168,7 +208,7 @@ public class EpubStreamServer {
      * @return URL HTTP con puerto dinámico.
      */
     public String getUrl() {
-        return "http://127.0.0.1:" + port + "/book.epub";
+        return "http://127.0.0.1:" + port + "/" + token + "/book.epub";
     }
 
     /**

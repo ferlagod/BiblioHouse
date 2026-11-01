@@ -196,6 +196,21 @@
     -fx-font-size: 11px;
 }
 
+/* Barra de progreso de lectura en la tarjeta */
+.book-card-progress {
+    -fx-accent: #d97706;
+    -fx-background-radius: 4;
+}
+
+.book-card-progress-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.root.high-contrast .book-card-progress {
+    -fx-accent: -color-accent-fg;
+}
+
 /* Título, autor y valoración */
 .book-card-title {
     -fx-font-weight: bold;

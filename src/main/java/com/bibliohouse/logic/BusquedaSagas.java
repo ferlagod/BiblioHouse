@@ -93,7 +93,9 @@ public class BusquedaSagas {
 
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException ignored) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break; // Cancelación: dejar de consultar la API
                 }
             }
 

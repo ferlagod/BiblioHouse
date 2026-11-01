@@ -21,11 +21,14 @@ import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.EbookMetadataService;
 import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.JsonManager;
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.utils.ImageLoader;
+import com.bibliohouse.utils.TextoUtil;
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -163,13 +166,26 @@ public class CatalogoGridController {
             l -> l.getTitulo() != null ? l.getTitulo() : "",
             String::compareToIgnoreCase);
 
+    /**
+     * Espera tras la última pulsación antes de filtrar, para no reconstruir la
+     * cuadrícula en cada tecla.
+     */
+    private final javafx.animation.PauseTransition esperaBusqueda = new javafx.animation.PauseTransition(Duration.millis(220));
+
+    /**
+     * Tarjetas ya construidas, reutilizadas mientras el libro no cambie lo que
+     * muestran (evita recrear nodos y recargar portadas al filtrar o paginar).
+     */
+    private final Map<Libro, Object[]> cacheTarjetas = new java.util.IdentityHashMap<>();
+
     @FXML
     public void initialize() {
         if (txtBuscarMisLibros != null) {
-            txtBuscarMisLibros.textProperty().addListener((obs, oldVal, newVal) -> {
+            esperaBusqueda.setOnFinished(e -> {
                 paginaActual = 1;
                 refrescarCuadricula();
             });
+            txtBuscarMisLibros.textProperty().addListener((obs, oldVal, newVal) -> esperaBusqueda.playFromStart());
         }
 
         if (comboLibrosPorPagina != null) {
@@ -194,15 +210,15 @@ public class CatalogoGridController {
         configurarAccesibilidadControles();
 
         // Suscripción al bus de eventos para reaccionar a cambios
-        AppEventBus.getInstance().subscribe(AppEventBus.FiltroEstanteriaEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.FiltroEstanteriaEvent.class, e -> {
             this.categoriaActual = e.getEstanteria();
             this.paginaActual = 1;
             refrescarCuadricula();
         });
 
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> refrescarCuadricula());
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> refrescarCuadricula());
-        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> refrescarCuadricula());
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroModificadoEvent.class, e -> refrescarCuadricula());
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroEliminadoEvent.class, e -> refrescarCuadricula());
+        AppEventBus.getInstance().subscribe(this, AppEventBus.CatalogoSincronizadoEvent.class, e -> refrescarCuadricula());
     }
 
     /**
@@ -212,59 +228,59 @@ public class CatalogoGridController {
     private void configurarAccesibilidadControles() {
         if (txtBuscarMisLibros != null) {
             txtBuscarMisLibros.setAccessibleRole(AccessibleRole.TEXT_FIELD);
-            txtBuscarMisLibros.setAccessibleText("Buscar libros por título o autor en el catálogo");
+            txtBuscarMisLibros.setAccessibleText(LanguageManager.getString("ui.buscar_libros_por_titulo_o_autor", "Buscar libros por título o autor en el catálogo"));
         }
         if (btnOrdenar != null) {
             btnOrdenar.setAccessibleRole(AccessibleRole.BUTTON);
-            btnOrdenar.setAccessibleText("Opciones de ordenación del catálogo");
+            btnOrdenar.setAccessibleText(LanguageManager.getString("ui.opciones_de_ordenacion_del_catalogo", "Opciones de ordenación del catálogo"));
         }
         if (btnVistaCuadricula != null) {
             btnVistaCuadricula.setAccessibleRole(AccessibleRole.BUTTON);
-            btnVistaCuadricula.setAccessibleText("Cambiar a vista de cuadrícula con portadas de libros");
+            btnVistaCuadricula.setAccessibleText(LanguageManager.getString("ui.cambiar_a_vista_de_cuadricula_con", "Cambiar a vista de cuadrícula con portadas de libros"));
         }
         if (btnVistaLista != null) {
             btnVistaLista.setAccessibleRole(AccessibleRole.BUTTON);
-            btnVistaLista.setAccessibleText("Cambiar a vista de lista tabular detallada");
+            btnVistaLista.setAccessibleText(LanguageManager.getString("ui.cambiar_a_vista_de_lista_tabular", "Cambiar a vista de lista tabular detallada"));
         }
         if (chipTodos != null) {
             chipTodos.setAccessibleRole(AccessibleRole.BUTTON);
-            chipTodos.setAccessibleText("Mostrar todos los libros de la colección");
+            chipTodos.setAccessibleText(LanguageManager.getString("ui.mostrar_todos_los_libros_de_la", "Mostrar todos los libros de la colección"));
         }
         if (chipLeyendo != null) {
             chipLeyendo.setAccessibleRole(AccessibleRole.BUTTON);
-            chipLeyendo.setAccessibleText("Filtrar libros actualmente en lectura");
+            chipLeyendo.setAccessibleText(LanguageManager.getString("ui.filtrar_libros_actualmente_en_lectura", "Filtrar libros actualmente en lectura"));
         }
         if (chipLeidos != null) {
             chipLeidos.setAccessibleRole(AccessibleRole.BUTTON);
-            chipLeidos.setAccessibleText("Filtrar libros ya leídos");
+            chipLeidos.setAccessibleText(LanguageManager.getString("ui.filtrar_libros_ya_leidos", "Filtrar libros ya leídos"));
         }
         if (chipPendientes != null) {
             chipPendientes.setAccessibleRole(AccessibleRole.BUTTON);
-            chipPendientes.setAccessibleText("Filtrar libros pendientes de lectura");
+            chipPendientes.setAccessibleText(LanguageManager.getString("ui.filtrar_libros_pendientes_de_lectura", "Filtrar libros pendientes de lectura"));
         }
         if (chipDigitales != null) {
             chipDigitales.setAccessibleRole(AccessibleRole.BUTTON);
-            chipDigitales.setAccessibleText("Filtrar únicamente libros electrónicos e-books");
+            chipDigitales.setAccessibleText(LanguageManager.getString("ui.filtrar_unicamente_libros_electronicos_e_books", "Filtrar únicamente libros electrónicos e-books"));
         }
         if (btnPrimeraPagina != null) {
             btnPrimeraPagina.setAccessibleRole(AccessibleRole.BUTTON);
-            btnPrimeraPagina.setAccessibleText("Ir a la primera página de libros");
+            btnPrimeraPagina.setAccessibleText(LanguageManager.getString("ui.ir_a_la_primera_pagina_de", "Ir a la primera página de libros"));
         }
         if (btnAnterior != null) {
             btnAnterior.setAccessibleRole(AccessibleRole.BUTTON);
-            btnAnterior.setAccessibleText("Ir a la página anterior de libros");
+            btnAnterior.setAccessibleText(LanguageManager.getString("ui.ir_a_la_pagina_anterior_de", "Ir a la página anterior de libros"));
         }
         if (btnSiguiente != null) {
             btnSiguiente.setAccessibleRole(AccessibleRole.BUTTON);
-            btnSiguiente.setAccessibleText("Ir a la página siguiente de libros");
+            btnSiguiente.setAccessibleText(LanguageManager.getString("ui.ir_a_la_pagina_siguiente_de", "Ir a la página siguiente de libros"));
         }
         if (btnUltima != null) {
             btnUltima.setAccessibleRole(AccessibleRole.BUTTON);
-            btnUltima.setAccessibleText("Ir a la última página de libros");
+            btnUltima.setAccessibleText(LanguageManager.getString("ui.ir_a_la_ultima_pagina_de", "Ir a la última página de libros"));
         }
         if (comboLibrosPorPagina != null) {
             comboLibrosPorPagina.setAccessibleRole(AccessibleRole.COMBO_BOX);
-            comboLibrosPorPagina.setAccessibleText("Seleccionar cantidad de libros por página");
+            comboLibrosPorPagina.setAccessibleText(LanguageManager.getString("ui.seleccionar_cantidad_de_libros_por_pagina", "Seleccionar cantidad de libros por página"));
         }
         if (lblInfoPaginacion != null) {
             lblInfoPaginacion.setAccessibleRole(AccessibleRole.TEXT);
@@ -272,7 +288,7 @@ public class CatalogoGridController {
         if (panelMisLibros != null) {
             panelMisLibros.setFocusTraversable(true);
             panelMisLibros.setAccessibleRole(AccessibleRole.PARENT);
-            panelMisLibros.setAccessibleText("Cuadrícula interactiva de libros");
+            panelMisLibros.setAccessibleText(LanguageManager.getString("ui.cuadricula_interactiva_de_libros", "Cuadrícula interactiva de libros"));
             panelMisLibros.focusedProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal && !panelMisLibros.getChildren().isEmpty()) {
                     panelMisLibros.getChildren().get(0).requestFocus();
@@ -459,7 +475,7 @@ public class CatalogoGridController {
 
         if (total == 0) {
             if (lblInfoPaginacion != null) {
-                lblInfoPaginacion.setText("0 libros");
+                lblInfoPaginacion.setText(LanguageManager.getString("ui.0_libros", "0 libros"));
             }
             if (btnPrimeraPagina != null) {
                 btnPrimeraPagina.setDisable(true);
@@ -477,7 +493,7 @@ public class CatalogoGridController {
         }
 
         if (lblInfoPaginacion != null) {
-            lblInfoPaginacion.setText(String.format("Mostrando %d-%d de %d (Pág. %d/%d)",
+            lblInfoPaginacion.setText(String.format(LanguageManager.getString("ui.mostrando_d_d_de_d_pag", "Mostrando %d-%d de %d (Pág. %d/%d)"),
                     inicio, fin, total, paginaActual, totalPaginas));
         }
 
@@ -756,7 +772,7 @@ public class CatalogoGridController {
             return;
         }
 
-        String busquedaRapida = txtBuscarMisLibros != null ? txtBuscarMisLibros.getText().toLowerCase().trim() : "";
+        String busquedaRapida = txtBuscarMisLibros != null ? TextoUtil.normalizarBusqueda(txtBuscarMisLibros.getText()) : "";
 
         // Filtrar según estantería seleccionada y chip rápido
         List<Libro> filtrados = listaLibrosCompleta.stream()
@@ -793,9 +809,8 @@ public class CatalogoGridController {
                     if (busquedaRapida.isEmpty()) {
                         return true;
                     }
-                    boolean tituloCoincide = l.getTitulo() != null && l.getTitulo().toLowerCase().contains(busquedaRapida);
-                    boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(busquedaRapida);
-                    return tituloCoincide || autorCoincide;
+                    return TextoUtil.contiene(l.getTitulo(), busquedaRapida)
+                            || TextoUtil.contiene(l.getAutor(), busquedaRapida);
                 })
                 .sorted(currentComparator)
                 .collect(Collectors.toList());
@@ -815,10 +830,11 @@ public class CatalogoGridController {
             Label lblIcon = new Label("📚");
             lblIcon.setStyle("-fx-font-size: 48px;");
 
-            Label lblVacio = new Label("Tu biblioteca está vacía aquí");
+            Label lblVacio = new Label(LanguageManager.getString("catalog.empty.title", "Tu biblioteca está vacía aquí"));
             lblVacio.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 16px; -fx-font-weight: bold;");
 
-            Label lblSub = new Label("Prueba a cambiar el filtro de estantería o chip\no añade libros nuevos desde «Gestionar Libros»");
+            Label lblSub = new Label(LanguageManager.getString("catalog.empty.subtitle",
+                    "Prueba a cambiar el filtro de estantería o chip\no añade libros nuevos desde «Gestionar Libros»"));
             lblSub.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 13px; -fx-text-alignment: center;");
             lblSub.setWrapText(true);
             lblSub.setMaxWidth(400);
@@ -857,11 +873,12 @@ public class CatalogoGridController {
 
         actualizarBarraPaginacion(desde + 1, hasta, filtrados.size());
 
-        // Construir tarjetas exclusivamente para la sublista de la página actual
+        // Construir (o reutilizar) tarjetas solo para la página actual
         List<Node> tarjetas = paginaLibros.stream()
-                .map(this::crearTarjetaMisLibros)
+                .map(this::obtenerTarjeta)
                 .collect(Collectors.toList());
         panelMisLibros.getChildren().setAll(tarjetas);
+        podarCacheTarjetas();
 
         // Actualizar la tabla para la vista de lista compacta
         if (tablaMisLibros != null) {
@@ -966,6 +983,43 @@ public class CatalogoGridController {
      * @param libro Libro para el que se genera la tarjeta.
      * @return Nodo {@link VBox} con la tarjeta interactiva renderizada.
      */
+    /**
+     * Devuelve la tarjeta de un libro, reutilizando la ya construida si lo que
+     * muestra no ha cambiado.
+     */
+    private Node obtenerTarjeta(Libro libro) {
+        String firma = firmaTarjeta(libro);
+        Object[] cacheada = cacheTarjetas.get(libro);
+        if (cacheada != null && firma.equals(cacheada[0])) {
+            return (Node) cacheada[1];
+        }
+        Node tarjeta = crearTarjetaMisLibros(libro);
+        cacheTarjetas.put(libro, new Object[]{firma, tarjeta});
+        return tarjeta;
+    }
+
+    /**
+     * Resume los datos que pinta una tarjeta; si cambia, la tarjeta se rehace.
+     */
+    private static String firmaTarjeta(Libro l) {
+        return l.getTitulo() + '\u0000' + l.getAutor() + '\u0000' + l.getPortadaURL() + '\u0000'
+                + l.getEstadoLecturaEnum() + '\u0000' + l.getCalificacion() + '\u0000' + l.isEsDigital() + '\u0000'
+                + l.getPaginaActual() + '/' + l.getPaginasTotales();
+    }
+
+    /**
+     * Elimina de la caché las tarjetas de libros que ya no están en la
+     * biblioteca, para que no crezca sin límite.
+     */
+    private void podarCacheTarjetas() {
+        if (listaLibrosCompleta == null || cacheTarjetas.size() <= listaLibrosCompleta.size() + 64) {
+            return;
+        }
+        java.util.Set<Libro> vivos = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        vivos.addAll(listaLibrosCompleta);
+        cacheTarjetas.keySet().retainAll(vivos);
+    }
+
     private VBox crearTarjetaMisLibros(Libro libro) {
         VBox tarjeta = new VBox(6);
         tarjeta.setAlignment(Pos.TOP_CENTER);
@@ -1078,7 +1132,7 @@ public class CatalogoGridController {
         img.setFitWidth(120);
         img.setFitHeight(175);
         img.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
-        img.setAccessibleText("Portada de " + libro.getTitulo());
+        img.setAccessibleText(LanguageManager.getString("ui.portada_de", "Portada de ") + libro.getTitulo());
         Rectangle clip = new Rectangle(120, 175);
         clip.setArcWidth(10);
         clip.setArcHeight(10);
@@ -1089,7 +1143,7 @@ public class CatalogoGridController {
         contenedorPortada.getStyleClass().add("book-card-cover-container");
         contenedorPortada.setMouseTransparent(true);
         contenedorPortada.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
-        contenedorPortada.setAccessibleText("Portada de " + libro.getTitulo());
+        contenedorPortada.setAccessibleText(LanguageManager.getString("ui.portada_de", "Portada de ") + libro.getTitulo());
 
         // Micro-animación suave al pasar el ratón (hover lift sobre la portada, sin alterar el layout del FlowPane)
         tarjeta.setOnMouseEntered(e -> {
@@ -1107,22 +1161,19 @@ public class CatalogoGridController {
         EstadoLectura estado = libro.getEstadoLecturaEnum();
         Label badge = null;
         if (estado == EstadoLectura.LEIDO) {
-            badge = new Label("✓ Leído");
+            badge = new Label(LanguageManager.getString("catalog.badge.read", "✓ Leído"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leido");
-            badge.setStyle("-fx-background-color: #15803d; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         } else if (estado == EstadoLectura.LEYENDO) {
-            badge = new Label("● Leyendo");
+            badge = new Label(LanguageManager.getString("catalog.badge.reading", "● Leyendo"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leyendo");
-            badge.setStyle("-fx-background-color: #c2410c; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         } else if (estado == EstadoLectura.ABANDONADO) {
-            badge = new Label("✕ Abandonado");
+            badge = new Label(LanguageManager.getString("catalog.badge.abandoned", "✕ Abandonado"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-abandonado");
-            badge.setStyle("-fx-background-color: #475569; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 7; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
         }
 
         if (badge != null) {
             badge.setAccessibleRole(AccessibleRole.TEXT);
-            badge.setAccessibleText("Estado de lectura: " + estado.getEtiqueta());
+            badge.setAccessibleText(LanguageManager.getString("ui.estado_de_lectura", "Estado de lectura: ") + estado.getEtiqueta());
             badge.setMouseTransparent(true);
             StackPane.setAlignment(badge, Pos.TOP_RIGHT);
             StackPane.setMargin(badge, new Insets(6, 6, 0, 0));
@@ -1131,11 +1182,10 @@ public class CatalogoGridController {
 
         // Badge de formato digital
         if (libro.isEsDigital()) {
-            Label badgeDigital = new Label("📱 E-book");
+            Label badgeDigital = new Label(LanguageManager.getString("catalog.badge.ebook", "📱 E-book"));
             badgeDigital.setAccessibleRole(AccessibleRole.TEXT);
-            badgeDigital.setAccessibleText("Formato digital: E-book");
+            badgeDigital.setAccessibleText(LanguageManager.getString("catalog.badge.ebook.a11y", "Formato digital: E-book"));
             badgeDigital.getStyleClass().addAll("book-card-badge-pill", "badge-digital");
-            badgeDigital.setStyle("-fx-background-color: #1d4ed8; -fx-text-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-color: #ffffff; -fx-border-width: 1.5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.75), 6, 0.25, 0, 2);");
             badgeDigital.setMouseTransparent(true);
             StackPane.setAlignment(badgeDigital, Pos.BOTTOM_LEFT);
             StackPane.setMargin(badgeDigital, new Insets(0, 0, 6, 6));
@@ -1145,7 +1195,7 @@ public class CatalogoGridController {
         // Título del libro
         Label lblTitulo = new Label(libro.getTitulo());
         lblTitulo.setAccessibleRole(AccessibleRole.TEXT);
-        lblTitulo.setAccessibleText("Título: " + libro.getTitulo());
+        lblTitulo.setAccessibleText(LanguageManager.getString("ui.titulo", "Título: ") + libro.getTitulo());
         lblTitulo.getStyleClass().add("book-card-title");
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(136);
@@ -1159,7 +1209,7 @@ public class CatalogoGridController {
         if (libro.getAutor() != null && !libro.getAutor().isBlank()) {
             Label lblAutor = new Label(libro.getAutor());
             lblAutor.setAccessibleRole(AccessibleRole.TEXT);
-            lblAutor.setAccessibleText("Autor: " + libro.getAutor());
+            lblAutor.setAccessibleText(LanguageManager.getString("ui.autor", "Autor: ") + libro.getAutor());
             lblAutor.getStyleClass().add("book-card-author");
             lblAutor.setMaxWidth(136);
             lblAutor.setAlignment(Pos.CENTER);
@@ -1182,7 +1232,7 @@ public class CatalogoGridController {
             }
             Label lblRating = new Label(sb.toString());
             lblRating.setAccessibleRole(AccessibleRole.TEXT);
-            lblRating.setAccessibleText("Calificación: " + stars + " de 5 estrellas");
+            lblRating.setAccessibleText(LanguageManager.getString("ui.calificacion", "Calificación: ") + stars + LanguageManager.getString("ui.de_5_estrellas", " de 5 estrellas"));
             lblRating.getStyleClass().add("book-card-rating");
             lblRating.setMouseTransparent(true);
             tarjeta.getChildren().add(lblRating);
@@ -1196,17 +1246,17 @@ public class CatalogoGridController {
             ProgressBar pBar = new ProgressBar(progreso);
             pBar.setPrefWidth(120);
             pBar.setPrefHeight(6);
-            pBar.setStyle("-fx-accent: #d97706; -fx-background-radius: 4;");
+            pBar.getStyleClass().add("book-card-progress");
             pBar.setMouseTransparent(true);
 
             int pct = (int) Math.round(progreso * 100);
             pBar.setAccessibleRole(AccessibleRole.PROGRESS_INDICATOR);
-            pBar.setAccessibleText("Progreso de lectura: " + pct + " por ciento");
+            pBar.setAccessibleText(LanguageManager.getString("ui.progreso_de_lectura", "Progreso de lectura: ") + pct + LanguageManager.getString("ui.por_ciento", " por ciento"));
 
-            Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + " pág. (" + pct + "%)");
-            lblProgreso.setStyle("-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;");
+            Label lblProgreso = new Label(libro.getPaginaActual() + " / " + libro.getPaginasTotales() + LanguageManager.getString("ui.pag", " pág. (") + pct + "%)");
+            lblProgreso.getStyleClass().add("book-card-progress-label");
             lblProgreso.setAccessibleRole(AccessibleRole.TEXT);
-            lblProgreso.setAccessibleText("Progreso: " + libro.getPaginaActual() + " de " + libro.getPaginasTotales() + " páginas leídas (" + pct + "%)");
+            lblProgreso.setAccessibleText(LanguageManager.getString("ui.progreso", "Progreso: ") + libro.getPaginaActual() + LanguageManager.getString("ui.de", " de ") + libro.getPaginasTotales() + LanguageManager.getString("ui.paginas_leidas", " páginas leídas (") + pct + "%)");
             lblProgreso.setMouseTransparent(true);
 
             tarjeta.getChildren().addAll(pBar, lblProgreso);
@@ -1446,7 +1496,7 @@ public class CatalogoGridController {
         }
         refrescarCuadricula();
         AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
-        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Estado actualizado a " + nuevoEstado.getEtiqueta() + ": " + libro.getTitulo()));
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.estado_actualizado_a", "Estado actualizado a ") + nuevoEstado.getEtiqueta() + ": " + libro.getTitulo()));
     }
 
     /**
@@ -1495,7 +1545,7 @@ public class CatalogoGridController {
             if (db.hasFiles()) {
                 File file = db.getFiles().get(0);
                 if (EbookMetadataService.esArchivoEbook(file)) {
-                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Importando e-book..."));
+                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.importando_e_book", "Importando e-book...")));
 
                     Thread importThread = new Thread(() -> {
                         Libro nuevoLibro = EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
@@ -1506,7 +1556,7 @@ public class CatalogoGridController {
 
                                 if (existe) {
                                     if (mainController != null) {
-                                        mainController.mostrarAlertaPublic("Libro duplicado", "Ya existe un libro con el título: " + nuevoLibro.getTitulo());
+                                        mainController.mostrarAlertaPublic(LanguageManager.getString("ui.libro_duplicado", "Libro duplicado"), LanguageManager.getString("ui.ya_existe_un_libro_con_el", "Ya existe un libro con el título: ") + nuevoLibro.getTitulo());
                                     }
                                 } else {
                                     nuevoLibro.setId(UUID.randomUUID().toString());
@@ -1516,7 +1566,7 @@ public class CatalogoGridController {
                                     }
                                     refrescarCuadricula();
                                     AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(nuevoLibro, true));
-                                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("E-book importado: " + nuevoLibro.getTitulo()));
+                                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.e_book_importado", "E-book importado: ") + nuevoLibro.getTitulo()));
                                 }
                             }
                         });

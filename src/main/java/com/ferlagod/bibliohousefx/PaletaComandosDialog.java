@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,11 +117,11 @@ public class PaletaComandosDialog {
         iconLupa.setStyle("-fx-font-size: 16px;");
 
         TextField txtBusqueda = new TextField();
-        txtBusqueda.setPromptText("Buscar libro, autor o comando (ej. 'Quijote', 'Añadir', 'PDF', 'Configuración')...");
+        txtBusqueda.setPromptText(LanguageManager.getString("ui.buscar_libro_autor_o_comando_ej", "Buscar libro, autor o comando (ej. 'Quijote', 'Añadir', 'PDF', 'Configuración')..."));
         txtBusqueda.setStyle("-fx-background-color: transparent; -fx-font-size: 14px; -fx-padding: 4; -fx-border-width: 0;");
         HBox.setHgrow(txtBusqueda, Priority.ALWAYS);
 
-        Label badgeK = new Label("ESC para cerrar");
+        Label badgeK = new Label(LanguageManager.getString("ui.esc_para_cerrar", "ESC para cerrar"));
         badgeK.setStyle("-fx-font-size: 11px; -fx-text-fill: -color-fg-muted; -fx-background-color: -color-bg-subtle; -fx-padding: 2 6; -fx-background-radius: 6;");
 
         boxBusqueda.getChildren().addAll(iconLupa, txtBusqueda, badgeK);
@@ -206,12 +208,12 @@ public class PaletaComandosDialog {
         }));
 
         Runnable actualizarFiltro = () -> {
-            String query = txtBusqueda.getText().toLowerCase().trim();
+            String query = txtBusqueda.getText().toLowerCase(java.util.Locale.ROOT).trim();
             List<PaletaItem> items = new ArrayList<>();
 
             // 1. Filtrar comandos coincidentes
             for (PaletaItem cmd : comandosBase) {
-                if (query.isEmpty() || cmd.getTitulo().toLowerCase().contains(query) || cmd.getSubtitulo().toLowerCase().contains(query)) {
+                if (query.isEmpty() || cmd.getTitulo().toLowerCase(java.util.Locale.ROOT).contains(query) || cmd.getSubtitulo().toLowerCase(java.util.Locale.ROOT).contains(query)) {
                     items.add(cmd);
                 }
             }
@@ -220,9 +222,9 @@ public class PaletaComandosDialog {
             if (mainController.getListaLibrosCompleta() != null && !query.isEmpty()) {
                 int countLibros = 0;
                 for (Libro l : mainController.getListaLibrosCompleta()) {
-                    boolean tituloCoincide = l.getTitulo() != null && l.getTitulo().toLowerCase().contains(query);
-                    boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase().contains(query);
-                    boolean generoCoincide = l.getGenero() != null && l.getGenero().toLowerCase().contains(query);
+                    boolean tituloCoincide = l.getTitulo() != null && l.getTitulo().toLowerCase(java.util.Locale.ROOT).contains(query);
+                    boolean autorCoincide = l.getAutor() != null && l.getAutor().toLowerCase(java.util.Locale.ROOT).contains(query);
+                    boolean generoCoincide = l.getGenero() != null && l.getGenero().toLowerCase(java.util.Locale.ROOT).contains(query);
                     if (tituloCoincide || autorCoincide || generoCoincide) {
                         String sub = (l.getAutor() != null ? l.getAutor() : "Autor desconocido") + " • " + l.getEstadoLecturaEnum().getEtiqueta();
                         items.add(new PaletaItem("📖", l.getTitulo(), sub, "Ficha", () -> {
@@ -291,13 +293,13 @@ public class PaletaComandosDialog {
         pie.setAlignment(Pos.CENTER_LEFT);
         pie.setStyle("-fx-padding: 4 6 0 6;");
 
-        Label hintFlechas = new Label("↑↓ para navegar");
+        Label hintFlechas = new Label(LanguageManager.getString("ui.para_navegar", "↑↓ para navegar"));
         hintFlechas.setStyle("-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;");
-        Label hintEnter = new Label("↵ Enter para abrir");
+        Label hintEnter = new Label(LanguageManager.getString("ui.enter_para_abrir", "↵ Enter para abrir"));
         hintEnter.setStyle("-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label hintSpotlight = new Label("BiblioHouse Spotlight");
+        Label hintSpotlight = new Label(LanguageManager.getString("ui.bibliohouse_spotlight", "BiblioHouse Spotlight"));
         hintSpotlight.setStyle("-fx-font-size: 11px; -fx-text-fill: -color-accent-fg; -fx-font-weight: bold;");
 
         pie.getChildren().addAll(hintFlechas, hintEnter, spacer, hintSpotlight);

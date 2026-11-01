@@ -195,6 +195,6 @@ public class Socio {
         if (numeroSocio > 0) {
             return Integer.hashCode(numeroSocio);
         }
-        return (dni != null && !dni.isBlank()) ? dni.trim().toUpperCase().hashCode() : 0;
+        return (dni != null && !dni.isBlank()) ? dni.trim().toUpperCase(java.util.Locale.ROOT).hashCode() : 0;
     }
 }

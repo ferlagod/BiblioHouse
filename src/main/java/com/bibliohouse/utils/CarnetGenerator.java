@@ -46,6 +46,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  */
 public class CarnetGenerator {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(CarnetGenerator.class.getName());
+
     // Tamaño de tarjeta estándar tipo visita (85x55 mm aprox)
     // En puntos PDF (1 pulgada = 72 puntos).
     // 85mm ~ 3.35 in * 72 ~ 241 pts
@@ -90,7 +92,7 @@ public class CarnetGenerator {
                     logoBiblio = PDImageXObject.createFromByteArray(document, imageBytes, "logo");
                 }
             } catch (Exception e) {
-                System.err.println("No se pudo cargar el logo para el carnet: " + e.getMessage());
+                LOGGER.warning("No se pudo cargar el logo para el carnet: " + e.getMessage());
             }
 
             float currentX = MARGIN_X;
@@ -142,7 +144,7 @@ public class CarnetGenerator {
                 if (nombreCompleto.length() > 26) {
                     nombreCompleto = nombreCompleto.substring(0, 23) + "...";
                 }
-                contentStream.showText(PdfFontHelper.sanitizarTexto(nombreCompleto.toUpperCase(), fontBold));
+                contentStream.showText(PdfFontHelper.sanitizarTexto(nombreCompleto.toUpperCase(java.util.Locale.ROOT), fontBold));
                 contentStream.endText();
 
                 contentStream.beginText();

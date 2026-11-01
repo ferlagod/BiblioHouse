@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.BusquedaService;
 import com.bibliohouse.logic.JsonManager;
@@ -149,24 +151,24 @@ public class GestionLibrosController {
         }
 
         txtBusquedaOpenLibrary.setDisable(true);
-        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Buscando en catálogo online..."));
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.buscando_en_catalogo_online", "Buscando en catálogo online...")));
 
         busquedaService.ejecutarBusquedaGlobalAsync(query)
                 .thenAccept(resultados -> Platform.runLater(() -> {
             txtBusquedaOpenLibrary.setDisable(false);
             if (resultados.isEmpty()) {
-                mostrarAlerta("Sin resultados", "No se encontraron libros para: " + query);
+                mostrarAlerta(LanguageManager.getString("ui.sin_resultados", "Sin resultados"), LanguageManager.getString("ui.no_se_encontraron_libros_para", "No se encontraron libros para: ") + query);
             } else {
                 abrirVentanaResultados(resultados);
             }
-            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Listo."));
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.listo", "Listo.")));
         }))
                 .exceptionally(ex -> {
                     LOGGER.log(Level.SEVERE, "Error en búsqueda de libros", ex);
                     Platform.runLater(() -> {
                         txtBusquedaOpenLibrary.setDisable(false);
-                        mostrarAlerta("Error de red", "No se pudo completar la búsqueda: " + ex.getMessage());
-                        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Error en búsqueda."));
+                        mostrarAlerta(LanguageManager.getString("ui.error_de_red", "Error de red"), LanguageManager.getString("ui.no_se_pudo_completar_la_busqueda", "No se pudo completar la búsqueda: ") + ex.getMessage());
+                        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.error_en_busqueda", "Error en búsqueda.")));
                     });
                     return null;
                 });
@@ -198,7 +200,7 @@ public class GestionLibrosController {
             });
 
             Stage stage = new Stage();
-            stage.setTitle("Escáner de Código de Barras");
+            stage.setTitle(LanguageManager.getString("ui.escaner_de_codigo_de_barras", "Escáner de Código de Barras"));
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setOnShown(e -> escanerController.init());
@@ -206,7 +208,7 @@ public class GestionLibrosController {
             stage.show();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error abriendo escáner", e);
-            mostrarAlerta("Error", "No se pudo abrir el escáner: " + e.getMessage());
+            mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_el_escaner", "No se pudo abrir el escáner: ") + e.getMessage());
         }
     }
 
@@ -227,7 +229,7 @@ public class GestionLibrosController {
             controller.setResultados(resultados);
 
             Stage stage = new Stage();
-            stage.setTitle("Resultados de Búsqueda");
+            stage.setTitle(LanguageManager.getString("ui.resultados_de_busqueda", "Resultados de Búsqueda"));
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -280,7 +282,7 @@ public class GestionLibrosController {
     @FXML
     public void seleccionarImagenManual(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar Imagen de Portada");
+        fileChooser.setTitle(LanguageManager.getString("ui.seleccionar_imagen_de_portada", "Seleccionar Imagen de Portada"));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Imágenes (*.png, *.jpg, *.jpeg, *.webp)", "*.png", "*.jpg", "*.jpeg", "*.webp"));
 
@@ -329,7 +331,7 @@ public class GestionLibrosController {
         boolean poseido = chkPoseidoManual.isSelected();
 
         if (titulo.isEmpty() || autor.isEmpty()) {
-            mostrarAlerta("Datos incompletos", "El título y el autor son obligatorios.");
+            mostrarAlerta(LanguageManager.getString("ui.datos_incompletos", "Datos incompletos"), LanguageManager.getString("ui.el_titulo_y_el_autor_son", "El título y el autor son obligatorios."));
             return;
         }
 
@@ -362,9 +364,9 @@ public class GestionLibrosController {
 
         if (libroExistente != null) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Libro duplicado detectado");
-            alert.setHeaderText("Ya tienes este libro: " + libroExistente.getTitulo());
-            alert.setContentText("¿Qué quieres hacer?");
+            alert.setTitle(LanguageManager.getString("ui.libro_duplicado_detectado", "Libro duplicado detectado"));
+            alert.setHeaderText(LanguageManager.getString("ui.ya_tienes_este_libro", "Ya tienes este libro: ") + libroExistente.getTitulo());
+            alert.setContentText(LanguageManager.getString("ui.que_quieres_hacer", "¿Qué quieres hacer?"));
 
             ButtonType btnSumar = new ButtonType("Sumar al stock (+1)");
             ButtonType btnNuevo = new ButtonType("Añadir como copia separada");
@@ -380,7 +382,7 @@ public class GestionLibrosController {
                         jsonManager.guardarLibros(listaLibrosCompleta);
                     }
                     AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libroExistente, false));
-                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Stock actualizado: " + libroExistente.getTitulo()));
+                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.stock_actualizado", "Stock actualizado: ") + libroExistente.getTitulo()));
                     limpiarCamposManuales();
                     return;
                 } else if (result.get() != btnNuevo) {
@@ -427,7 +429,7 @@ public class GestionLibrosController {
             controller.setEstanterias(allShelves, new ArrayList<>());
 
             Stage stage = new Stage();
-            stage.setTitle("Asignar Estantería");
+            stage.setTitle(LanguageManager.getString("ui.asignar_estanteria", "Asignar Estantería"));
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(vboxManual.getScene().getWindow());
@@ -461,7 +463,7 @@ public class GestionLibrosController {
         }
 
         AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(nuevoLibro, true));
-        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent("Libro añadido: " + titulo));
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.libro_anadido", "Libro añadido: ") + titulo));
         limpiarCamposManuales();
     }
 

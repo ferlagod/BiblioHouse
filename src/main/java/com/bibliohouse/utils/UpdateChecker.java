@@ -38,8 +38,33 @@ public class UpdateChecker {
 
     // API de GitHub para tu repositorio
     private static final String API_URL = "https://api.github.com/repos/ferlagod/BiblioHouse/releases/latest";
-    // Versión actual de la aplicación. 
-    private static final String VERSION_ACTUAL = "2.2";
+    // Versión actual de la aplicación, leída del pom.xml (version.properties filtrado por Maven)
+    private static final String VERSION_ACTUAL = cargarVersionActual();
+
+    /**
+     * Devuelve la versión empaquetada en {@code version.properties}.
+     *
+     * @return Versión de la aplicación (p. ej. "2.2.0").
+     */
+    public static String getVersionActual() {
+        return VERSION_ACTUAL;
+    }
+
+    private static String cargarVersionActual() {
+        try (java.io.InputStream in = UpdateChecker.class.getResourceAsStream("version.properties")) {
+            if (in != null) {
+                java.util.Properties p = new java.util.Properties();
+                p.load(in);
+                String v = p.getProperty("app.version", "").trim();
+                if (v.matches("[0-9.]+")) {
+                    return v;
+                }
+            }
+        } catch (IOException ignored) {
+            // Se usa el valor por defecto
+        }
+        return "0";
+    }
 
     /**
      * Comprueba si hay una versión más reciente de la aplicación.
@@ -49,6 +74,9 @@ public class UpdateChecker {
      * encontrada.
      */
     public static void comprobarActualizaciones(java.util.function.Consumer<String> alEncontrarNueva) {
+        if ("0".equals(VERSION_ACTUAL)) {
+            return; // Versión desconocida (recurso no empaquetado): no avisar en falso
+        }
         Thread hilo = new Thread(() -> {
             try {
                 HttpClient client = HttpClient.newBuilder()

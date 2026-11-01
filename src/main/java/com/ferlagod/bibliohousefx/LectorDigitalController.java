@@ -17,12 +17,15 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.utils.EpubStreamServer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.web.WebView;
+import java.util.logging.Level;
 import netscape.javascript.JSObject;
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public class LectorDigitalController {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(LectorDigitalController.class.getName());
+
     @FXML
     private Label lblTituloLector;
     @FXML
@@ -58,6 +63,47 @@ public class LectorDigitalController {
     private int currentPercentage = 0;
     private int fontSizePercent = 100;
     private EpubStreamServer streamServer;
+
+    /**
+     * Objeto expuesto a JavaScript. Solo ofrece los métodos que usa el visor
+     * (no el controlador entero). Se guarda en un campo porque el WebView solo
+     * mantiene una referencia débil y podría recolectarse.
+     */
+    private final PuenteLector puente = new PuenteLector();
+
+    /**
+     * Puente mínimo entre el visor EPUB (JavaScript) y Java.
+     */
+    public final class PuenteLector {
+
+        /**
+         * Actualiza el progreso de lectura.
+         *
+         * @param percentage Porcentaje (0-100).
+         */
+        public void updateProgress(int percentage) {
+            LectorDigitalController.this.updateProgress(percentage);
+        }
+
+        /**
+         * Registra un mensaje de diagnóstico del visor.
+         *
+         * @param message Mensaje.
+         */
+        public void logError(String message) {
+            LectorDigitalController.this.logError(message);
+        }
+
+        /**
+         * Guarda en caché las localizaciones calculadas por epub.js para no
+         * recalcularlas (operación lenta) cada vez que se abre el libro.
+         *
+         * @param json Localizaciones serializadas por epub.js.
+         */
+        public void guardarLocalizaciones(String json) {
+            guardarLocalizacionesEnCache(json);
+        }
+    }
 
     /**
      * Establece el libro que se va a leer en el visor. Actualiza el título
@@ -131,14 +177,16 @@ public class LectorDigitalController {
 
         URL urlHTML = getClass().getResource("/com/ferlagod/bibliohousefx/reader/epub_reader.html");
         if (urlHTML == null) {
-            System.err.println("No se encontró epub_reader.html");
+            LOGGER.severe("No se encontró epub_reader.html");
             return;
         }
 
         webViewLector.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == javafx.concurrent.Worker.State.SUCCEEDED) {
                 JSObject window = (JSObject) webViewLector.getEngine().executeScript("window");
-                window.setMember("javaBridge", this);
+                window.setMember("javaBridge", puente);
+                String locsCache = leerLocalizacionesDeCache(archivo);
+                window.setMember("cachedLocations", locsCache != null ? locsCache : "");
 
                 double startPercent = 0;
                 if (libroActual.getPaginasTotales() > 0) {
@@ -148,19 +196,19 @@ public class LectorDigitalController {
 
                 try {
                     String epubUrl = iniciarServidorLocal(archivo);
-                    webViewLector.getEngine().executeScript("openEpubUrl('" + epubUrl + "', " + finalStartPercent + ")");
+                    webViewLector.getEngine().executeScript("openEpubUrl('" + epubUrl + "', " + finalStartPercent + ", window.cachedLocations)");
                 } catch (IOException e) {
-                    System.err.println("Aviso: No se pudo iniciar streaming HTTP local, recurriendo a fallback asíncrono: " + e.getMessage());
+                    LOGGER.log(Level.WARNING, "No se pudo iniciar streaming HTTP local, recurriendo a fallback asíncrono: {0}", e.getMessage());
                     CompletableFuture.runAsync(() -> {
                         try {
                             byte[] fileContent = java.nio.file.Files.readAllBytes(archivo.toPath());
                             String base64 = java.util.Base64.getEncoder().encodeToString(fileContent);
                             javafx.application.Platform.runLater(() -> {
                                 window.setMember("epubBase64", base64);
-                                webViewLector.getEngine().executeScript("openEpubBase64(window.epubBase64, " + finalStartPercent + ")");
+                                webViewLector.getEngine().executeScript("openEpubBase64(window.epubBase64, " + finalStartPercent + ", window.cachedLocations)");
                             });
                         } catch (IOException ex) {
-                            System.err.println("Error en fallback Base64: " + ex.getMessage());
+                            LOGGER.log(Level.WARNING, "Error en fallback Base64: {0}", ex.getMessage());
                         }
                     });
                 }
@@ -232,7 +280,7 @@ public class LectorDigitalController {
 
         // Actualizar UI
         javafx.application.Platform.runLater(() -> {
-            lblProgreso.setText("Progreso: " + percentage + "%");
+            lblProgreso.setText(LanguageManager.getString("ui.progreso", "Progreso: ") + percentage + "%");
         });
 
         // Actualizar en el modelo
@@ -255,6 +303,54 @@ public class LectorDigitalController {
      * @param message El mensaje de error a registrar.
      */
     public void logError(String message) {
-        System.err.println("[Visor EPUB] " + message);
+        LOGGER.log(Level.FINE, "[Visor EPUB] {0}", message);
+    }
+
+    /**
+     * Archivo oculto junto al EPUB donde se guardan sus localizaciones. Al
+     * empezar por punto, la sincronización con NextCloud lo ignora.
+     */
+    private static File archivoCacheLocalizaciones(File epub) {
+        return new File(epub.getParentFile(), "." + epub.getName() + ".loc.json");
+    }
+
+    /**
+     * Firma del EPUB (tamaño y fecha) para invalidar la caché si cambia.
+     */
+    private static String firmaEpub(File epub) {
+        return epub.length() + ":" + epub.lastModified();
+    }
+
+    private String leerLocalizacionesDeCache(File epub) {
+        File cache = archivoCacheLocalizaciones(epub);
+        if (!cache.isFile()) {
+            return null;
+        }
+        try {
+            String contenido = java.nio.file.Files.readString(cache.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+            int salto = contenido.indexOf('\n');
+            if (salto > 0 && contenido.substring(0, salto).equals(firmaEpub(epub))) {
+                return contenido.substring(salto + 1);
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.FINE, "No se pudo leer la caché de localizaciones", e);
+        }
+        return null;
+    }
+
+    private void guardarLocalizacionesEnCache(String json) {
+        if (json == null || json.isBlank() || libroActual == null || libroActual.getRutaArchivoDigital() == null) {
+            return;
+        }
+        File epub = new File(libroActual.getRutaArchivoDigital());
+        String contenido = firmaEpub(epub) + "\n" + json;
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                java.nio.file.Files.writeString(archivoCacheLocalizaciones(epub).toPath(), contenido,
+                        java.nio.charset.StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE, "No se pudo guardar la caché de localizaciones", e);
+            }
+        });
     }
 }

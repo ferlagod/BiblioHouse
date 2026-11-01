@@ -76,6 +76,50 @@ public class AppEventBus {
     }
 
     /**
+     * Suscripciones agrupadas por propietario, para poder retirarlas todas de
+     * golpe cuando el propietario (p. ej. un controlador) se descarta.
+     */
+    private final Map<Object, List<Map.Entry<Class<?>, Consumer<?>>>> porPropietario =
+            java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
+
+    /**
+     * Suscribe un consumidor asociándolo a un propietario. Al llamar a
+     * {@link #unsubscribeAll(Object)} con ese propietario se retiran todas sus
+     * suscripciones, evitando que controladores ya descartados (al cambiar de
+     * idioma o de sesión) sigan vivos y reaccionando a eventos.
+     *
+     * @param <T> Tipo de evento.
+     * @param owner Propietario de la suscripción.
+     * @param eventType Clase del evento a escuchar.
+     * @param listener Manejador del evento.
+     */
+    public <T> void subscribe(Object owner, Class<T> eventType, Consumer<T> listener) {
+        subscribe(eventType, listener);
+        porPropietario.computeIfAbsent(owner, k -> new CopyOnWriteArrayList<>())
+                .add(Map.entry(eventType, listener));
+    }
+
+    /**
+     * Retira todas las suscripciones registradas con el propietario indicado.
+     *
+     * @param owner Propietario cuyas suscripciones se eliminan.
+     */
+    public void unsubscribeAll(Object owner) {
+        if (owner == null) {
+            return;
+        }
+        List<Map.Entry<Class<?>, Consumer<?>>> subs = porPropietario.remove(owner);
+        if (subs != null) {
+            for (Map.Entry<Class<?>, Consumer<?>> e : subs) {
+                List<Consumer<?>> list = listeners.get(e.getKey());
+                if (list != null) {
+                    list.remove(e.getValue());
+                }
+            }
+        }
+    }
+
+    /**
      * Publica un evento a todos los suscriptores registrados. Si se está en
      * otro hilo y es relevante para la UI, se asegura el despacho en el hilo
      * FX.

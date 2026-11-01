@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.Socio;
 import com.bibliohouse.utils.CarnetGenerator;
@@ -88,7 +90,7 @@ public class SociosManagerController {
         // Context Menu
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem itemPrestar = new MenuItem("Prestar a este usuario");
+        MenuItem itemPrestar = new MenuItem(LanguageManager.getString("ui.prestar_a_este_usuario", "Prestar a este usuario"));
         itemPrestar.setOnAction(e -> {
             Socio selected = tablaSocios.getSelectionModel().getSelectedItem();
             if (selected != null && mainController != null) {
@@ -97,13 +99,13 @@ public class SociosManagerController {
             }
         });
 
-        MenuItem itemEditar = new MenuItem("Editar");
+        MenuItem itemEditar = new MenuItem(LanguageManager.getString("ui.editar_2", "Editar"));
         itemEditar.setOnAction(e -> editarSocio(null));
 
-        MenuItem itemImprimir = new MenuItem("Imprimir Carnet (PDF)");
+        MenuItem itemImprimir = new MenuItem(LanguageManager.getString("ui.imprimir_carnet_pdf", "Imprimir Carnet (PDF)"));
         itemImprimir.setOnAction(e -> imprimirCarnets(null));
 
-        MenuItem itemEliminar = new MenuItem("Eliminar");
+        MenuItem itemEliminar = new MenuItem(LanguageManager.getString("ui.eliminar", "Eliminar"));
         itemEliminar.setStyle("-fx-text-fill: red;");
         itemEliminar.setOnAction(e -> eliminarSocio(null));
 
@@ -138,7 +140,7 @@ public class SociosManagerController {
     private void editarSocio(ActionEvent event) {
         Socio socioSeleccionado = tablaSocios.getSelectionModel().getSelectedItem();
         if (socioSeleccionado == null) {
-            mostrarAlerta("Selección Requerida", "Por favor, selecciona un socio para editar.");
+            mostrarAlerta(LanguageManager.getString("ui.seleccion_requerida", "Selección Requerida"), LanguageManager.getString("ui.por_favor_selecciona_un_socio_para", "Por favor, selecciona un socio para editar."));
             return;
         }
 
@@ -153,7 +155,7 @@ public class SociosManagerController {
             controller.setSocioToEdit(socioSeleccionado);
 
             Stage stage = new Stage();
-            stage.setTitle("Editar Socio: " + socioSeleccionado.getNombreCompleto());
+            stage.setTitle(LanguageManager.getString("ui.editar_socio", "Editar Socio: ") + socioSeleccionado.getNombreCompleto());
             stage.setScene(new Scene(root));
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(tablaSocios.getScene().getWindow());
@@ -170,7 +172,7 @@ public class SociosManagerController {
             }
 
         } catch (IOException e) {
-            mostrarAlerta("Error", "No se pudo cargar la ventana de edición.");
+            mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_cargar_la_ventana", "No se pudo cargar la ventana de edición."));
         }
     }
 
@@ -184,7 +186,7 @@ public class SociosManagerController {
     private void eliminarSocio(ActionEvent event) {
         Socio socioSeleccionado = tablaSocios.getSelectionModel().getSelectedItem();
         if (socioSeleccionado == null) {
-            mostrarAlerta("Selección Requerida", "Por favor, selecciona un socio para eliminar.");
+            mostrarAlerta(LanguageManager.getString("ui.seleccion_requerida", "Selección Requerida"), LanguageManager.getString("ui.por_favor_selecciona_un_socio_para_2", "Por favor, selecciona un socio para eliminar."));
             return;
         }
 
@@ -195,22 +197,22 @@ public class SociosManagerController {
                 && p.getFechaDevolucion() == null);
 
         if (hasActiveLoans) {
-            mostrarAlerta("Error de Eliminación",
-                    "No puedes eliminar a este socio porque tiene préstamos activos pendientes de devolución.");
+            mostrarAlerta(LanguageManager.getString("ui.error_de_eliminacion", "Error de Eliminación"),
+                    LanguageManager.getString("ui.no_puedes_eliminar_a_este_socio", "No puedes eliminar a este socio porque tiene préstamos activos pendientes de devolución."));
             return;
         }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar Eliminación");
-        alert.setHeaderText("Eliminar a " + socioSeleccionado.getNombreCompleto());
-        alert.setContentText("¿Estás seguro de que quieres eliminar a este socio? Esta acción es permanente.");
+        alert.setTitle(LanguageManager.getString("ui.confirmar_eliminacion", "Confirmar Eliminación"));
+        alert.setHeaderText(LanguageManager.getString("ui.eliminar_a", "Eliminar a ") + socioSeleccionado.getNombreCompleto());
+        alert.setContentText(LanguageManager.getString("ui.estas_seguro_de_que_quieres_eliminar", "¿Estás seguro de que quieres eliminar a este socio? Esta acción es permanente."));
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             listaSocios.remove(socioSeleccionado);
             jsonManager.guardarSocios(listaSocios);
             mainController.recargarDatosPrestamos(); // Notifica al principal
-            mostrarAlerta("Eliminación Completa", "El socio ha sido eliminado correctamente.");
+            mostrarAlerta(LanguageManager.getString("ui.eliminacion_completa", "Eliminación Completa"), LanguageManager.getString("ui.el_socio_ha_sido_eliminado_correctamente", "El socio ha sido eliminado correctamente."));
         }
     }
 
@@ -227,13 +229,13 @@ public class SociosManagerController {
 
         // 2. Comprobar si hay selección
         if (socioSeleccionado == null) {
-            mostrarAlerta("Selección Requerida", "Por favor, selecciona un socio de la lista para imprimir su carnet.");
+            mostrarAlerta(LanguageManager.getString("ui.seleccion_requerida", "Selección Requerida"), LanguageManager.getString("ui.por_favor_selecciona_un_socio_de", "Por favor, selecciona un socio de la lista para imprimir su carnet."));
             return;
         }
 
         // 3. Preparar el guardado del archivo
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Carnet en PDF");
+        fileChooser.setTitle(LanguageManager.getString("ui.guardar_carnet_en_pdf", "Guardar Carnet en PDF"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
         // Sugerir un nombre de archivo personalizado con el nombre del socio
         fileChooser.setInitialFileName("Carnet_" + socioSeleccionado.getNombre().replace(" ", "_") + ".pdf");
@@ -250,13 +252,13 @@ public class SociosManagerController {
                 generator.generarCarnetsPDF(listaUnSocio, file);
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Éxito");
-                alert.setHeaderText("Carnet generado correctamente");
-                alert.setContentText("El carnet de " + socioSeleccionado.getNombreCompleto() + " se ha guardado en:\n" + file.getAbsolutePath());
+                alert.setTitle(LanguageManager.getString("ui.exito", "Éxito"));
+                alert.setHeaderText(LanguageManager.getString("ui.carnet_generado_correctamente", "Carnet generado correctamente"));
+                alert.setContentText(LanguageManager.getString("ui.el_carnet_de", "El carnet de ") + socioSeleccionado.getNombreCompleto() + LanguageManager.getString("ui.se_ha_guardado_en_n", " se ha guardado en:\n") + file.getAbsolutePath());
                 alert.showAndWait();
 
             } catch (IOException e) {
-                mostrarAlerta("Error", "Ocurrió un error al generar el PDF: " + e.getMessage());
+                mostrarAlerta(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.ocurrio_un_error_al_generar_el", "Ocurrió un error al generar el PDF: ") + e.getMessage());
             }
         }
     }

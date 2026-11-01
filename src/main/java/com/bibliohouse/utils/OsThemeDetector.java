@@ -63,7 +63,7 @@ public class OsThemeDetector {
     }
 
     private static boolean detectDarkModeNative() {
-        String os = System.getProperty("os.name", "").toLowerCase();
+        String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
         Process process = null;
         try {
             if (os.contains("mac")) {

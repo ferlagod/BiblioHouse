@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
 import com.bibliohouse.logic.Prestamo;
 import com.bibliohouse.logic.PrestamoService;
@@ -171,7 +173,7 @@ public class PrestamosController {
         Socio socio = comboSocios.getValue();
 
         if (libroSeleccionado == null || socio == null) {
-            mainController.mostrarAlertaPublic("Datos faltantes", "Por favor, selecciona un libro y un socio de las listas.");
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.datos_faltantes", "Datos faltantes"), LanguageManager.getString("ui.por_favor_selecciona_un_libro_y", "Por favor, selecciona un libro y un socio de las listas."));
             return;
         }
 
@@ -181,17 +183,17 @@ public class PrestamosController {
                 .orElse(null);
 
         if (libroOriginal == null) {
-            mainController.mostrarAlertaPublic("Error", "No se pudo localizar el libro en la base de datos.");
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_localizar_el_libro", "No se pudo localizar el libro en la base de datos."));
             return;
         }
 
         try {
             prestamoService.realizarPrestamo(libroOriginal, socio);
             mainController.actualizarVistasPrestamo();
-            mainController.setMensajeEstado("Préstamo realizado: " + libroOriginal.getTitulo());
-            mainController.mostrarAlertaPublic("Éxito", "Préstamo registrado correctamente.");
+            mainController.setMensajeEstado(LanguageManager.getString("ui.prestamo_realizado", "Préstamo realizado: ") + libroOriginal.getTitulo());
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.prestamo_registrado_correctamente", "Préstamo registrado correctamente."));
         } catch (IllegalArgumentException e) {
-            mainController.mostrarAlertaPublic("Error al prestar", e.getMessage());
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.error_al_prestar", "Error al prestar"), e.getMessage());
         }
     }
 
@@ -204,16 +206,16 @@ public class PrestamosController {
         Prestamo p = tablaPrestamos.getSelectionModel().getSelectedItem();
 
         if (p == null) {
-            mainController.mostrarAlertaPublic("Selección necesaria", "Selecciona un préstamo de la lista para devolverlo.");
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.seleccion_necesaria", "Selección necesaria"), LanguageManager.getString("ui.selecciona_un_prestamo_de_la_lista", "Selecciona un préstamo de la lista para devolverlo."));
             return;
         }
 
         try {
             prestamoService.marcarDevuelto(p);
             mainController.actualizarVistasPrestamo();
-            mainController.setMensajeEstado("Devolución registrada correctamente (ID: " + p.getLibroId() + ")");
+            mainController.setMensajeEstado(LanguageManager.getString("ui.devolucion_registrada_correctamente_id", "Devolución registrada correctamente (ID: ") + p.getLibroId() + ")");
         } catch (IllegalArgumentException e) {
-            mainController.mostrarAlertaPublic("Aviso", e.getMessage());
+            mainController.mostrarAlertaPublic(LanguageManager.getString("ui.aviso", "Aviso"), e.getMessage());
         }
     }
 

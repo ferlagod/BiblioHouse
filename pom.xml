@@ -10,6 +10,9 @@
         <maven.compiler.target>21</maven.compiler.target>
         <javafx.version>21.0.5</javafx.version>
         <test.excluded.groups>integration</test.excluded.groups>
+        <!-- Versión de la aplicación: única fuente de verdad (instalador, Acerca de y comprobador de actualizaciones) -->
+        <app.version>2.2.0</app.version>
+        <app.version.short>2.2</app.version.short>
     </properties>
 
     <dependencyManagement>
@@ -78,12 +81,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.2</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>javax.help</groupId>
-            <artifactId>javahelp</artifactId>
-            <version>2.0.05</version>
         </dependency>
         
         <!-- Webcam Capture REMOVED causing M1 crash -->
@@ -195,6 +192,24 @@
 
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>com/bibliohouse/utils/version.properties</exclude>
+                    <exclude>com/ferlagod/bibliohousefx/messages*.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>com/bibliohouse/utils/version.properties</include>
+                    <include>com/ferlagod/bibliohousefx/messages*.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             
             <plugin>
@@ -311,6 +326,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.3.1</version>
+                <configuration>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                    <delimiters>
+                        <delimiter>${*}</delimiter>
+                    </delimiters>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-main-jar-to-libs</id>
@@ -338,7 +359,7 @@
                 <version>1.6.0</version>
                 <configuration>
                     <name>BiblioHouse</name>
-                    <appVersion>2.1.0</appVersion>
+                    <appVersion>${app.version}</appVersion>
                     <vendor>Fernando Lago Dávila</vendor>
                     <description>Sistema de Gestión de Biblioteca y Lector Digital</description>
                     <destination>${project.build.directory}/dist</destination>

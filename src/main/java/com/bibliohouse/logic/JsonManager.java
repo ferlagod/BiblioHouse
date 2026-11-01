@@ -77,8 +77,54 @@ public class JsonManager {
     private final String estanteriasDatabasePath;
     private final String deseosDatabasePath;
     private final String progresoLecturaFilePath;
+    private final String eliminadosFilePath;
+
+    /**
+     * Nombre del archivo de marcas de borrado (tombstones) que se sincroniza
+     * con NextCloud para que los elementos eliminados no reaparezcan.
+     */
+    public static final String ARCHIVO_ELIMINADOS = "eliminados.json";
+
+    /**
+     * Colecciones con soporte de marcas de borrado.
+     */
+    public static final String COL_LIBROS = "libros";
+    public static final String COL_DESEOS = "deseos";
+    public static final String COL_SOCIOS = "socios";
+    public static final String COL_PRESTAMOS = "prestamos";
+
+    /**
+     * Archivos de datos que se fusionan elemento a elemento durante la
+     * sincronización (en vez de sobrescribirse completos).
+     */
+    public static final java.util.Set<String> ARCHIVOS_FUSIONABLES = java.util.Set.of(
+            ARCHIVO_ELIMINADOS, "biblioteca.json", "deseos.json", "socios.json", "prestamos.json");
+
+    /**
+     * Antigüedad máxima de una marca de borrado antes de purgarse (1 año).
+     */
+    private static final long CADUCIDAD_ELIMINADOS_MS = 365L * 24 * 60 * 60 * 1000;
 
     private final Map<String, ProgresoLectura> cacheProgresos = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Ebooks de los que ya se intentó extraer la portada sin éxito en esta
+     * sesión.
+     */
+    private final java.util.Set<String> intentosPortadaFallidos = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * Claves de cada colección tal y como las conoce la interfaz (último
+     * cargado o guardado). Permite detectar qué elementos se han borrado al
+     * guardar sin tener que instrumentar cada punto de borrado.
+     */
+    private final Map<String, java.util.Set<String>> clavesConocidas = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Instancias vivas, para poder volcar a disco lo pendiente al cerrar la
+     * aplicación.
+     */
+    private static final java.util.Set<JsonManager> INSTANCIAS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final Gson gson;
 
@@ -98,14 +144,10 @@ public class JsonManager {
         return t;
     });
 
-    // El shutdown hook se registra una sola vez a nivel de clase, no por instancia,
-    // para evitar acumular hooks huérfanos cuando la UI se recarga (p.ej. al
-    // cambiar idioma).
+    // Red de seguridad: si la JVM termina sin pasar por App.stop(), se vuelca
+    // igualmente lo pendiente de todas las instancias vivas.
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            // Noop: cada instancia es un daemon thread; la JVM los mata al salir.
-            // Este hook existe solo para loguear si fuera necesario en el futuro.
-        }, "bibliohousefx-shutdown"));
+        Runtime.getRuntime().addShutdownHook(new Thread(JsonManager::cerrarTodas, "bibliohousefx-shutdown"));
     }
 
     /**
@@ -117,6 +159,7 @@ public class JsonManager {
      * Referencia al guardado de libros pendiente (debounce).
      */
     private ScheduledFuture<?> pendingSaveFuture;
+    private Runnable pendingSaveTask;
 
     /**
      * Referencia al guardado de progreso de lectura pendiente (debounce).
@@ -134,11 +177,83 @@ public class JsonManager {
     }
 
     /**
-     * Cierra el ejecutor del auto-sync de forma ordenada. Debe llamarse al
-     * salir de la aplicación para no dejar hilos huérfanos.
+     * Escribe inmediatamente en disco cualquier guardado de libros o de
+     * progreso de lectura que esté esperando en el debounce.
+     */
+    public void flushPendientes() {
+        if (pendingSaveFuture != null) {
+            pendingSaveFuture.cancel(false);
+        }
+        ejecutarGuardadoPendiente();
+        flushProgresoLectura();
+    }
+
+    /**
+     * Ejecuta (una sola vez) el guardado de libros pendiente, venga del
+     * temporizador del debounce o de un volcado forzado.
+     */
+    private void ejecutarGuardadoPendiente() {
+        Runnable tarea;
+        synchronized (this) {
+            tarea = pendingSaveTask;
+            pendingSaveTask = null;
+        }
+        if (tarea != null) {
+            tarea.run();
+        }
+    }
+
+    /**
+     * Vuelca lo pendiente a disco y cierra el ejecutor de forma ordenada. Debe
+     * llamarse al salir de la aplicación o al descartar esta instancia.
      */
     public void shutdown() {
+        INSTANCIAS.remove(this);
+        flushPendientes();
+        if (pendingSyncFuture != null) {
+            pendingSyncFuture.cancel(false);
+        }
+        syncScheduler.shutdown();
+        try {
+            if (!syncScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                syncScheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            syncScheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Cancela los guardados pendientes sin escribirlos y cierra el ejecutor.
+     * Solo para cuando los datos se van a borrar (restaurar de fábrica).
+     */
+    public void descartarSinGuardar() {
+        INSTANCIAS.remove(this);
+        synchronized (this) {
+            pendingSaveTask = null;
+        }
+        if (pendingSaveFuture != null) {
+            pendingSaveFuture.cancel(false);
+        }
+        if (pendingProgresoSaveFuture != null) {
+            pendingProgresoSaveFuture.cancel(false);
+        }
+        cacheProgresos.clear();
         syncScheduler.shutdownNow();
+    }
+
+    /**
+     * Cierra todas las instancias vivas volcando antes sus datos pendientes.
+     */
+    public static void cerrarTodas() {
+        for (JsonManager jm : new ArrayList<>(INSTANCIAS)) {
+            try {
+                jm.shutdown();
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.WARNING, "Error al cerrar el gestor de datos", e);
+            }
+        }
     }
 
     /**
@@ -200,6 +315,7 @@ public class JsonManager {
         this.preferencesFilePath = rutaDatosUsuario + File.separator + "preferences.json"; // <-- Inicialización
         this.deseosDatabasePath = rutaDatosUsuario + File.separator + "deseos.json";
         this.progresoLecturaFilePath = rutaDatosUsuario + File.separator + "progreso_lectura.json";
+        this.eliminadosFilePath = rutaDatosUsuario + File.separator + ARCHIVO_ELIMINADOS;
 
         // Se configura el Gson para que use el adaptador de fechas
         this.gson = new GsonBuilder()
@@ -211,6 +327,8 @@ public class JsonManager {
         crearDirectorioBaseSiNoExiste();
 
         crearDirectorioUsuarioSiNoExiste();
+
+        INSTANCIAS.add(this);
     }
 
     /**
@@ -237,7 +355,7 @@ public class JsonManager {
      * @param dir El directorio a ocultar.
      */
     private void ocultarDirectorio(File dir) {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
         try {
             if (os.contains("mac")) {
                 // En macOS usamos el comando chflags
@@ -268,15 +386,6 @@ public class JsonManager {
     }
 
     /**
-     * Método genérico para guardar cualquier lista de objetos en un archivo
-     * JSON.
-     *
-     * @param lista La lista de objetos que queremos guardar.
-     * @param path La ruta del archivo donde se guardará.
-     * @param tipoDato Un String que describe qué tipo de datos estamos
-     * guardando.
-     */
-    /**
      * Método genérico para guardar cualquier objeto (lista, mapa, etc.) en un
      * archivo JSON de forma atómica y segura con backup.
      *
@@ -284,7 +393,20 @@ public class JsonManager {
      * @param path La ruta del archivo donde se guardará.
      * @param tipoDato Descripción del dato para el logging.
      */
-    private synchronized void guardarObjeto(Object objeto, String path, String tipoDato) {
+    private void guardarObjeto(Object objeto, String path, String tipoDato) {
+        guardarObjeto(objeto, path, tipoDato, true);
+    }
+
+    /**
+     * Guarda un objeto en JSON de forma atómica y con backup.
+     *
+     * @param objeto El objeto a serializar.
+     * @param path La ruta del archivo donde se guardará.
+     * @param tipoDato Descripción del dato para el logging.
+     * @param dispararSync {@code false} para no programar una sincronización
+     * (p. ej. cuando el guardado lo provoca la propia sincronización).
+     */
+    private synchronized void guardarObjeto(Object objeto, String path, String tipoDato, boolean dispararSync) {
         crearDirectorioUsuarioSiNoExiste();
 
         File archivoFinal = new File(path);
@@ -292,10 +414,12 @@ public class JsonManager {
         File archivoBackup = new File(path + ".bak");
 
         // 1. Escribir en el archivo TEMPORAL primero
-        try (FileWriter writer = new FileWriter(archivoTemporal)) {
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(archivoTemporal);
+                Writer writer = new java.io.OutputStreamWriter(fos, java.nio.charset.StandardCharsets.UTF_8)) {
             gson.toJson(objeto, writer);
-            // Forzamos el volcado al disco físico
             writer.flush();
+            // Forzamos el volcado al disco físico antes del renombrado
+            fos.getFD().sync();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error crítico: No se pudo escribir el archivo temporal para " + tipoDato, e);
             return; // Si falla el temporal, no tocamos el original
@@ -330,7 +454,7 @@ public class JsonManager {
         }
 
         // 3. Lanzar sincronización si existe
-        if (autoSyncTask != null) {
+        if (dispararSync && autoSyncTask != null && !syncScheduler.isShutdown()) {
             if (pendingSyncFuture != null && !pendingSyncFuture.isDone()) {
                 pendingSyncFuture.cancel(false);
             }
@@ -365,7 +489,7 @@ public class JsonManager {
 
         // Intentar cargar el archivo principal
         if (file.exists()) {
-            try (FileReader reader = new FileReader(file)) {
+            try (FileReader reader = new FileReader(file, java.nio.charset.StandardCharsets.UTF_8)) {
                 T obj = gson.fromJson(reader, tipoObjeto);
                 if (obj != null) {
                     LOGGER.log(Level.FINE, "Cargado {0} desde {1}", new Object[]{tipoDato, path});
@@ -378,7 +502,7 @@ public class JsonManager {
 
         // Si llegamos aquí, o no existe el principal o falló. Intentamos backup.
         if (backupFile.exists()) {
-            try (FileReader reader = new FileReader(backupFile)) {
+            try (FileReader reader = new FileReader(backupFile, java.nio.charset.StandardCharsets.UTF_8)) {
                 T obj = gson.fromJson(reader, tipoObjeto);
                 if (obj != null) {
                     LOGGER.log(Level.WARNING, "RECUPERADO: Cargado {0} desde BACKUP {1}",
@@ -442,29 +566,198 @@ public class JsonManager {
     /**
      * Prepara una lista de libros para persistencia en JSON, convirtiendo rutas
      * absolutas locales de portadas y ebooks en rutas relativas universales
-     * ("covers/..." y "ebooks/..."). Utiliza clonación defensiva para no mutar
-     * los objetos vivos en memoria.
+     * ("covers/..." y "ebooks/..."). Genera directamente el árbol JSON (una
+     * única pasada de serialización), de modo que los objetos vivos en memoria
+     * no se mutan y no hace falta clonar cada libro.
      *
      * @param libros Lista de libros a preparar.
-     * @return Lista de libros con rutas relativas listas para serializar.
+     * @return Árbol JSON con rutas relativas listo para escribir.
      */
-    private List<Libro> prepararLibrosParaGuardar(List<Libro> libros) {
+    private com.google.gson.JsonArray prepararLibrosParaGuardar(List<Libro> libros) {
+        com.google.gson.JsonArray arbol = new com.google.gson.JsonArray();
         if (libros == null) {
-            return Collections.emptyList();
+            return arbol;
         }
-        List<Libro> paraGuardar = new ArrayList<>(libros.size());
         for (Libro original : libros) {
             if (original == null) {
                 continue;
             }
-            Libro copia = gson.fromJson(gson.toJsonTree(original), Libro.class);
-            copia.setPortadaURL(convertirARutaRelativa(original.getPortadaURL(), "covers"));
+            com.google.gson.JsonObject obj = gson.toJsonTree(original).getAsJsonObject();
+            obj.addProperty("portadaURL", convertirARutaRelativa(original.getPortadaURL(), "covers"));
             if (original.getRutaArchivoDigital() != null && !original.getRutaArchivoDigital().isBlank()) {
-                copia.setRutaArchivoDigital(convertirARutaRelativa(original.getRutaArchivoDigital(), "ebooks"));
+                obj.addProperty("rutaArchivoDigital", convertirARutaRelativa(original.getRutaArchivoDigital(), "ebooks"));
             }
-            paraGuardar.add(copia);
+            arbol.add(obj);
         }
-        return paraGuardar;
+        return arbol;
+    }
+
+    // --- MARCAS DE BORRADO (TOMBSTONES) ---
+    /**
+     * Calcula las claves únicas de una lista de libros.
+     */
+    private static java.util.Set<String> clavesLibros(List<Libro> libros) {
+        java.util.Set<String> claves = new java.util.HashSet<>();
+        if (libros != null) {
+            for (Libro l : libros) {
+                if (l != null) {
+                    claves.add(obtenerClaveUnicaLibro(l));
+                }
+            }
+        }
+        return claves;
+    }
+
+    /**
+     * Clave única de un socio (su número de socio).
+     *
+     * @param socio Socio.
+     * @return Clave canónica.
+     */
+    public static String obtenerClaveSocio(Socio socio) {
+        return socio == null ? "" : String.valueOf(socio.getNumeroSocio());
+    }
+
+    /**
+     * Clave única de un préstamo (su ID, o libro + fecha si no tiene ID).
+     *
+     * @param p Préstamo.
+     * @return Clave canónica.
+     */
+    public static String obtenerClavePrestamo(Prestamo p) {
+        if (p == null) {
+            return "";
+        }
+        if (p.getId() != null && !p.getId().isBlank()) {
+            return p.getId().trim();
+        }
+        return "libro:" + p.getLibroId() + "|" + p.getFechaPrestamo() + "|" + p.getNumeroSocio();
+    }
+
+    private static <T> java.util.Set<String> claves(List<T> lista, java.util.function.Function<T, String> clave) {
+        java.util.Set<String> res = new java.util.HashSet<>();
+        if (lista != null) {
+            for (T t : lista) {
+                if (t != null) {
+                    res.add(clave.apply(t));
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * Registra las claves que la interfaz conoce para una colección (tras una
+     * carga), sin generar marcas de borrado.
+     */
+    private void recordarClaves(String coleccion, java.util.Set<String> claves) {
+        clavesConocidas.put(coleccion, new java.util.HashSet<>(claves));
+    }
+
+    /**
+     * Compara las claves que se van a guardar con las últimas conocidas y
+     * anota como borradas las que han desaparecido. Si una clave borrada
+     * vuelve a aparecer (elemento recreado), se retira su marca.
+     *
+     * <p>
+     * Como protección, si en un único guardado desaparece más de la mitad de
+     * una colección de 10 o más elementos no se generan marcas: es más
+     * probable un error que un borrado intencionado, y propagarlo a la nube
+     * borraría los datos en todos los dispositivos.</p>
+     *
+     * @param coleccion Nombre de la colección.
+     * @param clavesNuevas Claves de la lista que se va a guardar.
+     */
+    private synchronized void actualizarEliminados(String coleccion, java.util.Set<String> clavesNuevas) {
+        java.util.Set<String> previas = clavesConocidas.put(coleccion, new java.util.HashSet<>(clavesNuevas));
+        if (previas == null) {
+            return; // Nunca se cargó esta colección: no sabemos qué se ha borrado
+        }
+
+        Map<String, Map<String, Long>> eliminados = cargarEliminados();
+        Map<String, Long> mapa = eliminados.computeIfAbsent(coleccion, k -> new HashMap<>());
+        boolean cambio = false;
+
+        List<String> borradas = new ArrayList<>();
+        for (String k : previas) {
+            if (!clavesNuevas.contains(k)) {
+                borradas.add(k);
+            }
+        }
+        if (!borradas.isEmpty()) {
+            if (previas.size() >= 10 && borradas.size() * 2 > previas.size()) {
+                LOGGER.log(Level.WARNING,
+                        "Borrado masivo en {0} ({1} de {2}): no se generan marcas de borrado por seguridad.",
+                        new Object[]{coleccion, borradas.size(), previas.size()});
+            } else {
+                long ahora = System.currentTimeMillis();
+                for (String k : borradas) {
+                    mapa.put(k, ahora);
+                }
+                cambio = true;
+            }
+        }
+
+        for (String k : clavesNuevas) {
+            if (!previas.contains(k) && mapa.remove(k) != null) {
+                cambio = true;
+            }
+        }
+
+        if (cambio) {
+            guardarObjeto(eliminados, eliminadosFilePath, "marcas de borrado", false);
+        }
+    }
+
+    /**
+     * Carga las marcas de borrado: colección → (clave → instante del borrado).
+     * Purga las que superan la caducidad.
+     *
+     * @return Mapa mutable de marcas de borrado.
+     */
+    public synchronized Map<String, Map<String, Long>> cargarEliminados() {
+        Type tipo = new TypeToken<HashMap<String, HashMap<String, Long>>>() {
+        }.getType();
+        Map<String, Map<String, Long>> datos = cargarObjeto(eliminadosFilePath, tipo, "marcas de borrado");
+        if (datos == null) {
+            datos = new HashMap<>();
+        }
+        long limite = System.currentTimeMillis() - CADUCIDAD_ELIMINADOS_MS;
+        for (Map<String, Long> m : datos.values()) {
+            if (m != null) {
+                m.values().removeIf(t -> t == null || t < limite);
+            }
+        }
+        return datos;
+    }
+
+    /**
+     * Une dos conjuntos de marcas de borrado quedándose con el instante más
+     * reciente de cada clave.
+     *
+     * @param a Marcas locales.
+     * @param b Marcas remotas.
+     * @return Unión de ambas.
+     */
+    public static Map<String, Map<String, Long>> fusionarEliminados(Map<String, Map<String, Long>> a,
+            Map<String, Map<String, Long>> b) {
+        Map<String, Map<String, Long>> res = new HashMap<>();
+        for (Map<String, Map<String, Long>> origen : java.util.Arrays.asList(a, b)) {
+            if (origen == null) {
+                continue;
+            }
+            origen.forEach((col, mapa) -> {
+                if (mapa != null) {
+                    Map<String, Long> destino = res.computeIfAbsent(col, k -> new HashMap<>());
+                    mapa.forEach((k, t) -> {
+                        if (t != null) {
+                            destino.merge(k, t, Math::max);
+                        }
+                    });
+                }
+            });
+        }
+        return res;
     }
 
     /**
@@ -529,6 +822,118 @@ public class JsonManager {
     }
 
     /**
+     * Fusiona dos colecciones de libros como
+     * {@link #fusionarColecciones(List, List)} y después descarta los libros
+     * con una marca de borrado igual o posterior a su última modificación (un
+     * libro editado en otro dispositivo después de borrarse aquí se conserva).
+     *
+     * @param locales Libros locales.
+     * @param remotas Libros remotos.
+     * @param eliminados Marcas de borrado (clave → instante), puede ser null.
+     * @return Colección unificada sin los libros borrados.
+     */
+    public static List<Libro> fusionarColecciones(List<Libro> locales, List<Libro> remotas,
+            Map<String, Long> eliminados) {
+        List<Libro> fusion = fusionarColecciones(locales, remotas);
+        if (eliminados != null && !eliminados.isEmpty()) {
+            fusion.removeIf(l -> {
+                Long borrado = eliminados.get(obtenerClaveUnicaLibro(l));
+                return borrado != null && borrado >= l.getUltimaModificacion();
+            });
+        }
+        return fusion;
+    }
+
+    /**
+     * Fusión genérica por clave para colecciones sin marca de tiempo (socios,
+     * préstamos). Ante un conflicto decide {@code resolver(local, remoto)}; las
+     * claves con marca de borrado se descartan.
+     */
+    static <T> List<T> fusionarPorClave(List<T> locales, List<T> remotas,
+            java.util.function.Function<T, String> clave,
+            java.util.function.BinaryOperator<T> resolver, Map<String, Long> eliminados) {
+        Map<String, T> mapa = new LinkedHashMap<>();
+        if (locales != null) {
+            for (T t : locales) {
+                if (t != null) {
+                    mapa.put(clave.apply(t), t);
+                }
+            }
+        }
+        if (remotas != null) {
+            for (T t : remotas) {
+                if (t != null) {
+                    mapa.merge(clave.apply(t), t, resolver);
+                }
+            }
+        }
+        if (eliminados != null && !eliminados.isEmpty()) {
+            mapa.keySet().removeIf(eliminados::containsKey);
+        }
+        return new ArrayList<>(mapa.values());
+    }
+
+    /**
+     * Fusiona el contenido remoto de un archivo de datos con su versión local
+     * y guarda el resultado en disco (sin disparar otra sincronización ni
+     * alterar las claves conocidas por la interfaz).
+     *
+     * @param nombreArchivo Uno de {@link #ARCHIVOS_FUSIONABLES}.
+     * @param remoto Contenido JSON remoto.
+     * @return {@code true} si el archivo local ha cambiado.
+     * @throws IOException Si no se puede leer el archivo local.
+     * @throws JsonParseException Si el contenido remoto no es JSON válido.
+     */
+    public synchronized boolean fusionarConRemoto(String nombreArchivo, Reader remoto) throws IOException {
+        File local = new File(rutaDatosUsuario, nombreArchivo);
+        byte[] antes = local.exists() ? java.nio.file.Files.readAllBytes(local.toPath()) : new byte[0];
+
+        Map<String, Map<String, Long>> eliminados = cargarEliminados();
+        switch (nombreArchivo) {
+            case ARCHIVO_ELIMINADOS -> {
+                Type tipo = new TypeToken<HashMap<String, HashMap<String, Long>>>() {
+                }.getType();
+                Map<String, Map<String, Long>> remotos = gson.fromJson(remoto, tipo);
+                guardarObjeto(fusionarEliminados(eliminados, remotos), eliminadosFilePath, "marcas de borrado", false);
+            }
+            case "biblioteca.json", "deseos.json" -> {
+                boolean esBiblioteca = nombreArchivo.equals("biblioteca.json");
+                String path = esBiblioteca ? databaseFilePath : deseosDatabasePath;
+                Type tipo = new TypeToken<ArrayList<Libro>>() {
+                }.getType();
+                List<Libro> locales = cargarDatos(path, tipo, nombreArchivo);
+                List<Libro> fusion = fusionarColecciones(locales, parsearLibros(remoto),
+                        eliminados.get(esBiblioteca ? COL_LIBROS : COL_DESEOS));
+                guardarObjeto(prepararLibrosParaGuardar(fusion), path, nombreArchivo, false);
+            }
+            case "socios.json" -> {
+                Type tipo = new TypeToken<ArrayList<Socio>>() {
+                }.getType();
+                List<Socio> remotos = gson.fromJson(remoto, tipo);
+                List<Socio> fusion = fusionarPorClave(cargarDatos(sociosDatabasePath, tipo, "socios"), remotos,
+                        JsonManager::obtenerClaveSocio, (l, r) -> l, eliminados.get(COL_SOCIOS));
+                guardarObjeto(fusion, sociosDatabasePath, "socios", false);
+            }
+            case "prestamos.json" -> {
+                Type tipo = new TypeToken<ArrayList<Prestamo>>() {
+                }.getType();
+                List<Prestamo> remotos = gson.fromJson(remoto, tipo);
+                // Un préstamo devuelto es un estado final: gana sobre uno aún abierto
+                List<Prestamo> fusion = fusionarPorClave(cargarDatos(prestamosDatabasePath, tipo, "préstamos"), remotos,
+                        JsonManager::obtenerClavePrestamo,
+                        (l, r) -> l.getFechaDevolucion() == null && r.getFechaDevolucion() != null ? r : l,
+                        eliminados.get(COL_PRESTAMOS));
+                guardarObjeto(fusion, prestamosDatabasePath, "préstamos", false);
+            }
+            default ->
+                throw new IllegalArgumentException("Archivo no fusionable: " + nombreArchivo);
+        }
+
+        byte[] despues = local.exists() ? java.nio.file.Files.readAllBytes(local.toPath()) : new byte[0];
+        return !java.util.Arrays.equals(antes, despues);
+    }
+
+    /**
      * Obtiene la clave de identificación única canónica para un libro durante
      * el merge. Prioriza ID (UUID), con fallback a ISBN o Título+Autor.
      *
@@ -545,8 +950,8 @@ public class JsonManager {
         if (libro.getIsbn() != null && !libro.getIsbn().isBlank()) {
             return "isbn:" + libro.getIsbn().replaceAll("[^0-9Xx]", "");
         }
-        return "title:" + (libro.getTitulo() != null ? libro.getTitulo().toLowerCase().trim() : "")
-                + "|" + (libro.getAutor() != null ? libro.getAutor().toLowerCase().trim() : "");
+        return "title:" + (libro.getTitulo() != null ? libro.getTitulo().toLowerCase(java.util.Locale.ROOT).trim() : "")
+                + "|" + (libro.getAutor() != null ? libro.getAutor().toLowerCase(java.util.Locale.ROOT).trim() : "");
     }
 
     /**
@@ -560,7 +965,7 @@ public class JsonManager {
      */
     public synchronized List<Libro> fusionarYGuardarLibros(List<Libro> librosRemotos) {
         List<Libro> locales = cargarLibros();
-        List<Libro> fusionados = fusionarColecciones(locales, librosRemotos);
+        List<Libro> fusionados = fusionarColecciones(locales, librosRemotos, cargarEliminados().get(COL_LIBROS));
         guardarLibros(fusionados);
         return fusionados;
     }
@@ -576,7 +981,7 @@ public class JsonManager {
      */
     public synchronized List<Libro> fusionarYGuardarDeseos(List<Libro> deseosRemotos) {
         List<Libro> locales = cargarDeseos();
-        List<Libro> fusionados = fusionarColecciones(locales, deseosRemotos);
+        List<Libro> fusionados = fusionarColecciones(locales, deseosRemotos, cargarEliminados().get(COL_DESEOS));
         guardarDeseos(fusionados);
         return fusionados;
     }
@@ -621,8 +1026,7 @@ public class JsonManager {
      * @return Cadena JSON formateada.
      */
     public String serializarLibros(List<Libro> libros) {
-        List<Libro> paraGuardar = prepararLibrosParaGuardar(libros);
-        return gson.toJson(paraGuardar);
+        return gson.toJson(prepararLibrosParaGuardar(libros));
     }
 
     /**
@@ -715,8 +1119,20 @@ public class JsonManager {
      * @param libros Lista de libros a guardar.
      */
     public void guardarLibros(List<Libro> libros) {
-        List<Libro> paraGuardar = prepararLibrosParaGuardar(libros);
-        guardarDatos(paraGuardar, databaseFilePath, "libros");
+        // Este guardado contiene la lista más reciente: cualquier guardado
+        // diferido pendiente quedaría obsoleto y podría pisarlo.
+        synchronized (this) {
+            pendingSaveTask = null;
+            if (pendingSaveFuture != null) {
+                pendingSaveFuture.cancel(false);
+            }
+        }
+        com.google.gson.JsonArray paraGuardar = prepararLibrosParaGuardar(libros);
+        java.util.Set<String> claves = clavesLibros(libros);
+        synchronized (this) {
+            actualizarEliminados(COL_LIBROS, claves);
+            guardarObjeto(paraGuardar, databaseFilePath, "libros");
+        }
     }
 
     /**
@@ -725,15 +1141,27 @@ public class JsonManager {
      * @param libros Lista de libros a guardar.
      */
     public void guardarLibrosDebounced(List<Libro> libros) {
-        List<Libro> copia = prepararLibrosParaGuardar(libros);
-        // Cancelar guardado pendiente si existe
-        if (pendingSaveFuture != null && !pendingSaveFuture.isDone()) {
-            pendingSaveFuture.cancel(false);
+        // La instantánea se toma en el hilo llamante (un único árbol JSON, sin
+        // clonar libros); la escritura a disco va en segundo plano.
+        com.google.gson.JsonArray copia = prepararLibrosParaGuardar(libros);
+        java.util.Set<String> claves = clavesLibros(libros);
+        synchronized (this) {
+            pendingSaveTask = () -> {
+                synchronized (JsonManager.this) {
+                    actualizarEliminados(COL_LIBROS, claves);
+                    guardarObjeto(copia, databaseFilePath, "libros");
+                }
+            };
+            if (pendingSaveFuture != null && !pendingSaveFuture.isDone()) {
+                pendingSaveFuture.cancel(false);
+            }
+            if (syncScheduler.isShutdown()) {
+                ejecutarGuardadoPendiente();
+                return;
+            }
+            // Programar guardado real en 500ms
+            pendingSaveFuture = syncScheduler.schedule(this::ejecutarGuardadoPendiente, 500, TimeUnit.MILLISECONDS);
         }
-        // Programar guardado real en 500ms
-        pendingSaveFuture = syncScheduler.schedule(
-                () -> guardarDatos(copia, databaseFilePath, "libros"),
-                500, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -785,7 +1213,7 @@ public class JsonManager {
 
             // Retrocompatibilidad: Si es un PDF digital pero no tiene número de páginas
             if (libro.isEsDigital() && libro.getPaginasTotales() == 0 && libro.getRutaArchivoDigital() != null) {
-                if (libro.getRutaArchivoDigital().toLowerCase().endsWith(".pdf")) {
+                if (libro.getRutaArchivoDigital().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
                     File pdfFile = new File(libro.getRutaArchivoDigital());
                     if (pdfFile.exists()) {
                         try (org.apache.pdfbox.pdmodel.PDDocument pdf = org.apache.pdfbox.Loader.loadPDF(pdfFile)) {
@@ -806,10 +1234,13 @@ public class JsonManager {
             if (libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isBlank()) {
                 String portada = libro.getPortadaURL();
                 boolean sinPortada = (portada == null || portada.isBlank() || portada.contains("default_cover") || !new File(portada).exists());
-                if (sinPortada) {
+                // Si ya se intentó sin éxito en esta sesión no se repite (abrir y
+                // recorrer el ebook en cada recarga ralentiza la carga)
+                if (sinPortada && intentosPortadaFallidos.add(libro.getRutaArchivoDigital())) {
                     boolean portadaExtraida = EbookMetadataService.asegurarPortadaEbook(libro, rutaDatosUsuario);
                     if (portadaExtraida) {
                         migracionPaginas = true;
+                        intentosPortadaFallidos.remove(libro.getRutaArchivoDigital());
                     }
                 }
             }
@@ -835,6 +1266,7 @@ public class JsonManager {
             }
         }
 
+        recordarClaves(COL_LIBROS, clavesLibros(libros));
         return libros;
     }
 
@@ -844,7 +1276,8 @@ public class JsonManager {
      *
      * @param prestamos Lista de préstamos a guardar.
      */
-    public void guardarPrestamos(List<Prestamo> prestamos) {
+    public synchronized void guardarPrestamos(List<Prestamo> prestamos) {
+        actualizarEliminados(COL_PRESTAMOS, claves(prestamos, JsonManager::obtenerClavePrestamo));
         guardarDatos(prestamos, prestamosDatabasePath, "préstamos");
     }
 
@@ -856,7 +1289,9 @@ public class JsonManager {
     public List<Prestamo> cargarPrestamos() {
         Type tipoLista = new TypeToken<ArrayList<Prestamo>>() {
         }.getType();
-        return cargarDatos(prestamosDatabasePath, tipoLista, "préstamos");
+        List<Prestamo> prestamos = cargarDatos(prestamosDatabasePath, tipoLista, "préstamos");
+        recordarClaves(COL_PRESTAMOS, claves(prestamos, JsonManager::obtenerClavePrestamo));
+        return prestamos;
     }
 
     // --- MÉTODOS ESPECÍFICOS PARA LOS SOCIOS ---
@@ -865,7 +1300,8 @@ public class JsonManager {
      *
      * @param socios Lista de socios a guardar.
      */
-    public void guardarSocios(List<Socio> socios) {
+    public synchronized void guardarSocios(List<Socio> socios) {
+        actualizarEliminados(COL_SOCIOS, claves(socios, JsonManager::obtenerClaveSocio));
         guardarDatos(socios, sociosDatabasePath, "socios");
     }
 
@@ -877,7 +1313,9 @@ public class JsonManager {
     public List<Socio> cargarSocios() {
         Type tipoLista = new TypeToken<ArrayList<Socio>>() {
         }.getType();
-        return cargarDatos(sociosDatabasePath, tipoLista, "socios");
+        List<Socio> socios = cargarDatos(sociosDatabasePath, tipoLista, "socios");
+        recordarClaves(COL_SOCIOS, claves(socios, JsonManager::obtenerClaveSocio));
+        return socios;
     }
 
     // --- MÉTODOS ESPECÍFICOS PARA LAS ESTANTERIAS ---
@@ -940,7 +1378,7 @@ public class JsonManager {
         Type tipoLista = new TypeToken<ArrayList<Libro>>() {
         }.getType();
 
-        try (Reader reader = new FileReader(archivo)) {
+        try (Reader reader = new FileReader(archivo, java.nio.charset.StandardCharsets.UTF_8)) {
             List<Libro> librosImportados = gson.fromJson(reader, tipoLista);
 
             if (librosImportados == null) {
@@ -963,9 +1401,8 @@ public class JsonManager {
      * @return true si se guardó correctamente, false si falló.
      */
     public boolean exportarLibros(File archivo, List<Libro> libros) {
-        try (Writer writer = new FileWriter(archivo)) {
-            List<Libro> paraExportar = prepararLibrosParaGuardar(libros);
-            gson.toJson(paraExportar, writer);
+        try (Writer writer = new FileWriter(archivo, java.nio.charset.StandardCharsets.UTF_8)) {
+            gson.toJson(prepararLibrosParaGuardar(libros), writer);
             return true;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al exportar libros al archivo: " + archivo.getName(), e);
@@ -980,14 +1417,8 @@ public class JsonManager {
      * @param preferences Mapa de claves-valor con las preferencias.
      */
     public void guardarPreferencias(Map<String, String> preferences) {
-        crearDirectorioUsuarioSiNoExiste();
-
-        try (FileWriter writer = new FileWriter(preferencesFilePath)) {
-            gson.toJson(preferences, writer);
-            LOGGER.log(Level.INFO, "Preferencias guardadas.");
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error al guardar preferencias.", e);
-        }
+        // Guardado atómico: un corte de luz a mitad no deja el archivo vacío
+        guardarObjeto(preferences, preferencesFilePath, "preferencias", false);
     }
 
     /**
@@ -1004,7 +1435,7 @@ public class JsonManager {
             return defaultPrefs;
         }
 
-        try (FileReader reader = new FileReader(file)) {
+        try (FileReader reader = new FileReader(file, java.nio.charset.StandardCharsets.UTF_8)) {
             Type tipoMapa = new TypeToken<HashMap<String, String>>() {
             }.getType();
             Map<String, String> preferences = gson.fromJson(reader, tipoMapa);
@@ -1031,9 +1462,9 @@ public class JsonManager {
      *
      * @param deseos lista de libros que se guardarán en deseos
      */
-    public void guardarDeseos(List<Libro> deseos) {
-        List<Libro> paraGuardar = prepararLibrosParaGuardar(deseos);
-        guardarDatos(paraGuardar, deseosDatabasePath, "lista de deseos");
+    public synchronized void guardarDeseos(List<Libro> deseos) {
+        actualizarEliminados(COL_DESEOS, clavesLibros(deseos));
+        guardarObjeto(prepararLibrosParaGuardar(deseos), deseosDatabasePath, "lista de deseos");
     }
 
     /**
@@ -1050,6 +1481,7 @@ public class JsonManager {
             String carpetaCovers = rutaDatosUsuario + File.separator + "covers";
             String carpetaEbooks = rutaDatosUsuario + File.separator + "ebooks";
             resolverRutasLocales(deseos, carpetaCovers, carpetaEbooks);
+            recordarClaves(COL_DESEOS, clavesLibros(deseos));
             return deseos;
         }
         return new ArrayList<>();

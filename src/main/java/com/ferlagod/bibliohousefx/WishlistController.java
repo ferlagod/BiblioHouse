@@ -98,7 +98,7 @@ public class WishlistController {
         VBox tarjeta = new VBox(8);
         tarjeta.setAlignment(javafx.geometry.Pos.TOP_CENTER);
         tarjeta.setPrefWidth(140);
-        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        tarjeta.setStyle("-fx-padding: 10; -fx-background-color: -color-bg-subtle; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
 
         javafx.scene.image.ImageView img = new javafx.scene.image.ImageView();
         com.bibliohouse.utils.ImageLoader.load(libro.getPortadaURL(), img, 110, 160);
@@ -107,15 +107,15 @@ public class WishlistController {
         lblTitulo.setWrapText(true);
         lblTitulo.setMaxWidth(130);
         lblTitulo.setAlignment(javafx.geometry.Pos.CENTER);
-        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: #333;");
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 11px; -fx-text-fill: -color-fg-default;");
 
         Button btnMover = new Button(resources.getString("wishlist.move"));
-        btnMover.setStyle("-fx-font-size: 10px; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;");
+        btnMover.setStyle("-fx-font-size: 10px; -fx-background-color: -color-success-emphasis; -fx-text-fill: -color-fg-emphasis; -fx-cursor: hand;");
         btnMover.setMaxWidth(Double.MAX_VALUE);
         btnMover.setOnAction(e -> mainController.moverDeseoABiblioteca(libro));
 
         Button btnBorrar = new Button(resources.getString("wishlist.delete"));
-        btnBorrar.setStyle("-fx-font-size: 10px; -fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-cursor: hand;");
+        btnBorrar.setStyle("-fx-font-size: 10px; -fx-background-color: transparent; -fx-text-fill: -color-danger-fg; -fx-cursor: hand;");
         btnBorrar.setOnAction(e -> {
             listaDeseos.remove(libro);
             jsonManager.guardarDeseos(listaDeseos);

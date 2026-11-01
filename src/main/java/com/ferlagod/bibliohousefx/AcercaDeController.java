@@ -21,7 +21,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.stage.Stage;
-import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,7 +58,7 @@ public class AcercaDeController {
     @FXML
     private void abrirEmail() {
         try {
-            Desktop.getDesktop().mail(new URI("mailto:info@ferlagod.eu"));
+            com.bibliohouse.utils.AbrirExterno.correo(new URI("mailto:info@ferlagod.eu"));
         } catch (IOException | URISyntaxException e) {
             LOGGER.log(Level.WARNING, "No se pudo abrir el cliente de correo.", e);
         }
@@ -78,7 +77,7 @@ public class AcercaDeController {
     private void abrirLiberapay() {
         String url = "https://liberapay.com/ferlagod./";
         try {
-            String os = System.getProperty("os.name").toLowerCase();
+            String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
             if (os.contains("win")) {
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
             } else if (os.contains("mac")) {
@@ -87,7 +86,7 @@ public class AcercaDeController {
                 Runtime.getRuntime().exec(new String[]{"xdg-open", url});
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(java.util.logging.Level.SEVERE, "Error inesperado", e);
         }
     }
 }

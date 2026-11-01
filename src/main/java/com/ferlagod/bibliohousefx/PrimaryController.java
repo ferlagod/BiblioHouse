@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.BusquedaSagas;
 import com.bibliohouse.logic.BusquedaService;
@@ -165,26 +167,26 @@ public class PrimaryController implements Initializable {
         configurarIntegracionSistema();
 
         // Suscribirse a eventos del bus desacoplado
-        AppEventBus.getInstance().subscribe(AppEventBus.StatusMessageEvent.class, e -> setMensajeEstado(e.getMensaje()));
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.StatusMessageEvent.class, e -> setMensajeEstado(e.getMensaje()));
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroModificadoEvent.class, e -> {
             guardarLibrosEnDisco();
             actualizarComboLibrosDisponibles();
             if (pestanaSagasController != null) {
                 pestanaSagasController.initData(listaLibrosCompleta);
             }
         });
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroEliminadoEvent.class, e -> {
             guardarLibrosEnDisco();
             actualizarComboLibrosDisponibles();
             if (pestanaSagasController != null) {
                 pestanaSagasController.initData(listaLibrosCompleta);
             }
         });
-        AppEventBus.getInstance().subscribe(AppEventBus.PrestamoModificadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.PrestamoModificadoEvent.class, e -> {
             actualizarVistasPrestamo();
             checkOverdueLoans();
         });
-        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.CatalogoSincronizadoEvent.class, e -> {
             actualizarComboLibrosDisponibles();
             if (pestanaSagasController != null) {
                 pestanaSagasController.initData(listaLibrosCompleta);
@@ -200,7 +202,7 @@ public class PrimaryController implements Initializable {
             lblSyncIcon = new Label("🔄");
             lblSyncIcon.setStyle("-fx-font-size: 11px;");
             btnSyncRapido.setGraphic(lblSyncIcon);
-            btnSyncRapido.setText(" Sincronizar");
+            btnSyncRapido.setText(LanguageManager.getString("ui.sincronizar", " Sincronizar"));
         }
     }
 
@@ -221,7 +223,7 @@ public class PrimaryController implements Initializable {
         this.preferencias = jsonManager.cargarPreferencias();
 
         // Configuración de sincronización NextCloud si está configurada
-        configurarNextCloudSync();
+        configurarNextCloudSync(true);
 
         // Cargar colecciones en segundo plano
         cargarDatos();
@@ -236,15 +238,44 @@ public class PrimaryController implements Initializable {
         if (resources != null && resources.containsKey("status.welcome")) {
             setMensajeEstado(MessageFormat.format(resources.getString("status.welcome"), username));
         } else {
-            setMensajeEstado("Bienvenido, " + username);
+            setMensajeEstado(LanguageManager.getString("ui.bienvenido", "Bienvenido, ") + username);
         }
 
         // Comprobación de actualizaciones en segundo plano
         UpdateChecker.comprobarActualizaciones(versionNueva -> Platform.runLater(() -> notificar(
-                "✨ Nueva versión disponible: BiblioHouse " + versionNueva + ". ¡Visita la web para descargarla!")));
+                LanguageManager.getString("ui.nueva_version_disponible_bibliohouse", "✨ Nueva versión disponible: BiblioHouse ") + versionNueva + LanguageManager.getString("ui.visita_la_web_para_descargarla", ". ¡Visita la web para descargarla!"))));
     }
 
-    private void configurarNextCloudSync() {
+    /**
+     * Vuelve a leer la configuración de NextCloud guardada (p. ej. tras
+     * cambiarla en Configuración) y reprograma la sincronización automática.
+     * Actualiza también las preferencias en memoria para que al salir no se
+     * sobrescriban los valores nuevos con los antiguos.
+     */
+    public void reconfigurarNextCloudSync() {
+        Map<String, String> enDisco = jsonManager.cargarPreferencias();
+        preferencias.put("nextcloud.url", enDisco.getOrDefault("nextcloud.url", ""));
+        preferencias.put("nextcloud.user", enDisco.getOrDefault("nextcloud.user", ""));
+        preferencias.remove("nextcloud.password");
+        jsonManager.setAutoSyncTask(null);
+        configurarNextCloudSync(false);
+    }
+
+    /**
+     * Recarga las colecciones tras una sincronización que ha cambiado los
+     * datos locales y avisa al resto de vistas.
+     *
+     * @param mensaje Mensaje de estado a mostrar.
+     */
+    private void recargarTrasSincronizacion(String mensaje) {
+        cargarDatos(() -> {
+            int total = listaLibrosCompleta != null ? listaLibrosCompleta.size() : 0;
+            AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(total));
+            AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(mensaje));
+        });
+    }
+
+    private void configurarNextCloudSync(boolean pullInicial) {
         String ncUrl = preferencias.getOrDefault("nextcloud.url", "");
         String ncUser = preferencias.getOrDefault("nextcloud.user", "");
 
@@ -254,23 +285,29 @@ public class PrimaryController implements Initializable {
         if (!ncUrl.isBlank() && !ncUser.isBlank() && !ncPass.isBlank()) {
             try {
                 NextCloudSyncService syncService = new NextCloudSyncService(ncUrl, ncUser, ncPass);
+                syncService.setJsonManager(jsonManager);
                 final String localDir = this.rutaUsuario;
                 jsonManager.setAutoSyncTask(() -> {
                     try {
-                        syncService.subirBaseDatos(localDir);
+                        boolean cambiosRemotos = syncService.subirBaseDatos(localDir);
                         Platform.runLater(() -> {
-                            SystemNotificationService.notificarInfo("Sincronización NextCloud", "Copia de seguridad en la nube completada con éxito.");
+                            if (cambiosRemotos) {
+                                recargarTrasSincronizacion("Biblioteca actualizada con cambios de NextCloud.");
+                            }
+                            SystemNotificationService.notificarInfo(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"), LanguageManager.getString("ui.copia_de_seguridad_en_la_nube", "Copia de seguridad en la nube completada con éxito."));
                         });
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "Auto-sync fallido: {0}", ex.getMessage());
                         Platform.runLater(() -> {
-                            SystemNotificationService.notificarAlerta("Sincronización NextCloud", "Error al sincronizar con NextCloud: " + ex.getMessage());
+                            SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"), LanguageManager.getString("ui.error_al_sincronizar_con_nextcloud", "Error al sincronizar con NextCloud: ") + ex.getMessage());
                         });
                     }
                 });
 
                 // Pull on Startup: Comprobación automática en segundo plano sin bloquear la UI
-                iniciarPullOnStartup(syncService, localDir);
+                if (pullInicial) {
+                    iniciarPullOnStartup(syncService, localDir);
+                }
 
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, "Error al iniciar servicio de sincronización NextCloud", ex);
@@ -300,9 +337,9 @@ public class PrimaryController implements Initializable {
                             int total = listaLibrosCompleta != null ? listaLibrosCompleta.size() : 0;
                             AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(total));
                             AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(
-                                    "Biblioteca sincronizada automáticamente desde NextCloud."));
-                            SystemNotificationService.notificarInfo("Sincronización NextCloud",
-                                    "Se han sincronizado nuevos cambios remotos en tu biblioteca.");
+                                    LanguageManager.getString("ui.biblioteca_sincronizada_automaticamente_desde_nextcloud", "Biblioteca sincronizada automáticamente desde NextCloud.")));
+                            SystemNotificationService.notificarInfo(LanguageManager.getString("ui.sincronizacion_nextcloud", "Sincronización NextCloud"),
+                                    LanguageManager.getString("ui.se_han_sincronizado_nuevos_cambios_remotos", "Se han sincronizado nuevos cambios remotos en tu biblioteca."));
                             detenerAnimacionSincronizacion(true);
                         });
                     });
@@ -333,8 +370,8 @@ public class PrimaryController implements Initializable {
         String ncPass = com.bibliohouse.utils.SeguridadUtil.desencriptar(osPrefs.get("password", ""));
 
         if (ncUrl.isBlank() || ncUser.isBlank() || ncPass.isBlank()) {
-            SystemNotificationService.notificarAlerta("NextCloud no configurado",
-                    "Configura tu cuenta NextCloud en Herramientas -> Configuración para sincronizar.");
+            SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.nextcloud_no_configurado", "NextCloud no configurado"),
+                    LanguageManager.getString("ui.configura_tu_cuenta_nextcloud_en_herramientas", "Configura tu cuenta NextCloud en Herramientas -> Configuración para sincronizar."));
             abrirConfiguracion();
             return;
         }
@@ -344,6 +381,7 @@ public class PrimaryController implements Initializable {
         Thread syncThread = new Thread(() -> {
             try {
                 NextCloudSyncService syncService = new NextCloudSyncService(ncUrl, ncUser, ncPass);
+                syncService.setJsonManager(jsonManager);
                 final String localDir = this.rutaUsuario;
 
                 // 1. Subir cambios locales pendientes
@@ -357,17 +395,17 @@ public class PrimaryController implements Initializable {
                         int total = listaLibrosCompleta != null ? listaLibrosCompleta.size() : 0;
                         AppEventBus.getInstance().publish(new AppEventBus.CatalogoSincronizadoEvent(total));
                         AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(
-                                "Sincronización con NextCloud completada con éxito."));
-                        SystemNotificationService.notificarInfo("NextCloud Sincronizado",
-                                "Tu biblioteca está completamente sincronizada con la nube.");
+                                LanguageManager.getString("ui.sincronizacion_con_nextcloud_completada_con_exito", "Sincronización con NextCloud completada con éxito.")));
+                        SystemNotificationService.notificarInfo(LanguageManager.getString("ui.nextcloud_sincronizado", "NextCloud Sincronizado"),
+                                LanguageManager.getString("ui.tu_biblioteca_esta_completamente_sincronizada_con", "Tu biblioteca está completamente sincronizada con la nube."));
                         detenerAnimacionSincronizacion(true);
                     });
                 });
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Error en sincronización manual rápida: {0}", ex.getMessage());
                 Platform.runLater(() -> {
-                    SystemNotificationService.notificarAlerta("Error de Sincronización",
-                            "No se pudo sincronizar con NextCloud: " + ex.getMessage());
+                    SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.error_de_sincronizacion", "Error de Sincronización"),
+                            LanguageManager.getString("ui.no_se_pudo_sincronizar_con_nextcloud", "No se pudo sincronizar con NextCloud: ") + ex.getMessage());
                     detenerAnimacionSincronizacion(false);
                 });
             }
@@ -387,7 +425,7 @@ public class PrimaryController implements Initializable {
         btnSyncRapido.setDisable(true);
         btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error");
         btnSyncRapido.getStyleClass().add("syncing");
-        btnSyncRapido.setText(" Sincronizando...");
+        btnSyncRapido.setText(LanguageManager.getString("ui.sincronizando", " Sincronizando..."));
         if (lblSyncIcon != null) {
             lblSyncIcon.setText("🔄");
             if (syncRotateTransition == null) {
@@ -420,13 +458,13 @@ public class PrimaryController implements Initializable {
 
         if (exito) {
             btnSyncRapido.getStyleClass().add("sync-success");
-            btnSyncRapido.setText(" Al día");
+            btnSyncRapido.setText(LanguageManager.getString("ui.al_dia", " Al día"));
             if (lblSyncIcon != null) {
                 lblSyncIcon.setText("✓");
             }
         } else {
             btnSyncRapido.getStyleClass().add("sync-error");
-            btnSyncRapido.setText(" Reintentar");
+            btnSyncRapido.setText(LanguageManager.getString("ui.reintentar", " Reintentar"));
             if (lblSyncIcon != null) {
                 lblSyncIcon.setText("⚠️");
             }
@@ -435,7 +473,7 @@ public class PrimaryController implements Initializable {
         PauseTransition resetPause = new PauseTransition(Duration.seconds(exito ? 2.5 : 3.5));
         resetPause.setOnFinished(e -> {
             btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error", "syncing");
-            btnSyncRapido.setText(" Sincronizar");
+            btnSyncRapido.setText(LanguageManager.getString("ui.sincronizar", " Sincronizar"));
             if (lblSyncIcon != null) {
                 lblSyncIcon.setText("🔄");
                 lblSyncIcon.setRotate(0);
@@ -518,9 +556,7 @@ public class PrimaryController implements Initializable {
             }
         };
 
-        Thread thread = new Thread(loadTask, "CargaDatosBiblioHouse");
-        thread.setDaemon(true);
-        thread.start();
+        com.bibliohouse.utils.Hilos.ejecutar(loadTask);
     }
 
     // =========================================================================
@@ -894,7 +930,7 @@ public class PrimaryController implements Initializable {
                     msg = "Tienes " + overdueLoans.size() + " libros pendientes de devolución cuyo plazo ha vencido.";
                 }
                 lblTextoBannerPrestamos.setText(msg);
-                SystemNotificationService.notificarAlerta("Préstamos Vencidos", msg);
+                SystemNotificationService.notificarAlerta(LanguageManager.getString("ui.prestamos_vencidos", "Préstamos Vencidos"), msg);
             } else {
                 bannerPrestamos.setVisible(false);
                 bannerPrestamos.setManaged(false);
@@ -925,10 +961,10 @@ public class PrimaryController implements Initializable {
             if (nuevo != null) {
                 listaSocios.add(nuevo);
                 jsonManager.guardarSocios(listaSocios);
-                mostrarAlertaPublic("Éxito", "Socio añadido.");
+                mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.socio_anadido", "Socio añadido."));
             }
         } catch (IOException e) {
-            mostrarAlertaPublic("Error Crítico", "No se pudo abrir la ventana de Nuevo Socio.\n" + e.getMessage());
+            mostrarAlertaPublic(LanguageManager.getString("ui.error_critico", "Error Crítico"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana", "No se pudo abrir la ventana de Nuevo Socio.\n") + e.getMessage());
         }
     }
 
@@ -946,13 +982,13 @@ public class PrimaryController implements Initializable {
             controller.initData(listaSocios, jsonManager, this);
 
             Stage stage = new Stage();
-            stage.setTitle("Gestionar Socios");
+            stage.setTitle(LanguageManager.getString("ui.gestionar_socios", "Gestionar Socios"));
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getWindow());
             stage.showAndWait();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error Crítico", "No se pudo abrir la ventana de Gestión de Socios.\n" + e.getMessage());
+            mostrarAlertaPublic(LanguageManager.getString("ui.error_critico", "Error Crítico"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana_2", "No se pudo abrir la ventana de Gestión de Socios.\n") + e.getMessage());
         }
     }
 
@@ -990,9 +1026,9 @@ public class PrimaryController implements Initializable {
      */
     public void buscarLibroParaDeseos() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Buscar Libro");
-        dialog.setHeaderText("Añadir a Lista de Deseos");
-        dialog.setContentText("Introduce el título, autor o ISBN:");
+        dialog.setTitle(LanguageManager.getString("ui.buscar_libro", "Buscar Libro"));
+        dialog.setHeaderText(LanguageManager.getString("ui.anadir_a_lista_de_deseos", "Añadir a Lista de Deseos"));
+        dialog.setContentText(LanguageManager.getString("ui.introduce_el_titulo_autor_o_isbn", "Introduce el título, autor o ISBN:"));
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent() && !result.get().trim().isEmpty()) {
             if (gestionLibrosController != null) {
@@ -1025,7 +1061,7 @@ public class PrimaryController implements Initializable {
             });
 
             Stage stage = new Stage();
-            stage.setTitle("Detalles: " + libro.getTitulo());
+            stage.setTitle(LanguageManager.getString("ui.detalles", "Detalles: ") + libro.getTitulo());
             setScene(stage, root);
             stage.initOwner(getWindow());
             stage.centerOnScreen();
@@ -1061,7 +1097,7 @@ public class PrimaryController implements Initializable {
             controller.setRutaUsuario(this.rutaUsuario);
 
             Stage stage = new Stage();
-            stage.setTitle("Editar: " + libro.getTitulo());
+            stage.setTitle(LanguageManager.getString("ui.editar", "Editar: ") + libro.getTitulo());
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getWindow());
@@ -1071,7 +1107,7 @@ public class PrimaryController implements Initializable {
             if (controller.isGuardado()) {
                 guardarLibrosEnDisco();
                 AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
-                setMensajeEstado("Libro editado correctamente.");
+                setMensajeEstado(LanguageManager.getString("ui.libro_editado_correctamente", "Libro editado correctamente."));
             }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error al abrir ventana de edición", e);
@@ -1089,7 +1125,7 @@ public class PrimaryController implements Initializable {
             return;
         }
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar Portada para: " + libro.getTitulo());
+        fileChooser.setTitle(LanguageManager.getString("ui.seleccionar_portada_para", "Seleccionar Portada para: ") + libro.getTitulo());
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.webp"));
 
         File file = fileChooser.showOpenDialog(getWindow());
@@ -1098,7 +1134,7 @@ public class PrimaryController implements Initializable {
             libro.setPortadaURL(rutaLocal);
             guardarLibrosEnDisco();
             AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
-            mostrarAlertaPublic("Éxito", "Portada actualizada.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.portada_actualizada", "Portada actualizada."));
         }
     }
 
@@ -1114,9 +1150,9 @@ public class PrimaryController implements Initializable {
         }
         if (libro.getCantidad() > 1) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Gestión de Stock");
-            alert.setHeaderText("Tienes " + libro.getCantidad() + " copias de este libro.");
-            alert.setContentText("¿Qué deseas hacer?");
+            alert.setTitle(LanguageManager.getString("ui.gestion_de_stock", "Gestión de Stock"));
+            alert.setHeaderText(LanguageManager.getString("ui.tienes", "Tienes ") + libro.getCantidad() + LanguageManager.getString("ui.copias_de_este_libro", " copias de este libro."));
+            alert.setContentText(LanguageManager.getString("ui.que_deseas_hacer", "¿Qué deseas hacer?"));
             ButtonType btnEliminarUno = new ButtonType("Eliminar solo 1 unidad");
             ButtonType btnEliminarTodo = new ButtonType("Borrar el libro entero");
             ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -1126,22 +1162,22 @@ public class PrimaryController implements Initializable {
             if (result.isPresent()) {
                 if (result.get() == btnEliminarUno) {
                     libroService.actualizarStock(libro, -1);
-                    setMensajeEstado("Se ha eliminado una copia. Quedan: " + libro.getCantidad());
+                    setMensajeEstado(LanguageManager.getString("ui.se_ha_eliminado_una_copia_quedan", "Se ha eliminado una copia. Quedan: ") + libro.getCantidad());
                     AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
                 } else if (result.get() == btnEliminarTodo) {
                     libroService.borrarTotalmente(libro);
-                    setMensajeEstado("Libro eliminado definitivamente: " + libro.getTitulo());
+                    setMensajeEstado(LanguageManager.getString("ui.libro_eliminado_definitivamente", "Libro eliminado definitivamente: ") + libro.getTitulo());
                     AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(libro));
                 }
             }
         } else {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Eliminar Libro");
-            alert.setHeaderText("¿Estás seguro de que quieres borrar este libro?");
-            alert.setContentText("Vas a eliminar: " + libro.getTitulo() + "\nEsta acción no se puede deshacer.");
+            alert.setTitle(LanguageManager.getString("ui.eliminar_libro", "Eliminar Libro"));
+            alert.setHeaderText(LanguageManager.getString("ui.estas_seguro_de_que_quieres_borrar", "¿Estás seguro de que quieres borrar este libro?"));
+            alert.setContentText(LanguageManager.getString("ui.vas_a_eliminar", "Vas a eliminar: ") + libro.getTitulo() + LanguageManager.getString("ui.nesta_accion_no_se_puede_deshacer", "\nEsta acción no se puede deshacer."));
             if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 libroService.borrarTotalmente(libro);
-                setMensajeEstado("Libro eliminado definitivamente: " + libro.getTitulo());
+                setMensajeEstado(LanguageManager.getString("ui.libro_eliminado_definitivamente", "Libro eliminado definitivamente: ") + libro.getTitulo());
                 AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(libro));
             }
         }
@@ -1158,12 +1194,12 @@ public class PrimaryController implements Initializable {
             return;
         }
         if (libro.isEsDigital()) {
-            mostrarAlertaPublic("Sin libros físicos", "El libro seleccionado es digital. Las etiquetas solo se generan para libros físicos.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.sin_libros_fisicos", "Sin libros físicos"), LanguageManager.getString("ui.el_libro_seleccionado_es_digital_las", "El libro seleccionado es digital. Las etiquetas solo se generan para libros físicos."));
             return;
         }
 
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Etiqueta PDF");
+        fileChooser.setTitle(LanguageManager.getString("ui.guardar_etiqueta_pdf", "Guardar Etiqueta PDF"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo PDF", "*.pdf"));
         fileChooser.setInitialFileName("Etiqueta_" + libro.getTitulo().replaceAll("[^a-zA-Z0-9]", "_") + ".pdf");
 
@@ -1171,13 +1207,13 @@ public class PrimaryController implements Initializable {
         if (file != null) {
             try {
                 ServicioEtiquetasFisicas.generarEtiquetasPDF(List.of(libro), file);
-                notificar("PDF con etiqueta generado con éxito.");
+                notificar(LanguageManager.getString("ui.pdf_con_etiqueta_generado_con_exito", "PDF con etiqueta generado con éxito."));
                 try {
-                    java.awt.Desktop.getDesktop().open(file);
+                    com.bibliohouse.utils.AbrirExterno.abrir(file);
                 } catch (IOException ignored) {
                 }
             } catch (Exception e) {
-                mostrarAlertaPublic("Error", "Hubo un problema al generar la etiqueta: " + e.getMessage());
+                mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.hubo_un_problema_al_generar_la", "Hubo un problema al generar la etiqueta: ") + e.getMessage());
             }
         }
     }
@@ -1190,17 +1226,17 @@ public class PrimaryController implements Initializable {
      */
     public void abrirLectorDigital(Libro libro) {
         if (libro == null || !libro.isEsDigital() || libro.getRutaArchivoDigital() == null) {
-            mostrarAlertaPublic("Aviso", "Este libro no tiene un archivo digital enlazado.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.aviso", "Aviso"), LanguageManager.getString("ui.este_libro_no_tiene_un_archivo", "Este libro no tiene un archivo digital enlazado."));
             return;
         }
 
         File archivo = new File(libro.getRutaArchivoDigital());
         if (!archivo.exists()) {
-            mostrarAlertaPublic("Archivo no encontrado", "No se encuentra el archivo en: " + archivo.getAbsolutePath());
+            mostrarAlertaPublic(LanguageManager.getString("ui.archivo_no_encontrado", "Archivo no encontrado"), LanguageManager.getString("ui.no_se_encuentra_el_archivo_en", "No se encuentra el archivo en: ") + archivo.getAbsolutePath());
             return;
         }
 
-        if (archivo.getName().toLowerCase().endsWith(".epub")) {
+        if (archivo.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".epub")) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("lector_digital.fxml"));
                 loader.setResources(this.resources);
@@ -1215,7 +1251,7 @@ public class PrimaryController implements Initializable {
                     AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
                 });
                 Stage stage = new Stage();
-                stage.setTitle("Lector: " + libro.getTitulo());
+                stage.setTitle(LanguageManager.getString("ui.lector", "Lector: ") + libro.getTitulo());
                 Scene readerScene = new Scene(root, 900, 700);
                 App.registerScene(readerScene);
                 stage.setScene(readerScene);
@@ -1228,15 +1264,15 @@ public class PrimaryController implements Initializable {
                 stage.show();
             } catch (IOException ex) {
                 try {
-                    java.awt.Desktop.getDesktop().open(archivo);
+                    com.bibliohouse.utils.AbrirExterno.abrir(archivo);
                 } catch (IOException ignored) {
                 }
             }
         } else {
             try {
-                java.awt.Desktop.getDesktop().open(archivo);
+                com.bibliohouse.utils.AbrirExterno.abrir(archivo);
             } catch (IOException ex) {
-                mostrarAlertaPublic("Error", "No se pudo abrir el archivo digital.");
+                mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_el_archivo", "No se pudo abrir el archivo digital."));
             }
         }
     }
@@ -1263,21 +1299,21 @@ public class PrimaryController implements Initializable {
     @FXML
     private void importarDesdeCSV(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Importar biblioteca desde CSV");
+        fileChooser.setTitle(LanguageManager.getString("ui.importar_biblioteca_desde_csv", "Importar biblioteca desde CSV"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
 
         File archivoSeleccionado = fileChooser.showOpenDialog(getWindow());
         if (archivoSeleccionado != null) {
             List<Libro> librosImportados = com.bibliohouse.logic.ImportadorCSV.importar(archivoSeleccionado);
             if (librosImportados == null || librosImportados.isEmpty()) {
-                mostrarAlertaPublic("Importación CSV", "No se encontraron libros válidos en el archivo.");
+                mostrarAlertaPublic(LanguageManager.getString("ui.importacion_csv", "Importación CSV"), LanguageManager.getString("ui.no_se_encontraron_libros_validos_en", "No se encontraron libros válidos en el archivo."));
                 return;
             }
 
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Importación completada");
-            alert.setHeaderText("Se han encontrado " + librosImportados.size() + " libros en el archivo.");
-            alert.setContentText("¿Deseas añadirlos a tu biblioteca actual?");
+            alert.setTitle(LanguageManager.getString("ui.importacion_completada", "Importación completada"));
+            alert.setHeaderText(LanguageManager.getString("ui.se_han_encontrado", "Se han encontrado ") + librosImportados.size() + LanguageManager.getString("ui.libros_en_el_archivo", " libros en el archivo."));
+            alert.setContentText(LanguageManager.getString("ui.deseas_anadirlos_a_tu_biblioteca_actual", "¿Deseas añadirlos a tu biblioteca actual?"));
 
             if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
                 int anadidos = 0;
@@ -1293,7 +1329,7 @@ public class PrimaryController implements Initializable {
                 guardarLibrosEnDisco();
                 actualizarComboLibrosDisponibles();
                 AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, true));
-                mostrarAlertaPublic("Éxito", "Se han importado " + anadidos + " libros correctamente.");
+                mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.se_han_importado", "Se han importado ") + anadidos + LanguageManager.getString("ui.libros_correctamente", " libros correctamente."));
             }
         }
     }
@@ -1313,7 +1349,7 @@ public class PrimaryController implements Initializable {
             controller.setDatos(libros, estanterias, generos);
 
             Stage stage = new Stage();
-            stage.setTitle("Exportar Informe PDF");
+            stage.setTitle(LanguageManager.getString("ui.exportar_informe_pdf", "Exportar Informe PDF"));
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getWindow());
@@ -1321,7 +1357,7 @@ public class PrimaryController implements Initializable {
             stage.setMinHeight(720);
             stage.showAndWait();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo abrir la ventana de exportación PDF.\n" + e.getMessage());
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana_3", "No se pudo abrir la ventana de exportación PDF.\n") + e.getMessage());
         }
     }
 
@@ -1340,7 +1376,7 @@ public class PrimaryController implements Initializable {
             controller.setDatos(libros, estanterias, generos);
 
             Stage stage = new Stage();
-            stage.setTitle("Exportar Catálogo Web");
+            stage.setTitle(LanguageManager.getString("ui.exportar_catalogo_web", "Exportar Catálogo Web"));
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getWindow());
@@ -1348,25 +1384,66 @@ public class PrimaryController implements Initializable {
             stage.setMinHeight(720);
             stage.showAndWait();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo abrir la ventana de exportación web.\n" + e.getMessage());
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana_4", "No se pudo abrir la ventana de exportación web.\n") + e.getMessage());
         }
     }
 
     @FXML
     private void cerrarAplicacion(ActionEvent event) {
-        try {
-            Window win = getWindow();
-            if (win instanceof Stage mainStage) {
-                preferencias.put("maximized", String.valueOf(mainStage.isMaximized()));
-                if (jsonManager != null) {
-                    jsonManager.guardarPreferencias(preferencias);
-                    jsonManager.shutdown();
-                }
-                mainStage.close();
-            }
-        } catch (Throwable ignored) {
+        prepararCierre();
+        Window win = getWindow();
+        if (win instanceof Stage mainStage) {
+            mainStage.close();
         }
         Platform.exit();
+    }
+
+    /**
+     * Devuelve el gestor de datos de esta vista.
+     *
+     * @return Gestor de datos del usuario actual.
+     */
+    public JsonManager getJsonManager() {
+        return jsonManager;
+    }
+
+    /**
+     * Guarda el estado de la ventana y vuelca a disco todo lo pendiente. Se
+     * llama tanto desde el menú «Salir» como al cerrar con el botón de la
+     * ventana.
+     */
+    public void prepararCierre() {
+        try {
+            Window win = getWindow();
+            if (win instanceof Stage mainStage && preferencias != null) {
+                preferencias.put("maximized", String.valueOf(mainStage.isMaximized()));
+                java.util.prefs.Preferences.userNodeForPackage(App.class)
+                        .put("maximized", String.valueOf(mainStage.isMaximized()));
+            }
+            if (jsonManager != null && preferencias != null) {
+                jsonManager.guardarPreferencias(preferencias);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.WARNING, "No se pudo guardar el estado de la ventana al cerrar", e);
+        }
+        liberarRecursos();
+    }
+
+    /**
+     * Libera este controlador: retira sus suscripciones (y las de sus
+     * subcontroladores) del bus de eventos y cierra su gestor de datos tras
+     * volcar lo pendiente. Debe llamarse cuando la vista se sustituye (cambio
+     * de idioma) o al salir.
+     */
+    public void liberarRecursos() {
+        AppEventBus bus = AppEventBus.getInstance();
+        bus.unsubscribeAll(this);
+        bus.unsubscribeAll(sidebarController);
+        bus.unsubscribeAll(catalogoGridController);
+        if (jsonManager != null) {
+            jsonManager.setAutoSyncTask(null);
+            jsonManager.shutdown();
+        }
     }
 
     // =========================================================================
@@ -1376,7 +1453,7 @@ public class PrimaryController implements Initializable {
     private void buscarDuplicados(ActionEvent event) {
         String reporte = libroService.buscarYFusionarDuplicados();
         if (reporte == null) {
-            mostrarAlertaPublic("Búsqueda de Duplicados", "No se encontraron libros repetidos.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.busqueda_de_duplicados", "Búsqueda de Duplicados"), LanguageManager.getString("ui.no_se_encontraron_libros_repetidos", "No se encontraron libros repetidos."));
             return;
         }
         AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, false));
@@ -1389,18 +1466,18 @@ public class PrimaryController implements Initializable {
             controller.setTextoResultados(reporte);
 
             Stage stage = new Stage();
-            stage.setTitle("Informe de Duplicados");
+            stage.setTitle(LanguageManager.getString("ui.informe_de_duplicados", "Informe de Duplicados"));
             setScene(stage, root);
             stage.show();
         } catch (IOException e) {
-            mostrarAlertaPublic("Éxito", "Proceso completado. Revisa la tabla.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.proceso_completado_revisa_la_tabla", "Proceso completado. Revisa la tabla."));
         }
     }
 
     @FXML
     private void buscarPortadasFaltantes(ActionEvent event) {
         if (!busquedaPortadasEnCurso.compareAndSet(false, true)) {
-            notificar("Ya hay una búsqueda de portadas ejecutándose en segundo plano.");
+            notificar(LanguageManager.getString("ui.ya_hay_una_busqueda_de_portadas", "Ya hay una búsqueda de portadas ejecutándose en segundo plano."));
             return;
         }
 
@@ -1420,14 +1497,14 @@ public class PrimaryController implements Initializable {
 
         if (librosSinPortada.isEmpty()) {
             busquedaPortadasEnCurso.set(false);
-            mostrarAlertaPublic("Búsqueda de Portadas", "No hay libros pendientes de portada.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.busqueda_de_portadas", "Búsqueda de Portadas"), LanguageManager.getString("ui.no_hay_libros_pendientes_de_portada", "No hay libros pendientes de portada."));
             return;
         }
 
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Búsqueda masiva de portadas");
-        confirmacion.setHeaderText("Se van a procesar " + librosSinPortada.size() + " libros.");
-        confirmacion.setContentText("El proceso se ejecutará en segundo plano para que puedas seguir leyendo o gestionando tus libros. ¿Deseas iniciar?");
+        confirmacion.setTitle(LanguageManager.getString("ui.busqueda_masiva_de_portadas", "Búsqueda masiva de portadas"));
+        confirmacion.setHeaderText(LanguageManager.getString("ui.se_van_a_procesar", "Se van a procesar ") + librosSinPortada.size() + LanguageManager.getString("ui.libros", " libros."));
+        confirmacion.setContentText(LanguageManager.getString("ui.el_proceso_se_ejecutara_en_segundo", "El proceso se ejecutará en segundo plano para que puedas seguir leyendo o gestionando tus libros. ¿Deseas iniciar?"));
 
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             busquedaPortadasEnCurso.set(false);
@@ -1555,14 +1632,14 @@ public class PrimaryController implements Initializable {
             controller.initData(jsonManager, this);
 
             Stage stage = new Stage();
-            stage.setTitle("Configuración");
+            stage.setTitle(LanguageManager.getString("ui.configuracion", "Configuración"));
             setScene(stage, root);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(getWindow());
             stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo abrir la configuración.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_la_configuracion", "No se pudo abrir la configuración."));
         }
     }
 
@@ -1584,7 +1661,7 @@ public class PrimaryController implements Initializable {
             stage.setMinHeight(600);
             stage.show();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo abrir la ventana de estadísticas.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana_5", "No se pudo abrir la ventana de estadísticas."));
         }
     }
 
@@ -1596,14 +1673,14 @@ public class PrimaryController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("Manual de Usuario");
+            stage.setTitle(LanguageManager.getString("ui.manual_de_usuario", "Manual de Usuario"));
             setScene(stage, root);
             stage.getIcons().add(new Image(App.class.getResourceAsStream("/resources/LogoBiblioHouse.png")));
             stage.initModality(Modality.NONE);
             stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo cargar el Manual de Ayuda.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_cargar_el_manual", "No se pudo cargar el Manual de Ayuda."));
         }
     }
 
@@ -1615,14 +1692,14 @@ public class PrimaryController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("Acerca de BiblioHouse");
+            stage.setTitle(LanguageManager.getString("ui.acerca_de_bibliohouse", "Acerca de BiblioHouse"));
             setScene(stage, root);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.initOwner(getWindow());
             stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo abrir la ventana Acerca De.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_abrir_la_ventana_6", "No se pudo abrir la ventana Acerca De."));
         }
     }
 
@@ -1667,7 +1744,7 @@ public class PrimaryController implements Initializable {
                 App.reloadUI(currentStage, this.usuarioActual, this.rutaUsuario);
             }
         } catch (IOException e) {
-            mostrarAlertaPublic("Error", "No se pudo cambiar el idioma correctamente.");
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.no_se_pudo_cambiar_el_idioma", "No se pudo cambiar el idioma correctamente."));
         }
     }
 
@@ -1702,8 +1779,8 @@ public class PrimaryController implements Initializable {
             }
 
             FilteredList<T> filtered = new FilteredList<>(sourceList, item -> {
-                String itemText = displayFunc.apply(item).toLowerCase();
-                return itemText.contains(newText.toLowerCase());
+                String itemText = displayFunc.apply(item).toLowerCase(java.util.Locale.ROOT);
+                return itemText.contains(newText.toLowerCase(java.util.Locale.ROOT));
             });
 
             comboBox.setItems(filtered);

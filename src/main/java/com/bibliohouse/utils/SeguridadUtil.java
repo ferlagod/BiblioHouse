@@ -72,32 +72,43 @@ public class SeguridadUtil {
             return masterKey;
         }
 
-        try {
-            Preferences prefs = Preferences.userNodeForPackage(SeguridadUtil.class);
-            String storedKey = prefs.get(PREF_KEY_MASTER, null);
+        Preferences prefs = Preferences.userNodeForPackage(SeguridadUtil.class);
+        String storedKey = prefs.get(PREF_KEY_MASTER, null);
 
-            if (storedKey != null && !storedKey.trim().isEmpty()) {
+        if (storedKey != null && !storedKey.trim().isEmpty()) {
+            try {
                 byte[] keyBytes = Base64.getDecoder().decode(storedKey.trim());
                 if (keyBytes.length == 32) { // 256 bits
                     masterKey = new SecretKeySpec(keyBytes, KEY_ALGORITHM);
                     return masterKey;
                 }
+            } catch (IllegalArgumentException ignored) {
+                // Clave almacenada corrupta: se genera una nueva
             }
-
-            // Generar nueva clave criptográfica de 256 bits
-            byte[] newKeyBytes = new byte[32];
-            SECURE_RANDOM.nextBytes(newKeyBytes);
-            prefs.put(PREF_KEY_MASTER, Base64.getEncoder().encodeToString(newKeyBytes));
-            prefs.flush();
-
-            masterKey = new SecretKeySpec(newKeyBytes, KEY_ALGORITHM);
-            return masterKey;
-        } catch (BackingStoreException e) {
-            // Fallback determinista seguro en caso de error de acceso a Preferences
-            return getFallbackKey();
         }
+
+        // Generar nueva clave criptográfica de 256 bits. Aunque no se pueda
+        // persistir, se usa la aleatoria en memoria: es preferible tener que
+        // volver a introducir la contraseña en el próximo arranque a cifrar
+        // con una clave derivada de datos públicos (adivinable).
+        byte[] newKeyBytes = new byte[32];
+        SECURE_RANDOM.nextBytes(newKeyBytes);
+        prefs.put(PREF_KEY_MASTER, Base64.getEncoder().encodeToString(newKeyBytes));
+        try {
+            prefs.flush();
+        } catch (BackingStoreException e) {
+            java.util.logging.Logger.getLogger(SeguridadUtil.class.getName()).log(java.util.logging.Level.WARNING,
+                    "No se pudo persistir la clave maestra; las credenciales se pedirán de nuevo en el próximo arranque.", e);
+        }
+
+        masterKey = new SecretKeySpec(newKeyBytes, KEY_ALGORITHM);
+        return masterKey;
     }
 
+    /**
+     * Clave derivada que usaban versiones anteriores cuando no se podía
+     * acceder a Preferences. Solo se usa para poder descifrar datos antiguos.
+     */
     private static SecretKeySpec getFallbackKey() {
         try {
             String seed = System.getProperty("user.home", "") + "BiblioHouseSecureSalt2026";
@@ -159,7 +170,10 @@ public class SeguridadUtil {
 
             return PREFIX_V2 + Base64.getEncoder().encodeToString(buffer.array());
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
-            return texto; // Fallback: devuelve el texto original
+            // Nunca devolver el texto en claro: el llamante lo guardaría tal cual
+            java.util.logging.Logger.getLogger(SeguridadUtil.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "No se pudo cifrar el dato sensible; no se guardará.", e);
+            return "";
         }
     }
 
@@ -191,13 +205,13 @@ public class SeguridadUtil {
                 byte[] iv = Arrays.copyOfRange(decoded, 0, GCM_IV_LENGTH);
                 byte[] cipherBytes = Arrays.copyOfRange(decoded, GCM_IV_LENGTH, decoded.length);
 
-                Cipher cipher = Cipher.getInstance(ALGORITMO_GCM);
-                GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-                cipher.init(Cipher.DECRYPT_MODE, getMasterKey(), spec);
-
-                byte[] plainBytes = cipher.doFinal(cipherBytes);
-                return new String(plainBytes, StandardCharsets.UTF_8);
-            } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
+                try {
+                    return descifrarGcm(getMasterKey(), iv, cipherBytes);
+                } catch (BadPaddingException primeraClave) {
+                    // Compatibilidad: datos cifrados en versiones anteriores con la clave derivada
+                    return descifrarGcm(getFallbackKey(), iv, cipherBytes);
+                }
+            } catch (IllegalArgumentException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
                 return textoEncriptado; // Fallback: devuelve texto original ante manipulación o error
             }
         } else {
@@ -211,6 +225,14 @@ public class SeguridadUtil {
                 return textoEncriptado; // Fallback: devuelve el texto original
             }
         }
+    }
+
+    private static String descifrarGcm(SecretKeySpec clave, byte[] iv, byte[] cipherBytes)
+            throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        Cipher cipher = Cipher.getInstance(ALGORITMO_GCM);
+        cipher.init(Cipher.DECRYPT_MODE, clave, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+        return new String(cipher.doFinal(cipherBytes), StandardCharsets.UTF_8);
     }
 
     /**

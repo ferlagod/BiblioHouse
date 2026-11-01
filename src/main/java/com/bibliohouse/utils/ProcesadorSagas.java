@@ -67,7 +67,7 @@ public class ProcesadorSagas {
 
         // 6. Capitalizar primera letra
         if (!limpia.isEmpty()) {
-            limpia = limpia.substring(0, 1).toUpperCase() + limpia.substring(1);
+            limpia = limpia.substring(0, 1).toUpperCase(java.util.Locale.ROOT) + limpia.substring(1);
         }
 
         return limpia;

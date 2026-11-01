@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.JsonManager;
@@ -87,20 +89,20 @@ public class SidebarController {
     @FXML
     public void initialize() {
         // Suscribirse a cambios en los libros para actualizar el reto anual y contadores en tiempo real
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroModificadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroModificadoEvent.class, e -> {
             actualizarRetoAnual();
             if (listaEstanterias != null) {
                 listaEstanterias.refresh();
             }
         });
-        AppEventBus.getInstance().subscribe(AppEventBus.LibroEliminadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroEliminadoEvent.class, e -> {
             actualizarRetoAnual();
             if (listaEstanterias != null) {
                 listaEstanterias.refresh();
             }
         });
-        AppEventBus.getInstance().subscribe(AppEventBus.EstanteriasActualizadasEvent.class, e -> cargarListaEstanterias());
-        AppEventBus.getInstance().subscribe(AppEventBus.CatalogoSincronizadoEvent.class, e -> {
+        AppEventBus.getInstance().subscribe(this, AppEventBus.EstanteriasActualizadasEvent.class, e -> cargarListaEstanterias());
+        AppEventBus.getInstance().subscribe(this, AppEventBus.CatalogoSincronizadoEvent.class, e -> {
             actualizarRetoAnual();
             cargarListaEstanterias();
             if (listaEstanterias != null) {
@@ -265,9 +267,9 @@ public class SidebarController {
     @FXML
     private void configurarRetoAnual() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Reto de Lectura");
-        dialog.setHeaderText("Configurar Reto Anual");
-        dialog.setContentText("¿Cuántos libros te propones leer este año? (Pon 0 para desactivar)");
+        dialog.setTitle(LanguageManager.getString("ui.reto_de_lectura", "Reto de Lectura"));
+        dialog.setHeaderText(LanguageManager.getString("ui.configurar_reto_anual", "Configurar Reto Anual"));
+        dialog.setContentText(LanguageManager.getString("ui.cuantos_libros_te_propones_leer_este", "¿Cuántos libros te propones leer este año? (Pon 0 para desactivar)"));
 
         String retoActualStr = preferencias != null ? preferencias.getOrDefault("reto_anual", "0") : "0";
         dialog.getEditor().setText(retoActualStr);
@@ -284,9 +286,9 @@ public class SidebarController {
                 actualizarRetoAnual();
             } catch (NumberFormatException ex) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("Error");
+                alert.setTitle(LanguageManager.getString("ui.error", "Error"));
                 alert.setHeaderText(null);
-                alert.setContentText("Por favor introduce un número válido.");
+                alert.setContentText(LanguageManager.getString("ui.por_favor_introduce_un_numero_valido", "Por favor introduce un número válido."));
                 alert.showAndWait();
             }
         });
@@ -327,7 +329,7 @@ public class SidebarController {
         widgetRetoAnual.setManaged(true);
 
         int currentYear = LocalDate.now().getYear();
-        lblTituloReto.setText("Reto de Lectura " + currentYear);
+        lblTituloReto.setText(LanguageManager.getString("ui.reto_de_lectura_2", "Reto de Lectura ") + currentYear);
 
         long librosLeidos = 0;
         if (listaLibrosCompleta != null) {
@@ -348,7 +350,7 @@ public class SidebarController {
             lblPorcentajeReto.setText((int) Math.round(progress * 100) + "%");
         }
         if (lblEstadoReto != null) {
-            lblEstadoReto.setText(librosLeidos + " de " + reto + " libros leídos");
+            lblEstadoReto.setText(librosLeidos + LanguageManager.getString("ui.de", " de ") + reto + LanguageManager.getString("ui.libros_leidos", " libros leídos"));
         }
     }
 }

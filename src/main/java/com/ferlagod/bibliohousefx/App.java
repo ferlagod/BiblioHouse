@@ -100,11 +100,14 @@ public class App extends Application {
     public static final String DENSITY_STANDARD = "Estándar";
     public static final String DENSITY_ACCESSIBLE = "Grande / Accesible";
 
+    // Identificadores internos de tema (se guardan en preferencias; el texto
+    // visible se traduce con la clave theme.<id> en ConfiguracionController)
+    public static final String THEME_AUTO = "Automático (Sistema)";
     public static final String THEME_HIGH_CONTRAST_LIGHT = "Alto Contraste Claro (High Contrast Light)";
     public static final String THEME_HIGH_CONTRAST_DARK = "Alto Contraste Oscuro (High Contrast Dark)";
 
     private static String currentDensity = DENSITY_STANDARD;
-    private static String currentTheme = "Automático (Sistema)";
+    private static String currentTheme = THEME_AUTO;
     private static final java.util.Set<Scene> activeScenes = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
 
     public static java.util.ResourceBundle getBundle() {
@@ -121,7 +124,13 @@ public class App extends Application {
         if (sc == null) {
             return;
         }
-        activeScenes.add(sc);
+        if (!activeScenes.add(sc)) {
+            // Ya registrada (p. ej. tras reloadUI): solo reaplicar, sin
+            // acumular otro listener sobre la misma escena
+            applyThemeToScene(sc, currentTheme);
+            applyDensityToScene(sc, currentDensity);
+            return;
+        }
         sc.rootProperty().addListener((obs, oldR, newR) -> {
             if (newR != null) {
                 applyThemeToScene(sc, currentTheme);
@@ -229,11 +238,11 @@ public class App extends Application {
      * configuración.
      */
     public static void applyTheme(String themeName) {
-        currentTheme = themeName != null ? themeName : "Automático (Sistema)";
+        currentTheme = themeName != null ? themeName : THEME_AUTO;
         String stylesheet;
-        if ("Automático (Sistema)".equalsIgnoreCase(currentTheme)) {
+        if (THEME_AUTO.equalsIgnoreCase(currentTheme)) {
             boolean dark = com.bibliohouse.utils.OsThemeDetector.isDarkMode();
-            String os = System.getProperty("os.name", "").toLowerCase();
+            String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
             if (os.contains("mac")) {
                 stylesheet = dark ? new atlantafx.base.theme.CupertinoDark().getUserAgentStylesheet()
                         : new atlantafx.base.theme.CupertinoLight().getUserAgentStylesheet();
@@ -285,7 +294,7 @@ public class App extends Application {
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
 
         // Aplicar el tema moderno de AtlantaFX
-        String savedTheme = prefs.get("theme", "Automático (Sistema)");
+        String savedTheme = prefs.get("theme", THEME_AUTO);
         applyTheme(savedTheme);
 
         // Cargar y aplicar densidad / escala de interfaz
@@ -295,9 +304,9 @@ public class App extends Application {
         // Sincronización automática con el Modo Oscuro/Claro del Sistema Operativo
         com.bibliohouse.utils.OsThemeDetector.startAutoSync(dark -> {
             java.util.prefs.Preferences p = java.util.prefs.Preferences.userNodeForPackage(App.class);
-            String current = p.get("theme", "Automático (Sistema)");
-            if ("Automático (Sistema)".equalsIgnoreCase(current)) {
-                applyTheme("Automático (Sistema)");
+            String current = p.get("theme", THEME_AUTO);
+            if (THEME_AUTO.equalsIgnoreCase(current)) {
+                applyTheme(THEME_AUTO);
             }
         });
 
@@ -324,7 +333,7 @@ public class App extends Application {
 
             stage.show();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(java.util.logging.Level.SEVERE, "Error inesperado", e);
             throw e;
         }
     }
@@ -387,7 +396,13 @@ public class App extends Application {
         mainStage.setMaximized(isMaximized);
 
         // 3. MOSTRAR LA VENTANA (Ahora el SO ya sabe que debe nacer maximizada)
-        mainStage.setOnCloseRequest(e -> Platform.exit());
+        controladorActivo = controller;
+        mainStage.setOnCloseRequest(e -> {
+            if (controladorActivo != null) {
+                controladorActivo.prepararCierre();
+            }
+            Platform.exit();
+        });
         mainStage.show();
 
         // 4. Ejecutar la transición
@@ -407,7 +422,17 @@ public class App extends Application {
      * @return controller
      * @throws IOException Si hay error cargando el FXML.
      */
+    /**
+     * Controlador de la ventana principal actualmente visible.
+     */
+    private static PrimaryController controladorActivo;
+
     public static PrimaryController reloadUI(Stage stage, String username, String path) throws IOException {
+        // Liberar la vista anterior antes de crear la nueva: vuelca a disco lo
+        // pendiente (la nueva vista lee de disco) y retira sus suscripciones
+        if (controladorActivo != null) {
+            controladorActivo.liberarRecursos();
+        }
         // Cargar el idioma guardado
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
         String lang = prefs.get("language", "es");
@@ -421,6 +446,7 @@ public class App extends Application {
         // Re-configurar los datos del controlador
         PrimaryController controller = loader.getController();
         controller.initData(username, path);
+        controladorActivo = controller;
 
         // Cambiar el contenido de la ventana sin cerrarla
         stage.getScene().setRoot(root);
@@ -441,6 +467,12 @@ public class App extends Application {
     public void stop() throws Exception {
         LOGGER.info("[App] Deteniendo aplicación...");
         try {
+            // Primero los datos: escribir cualquier guardado pendiente
+            com.bibliohouse.logic.JsonManager.cerrarTodas();
+        } catch (Throwable t) {
+            LOGGER.log(java.util.logging.Level.SEVERE, "[App] Error al volcar datos pendientes", t);
+        }
+        try {
             com.bibliohouse.utils.ImageLoader.shutdown();
         } catch (Throwable ignored) {
         }
@@ -452,6 +484,7 @@ public class App extends Application {
             com.bibliohouse.utils.OsThemeDetector.shutdown();
         } catch (Throwable ignored) {
         }
+        com.bibliohouse.utils.Hilos.shutdown();
         LOGGER.info("[App] Bye bye!");
         System.exit(0);
     }

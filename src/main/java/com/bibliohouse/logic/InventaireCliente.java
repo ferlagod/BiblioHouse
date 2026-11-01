@@ -153,7 +153,7 @@ public class InventaireCliente {
                 }
 
                 // Si el autor viene en formato "por Nombre Apellido", limpiar
-                if (autor.toLowerCase().startsWith("by ") || autor.toLowerCase().startsWith("por ")) {
+                if (autor.toLowerCase(java.util.Locale.ROOT).startsWith("by ") || autor.toLowerCase(java.util.Locale.ROOT).startsWith("por ")) {
                     autor = autor.substring(autor.indexOf(" ") + 1);
                 }
 

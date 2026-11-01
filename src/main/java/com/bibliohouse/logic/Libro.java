@@ -651,7 +651,7 @@ public class Libro {
         }
         int punto = nombre.lastIndexOf('.');
         if (punto >= 0 && punto < nombre.length() - 1) {
-            return nombre.substring(punto + 1).toUpperCase();
+            return nombre.substring(punto + 1).toUpperCase(java.util.Locale.ROOT);
         }
         return null;
     }
@@ -753,7 +753,7 @@ public class Libro {
             return id.hashCode();
         }
         if (isbn != null && !isbn.isBlank()) {
-            return isbn.trim().toLowerCase().hashCode();
+            return isbn.trim().toLowerCase(java.util.Locale.ROOT).hashCode();
         }
         return Objects.hash(titulo, autor);
     }

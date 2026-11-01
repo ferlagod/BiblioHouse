@@ -145,8 +145,6 @@ public class SplashController implements Initializable {
             fadeOut.play();
         });
 
-        Thread splashThread = new Thread(task);
-        splashThread.setDaemon(true);
-        splashThread.start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 }

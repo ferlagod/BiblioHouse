@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
@@ -56,6 +58,8 @@ import org.opencv.videoio.Videoio;
  * @version 2.2
  */
 public class EscanerController {
+
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(EscanerController.class.getName());
 
     @FXML
     private ImageView imgWebcam;
@@ -115,47 +119,47 @@ public class EscanerController {
             @Override
             protected Void call() throws Exception {
                 // 1. Cargar librerías nativas de OpenCV
-                System.out.println("[EscanerController] Iniciando tarea de cámara...");
+                LOGGER.fine("[EscanerController] Iniciando tarea de cámara...");
 
                 try {
                     // Log de información de OpenCV para depuración
-                    System.out.println("[EscanerController] OpenCV Build Info: " + Core.getBuildInformation());
+                    LOGGER.fine("[EscanerController] OpenCV Build Info: " + Core.getBuildInformation());
 
                     // 2. Abrir cámara (índice 0 suele ser la cámara por defecto)
-                    System.out.println("[EscanerController] Intentando abrir VideoCapture(0)...");
+                    LOGGER.fine("[EscanerController] Intentando abrir VideoCapture(0)...");
 
-                    String os = System.getProperty("os.name").toLowerCase();
+                    String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
                     if (os.contains("mac")) {
-                        System.out.println("[EscanerController] Detectado macOS. Usando CAP_AVFOUNDATION...");
+                        LOGGER.fine("[EscanerController] Detectado macOS. Usando CAP_AVFOUNDATION...");
                         capture = new VideoCapture(0, Videoio.CAP_AVFOUNDATION);
                     } else {
-                        System.out.println("[EscanerController] Sistema estándar. Usando CAP_ANY (0)...");
+                        LOGGER.fine("[EscanerController] Sistema estándar. Usando CAP_ANY (0)...");
                         capture = new VideoCapture(0);
                     }
 
                     if (capture.isOpened()) {
-                        System.out.println("[EscanerController] Cámara abierta correctamente.");
+                        LOGGER.fine("[EscanerController] Cámara abierta correctamente.");
                         startScanning();
                     } else {
-                        System.err.println(
+                        LOGGER.warning(
                                 "[EscanerController] capture.isOpened() devolvió false. No se detectó cámara.");
                         Platform.runLater(() -> {
                             Alert alert = new Alert(AlertType.ERROR);
-                            alert.setTitle("Error");
-                            alert.setHeaderText("No se detectó cámara");
+                            alert.setTitle(LanguageManager.getString("ui.error", "Error"));
+                            alert.setHeaderText(LanguageManager.getString("ui.no_se_detecto_camara", "No se detectó cámara"));
                             alert.setContentText(
-                                    "No se pudo iniciar la captura de vídeo. Verifica permisos y conexión.");
+                                    LanguageManager.getString("ui.no_se_pudo_iniciar_la_captura", "No se pudo iniciar la captura de vídeo. Verifica permisos y conexión."));
                             alert.showAndWait();
                             cerrarVentana();
                         });
                     }
                 } catch (Exception e) {
-                    System.err.println("[EscanerController] Excepción al abrir cámara: " + e.getMessage());
+                    LOGGER.warning("[EscanerController] Excepción al abrir cámara: " + e.getMessage());
                     Platform.runLater(() -> {
                         Alert alert = new Alert(AlertType.ERROR);
-                        alert.setTitle("Error Crítico");
-                        alert.setHeaderText("Fallo al iniciar cámara");
-                        alert.setContentText("Ocurrió un error inesperado: " + e.getMessage());
+                        alert.setTitle(LanguageManager.getString("ui.error_critico", "Error Crítico"));
+                        alert.setHeaderText(LanguageManager.getString("ui.fallo_al_iniciar_camara", "Fallo al iniciar cámara"));
+                        alert.setContentText(LanguageManager.getString("ui.ocurrio_un_error_inesperado", "Ocurrió un error inesperado: ") + e.getMessage());
                         alert.showAndWait();
                         cerrarVentana();
                     });
@@ -164,9 +168,7 @@ public class EscanerController {
             }
         };
 
-        Thread thread = new Thread(webCamTask);
-        thread.setDaemon(true);
-        thread.start();
+        com.bibliohouse.utils.Hilos.ejecutar(webCamTask);
     }
 
     /**
@@ -205,7 +207,7 @@ public class EscanerController {
 
                                         if (result != null) {
                                             String text = result.getText();
-                                            System.out.println("Código detectado: " + text);
+                                            LOGGER.fine("Código detectado: " + text);
 
                                             // Si parece un ISBN (10 o 13 dígitos)
                                             if (esPosibleISBN(text)) {
@@ -240,9 +242,7 @@ public class EscanerController {
             }
         };
 
-        Thread thread = new Thread(task);
-        thread.setDaemon(true);
-        thread.start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 
     /**

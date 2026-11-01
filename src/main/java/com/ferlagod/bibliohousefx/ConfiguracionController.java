@@ -19,8 +19,8 @@ package com.ferlagod.bibliohousefx;
 
 import com.bibliohouse.logic.AppEventBus;
 import com.bibliohouse.logic.JsonManager;
+import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.NextCloudSyncService;
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -220,7 +220,8 @@ public class ConfiguracionController {
                             loader.setResources(com.bibliohouse.logic.LanguageManager.getBundle());
                             javafx.scene.Parent newConfigRoot = loader.load();
                             ConfiguracionController newConfigController = loader.getController();
-                            newConfigController.initData(jsonManager, newMainController);
+                            // El gestor de datos anterior se ha cerrado: usar el de la nueva vista
+                            newConfigController.initData(newMainController.getJsonManager(), newMainController);
                             // Reemplazar contenido (manteniendo tamaño y posición)
                             settingsStage.getScene().setRoot(newConfigRoot);
                         } catch (IOException e) {
@@ -230,7 +231,7 @@ public class ConfiguracionController {
 
         // Configurar el ComboBox de Tema (10 temas de AtlantaFX incluyendo Automático y Alto Contraste WCAG AA/AAA)
         comboTema.getItems().setAll(
-                "Automático (Sistema)",
+                App.THEME_AUTO,
                 "Claro (Primer Light)",
                 "Oscuro (Primer Dark)",
                 "Nord Claro (Nord Light)",
@@ -242,7 +243,9 @@ public class ConfiguracionController {
                 App.THEME_HIGH_CONTRAST_DARK
         );
         java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(App.class);
-        String savedTheme = prefs.get("theme", "Automático (Sistema)");
+        String savedTheme = prefs.get("theme", App.THEME_AUTO);
+        // Los valores son identificadores estables; solo se traduce lo que se ve
+        comboTema.setConverter(convertidorTraducido("theme."));
         comboTema.getSelectionModel().select(savedTheme);
 
         comboTema.getSelectionModel().selectedItemProperty()
@@ -261,6 +264,7 @@ public class ConfiguracionController {
                     App.DENSITY_ACCESSIBLE
             );
             String savedDensity = prefs.get("uiDensity", App.DENSITY_STANDARD);
+            comboDensidad.setConverter(convertidorTraducido("density."));
             comboDensidad.getSelectionModel().select(savedDensity);
 
             comboDensidad.getSelectionModel().selectedItemProperty()
@@ -331,22 +335,10 @@ public class ConfiguracionController {
                 osPrefs.put(NC_PREF_PASS, passEncriptada);
             }
 
-            // Activar / desactivar auto-sync inmediatamente
-            if (!url.isBlank() && !user.isBlank() && !passClaro.isBlank()) {
-                try {
-                    // El servicio recibe la contraseña en claro para poder conectar
-                    NextCloudSyncService syncService = new NextCloudSyncService(url, user, passClaro);
-                    final String localDir = jsonManager.getRutaDatosUsuario();
-                    jsonManager.setAutoSyncTask(() -> {
-                        try {
-                            syncService.subirBaseDatos(localDir);
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.WARNING, "Auto-sync NextCloud fallido: " + ex.getMessage());
-                        }
-                    });
-                } catch (IllegalArgumentException ignored) {
-                    jsonManager.setAutoSyncTask(null);
-                }
+            // Activar / desactivar auto-sync inmediatamente (lo gestiona la
+            // ventana principal, que además recarga la vista tras sincronizar)
+            if (mainController != null) {
+                mainController.reconfigurarNextCloudSync();
             } else {
                 jsonManager.setAutoSyncTask(null);
             }
@@ -372,7 +364,7 @@ public class ConfiguracionController {
             return;
         }
 
-        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;");
         lblNextcloudStatus.setText(resources.getString("config.sync.test.loading"));
 
         Task<String> task = new Task<>() {
@@ -386,14 +378,14 @@ public class ConfiguracionController {
             String error = task.getValue();
             if (error == null) {
                 // Todo OK
-                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-success-fg;");
                 lblNextcloudStatus.setText(resources.getString("config.sync.status.ok"));
 
                 // Mostrar alerta de éxito
                 mostrarAlerta(resources.getString("config.sync.test.success.title"), resources.getString("config.sync.test.success.content"));
             } else {
                 // Hay un error de autenticación, URL, etc.
-                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+                lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
                 lblNextcloudStatus.setText(resources.getString("config.sync.test.error"));
 
                 // Mostrar alerta de ERROR
@@ -407,7 +399,7 @@ public class ConfiguracionController {
 
         task.setOnFailed(e -> {
             // Error crítico del hilo o del programa
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
             lblNextcloudStatus.setText(resources.getString("config.sync.test.critical"));
 
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -417,7 +409,7 @@ public class ConfiguracionController {
             alert.showAndWait();
         });
 
-        new Thread(task, "nextcloud-test").start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 
     /**
@@ -437,7 +429,7 @@ public class ConfiguracionController {
         }
         String localDir = jsonManager.getRutaDatosUsuario();
 
-        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;");
         lblNextcloudStatus.setText(resources.getString("config.sync.upload.loading"));
 
         Task<Void> task = new Task<>() {
@@ -449,7 +441,7 @@ public class ConfiguracionController {
         };
 
         task.setOnSucceeded(e -> {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-success-fg;");
             lblNextcloudStatus.setText(resources.getString("config.sync.upload.success"));
 
             // Mostrar alerta de ÉXITO
@@ -457,7 +449,7 @@ public class ConfiguracionController {
         });
 
         task.setOnFailed(e -> {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
             lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.upload.error"),
                     task.getException().getMessage()));
 
@@ -469,7 +461,7 @@ public class ConfiguracionController {
             alert.showAndWait();
         });
 
-        new Thread(task, "nextcloud-upload").start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 
     /**
@@ -501,7 +493,7 @@ public class ConfiguracionController {
         }
         String localDir = jsonManager.getRutaDatosUsuario();
 
-        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;");
         lblNextcloudStatus.setText(resources.getString("config.sync.download.loading"));
 
         Task<Void> task = new Task<>() {
@@ -513,7 +505,7 @@ public class ConfiguracionController {
         };
 
         task.setOnSucceeded(e -> {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #2e7d32;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-success-fg;");
             lblNextcloudStatus.setText(resources.getString("config.sync.download.success"));
 
             // Recargar datos en el controlador principal
@@ -525,7 +517,7 @@ public class ConfiguracionController {
         });
 
         task.setOnFailed(e -> {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
             lblNextcloudStatus.setText(MessageFormat.format(resources.getString("config.sync.download.error"),
                     task.getException().getMessage()));
 
@@ -537,7 +529,7 @@ public class ConfiguracionController {
             alert.showAndWait();
         });
 
-        new Thread(task, "nextcloud-download").start();
+        com.bibliohouse.utils.Hilos.ejecutar(task);
     }
 
     /**
@@ -550,12 +542,42 @@ public class ConfiguracionController {
     private boolean validarCamposNextcloud() {
         if (txtNextcloudUrl.getText().isBlank() || txtNextcloudUser.getText().isBlank()
                 || txtNextcloudPass.getText().isBlank()) {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
             lblNextcloudStatus.setText(MessageFormat.format(
                     resources.getString("config.sync.status.error"), resources.getString("config.sync.validation.error")));
             return false;
         }
         return true;
+    }
+
+    /**
+     * Convierte identificadores internos (temas, densidades) en su texto
+     * traducido, buscando la clave {@code prefijo + id normalizado}. Si no hay
+     * traducción se muestra el propio identificador.
+     *
+     * @param prefijo Prefijo de la clave de traducción.
+     * @return Convertidor para el ComboBox.
+     */
+    private static javafx.util.StringConverter<String> convertidorTraducido(String prefijo) {
+        return new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(String id) {
+                return id == null ? "" : LanguageManager.getString(prefijo + claveDeId(id), id);
+            }
+
+            @Override
+            public String fromString(String texto) {
+                return texto;
+            }
+        };
+    }
+
+    /**
+     * Genera un sufijo de clave a partir de un identificador
+     * ("Nord Oscuro (Nord Dark)" → "nord_oscuro_nord_dark").
+     */
+    static String claveDeId(String id) {
+        return com.bibliohouse.utils.TextoUtil.normalizarBusqueda(id).replaceAll("[^a-z0-9]+", "_").replaceAll("^_|_$", "");
     }
 
     /**
@@ -568,12 +590,14 @@ public class ConfiguracionController {
      */
     private NextCloudSyncService crearServicioNextcloud() {
         try {
-            return new NextCloudSyncService(
+            NextCloudSyncService service = new NextCloudSyncService(
                     txtNextcloudUrl.getText().trim(),
                     txtNextcloudUser.getText().trim(),
                     txtNextcloudPass.getText());
+            service.setJsonManager(jsonManager);
+            return service;
         } catch (IllegalArgumentException ex) {
-            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: #c62828;");
+            lblNextcloudStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-danger-fg;");
             lblNextcloudStatus.setText(MessageFormat.format(
                     resources.getString("config.sync.status.error"), ex.getMessage()));
             return null;
@@ -594,7 +618,7 @@ public class ConfiguracionController {
             if (!ruta.exists()) {
                 ruta = new File(System.getProperty("user.home"));
             }
-            Desktop.getDesktop().open(ruta);
+            com.bibliohouse.utils.AbrirExterno.abrir(ruta);
         } catch (IOException e) {
             mostrarAlerta(resources.getString("config.alert.error.title"),
                     resources.getString("config.alert.error.browser"));
@@ -637,7 +661,7 @@ public class ConfiguracionController {
                                 java.nio.file.Files.copy(path, zos);
                                 zos.closeEntry();
                             } catch (IOException e) {
-                                System.err.println("Error zippeando: " + path);
+                                LOGGER.warning("Error zippeando: " + path);
                             }
                         });
 
@@ -706,6 +730,12 @@ public class ConfiguracionController {
     private void ejecutarBorradoDeFabrica() {
         try {
             // 1. Borrar archivos de la carpeta del usuario (biblioteca, covers, etc.)
+            // Antes se descartan los guardados pendientes para que no
+            // vuelvan a crear archivos al cerrar la aplicación.
+            if (jsonManager != null) {
+                jsonManager.setAutoSyncTask(null);
+                jsonManager.descartarSinGuardar();
+            }
             if (mainController != null && mainController.getRutaUsuario() != null) {
                 File dirUsuario = new File(mainController.getRutaUsuario());
                 if (dirUsuario.exists() && dirUsuario.isDirectory()) {
@@ -806,7 +836,7 @@ public class ConfiguracionController {
     private void abrirLiberapay() {
         String url = "https://liberapay.com/ferlagod./";
         try {
-            String os = System.getProperty("os.name").toLowerCase();
+            String os = System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT);
             if (os.contains("win")) {
                 new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url).start();
             } else if (os.contains("mac")) {

@@ -64,6 +64,11 @@ public class ImageLoader {
     public static final int MAX_COVER_WIDTH = 600;
     public static final int MAX_COVER_HEIGHT = 900;
     public static final float JPEG_COMPRESSION_QUALITY = 0.85f;
+    /**
+     * Tamaño máximo de una portada descargada (15 MB). Protege la memoria
+     * frente a URLs que devuelvan archivos enormes.
+     */
+    private static final int MAX_DESCARGA_BYTES = 15 * 1024 * 1024;
 
     // Caché en memoria (LRU) — envuelta en synchronizedMap para acceso seguro
     // desde el hilo FX y el ExecutorService simultáneamente.
@@ -145,7 +150,8 @@ public class ImageLoader {
     }
 
     private static final java.net.http.HttpClient HTTP_CLIENT = java.net.http.HttpClient.newBuilder()
-            .followRedirects(java.net.http.HttpClient.Redirect.ALWAYS)
+            // NORMAL: sigue redirecciones salvo de HTTPS a HTTP (sin degradar a texto plano)
+            .followRedirects(java.net.http.HttpClient.Redirect.NORMAL)
             .connectTimeout(java.time.Duration.ofSeconds(10))
             .build();
 
@@ -215,14 +221,30 @@ public class ImageLoader {
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
                     .uri(java.net.URI.create(url))
                     .timeout(java.time.Duration.ofSeconds(10))
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 BiblioHouse/2.1")
+                    .header("User-Agent", "BiblioHouse/" + UpdateChecker.getVersionActual() + " (+https://github.com/ferlagod/BiblioHouse)")
                     .header("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
                     .GET()
                     .build();
 
-            java.net.http.HttpResponse<byte[]> response = HTTP_CLIENT.send(request, java.net.http.HttpResponse.BodyHandlers.ofByteArray());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                byte[] bytes = response.body();
+            java.net.http.HttpResponse<java.io.InputStream> response = HTTP_CLIENT.send(request, java.net.http.HttpResponse.BodyHandlers.ofInputStream());
+            try (java.io.InputStream cuerpo = response.body()) {
+                if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                    return false;
+                }
+                // Solo imágenes: evita guardar páginas de error HTML como portada
+                String tipo = response.headers().firstValue("Content-Type").orElse("").toLowerCase(java.util.Locale.ROOT);
+                if (!tipo.isEmpty() && !tipo.startsWith("image/") && !tipo.startsWith("application/octet-stream")) {
+                    return false;
+                }
+                long declarado = response.headers().firstValueAsLong("Content-Length").orElse(-1L);
+                if (declarado > MAX_DESCARGA_BYTES) {
+                    return false;
+                }
+                // Lectura con tope aunque el servidor mienta sobre el tamaño
+                byte[] bytes = cuerpo.readNBytes(MAX_DESCARGA_BYTES + 1);
+                if (bytes.length > MAX_DESCARGA_BYTES) {
+                    return false;
+                }
                 // Validar que no sea un píxel transparente vacío (< 200 bytes) ni cuerpo corrupto
                 if (bytes != null && bytes.length > 200) {
                     File parent = archivoDestino.getParentFile();
@@ -239,7 +261,10 @@ public class ImageLoader {
                     return true;
                 }
             }
-        } catch (IOException | InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (IOException | IllegalArgumentException ignored) {
+            // URL mal formada o error de red: se usará la portada por defecto
         }
         return false;
     }
@@ -522,7 +547,7 @@ public class ImageLoader {
                     }
 
                     // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
-                    String name = archivoOrigen.getName().toLowerCase();
+                    String name = archivoOrigen.getName().toLowerCase(java.util.Locale.ROOT);
                     if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp")) {
                         return urlOrPath;
                     }

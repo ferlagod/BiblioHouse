@@ -155,7 +155,7 @@ public class ServicioExportarWeb {
             List<Libro> librosCategoria = entry.getValue();
 
             html.append("<section class=\"category\" data-category=\"")
-                    .append(escapeHtml(categoria.toLowerCase())).append("\">\n");
+                    .append(escapeHtml(categoria.toLowerCase(java.util.Locale.ROOT))).append("\">\n");
             html.append("  <h2 class=\"category-title\">").append(escapeHtml(categoria))
                     .append(" <span class=\"category-count\">(").append(librosCategoria.size()).append(")</span></h2>\n");
             html.append("  <div class=\"row-wrapper\">\n");
@@ -208,9 +208,9 @@ public class ServicioExportarWeb {
         String imgSrc = obtenerPortadaBase64(libro);
 
         card.append("      <div class=\"book-card\" ");
-        card.append("data-title=\"").append(escapeHtml(titulo.toLowerCase())).append("\" ");
-        card.append("data-author=\"").append(escapeHtml(autor.toLowerCase())).append("\" ");
-        card.append("data-genre=\"").append(escapeHtml(genero.toLowerCase())).append("\">\n");
+        card.append("data-title=\"").append(escapeHtml(titulo.toLowerCase(java.util.Locale.ROOT))).append("\" ");
+        card.append("data-author=\"").append(escapeHtml(autor.toLowerCase(java.util.Locale.ROOT))).append("\" ");
+        card.append("data-genre=\"").append(escapeHtml(genero.toLowerCase(java.util.Locale.ROOT))).append("\">\n");
 
         card.append("        <div class=\"card-inner\">\n");
         card.append("          <img src=\"").append(imgSrc).append("\" alt=\"")
@@ -323,7 +323,7 @@ public class ServicioExportarWeb {
      */
     private String generarPlaceholderSVG(String titulo, String autor) {
         String initial = (titulo != null && !titulo.isEmpty())
-                ? titulo.substring(0, 1).toUpperCase() : "?";
+                ? titulo.substring(0, 1).toUpperCase(java.util.Locale.ROOT) : "?";
         String tituloCorto = (titulo != null && titulo.length() > 20)
                 ? titulo.substring(0, 20) + "…" : (titulo != null ? titulo : "");
         String autorCorto = (autor != null && autor.length() > 18)
@@ -748,7 +748,7 @@ public class ServicioExportarWeb {
               });
 
               function filterBooks() {
-                const query = input.value.trim().toLowerCase();
+                const query = input.value.trim().toLowerCase(java.util.Locale.ROOT);
                 let visibleCount = 0;
 
                 cards.forEach(function(card) {

@@ -243,21 +243,21 @@ public class ExportarPDFController {
      */
     private boolean cumpleFiltros(Libro libro) {
         // Filtro por búsqueda de título/ISBN
-        String busqueda = txtBuscar.getText().trim().toLowerCase();
+        String busqueda = txtBuscar.getText().trim().toLowerCase(java.util.Locale.ROOT);
         if (!busqueda.isEmpty()) {
             boolean coincideTitulo = libro.getTitulo() != null
-                    && libro.getTitulo().toLowerCase().contains(busqueda);
+                    && libro.getTitulo().toLowerCase(java.util.Locale.ROOT).contains(busqueda);
             boolean coincideIsbn = libro.getIsbn() != null
-                    && libro.getIsbn().toLowerCase().contains(busqueda);
+                    && libro.getIsbn().toLowerCase(java.util.Locale.ROOT).contains(busqueda);
             if (!coincideTitulo && !coincideIsbn) {
                 return false;
             }
         }
 
         // Filtro por autor
-        String autor = txtAutor.getText().trim().toLowerCase();
+        String autor = txtAutor.getText().trim().toLowerCase(java.util.Locale.ROOT);
         if (!autor.isEmpty()) {
-            if (libro.getAutor() == null || !libro.getAutor().toLowerCase().contains(autor)) {
+            if (libro.getAutor() == null || !libro.getAutor().toLowerCase(java.util.Locale.ROOT).contains(autor)) {
                 return false;
             }
         }
@@ -401,7 +401,7 @@ public class ExportarPDFController {
         }
 
         // Asegurar que el archivo tenga extensión .pdf
-        if (!archivoDestino.getName().toLowerCase().endsWith(".pdf")) {
+        if (!archivoDestino.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".pdf")) {
             archivoDestino = new File(archivoDestino.getAbsolutePath() + ".pdf");
         }
 

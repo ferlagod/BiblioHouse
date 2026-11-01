@@ -33,6 +33,8 @@ import java.util.List;
  */
 public class ImportadorCSV {
 
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(ImportadorCSV.class.getName());
+
     /**
      * Importa un archivo CSV y lo convierte en una lista de objetos Libro.
      * Funciona con CSVs de Goodreads, Bookwyrm y otros formatos genéricos.
@@ -60,7 +62,7 @@ public class ImportadorCSV {
             int idxRating = -1, idxShelf = -1, idxResena = -1, idxEstanterias = -1;
 
             for (int i = 0; i < cabeceras.length; i++) {
-                String c = cabeceras[i].replace("\"", "").trim().toLowerCase();
+                String c = cabeceras[i].replace("\"", "").trim().toLowerCase(java.util.Locale.ROOT);
 
                 // Mapeo múltiple (Genérico + Goodreads + Bookwyrm)
                 switch (c) {
@@ -156,7 +158,7 @@ public class ImportadorCSV {
                 // --- INTEGRACIÓN ESPECIAL: Bookwyrm / Goodreads ---
                 // 1. Estado de Lectura
                 if (idxShelf != -1) {
-                    String shelf = limpiar(obtenerCampo(campos, idxShelf)).toLowerCase();
+                    String shelf = limpiar(obtenerCampo(campos, idxShelf)).toLowerCase(java.util.Locale.ROOT);
                     if (shelf.contains("read") && !shelf.contains("to-read") && !shelf.contains("currently-reading") && !shelf.equals("reading")) {
                         nuevoLibro.setEstadoLectura("Leído");
                     } else if (shelf.contains("to-read") || shelf.contains("pendiente")) {
@@ -211,7 +213,7 @@ public class ImportadorCSV {
             }
 
         } catch (Exception e) {
-            System.err.println("Error al importar CSV: " + e.getMessage());
+            LOGGER.warning("Error al importar CSV: " + e.getMessage());
             return null; // Devolvemos null para que el controlador sepa que hubo un error
         }
 

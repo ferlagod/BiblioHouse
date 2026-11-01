@@ -220,7 +220,7 @@ public class ServicioExportarPdf {
                 float yPosition = page.getMediaBox().getHeight() - MARGIN;
 
                 // Título de la estantería
-                String tituloEstanteria = estanteria.isEmpty() ? "SIN ESTANTERÍA" : estanteria.toUpperCase();
+                String tituloEstanteria = estanteria.isEmpty() ? "SIN ESTANTERÍA" : estanteria.toUpperCase(java.util.Locale.ROOT);
                 yPosition = agregarTexto(contentStream, tituloEstanteria, MARGIN, yPosition,
                         boldFont, FONT_SIZE_HEADING);
                 yPosition -= LEADING;

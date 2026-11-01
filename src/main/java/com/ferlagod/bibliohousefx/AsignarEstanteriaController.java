@@ -17,6 +17,8 @@
  */
 package com.ferlagod.bibliohousefx;
 
+
+import com.bibliohouse.logic.LanguageManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -121,9 +123,9 @@ public class AsignarEstanteriaController {
     @FXML
     private void crearNuevaEstanteria(ActionEvent event) {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Nueva Estantería");
+        dialog.setTitle(LanguageManager.getString("ui.nueva_estanteria", "Nueva Estantería"));
         dialog.setHeaderText(null);
-        dialog.setContentText("Nombre de la estantería:");
+        dialog.setContentText(LanguageManager.getString("ui.nombre_de_la_estanteria", "Nombre de la estantería:"));
         dialog.setGraphic(null); // Quitar icono para estilo más limpio
 
         Optional<String> result = dialog.showAndWait();

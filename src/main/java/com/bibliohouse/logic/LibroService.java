@@ -66,7 +66,7 @@ public class LibroService {
             if (l.getIsbn() != null && !l.getIsbn().isBlank()) {
                 return l.getIsbn().replaceAll("[^0-9X]", "");
             }
-            return (l.getTitulo() + "|" + l.getAutor()).toLowerCase().trim();
+            return (l.getTitulo() + "|" + l.getAutor()).toLowerCase(java.util.Locale.ROOT).trim();
         }));
 
         List<Libro> librosParaBorrar = new ArrayList<>();
