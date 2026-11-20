@@ -793,18 +793,76 @@ public class PrimaryController implements Initializable {
      * @param mensaje Texto descriptivo a notificar.
      */
     public void notificar(String mensaje) {
-        if (notificationPane != null) {
-            notificationPane.setText(mensaje);
-            notificationPane.show();
-            // Un único temporizador reiniciado en cada aviso: antes cada aviso
-            // creaba el suyo y el del anterior ocultaba el nuevo antes de tiempo.
-            if (ocultarNotificacion == null) {
-                ocultarNotificacion = new PauseTransition(Duration.seconds(3));
-                ocultarNotificacion.setOnFinished(e -> notificationPane.hide());
-            }
-            ocultarNotificacion.playFromStart();
-        }
+        mostrarNotificacionInterna(mensaje, Duration.seconds(3));
         SystemNotificationService.notificarInfo("BiblioHouse", mensaje);
+    }
+
+    /**
+     * Muestra la notificación emergente dentro de la ventana durante el tiempo
+     * indicado, sin botones de acción.
+     */
+    private void mostrarNotificacionInterna(String mensaje, Duration duracion) {
+        if (notificationPane == null) {
+            return;
+        }
+        notificationPane.getActions().clear();
+        notificationPane.setText(mensaje);
+        notificationPane.show();
+        // Un único temporizador reiniciado en cada aviso: antes cada aviso
+        // creaba el suyo y el del anterior ocultaba el nuevo antes de tiempo.
+        if (ocultarNotificacion == null) {
+            ocultarNotificacion = new PauseTransition();
+            ocultarNotificacion.setOnFinished(e -> {
+                notificationPane.hide();
+                notificationPane.getActions().clear();
+            });
+        }
+        ocultarNotificacion.setDuration(duracion);
+        ocultarNotificacion.playFromStart();
+    }
+
+    /**
+     * Muestra una notificación con un botón «Deshacer» durante unos segundos.
+     * La acción solo puede ejecutarse una vez.
+     *
+     * @param mensaje Texto de la notificación (p. ej. «Libro eliminado: X»).
+     * @param deshacer Acción que revierte la operación.
+     */
+    public void ofrecerDeshacer(String mensaje, Runnable deshacer) {
+        setMensajeEstado(mensaje);
+        if (notificationPane == null) {
+            return;
+        }
+        mostrarNotificacionInterna(mensaje, Duration.seconds(7));
+        AtomicBoolean usado = new AtomicBoolean(false);
+        org.controlsfx.control.action.Action accion = new org.controlsfx.control.action.Action(
+                LanguageManager.getString("ui.deshacer", "Deshacer"), e -> {
+                    if (!usado.compareAndSet(false, true)) {
+                        return;
+                    }
+                    if (ocultarNotificacion != null) {
+                        ocultarNotificacion.stop();
+                    }
+                    notificationPane.hide();
+                    notificationPane.getActions().clear();
+                    deshacer.run();
+                    setMensajeEstado(LanguageManager.getString("ui.accion_deshecha", "Acción deshecha."));
+                });
+        notificationPane.getActions().setAll(accion);
+    }
+
+    /**
+     * Vuelve a colocar en la biblioteca un libro eliminado, en su posición
+     * original, y lo guarda. Al reaparecer su clave se retira la marca de
+     * borrado de la sincronización.
+     */
+    private void restaurarLibro(Libro libro, int indiceOriginal) {
+        if (listaLibrosCompleta == null || libro == null || listaLibrosCompleta.contains(libro)) {
+            return;
+        }
+        int indice = Math.max(0, Math.min(indiceOriginal, listaLibrosCompleta.size()));
+        listaLibrosCompleta.add(indice, libro);
+        AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, true));
     }
 
     /**
@@ -1222,25 +1280,32 @@ public class PrimaryController implements Initializable {
             if (result.isPresent()) {
                 if (result.get() == btnEliminarUno) {
                     libroService.actualizarStock(libro, -1);
-                    setMensajeEstado(LanguageManager.getString("ui.se_ha_eliminado_una_copia_quedan", "Se ha eliminado una copia. Quedan: ") + libro.getCantidad());
                     AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
+                    ofrecerDeshacer(LanguageManager.getString("ui.se_ha_eliminado_una_copia_quedan", "Se ha eliminado una copia. Quedan: ") + libro.getCantidad(), () -> {
+                        libroService.actualizarStock(libro, 1);
+                        AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
+                    });
                 } else if (result.get() == btnEliminarTodo) {
-                    libroService.borrarTotalmente(libro);
-                    setMensajeEstado(LanguageManager.getString("ui.libro_eliminado_definitivamente", "Libro eliminado definitivamente: ") + libro.getTitulo());
-                    AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(libro));
+                    eliminarSinConfirmar(libro);
                 }
             }
         } else {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle(LanguageManager.getString("ui.eliminar_libro", "Eliminar Libro"));
-            alert.setHeaderText(LanguageManager.getString("ui.estas_seguro_de_que_quieres_borrar", "¿Estás seguro de que quieres borrar este libro?"));
-            alert.setContentText(LanguageManager.getString("ui.vas_a_eliminar", "Vas a eliminar: ") + libro.getTitulo() + LanguageManager.getString("ui.nesta_accion_no_se_puede_deshacer", "\nEsta acción no se puede deshacer."));
-            if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                libroService.borrarTotalmente(libro);
-                setMensajeEstado(LanguageManager.getString("ui.libro_eliminado_definitivamente", "Libro eliminado definitivamente: ") + libro.getTitulo());
-                AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(libro));
-            }
+            // Sin diálogo de confirmación: la notificación ofrece «Deshacer»,
+            // que es más rápido y protege igual frente a un clic accidental.
+            eliminarSinConfirmar(libro);
         }
+    }
+
+    /**
+     * Elimina el libro de la biblioteca y ofrece deshacerlo durante unos
+     * segundos.
+     */
+    private void eliminarSinConfirmar(Libro libro) {
+        int indice = listaLibrosCompleta.indexOf(libro);
+        libroService.borrarTotalmente(libro);
+        AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(libro));
+        ofrecerDeshacer(LanguageManager.getString("ui.libro_eliminado", "Libro eliminado: ") + libro.getTitulo(),
+                () -> restaurarLibro(libro, indice));
     }
 
     /**
