@@ -162,6 +162,16 @@ public class CatalogoGridController {
     private String categoriaActual = SidebarController.VISTA_TODOS;
     private ContextMenu contextMenuLibros;
 
+    /**
+     * Marcador del orden «más recientes primero». No compara por sí mismo:
+     * {@link #refrescarCuadricula(boolean)} lo sustituye por un comparador
+     * basado en la posición de cada libro en la lista completa.
+     */
+    private static final Comparator<Libro> ORDEN_RECIENTE = (a, b) -> 0;
+
+    /** Duración del fundido al cambiar de página, filtro, orden o vista. */
+    private static final Duration DURACION_TRANSICION = Duration.millis(180);
+
     private Comparator<Libro> currentComparator = Comparator.comparing(
             l -> l.getTitulo() != null ? l.getTitulo() : "",
             String::compareToIgnoreCase);
@@ -183,7 +193,7 @@ public class CatalogoGridController {
         if (txtBuscarMisLibros != null) {
             esperaBusqueda.setOnFinished(e -> {
                 paginaActual = 1;
-                refrescarCuadricula();
+                refrescarCuadricula(true);
             });
             txtBuscarMisLibros.textProperty().addListener((obs, oldVal, newVal) -> esperaBusqueda.playFromStart());
         }
@@ -202,7 +212,7 @@ public class CatalogoGridController {
                     }
                 }
                 paginaActual = 1;
-                refrescarCuadricula();
+                refrescarCuadricula(true);
             });
         }
 
@@ -213,10 +223,19 @@ public class CatalogoGridController {
         AppEventBus.getInstance().subscribe(this, AppEventBus.FiltroEstanteriaEvent.class, e -> {
             this.categoriaActual = e.getEstanteria();
             this.paginaActual = 1;
-            refrescarCuadricula();
+            refrescarCuadricula(true);
         });
 
-        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroModificadoEvent.class, e -> refrescarCuadricula());
+        AppEventBus.getInstance().subscribe(this, AppEventBus.LibroModificadoEvent.class, e -> {
+            // La portada puede haberse reemplazado en la misma ruta (covers/<id>.jpg):
+            // la firma de la tarjeta no cambia, así que se descarta explícitamente.
+            if (e.getLibro() != null) {
+                cacheTarjetas.remove(e.getLibro());
+            } else {
+                cacheTarjetas.clear();
+            }
+            refrescarCuadricula();
+        });
         AppEventBus.getInstance().subscribe(this, AppEventBus.LibroEliminadoEvent.class, e -> refrescarCuadricula());
         AppEventBus.getInstance().subscribe(this, AppEventBus.CatalogoSincronizadoEvent.class, e -> refrescarCuadricula());
     }
@@ -336,7 +355,7 @@ public class CatalogoGridController {
     public void ordenarPorTituloAZ() {
         currentComparator = Comparator.comparing(l -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase);
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     /**
@@ -347,7 +366,7 @@ public class CatalogoGridController {
     public void ordenarPorTituloZA() {
         currentComparator = Comparator.comparing((Libro l) -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase).reversed();
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     /**
@@ -358,7 +377,7 @@ public class CatalogoGridController {
     public void ordenarPorAutor() {
         currentComparator = Comparator.comparing((Libro l) -> l.getAutor() != null ? l.getAutor() : "", String::compareToIgnoreCase);
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     /**
@@ -373,7 +392,7 @@ public class CatalogoGridController {
             return a2.compareTo(a1); // Descendente
         };
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     /**
@@ -382,16 +401,12 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorReciente() {
-        currentComparator = (l1, l2) -> {
-            if (listaLibrosCompleta == null) {
-                return 0;
-            }
-            int i1 = listaLibrosCompleta.indexOf(l1);
-            int i2 = listaLibrosCompleta.indexOf(l2);
-            return Integer.compare(i2, i1); // Descendente
-        };
+        // Antes se usaba indexOf() dentro del comparador (O(n² log n)): con
+        // bibliotecas grandes la cuadrícula tardaba segundos en ordenarse.
+        // Ahora la posición de cada libro se calcula una vez por refresco.
+        currentComparator = ORDEN_RECIENTE;
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     // =========================================================================
@@ -405,7 +420,7 @@ public class CatalogoGridController {
     public void irPrimeraPagina() {
         if (paginaActual > 1) {
             paginaActual = 1;
-            refrescarCuadricula();
+            refrescarCuadricula(true);
             scrollearArriba();
         }
     }
@@ -418,7 +433,7 @@ public class CatalogoGridController {
     public void irPaginaAnterior() {
         if (paginaActual > 1) {
             paginaActual--;
-            refrescarCuadricula();
+            refrescarCuadricula(true);
             scrollearArriba();
         }
     }
@@ -431,7 +446,7 @@ public class CatalogoGridController {
     public void irPaginaSiguiente() {
         if (paginaActual < totalPaginas) {
             paginaActual++;
-            refrescarCuadricula();
+            refrescarCuadricula(true);
             scrollearArriba();
         }
     }
@@ -443,7 +458,7 @@ public class CatalogoGridController {
     public void irUltimaPagina() {
         if (paginaActual < totalPaginas) {
             paginaActual = totalPaginas;
-            refrescarCuadricula();
+            refrescarCuadricula(true);
             scrollearArriba();
         }
     }
@@ -696,7 +711,7 @@ public class CatalogoGridController {
             tablaMisLibros.setVisible(false);
             tablaMisLibros.setManaged(false);
         }
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     @FXML
@@ -717,7 +732,7 @@ public class CatalogoGridController {
             tablaMisLibros.setVisible(true);
             tablaMisLibros.setManaged(true);
         }
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     @FXML
@@ -757,7 +772,7 @@ public class CatalogoGridController {
             btnActivo.getStyleClass().add("chip-active");
         }
         paginaActual = 1;
-        refrescarCuadricula();
+        refrescarCuadricula(true);
     }
 
     // =========================================================================
@@ -768,8 +783,28 @@ public class CatalogoGridController {
      * el texto de búsqueda rápida y la paginación activa.
      */
     public void refrescarCuadricula() {
+        refrescarCuadricula(false);
+    }
+
+    /**
+     * Redibuja la cuadrícula o la lista.
+     *
+     * @param animar {@code true} cuando el usuario ha navegado (página,
+     * filtro, orden, búsqueda, vista): el contenido nuevo entra con un fundido
+     * suave. Los refrescos por cambios de datos no se animan para no parpadear.
+     */
+    public void refrescarCuadricula(boolean animar) {
         if (panelMisLibros == null || listaLibrosCompleta == null) {
             return;
+        }
+
+        Comparator<Libro> comparador = currentComparator;
+        if (comparador == ORDEN_RECIENTE) {
+            Map<Libro, Integer> posicion = new java.util.IdentityHashMap<>(listaLibrosCompleta.size() * 2);
+            for (int i = 0; i < listaLibrosCompleta.size(); i++) {
+                posicion.put(listaLibrosCompleta.get(i), i);
+            }
+            comparador = Comparator.comparingInt((Libro l) -> posicion.getOrDefault(l, -1)).reversed();
         }
 
         String busquedaRapida = txtBuscarMisLibros != null ? TextoUtil.normalizarBusqueda(txtBuscarMisLibros.getText()) : "";
@@ -812,7 +847,7 @@ public class CatalogoGridController {
                     return TextoUtil.contiene(l.getTitulo(), busquedaRapida)
                             || TextoUtil.contiene(l.getAutor(), busquedaRapida);
                 })
-                .sorted(currentComparator)
+                .sorted(comparador)
                 .collect(Collectors.toList());
 
         totalLibrosFiltrados = filtrados.size();
@@ -823,29 +858,17 @@ public class CatalogoGridController {
             paginaActual = 1;
             actualizarBarraPaginacion(0, 0, 0);
 
-            VBox emptyState = new VBox(12);
-            emptyState.setAlignment(Pos.CENTER);
-            emptyState.setStyle("-fx-padding: 60 0 60 0;");
-
-            Label lblIcon = new Label("📚");
-            lblIcon.setStyle("-fx-font-size: 48px;");
-
-            Label lblVacio = new Label(LanguageManager.getString("catalog.empty.title", "Tu biblioteca está vacía aquí"));
-            lblVacio.setStyle("-fx-text-fill: -color-fg-default; -fx-font-size: 16px; -fx-font-weight: bold;");
-
-            Label lblSub = new Label(LanguageManager.getString("catalog.empty.subtitle",
-                    "Prueba a cambiar el filtro de estantería o chip\no añade libros nuevos desde «Gestionar Libros»"));
-            lblSub.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 13px; -fx-text-alignment: center;");
-            lblSub.setWrapText(true);
-            lblSub.setMaxWidth(400);
-            lblSub.setAlignment(Pos.CENTER);
-
-            emptyState.getChildren().addAll(lblIcon, lblVacio, lblSub);
-            panelMisLibros.getChildren().setAll(emptyState);
-
+            boolean hayFiltros = filtroChipActual != FiltroChip.TODOS || !busquedaRapida.isEmpty();
+            // Un nodo solo puede tener un padre: la cuadrícula y la tabla
+            // necesitan cada una su propio estado vacío. Antes se compartía y la
+            // tabla «robaba» el nodo, dejando la cuadrícula en blanco.
+            panelMisLibros.getChildren().setAll(crearEstadoVacio(hayFiltros));
             if (tablaMisLibros != null) {
                 tablaMisLibros.setItems(FXCollections.emptyObservableList());
-                tablaMisLibros.setPlaceholder(emptyState);
+                tablaMisLibros.setPlaceholder(crearEstadoVacio(hayFiltros));
+            }
+            if (animar) {
+                animarEntradaContenido();
             }
             return;
         }
@@ -884,6 +907,92 @@ public class CatalogoGridController {
         if (tablaMisLibros != null) {
             tablaMisLibros.setItems(FXCollections.observableArrayList(paginaLibros));
         }
+        if (animar) {
+            animarEntradaContenido();
+        }
+    }
+
+    /**
+     * Construye el mensaje que se muestra cuando no hay libros que enseñar. Si
+     * el vacío se debe a la búsqueda o a un chip, ofrece limpiarlos con un
+     * clic en vez de obligar a deshacerlos a mano.
+     */
+    private VBox crearEstadoVacio(boolean hayFiltros) {
+        VBox emptyState = new VBox(12);
+        emptyState.setAlignment(Pos.CENTER);
+        emptyState.getStyleClass().add("catalog-empty-state");
+
+        Label lblIcon = new Label(hayFiltros ? "🔍" : "📚");
+        lblIcon.getStyleClass().add("catalog-empty-icon");
+
+        Label lblVacio = new Label(hayFiltros
+                ? LanguageManager.getString("catalog.empty.filtered.title", "Ningún libro coincide con los filtros")
+                : LanguageManager.getString("catalog.empty.title", "Tu biblioteca está vacía aquí"));
+        lblVacio.getStyleClass().add("catalog-empty-title");
+
+        Label lblSub = new Label(hayFiltros
+                ? LanguageManager.getString("catalog.empty.filtered.subtitle", "Prueba con otra búsqueda o quita el filtro activo.")
+                : LanguageManager.getString("catalog.empty.subtitle",
+                        "Prueba a cambiar el filtro de estantería o chip\no añade libros nuevos desde «Gestionar Libros»"));
+        lblSub.getStyleClass().add("catalog-empty-subtitle");
+        lblSub.setWrapText(true);
+        lblSub.setMaxWidth(400);
+        lblSub.setAlignment(Pos.CENTER);
+        lblSub.setTextAlignment(TextAlignment.CENTER);
+
+        emptyState.getChildren().addAll(lblIcon, lblVacio, lblSub);
+
+        if (hayFiltros) {
+            Button btnLimpiar = new Button(LanguageManager.getString("catalog.empty.clear_filters", "Limpiar filtros"));
+            btnLimpiar.getStyleClass().add("accent");
+            btnLimpiar.setOnAction(e -> limpiarFiltros());
+            emptyState.getChildren().add(btnLimpiar);
+        }
+        return emptyState;
+    }
+
+    /**
+     * Quita la búsqueda rápida y el chip activo, y vuelve a la primera página.
+     */
+    public void limpiarFiltros() {
+        esperaBusqueda.stop();
+        if (txtBuscarMisLibros != null) {
+            txtBuscarMisLibros.clear();
+            esperaBusqueda.stop(); // clear() dispara el listener de texto
+        }
+        activarChip(chipTodos, FiltroChip.TODOS);
+    }
+
+    /**
+     * Hace entrar el contenido visible (cuadrícula o tabla) con un fundido y
+     * un desplazamiento vertical corto, para que los cambios de página o
+     * filtro no sean un salto brusco.
+     */
+    private void animarEntradaContenido() {
+        Node objetivo = esVistaLista && tablaMisLibros != null ? tablaMisLibros : panelMisLibros;
+        if (objetivo == null || objetivo.getScene() == null) {
+            return;
+        }
+        Object anterior = objetivo.getProperties().remove("catalog_transition");
+        if (anterior instanceof javafx.animation.Animation a) {
+            a.stop();
+        }
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(DURACION_TRANSICION, objetivo);
+        fade.setFromValue(0.0);
+        fade.setToValue(1.0);
+        fade.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        TranslateTransition slide = new TranslateTransition(DURACION_TRANSICION, objetivo);
+        slide.setFromY(8);
+        slide.setToY(0);
+        slide.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        javafx.animation.ParallelTransition entrada = new javafx.animation.ParallelTransition(fade, slide);
+        entrada.setOnFinished(e -> {
+            objetivo.setOpacity(1.0);
+            objetivo.setTranslateY(0);
+            objetivo.getProperties().remove("catalog_transition");
+        });
+        objetivo.getProperties().put("catalog_transition", entrada);
+        entrada.play();
     }
 
     /**
@@ -1145,16 +1254,22 @@ public class CatalogoGridController {
         contenedorPortada.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
         contenedorPortada.setAccessibleText(LanguageManager.getString("ui.portada_de", "Portada de ") + libro.getTitulo());
 
-        // Micro-animación suave al pasar el ratón (hover lift sobre la portada, sin alterar el layout del FlowPane)
-        tarjeta.setOnMouseEntered(e -> {
-            TranslateTransition tt = new TranslateTransition(Duration.millis(120), contenedorPortada);
-            tt.setToY(-4);
-            tt.play();
-        });
-        tarjeta.setOnMouseExited(e -> {
-            TranslateTransition tt = new TranslateTransition(Duration.millis(120), contenedorPortada);
-            tt.setToY(0);
-            tt.play();
+        // Micro-animación al pasar el ratón: la portada se eleva y crece un
+        // poco, sin alterar el layout del FlowPane. Se reutiliza una única
+        // transición por tarjeta: antes se creaba una nueva en cada evento y,
+        // al entrar y salir rápido, dos animaciones competían y la portada
+        // daba saltos.
+        TranslateTransition elevar = new TranslateTransition(Duration.millis(160), contenedorPortada);
+        javafx.animation.ScaleTransition escalar = new javafx.animation.ScaleTransition(Duration.millis(160), contenedorPortada);
+        javafx.animation.ParallelTransition hover = new javafx.animation.ParallelTransition(elevar, escalar);
+        elevar.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        escalar.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        tarjeta.hoverProperty().addListener((obs, antes, encima) -> {
+            hover.stop();
+            elevar.setToY(encima ? -5 : 0);
+            escalar.setToX(encima ? 1.03 : 1.0);
+            escalar.setToY(encima ? 1.03 : 1.0);
+            hover.playFromStart();
         });
 
         // Badge de estado de lectura en portada (diseño en cápsula con texto completo y borde de alto contraste)
@@ -1520,65 +1635,96 @@ public class CatalogoGridController {
      * archivos e-book (EPUB, PDF, MOBI).
      */
     private void configurarDragAndDrop() {
-        if (panelMisLibros == null) {
-            return;
-        }
-
-        panelMisLibros.setOnDragOver(event -> {
-            if (event.getGestureSource() != panelMisLibros && event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                panelMisLibros.setStyle("-fx-background-color: -color-accent-subtle; -fx-border-color: -color-accent-emphasis; -fx-border-width: 2; -fx-border-style: dashed; -fx-border-radius: 8; -fx-background-radius: 8;");
+        // Se escucha en el ScrollPane y en la tabla (no solo en el FlowPane),
+        // para que soltar en la zona vacía bajo las tarjetas o en la vista de
+        // lista también funcione.
+        for (Node zona : new Node[]{scrollMisLibros, tablaMisLibros}) {
+            if (zona == null) {
+                continue;
             }
-            event.consume();
-        });
+            zona.setOnDragOver(event -> {
+                if (event.getGestureSource() == null && contieneEbooks(event.getDragboard())) {
+                    event.acceptTransferModes(TransferMode.COPY);
+                    if (!zona.getStyleClass().contains("drop-target-active")) {
+                        zona.getStyleClass().add("drop-target-active");
+                    }
+                }
+                event.consume();
+            });
+            zona.setOnDragExited(event -> {
+                zona.getStyleClass().remove("drop-target-active");
+                event.consume();
+            });
+            zona.setOnDragDropped(event -> {
+                zona.getStyleClass().remove("drop-target-active");
+                Dragboard db = event.getDragboard();
+                List<File> ebooks = db.hasFiles()
+                        ? db.getFiles().stream().filter(EbookMetadataService::esArchivoEbook).collect(Collectors.toList())
+                        : List.of();
+                if (!ebooks.isEmpty()) {
+                    importarEbooks(ebooks);
+                }
+                event.setDropCompleted(!ebooks.isEmpty());
+                event.consume();
+            });
+        }
+    }
 
-        panelMisLibros.setOnDragExited(event -> {
-            panelMisLibros.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
-            event.consume();
-        });
+    private static boolean contieneEbooks(Dragboard db) {
+        return db.hasFiles() && db.getFiles().stream().anyMatch(EbookMetadataService::esArchivoEbook);
+    }
 
-        panelMisLibros.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            panelMisLibros.setStyle("-fx-background-color: transparent; -fx-border-width: 0;");
+    /**
+     * Importa en segundo plano los e-books soltados sobre el catálogo (antes
+     * solo se procesaba el primero) y los añade de una vez, omitiendo los que
+     * ya existen por título.
+     */
+    private void importarEbooks(List<File> archivos) {
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(
+                LanguageManager.getString("ui.importando_e_book", "Importando e-book...")));
 
-            if (db.hasFiles()) {
-                File file = db.getFiles().get(0);
-                if (EbookMetadataService.esArchivoEbook(file)) {
-                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.importando_e_book", "Importando e-book...")));
-
-                    Thread importThread = new Thread(() -> {
-                        Libro nuevoLibro = EbookMetadataService.crearLibroDesdeArchivo(file, this.rutaUsuario);
-                        Platform.runLater(() -> {
-                            if (nuevoLibro != null) {
-                                boolean existe = listaLibrosCompleta.stream()
-                                        .anyMatch(l -> l.getTitulo() != null && l.getTitulo().equalsIgnoreCase(nuevoLibro.getTitulo()));
-
-                                if (existe) {
-                                    if (mainController != null) {
-                                        mainController.mostrarAlertaPublic(LanguageManager.getString("ui.libro_duplicado", "Libro duplicado"), LanguageManager.getString("ui.ya_existe_un_libro_con_el", "Ya existe un libro con el título: ") + nuevoLibro.getTitulo());
-                                    }
-                                } else {
-                                    nuevoLibro.setId(UUID.randomUUID().toString());
-                                    listaLibrosCompleta.add(nuevoLibro);
-                                    if (jsonManager != null) {
-                                        jsonManager.guardarLibros(listaLibrosCompleta);
-                                    }
-                                    refrescarCuadricula();
-                                    AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(nuevoLibro, true));
-                                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(LanguageManager.getString("ui.e_book_importado", "E-book importado: ") + nuevoLibro.getTitulo()));
-                                }
-                            }
-                        });
-                    });
-                    importThread.setDaemon(true);
-                    importThread.start();
-                    success = true;
+        Thread importThread = new Thread(() -> {
+            List<Libro> leidos = new java.util.ArrayList<>();
+            for (File archivo : archivos) {
+                Libro libro = EbookMetadataService.crearLibroDesdeArchivo(archivo, this.rutaUsuario);
+                if (libro != null) {
+                    leidos.add(libro);
                 }
             }
-
-            event.setDropCompleted(success);
-            event.consume();
-        });
+            Platform.runLater(() -> {
+                List<String> duplicados = new java.util.ArrayList<>();
+                Libro ultimo = null;
+                int importados = 0;
+                for (Libro nuevoLibro : leidos) {
+                    boolean existe = listaLibrosCompleta.stream()
+                            .anyMatch(l -> l.getTitulo() != null && l.getTitulo().equalsIgnoreCase(nuevoLibro.getTitulo()));
+                    if (existe) {
+                        duplicados.add(nuevoLibro.getTitulo());
+                        continue;
+                    }
+                    nuevoLibro.setId(UUID.randomUUID().toString());
+                    listaLibrosCompleta.add(nuevoLibro);
+                    ultimo = nuevoLibro;
+                    importados++;
+                }
+                if (importados > 0) {
+                    // El controlador principal escucha este evento y guarda en
+                    // segundo plano; antes se guardaba aquí en el hilo de la UI.
+                    AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(importados == 1 ? ultimo : null, true));
+                    String mensaje = importados == 1
+                            ? LanguageManager.getString("ui.e_book_importado", "E-book importado: ") + ultimo.getTitulo()
+                            : String.format(LanguageManager.getString("ui.e_books_importados", "%d e-books importados"), importados);
+                    AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(mensaje));
+                }
+                if (!duplicados.isEmpty() && mainController != null) {
+                    mainController.mostrarAlertaPublic(
+                            LanguageManager.getString("ui.libro_duplicado", "Libro duplicado"),
+                            LanguageManager.getString("ui.ya_existe_un_libro_con_el", "Ya existe un libro con el título: ")
+                            + String.join(", ", duplicados));
+                }
+            });
+        }, "ImportarEbooks");
+        importThread.setDaemon(true);
+        importThread.start();
     }
 }

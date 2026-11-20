@@ -101,30 +101,73 @@
    ESTILOS MODERNOS (UI/UX REDESIGN)
    ========================================================================= */
 
-/* --- TARJETAS DE LIBROS (BOOK CARDS) --- */
+/* --- TARJETAS DE LIBROS (BOOK CARDS) ---
+   El "borde" se dibuja con dos capas de fondo (color de borde + relleno con
+   inset). A diferencia de -fx-border-width, los insets de fondo no afectan
+   al layout, así que la tarjeta no se desplaza al pasar el ratón o al
+   recibir el foco. */
 .book-card {
     -fx-padding: 12px 10px 10px 10px;
-    -fx-background-color: -color-bg-subtle;
-    -fx-background-radius: 12px;
-    -fx-border-radius: 12px;
-    -fx-border-color: -color-border-subtle;
-    -fx-border-width: 1px;
+    -fx-background-color: -color-border-subtle, -color-bg-subtle;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 12px, 11px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 2);
     -fx-cursor: hand;
 }
 
 .book-card:hover {
-    -fx-background-color: -color-bg-default;
-    -fx-border-color: -color-accent-emphasis;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 16, 0, 0, 6);
+    -fx-background-color: -color-accent-emphasis, -color-bg-default;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.20), 16, 0, 0, 6);
 }
 
 .book-card:focused {
-    -fx-border-color: -color-accent-emphasis;
-    -fx-border-width: 2.5px;
-    -fx-border-radius: 12px;
-    -fx-background-radius: 12px;
+    -fx-background-color: -color-accent-emphasis, -color-bg-subtle;
+    -fx-background-insets: 0, 2.5;
+    -fx-background-radius: 12px, 10px;
     -fx-effect: dropshadow(gaussian, -color-accent-emphasis, 8, 0.45, 0, 0);
+}
+
+.book-card:focused:hover {
+    -fx-background-color: -color-accent-emphasis, -color-bg-default;
+}
+
+/* --- ESTADO VACÍO DEL CATÁLOGO --- */
+.catalog-empty-state {
+    -fx-padding: 60 0 60 0;
+}
+
+.catalog-empty-icon {
+    -fx-font-size: 48px;
+}
+
+.catalog-empty-title {
+    -fx-text-fill: -color-fg-default;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.catalog-empty-subtitle {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 13px;
+}
+
+/* --- ZONA DE SOLTAR E-BOOKS --- */
+.drop-target-active {
+    -fx-background-color: -color-accent-subtle;
+    -fx-border-color: -color-accent-emphasis;
+    -fx-border-width: 2;
+    -fx-border-style: dashed;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.catalog-scroll,
+.catalog-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.catalog-scroll.drop-target-active {
+    -fx-background-color: -color-accent-subtle;
 }
 
 /* Contenedor de portada */
@@ -410,20 +453,21 @@
 }
 
 .root.theme-high-contrast-light .book-card {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #000000;
-    -fx-border-width: 1.5px;
+    -fx-background-color: #000000, #ffffff;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 12px, 10.5px;
 }
 
 .root.theme-high-contrast-light .book-card:hover {
-    -fx-background-color: #f8fafc;
-    -fx-border-color: #002d9c;
-    -fx-border-width: 2.5px;
+    -fx-background-color: #002d9c, #f8fafc;
+    -fx-background-insets: 0, 2.5;
+    -fx-background-radius: 12px, 9.5px;
 }
 
 .root.theme-high-contrast-light .book-card:focused {
-    -fx-border-color: #002d9c;
-    -fx-border-width: 3.5px;
+    -fx-background-color: #002d9c, #ffffff;
+    -fx-background-insets: 0, 3.5;
+    -fx-background-radius: 12px, 8.5px;
     -fx-effect: dropshadow(gaussian, rgba(0, 45, 156, 0.65), 10, 0.6, 0, 0);
 }
 
@@ -495,20 +539,21 @@
 }
 
 .root.theme-high-contrast-dark .book-card {
-    -fx-background-color: #0d0f12;
-    -fx-border-color: #ffffff;
-    -fx-border-width: 1.5px;
+    -fx-background-color: #ffffff, #0d0f12;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 12px, 10.5px;
 }
 
 .root.theme-high-contrast-dark .book-card:hover {
-    -fx-background-color: #1a1d24;
-    -fx-border-color: #facc15;
-    -fx-border-width: 2.5px;
+    -fx-background-color: #facc15, #1a1d24;
+    -fx-background-insets: 0, 2.5;
+    -fx-background-radius: 12px, 9.5px;
 }
 
 .root.theme-high-contrast-dark .book-card:focused {
-    -fx-border-color: #facc15;
-    -fx-border-width: 3.5px;
+    -fx-background-color: #facc15, #0d0f12;
+    -fx-background-insets: 0, 3.5;
+    -fx-background-radius: 12px, 8.5px;
     -fx-effect: dropshadow(gaussian, rgba(250, 204, 21, 0.75), 10, 0.6, 0, 0);
 }
 

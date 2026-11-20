@@ -148,4 +148,44 @@ public class TestCatalogoGridPaginacion {
         assertEquals(1, controller.getPaginaActual());
         assertEquals(50, controller.getPanelMisLibros().getChildren().size());
     }
+
+    @Test
+    @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
+    public void testOrdenPorRecientes() {
+        CatalogoGridController controller = new CatalogoGridController();
+        controller.setPanelMisLibros(new FlowPane());
+        controller.setListaLibrosCompleta(crearListaLibros(5));
+        controller.setLibrosPorPagina(48);
+
+        controller.ordenarPorReciente();
+
+        List<String> titulos = controller.getPanelMisLibros().getChildren().stream()
+                .map(n -> n.getAccessibleText())
+                .toList();
+        assertEquals(5, titulos.size());
+        assertTrue(titulos.get(0).startsWith("Libro: Libro de Prueba #5"), titulos.get(0));
+        assertTrue(titulos.get(4).startsWith("Libro: Libro de Prueba #1"), titulos.get(4));
+    }
+
+    @Test
+    @DisplayName("La cuadrícula y la tabla usan cada una su propio nodo de estado vacío")
+    public void testEstadoVacioNoCompartido() throws Exception {
+        CatalogoGridController controller = new CatalogoGridController();
+        controller.setPanelMisLibros(new FlowPane());
+        javafx.scene.control.TableView<Libro> tabla = new javafx.scene.control.TableView<>();
+        java.lang.reflect.Field campo = CatalogoGridController.class.getDeclaredField("tablaMisLibros");
+        campo.setAccessible(true);
+        campo.set(controller, tabla);
+        controller.setListaLibrosCompleta(FXCollections.observableArrayList());
+
+        controller.refrescarCuadricula();
+
+        assertEquals(1, controller.getPanelMisLibros().getChildren().size());
+        javafx.scene.Node vacioCuadricula = controller.getPanelMisLibros().getChildren().get(0);
+        assertTrue(vacioCuadricula.getStyleClass().contains("catalog-empty-state"));
+        assertNotNull(tabla.getPlaceholder());
+        assertNotSame(vacioCuadricula, tabla.getPlaceholder(),
+                "Si se comparte el nodo, la tabla lo saca de la cuadrícula y esta queda en blanco");
+        assertSame(controller.getPanelMisLibros(), vacioCuadricula.getParent());
+    }
 }

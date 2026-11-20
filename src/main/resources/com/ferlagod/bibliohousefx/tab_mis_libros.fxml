@@ -68,7 +68,7 @@
         <!-- Contenedor central: Cuadrícula o Lista Compacta -->
         <StackPane VBox.vgrow="ALWAYS">
             <children>
-                <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" style="-fx-background-color: transparent;">
+                <ScrollPane fx:id="scrollMisLibros" fitToWidth="true" styleClass="catalog-scroll">
                     <content>
                         <FlowPane fx:id="panelMisLibros" accessibleRole="PARENT" accessibleText="Catálogo de libros" focusTraversable="true" hgap="22.0" vgap="22.0" />
                     </content>
