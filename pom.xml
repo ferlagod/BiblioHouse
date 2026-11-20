@@ -190,6 +190,19 @@
             <version>11.2.0</version>
         </dependency>
 
+        <!-- Iconos vectoriales (Feather) en lugar de emojis, que cada sistema
+             operativo dibuja de forma distinta -->
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-feather-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+
     </dependencies>
     <build>
         <resources>

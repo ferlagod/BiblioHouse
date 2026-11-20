@@ -228,7 +228,8 @@ public class TestUIModernizacion {
             controller.detenerAnimacionSincronizacion(true);
             assertTrue(btn.getStyleClass().contains("sync-success"), "Debe tener clase CSS 'sync-success'");
             assertTrue(btn.getText().contains("Al día"), "Debe indicar que está al día");
-            assertEquals("✓", icon.getText());
+            assertTrue(icon.getGraphic() instanceof org.kordamp.ikonli.javafx.FontIcon, "El estado se muestra con un icono vectorial");
+            assertEquals(org.kordamp.ikonli.feather.Feather.CHECK, ((org.kordamp.ikonli.javafx.FontIcon) icon.getGraphic()).getIconCode());
         } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException ex) {
             fail("No debería fallar la prueba del botón de sincronización: " + ex.getMessage());
         }

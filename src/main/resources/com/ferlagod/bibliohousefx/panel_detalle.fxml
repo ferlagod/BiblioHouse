@@ -24,6 +24,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox fx:id="raizPanel" styleClass="detail-panel" prefWidth="440.0" minWidth="360.0" maxWidth="440.0" accessibleRole="PARENT" accessibleText="Ficha del libro" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.DetalleLibroController">
     <children>
@@ -32,7 +33,11 @@
             <children>
                 <Label styleClass="detail-panel-caption" text="%detail.panel.title" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="btnCerrarPanel" accessibleText="Cerrar ficha" onAction="#cerrar" styleClass="flat, detail-panel-close" text="✕" />
+                <Button fx:id="btnCerrarPanel" accessibleText="Cerrar ficha" onAction="#cerrar" styleClass="flat, detail-panel-close">
+                    <graphic>
+                        <FontIcon iconLiteral="fth-x" iconSize="16" />
+                    </graphic>
+                </Button>
             </children>
         </HBox>
 

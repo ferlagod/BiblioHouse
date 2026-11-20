@@ -182,18 +182,19 @@ public class SidebarController {
                     fila.setAlignment(Pos.CENTER_LEFT);
                     fila.setPadding(new Insets(2, 4, 2, 4));
 
-                    String icono = switch (item) {
+                    org.kordamp.ikonli.feather.Feather icono = switch (item) {
                         case VISTA_TODOS ->
-                            "📚";
+                            org.kordamp.ikonli.feather.Feather.BOOK;
                         case VISTA_DESEOS ->
-                            "⭐";
+                            org.kordamp.ikonli.feather.Feather.STAR;
                         case VISTA_DIGITAL ->
-                            "📱";
+                            org.kordamp.ikonli.feather.Feather.TABLET;
                         default ->
-                            "📁";
+                            org.kordamp.ikonli.feather.Feather.FOLDER;
                     };
-                    Label lblIcono = new Label(icono);
-                    lblIcono.setStyle("-fx-font-size: 13px;");
+                    Label lblIcono = new Label();
+                    lblIcono.setGraphic(com.bibliohouse.utils.Iconos.de(icono));
+                    lblIcono.getStyleClass().add("sidebar-item-icon");
 
                     Label lblTexto = new Label(item);
                     lblTexto.setStyle("-fx-font-size: 12px; -fx-font-weight: 500;");

@@ -23,6 +23,7 @@ import com.bibliohouse.logic.EstadoLectura;
 import com.bibliohouse.logic.JsonManager;
 import com.bibliohouse.logic.LanguageManager;
 import com.bibliohouse.logic.Libro;
+import com.bibliohouse.utils.Iconos;
 import com.bibliohouse.utils.ImageLoader;
 import com.bibliohouse.utils.TextoUtil;
 import java.io.File;
@@ -72,6 +73,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.feather.Feather;
 
 /**
  * Controlador para la pestaña "Mis Libros". Gestiona la cuadrícula visual de
@@ -283,6 +286,7 @@ public class CatalogoGridController {
 
         configurarTablaMisLibros();
         configurarBarraSeleccion();
+        configurarIconos();
         if (scrollMisLibros != null) {
             scrollMisLibros.vvalueProperty().addListener((obs, antes, ahora) -> {
                 if (modoContinuo && ahora.doubleValue() >= 0.9 && cargarMasContinuo()) {
@@ -510,7 +514,7 @@ public class CatalogoGridController {
         }
         ordenActual = clave;
         if (btnOrdenar != null && indiceMenu < btnOrdenar.getItems().size()) {
-            btnOrdenar.setText("⇅ " + btnOrdenar.getItems().get(indiceMenu).getText());
+            btnOrdenar.setText(btnOrdenar.getItems().get(indiceMenu).getText());
         }
     }
 
@@ -1173,6 +1177,34 @@ public class CatalogoGridController {
         }
     }
 
+    /**
+     * Sustituye los emojis y símbolos de texto de la barra del catálogo por
+     * iconos vectoriales.
+     */
+    private void configurarIconos() {
+        Iconos.aplicar(chipTodos, Feather.BOOK);
+        Iconos.aplicar(chipLeyendo, Feather.BOOK_OPEN);
+        Iconos.aplicar(chipLeidos, Feather.CHECK_CIRCLE);
+        Iconos.aplicar(chipPendientes, Feather.CLOCK);
+        Iconos.aplicar(chipDigitales, Feather.TABLET);
+        soloIcono(btnVistaCuadricula, Feather.GRID);
+        soloIcono(btnVistaLista, Feather.LIST);
+        soloIcono(btnPrimeraPagina, Feather.CHEVRONS_LEFT);
+        soloIcono(btnAnterior, Feather.CHEVRON_LEFT);
+        soloIcono(btnSiguiente, Feather.CHEVRON_RIGHT);
+        soloIcono(btnUltima, Feather.CHEVRONS_RIGHT);
+        if (btnOrdenar != null) {
+            btnOrdenar.setGraphic(Iconos.de(Feather.SLIDERS));
+        }
+    }
+
+    private static void soloIcono(Button b, Ikon ikon) {
+        if (b != null) {
+            b.setText("");
+            b.setGraphic(Iconos.de(ikon, 15));
+        }
+    }
+
     // =========================================================================
     // SCROLL CONTINUO
     // =========================================================================
@@ -1376,7 +1408,8 @@ public class CatalogoGridController {
         Button eliminar = new Button(LanguageManager.getString("ctx.delete", "Eliminar"));
         eliminar.getStyleClass().add("danger");
         eliminar.setOnAction(e -> eliminarSeleccion());
-        Button cerrar = new Button("✕");
+        Button cerrar = new Button();
+        cerrar.setGraphic(Iconos.de(Feather.X));
         cerrar.getStyleClass().add("flat");
         cerrar.setAccessibleText(LanguageManager.getString("bulk.clear", "Quitar selección"));
         cerrar.setTooltip(new javafx.scene.control.Tooltip(cerrar.getAccessibleText()));
@@ -1560,7 +1593,8 @@ public class CatalogoGridController {
         emptyState.setAlignment(Pos.CENTER);
         emptyState.getStyleClass().add("catalog-empty-state");
 
-        Label lblIcon = new Label(hayFiltros ? "🔍" : "📚");
+        Label lblIcon = new Label();
+        lblIcon.setGraphic(Iconos.de(hayFiltros ? Feather.SEARCH : Feather.BOOK_OPEN, 44));
         lblIcon.getStyleClass().add("catalog-empty-icon");
 
         Label lblVacio = new Label(hayFiltros
@@ -1971,12 +2005,15 @@ public class CatalogoGridController {
         if (estado == EstadoLectura.LEIDO) {
             badge = new Label(LanguageManager.getString("catalog.badge.read", "✓ Leído"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leido");
+            Iconos.aplicar(badge, Feather.CHECK);
         } else if (estado == EstadoLectura.LEYENDO) {
             badge = new Label(LanguageManager.getString("catalog.badge.reading", "● Leyendo"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-leyendo");
+            Iconos.aplicar(badge, Feather.BOOK_OPEN);
         } else if (estado == EstadoLectura.ABANDONADO) {
             badge = new Label(LanguageManager.getString("catalog.badge.abandoned", "✕ Abandonado"));
             badge.getStyleClass().addAll("book-card-badge-pill", "badge-abandonado");
+            Iconos.aplicar(badge, Feather.X_CIRCLE);
         }
 
         if (badge != null) {
@@ -1994,6 +2031,7 @@ public class CatalogoGridController {
             badgeDigital.setAccessibleRole(AccessibleRole.TEXT);
             badgeDigital.setAccessibleText(LanguageManager.getString("catalog.badge.ebook.a11y", "Formato digital: E-book"));
             badgeDigital.getStyleClass().addAll("book-card-badge-pill", "badge-digital");
+            Iconos.aplicar(badgeDigital, Feather.TABLET);
             badgeDigital.setMouseTransparent(true);
             StackPane.setAlignment(badgeDigital, Pos.BOTTOM_LEFT);
             StackPane.setMargin(badgeDigital, new Insets(0, 0, 6, 6));
@@ -2111,18 +2149,18 @@ public class CatalogoGridController {
 
         boolean esEbook = libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isEmpty();
         if (esEbook) {
-            barra.getChildren().add(botonAccionRapida("▶", "quick.read", "Leer",
+            barra.getChildren().add(botonAccionRapida(Feather.PLAY, "quick.read", "Leer",
                     () -> mainController.abrirLectorDigital(libro)));
         }
         if (libro.getEstadoLecturaEnum() != EstadoLectura.LEIDO) {
-            barra.getChildren().add(botonAccionRapida("✓", "quick.mark_read", "Marcar como leído",
+            barra.getChildren().add(botonAccionRapida(Feather.CHECK, "quick.mark_read", "Marcar como leído",
                     () -> cambiarEstadoLectura(libro, EstadoLectura.LEIDO)));
         }
         if (!libro.isEsDigital()) {
-            barra.getChildren().add(botonAccionRapida("⇄", "quick.loan", "Prestar",
+            barra.getChildren().add(botonAccionRapida(Feather.SEND, "quick.loan", "Prestar",
                     () -> mainController.prepararPrestamoLibro(libro)));
         }
-        Button mas = botonAccionRapida("⋯", "quick.more", "Más acciones", null);
+        Button mas = botonAccionRapida(Feather.MORE_HORIZONTAL, "quick.more", "Más acciones", null);
         mas.setOnAction(e -> {
             javafx.geometry.Bounds b = mas.localToScreen(mas.getBoundsInLocal());
             if (b != null) {
@@ -2133,9 +2171,10 @@ public class CatalogoGridController {
         return barra;
     }
 
-    private Button botonAccionRapida(String simbolo, String claveTexto, String textoPorDefecto, Runnable accion) {
+    private Button botonAccionRapida(Ikon icono, String claveTexto, String textoPorDefecto, Runnable accion) {
         String texto = LanguageManager.getString(claveTexto, textoPorDefecto);
-        Button b = new Button(simbolo);
+        Button b = new Button();
+        b.setGraphic(Iconos.de(icono, 14));
         b.getStyleClass().add("book-card-quick-btn");
         // Fuera del orden de tabulación: con teclado ya hay Intro y el menú contextual,
         // y así las flechas siguen moviéndose entre tarjetas.

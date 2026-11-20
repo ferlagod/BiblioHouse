@@ -214,8 +214,8 @@ public class PrimaryController implements Initializable {
 
         // Configurar botón de sincronización rápida superior
         if (btnSyncRapido != null) {
-            lblSyncIcon = new Label("🔄");
-            lblSyncIcon.setStyle("-fx-font-size: 11px;");
+            lblSyncIcon = new Label();
+            ponerIconoSync(org.kordamp.ikonli.feather.Feather.REFRESH_CW);
             btnSyncRapido.setGraphic(lblSyncIcon);
             btnSyncRapido.setText(LanguageManager.getString("ui.sincronizar", " Sincronizar"));
         }
@@ -466,6 +466,16 @@ public class PrimaryController implements Initializable {
     }
 
     /**
+     * Muestra en el botón de sincronización el icono del estado (sincronizar,
+     * hecho, error). Antes eran emojis (🔄 ✓ ⚠️) que cada sistema dibujaba
+     * distinto.
+     */
+    private void ponerIconoSync(org.kordamp.ikonli.Ikon icono) {
+        lblSyncIcon.setText("");
+        lblSyncIcon.setGraphic(com.bibliohouse.utils.Iconos.de(icono, 12));
+    }
+
+    /**
      * Inicia la animación de rotación continua del icono del botón de
      * sincronización rápida.
      */
@@ -478,7 +488,7 @@ public class PrimaryController implements Initializable {
         btnSyncRapido.getStyleClass().add("syncing");
         btnSyncRapido.setText(LanguageManager.getString("ui.sincronizando", " Sincronizando..."));
         if (lblSyncIcon != null) {
-            lblSyncIcon.setText("🔄");
+            ponerIconoSync(org.kordamp.ikonli.feather.Feather.REFRESH_CW);
             if (syncRotateTransition == null) {
                 syncRotateTransition = new RotateTransition(Duration.millis(800), lblSyncIcon);
                 syncRotateTransition.setByAngle(360);
@@ -511,13 +521,13 @@ public class PrimaryController implements Initializable {
             btnSyncRapido.getStyleClass().add("sync-success");
             btnSyncRapido.setText(LanguageManager.getString("ui.al_dia", " Al día"));
             if (lblSyncIcon != null) {
-                lblSyncIcon.setText("✓");
+                ponerIconoSync(org.kordamp.ikonli.feather.Feather.CHECK);
             }
         } else {
             btnSyncRapido.getStyleClass().add("sync-error");
             btnSyncRapido.setText(LanguageManager.getString("ui.reintentar", " Reintentar"));
             if (lblSyncIcon != null) {
-                lblSyncIcon.setText("⚠️");
+                ponerIconoSync(org.kordamp.ikonli.feather.Feather.ALERT_TRIANGLE);
             }
         }
 
@@ -526,7 +536,7 @@ public class PrimaryController implements Initializable {
             btnSyncRapido.getStyleClass().removeAll("sync-success", "sync-error", "syncing");
             btnSyncRapido.setText(LanguageManager.getString("ui.sincronizar", " Sincronizar"));
             if (lblSyncIcon != null) {
-                lblSyncIcon.setText("🔄");
+                ponerIconoSync(org.kordamp.ikonli.feather.Feather.REFRESH_CW);
                 lblSyncIcon.setRotate(0);
             }
             btnSyncRapido.setDisable(false);

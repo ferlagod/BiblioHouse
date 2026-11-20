@@ -263,6 +263,66 @@
     -fx-text-fill: -color-fg-muted;
 }
 
+/* --- ICONOS VECTORIALES (Ikonli / Feather) --- */
+.book-card-quick-btn .ikonli-font-icon,
+.book-card-badge-pill .ikonli-font-icon {
+    -fx-icon-color: #ffffff;
+}
+
+.book-card-badge-pill .ikonli-font-icon {
+    -fx-icon-size: 10px;
+}
+
+.book-card-badge-pill {
+    -fx-graphic-text-gap: 4;
+}
+
+.chip-button {
+    -fx-graphic-text-gap: 6;
+}
+
+.chip-button .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.chip-button.chip-active .ikonli-font-icon {
+    -fx-icon-color: -color-fg-on-emphasis;
+}
+
+.view-toggle-btn .ikonli-font-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.view-toggle-btn.active-view-btn .ikonli-font-icon,
+.view-toggle-btn:hover .ikonli-font-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.catalog-empty-icon .ikonli-font-icon {
+    -fx-icon-color: -color-fg-subtle;
+}
+
+.sidebar-item-icon .ikonli-font-icon,
+.reto-edit-icon {
+    -fx-icon-color: -color-fg-muted;
+}
+
+.reto-icon {
+    -fx-icon-color: -color-accent-fg;
+}
+
+.sync-btn-top .ikonli-font-icon {
+    -fx-icon-color: -color-fg-default;
+}
+
+.sync-btn-top.sync-success .ikonli-font-icon {
+    -fx-icon-color: #2e7d32;
+}
+
+.sync-btn-top.sync-error .ikonli-font-icon {
+    -fx-icon-color: #c62828;
+}
+
 /* --- ESTADO VACÍO DEL CATÁLOGO --- */
 .catalog-empty-state {
     -fx-padding: 60 0 60 0;

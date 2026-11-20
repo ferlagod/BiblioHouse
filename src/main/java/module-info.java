@@ -24,6 +24,9 @@ module com.ferlagod.bibliohousefx {
     requires jdk.jsobject;
     requires atlantafx.base;
     requires org.controlsfx.controls;
+    requires org.kordamp.ikonli.core;
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.ikonli.feather;
 
     // 2. Módulos estándar de Java
     requires java.net.http;
