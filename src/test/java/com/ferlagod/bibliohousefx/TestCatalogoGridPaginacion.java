@@ -198,6 +198,28 @@ public class TestCatalogoGridPaginacion {
     }
 
     @Test
+    @DisplayName("Las acciones rápidas se adaptan a cada libro")
+    public void testAccionesRapidas() {
+        CatalogoGridController controller = new CatalogoGridController();
+
+        Libro fisico = new Libro();
+        fisico.setTitulo("Físico pendiente");
+        fisico.setEstadoLecturaEnum(com.bibliohouse.logic.EstadoLectura.PENDIENTE);
+        List<String> accionesFisico = controller.crearAccionesRapidas(fisico, new FlowPane()).getChildren().stream()
+                .map(n -> n.getAccessibleText()).toList();
+        assertEquals(List.of("Marcar como leído", "Prestar", "Más acciones"), accionesFisico);
+
+        Libro ebook = new Libro();
+        ebook.setTitulo("E-book leído");
+        ebook.setEsDigital(true);
+        ebook.setRutaArchivoDigital("/tmp/libro.epub");
+        ebook.setEstadoLecturaEnum(com.bibliohouse.logic.EstadoLectura.LEIDO);
+        List<String> accionesEbook = controller.crearAccionesRapidas(ebook, new FlowPane()).getChildren().stream()
+                .map(n -> n.getAccessibleText()).toList();
+        assertEquals(List.of("Leer", "Más acciones"), accionesEbook);
+    }
+
+    @Test
     @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
     public void testOrdenPorRecientes() {
         CatalogoGridController controller = new CatalogoGridController();

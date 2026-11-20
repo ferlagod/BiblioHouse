@@ -131,6 +131,36 @@
     -fx-background-color: -color-accent-emphasis, -color-bg-default;
 }
 
+/* --- ACCIONES RÁPIDAS SOBRE LA PORTADA --- */
+.book-card-quick-actions {
+    -fx-padding: 4 6 4 6;
+    -fx-background-color: rgba(15, 23, 42, 0.72);
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 6, 0, 0, 2);
+}
+
+.book-card-quick-btn {
+    -fx-min-width: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-width: 26px;
+    -fx-pref-height: 26px;
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-background-radius: 13;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.book-card-quick-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.22);
+}
+
+.book-card-quick-btn:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.36);
+}
+
 /* --- ESTADO VACÍO DEL CATÁLOGO --- */
 .catalog-empty-state {
     -fx-padding: 60 0 60 0;

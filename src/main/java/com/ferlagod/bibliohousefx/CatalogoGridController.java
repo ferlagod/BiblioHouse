@@ -66,6 +66,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -1450,7 +1451,8 @@ public class CatalogoGridController {
 
         StackPane contenedorPortada = new StackPane(img);
         contenedorPortada.getStyleClass().add("book-card-cover-container");
-        contenedorPortada.setMouseTransparent(true);
+        // No es transparente al ratón para que la barra de acciones rápidas sea
+        // pulsable; los clics fuera de los botones siguen llegando a la tarjeta.
         contenedorPortada.setAccessibleRole(AccessibleRole.IMAGE_VIEW);
         contenedorPortada.setAccessibleText(LanguageManager.getString("ui.portada_de", "Portada de ") + libro.getTitulo());
 
@@ -1506,6 +1508,24 @@ public class CatalogoGridController {
             StackPane.setMargin(badgeDigital, new Insets(0, 0, 6, 6));
             contenedorPortada.getChildren().add(badgeDigital);
         }
+
+        // Acciones rápidas sobre la portada (aparecen con hover o foco)
+        HBox acciones = crearAccionesRapidas(libro, tarjeta);
+        StackPane.setAlignment(acciones, Pos.BOTTOM_CENTER);
+        contenedorPortada.getChildren().add(acciones);
+        javafx.animation.FadeTransition fundidoAcciones = new javafx.animation.FadeTransition(Duration.millis(140), acciones);
+        javafx.beans.InvalidationListener mostrarAcciones = obs -> {
+            boolean visible = tarjeta.isHover() || tarjeta.isFocused();
+            fundidoAcciones.stop();
+            if (visible) {
+                acciones.setVisible(true);
+            }
+            fundidoAcciones.setToValue(visible ? 1.0 : 0.0);
+            fundidoAcciones.setOnFinished(e -> acciones.setVisible(acciones.getOpacity() > 0));
+            fundidoAcciones.playFromStart();
+        };
+        tarjeta.hoverProperty().addListener(mostrarAcciones);
+        tarjeta.focusedProperty().addListener(mostrarAcciones);
 
         // Título del libro
         Label lblTitulo = new Label(libro.getTitulo());
@@ -1578,6 +1598,67 @@ public class CatalogoGridController {
         }
 
         return tarjeta;
+    }
+
+    /**
+     * Barra de botones que aparece sobre la portada al pasar el ratón: leer
+     * (e-books), marcar como leído, prestar (libros físicos) y «más», que abre
+     * el menú contextual completo. Evita tener que abrir el menú o la ficha
+     * para las acciones más habituales.
+     */
+    HBox crearAccionesRapidas(Libro libro, Node tarjeta) {
+        HBox barra = new HBox(6);
+        barra.getStyleClass().add("book-card-quick-actions");
+        barra.setAlignment(Pos.CENTER);
+        barra.setMaxHeight(Region.USE_PREF_SIZE);
+        barra.setMaxWidth(Region.USE_PREF_SIZE);
+        StackPane.setMargin(barra, new Insets(0, 0, 8, 0));
+        barra.setOpacity(0);
+        barra.setVisible(false);
+        // Los clics en la barra no deben seleccionar ni abrir la ficha (doble clic)
+        barra.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, javafx.event.Event::consume);
+
+        boolean esEbook = libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isEmpty();
+        if (esEbook) {
+            barra.getChildren().add(botonAccionRapida("▶", "quick.read", "Leer",
+                    () -> mainController.abrirLectorDigital(libro)));
+        }
+        if (libro.getEstadoLecturaEnum() != EstadoLectura.LEIDO) {
+            barra.getChildren().add(botonAccionRapida("✓", "quick.mark_read", "Marcar como leído",
+                    () -> cambiarEstadoLectura(libro, EstadoLectura.LEIDO)));
+        }
+        if (!libro.isEsDigital()) {
+            barra.getChildren().add(botonAccionRapida("⇄", "quick.loan", "Prestar",
+                    () -> mainController.prepararPrestamoLibro(libro)));
+        }
+        Button mas = botonAccionRapida("⋯", "quick.more", "Más acciones", null);
+        mas.setOnAction(e -> {
+            javafx.geometry.Bounds b = mas.localToScreen(mas.getBoundsInLocal());
+            if (b != null) {
+                mostrarContextMenu(tarjeta, libro, b.getMinX(), b.getMaxY());
+            }
+        });
+        barra.getChildren().add(mas);
+        return barra;
+    }
+
+    private Button botonAccionRapida(String simbolo, String claveTexto, String textoPorDefecto, Runnable accion) {
+        String texto = LanguageManager.getString(claveTexto, textoPorDefecto);
+        Button b = new Button(simbolo);
+        b.getStyleClass().add("book-card-quick-btn");
+        // Fuera del orden de tabulación: con teclado ya hay Intro y el menú contextual,
+        // y así las flechas siguen moviéndose entre tarjetas.
+        b.setFocusTraversable(false);
+        b.setTooltip(new javafx.scene.control.Tooltip(texto));
+        b.setAccessibleText(texto);
+        if (accion != null) {
+            b.setOnAction(e -> {
+                if (mainController != null) {
+                    accion.run();
+                }
+            });
+        }
+        return b;
     }
 
     private void navegarTarjetaSiguiente(Node actual) {
