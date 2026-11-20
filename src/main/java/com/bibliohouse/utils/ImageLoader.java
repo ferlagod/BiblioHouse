@@ -57,7 +57,31 @@ import javafx.util.Duration;
 public class ImageLoader {
 
     private static String cacheDir = null;
-    private static final ExecutorService executor = Executors.newFixedThreadPool(8); // Pool reducido para no saturar IO
+    /**
+     * Pool reducido para no saturar la E/S. Hilos daemon: una descarga lenta
+     * nunca debe impedir que la aplicación termine.
+     */
+    private static final ExecutorService executor = Executors.newFixedThreadPool(8, r -> {
+        Thread t = new Thread(r, "ImageLoader");
+        t.setDaemon(true);
+        return t;
+    });
+    /**
+     * Clave de propiedad del ImageView con la imagen que debe mostrar. Cada
+     * carga nueva la sobrescribe, de modo que los resultados de cargas
+     * anteriores que lleguen tarde se descartan.
+     */
+    private static final String CLAVE_DESTINO = "target_image_key";
+    private static final String CLAVE_SKELETON = "skeleton_anim";
+    private static final String CLAVE_FUNDIDO = "fade_in_anim";
+    /** Duración del fundido con el que aparece una portada recién cargada. */
+    private static final Duration DURACION_FUNDIDO = Duration.millis(220);
+    /**
+     * Gris semitransparente del marcador de carga: se ve bien tanto sobre
+     * fondos claros como oscuros sin depender del tema activo.
+     */
+    private static final int COLOR_SKELETON = 0x38909090;
+    private static final Map<String, WritableImage> placeholders = new java.util.concurrent.ConcurrentHashMap<>();
     private static final String DEFAULT_IMAGE_PATH = "/resources/default_cover.jpg";
     private static final int MAX_CACHE_SIZE = 150; // Aumentado para evitar evictions al scrollear bibliotecas grandes
 
@@ -90,24 +114,54 @@ public class ImageLoader {
      * @param w Ancho deseado para la imagen
      */
     private static void loadDefault(ImageView target, double w, double h) {
+        target.setImage(imagenPorDefecto(w, h));
+    }
+
+    /**
+     * Devuelve la portada por defecto escalada al tamaño indicado, desde la
+     * caché en memoria si ya se cargó antes.
+     *
+     * @return La imagen, o {@code null} si el recurso no está disponible.
+     */
+    private static Image imagenPorDefecto(double w, double h) {
         try {
             URL defaultUrl = ImageLoader.class.getResource(DEFAULT_IMAGE_PATH);
-            if (defaultUrl != null) {
-                String uri = defaultUrl.toExternalForm();
-                String memoryKey = "DEFAULT_" + w + "x" + h;
-                if (memoryCache.containsKey(memoryKey)) {
-                    target.setImage(memoryCache.get(memoryKey));
-                    return;
-                }
-                Image img = new Image(uri, w > 0 ? w : 0, h > 0 ? h : 0, true, true, false);
-                memoryCache.put(memoryKey, img);
-                target.setImage(img);
-            } else {
-                target.setImage(null);
+            if (defaultUrl == null) {
+                return null;
             }
+            String memoryKey = "DEFAULT_" + w + "x" + h;
+            Image img = memoryCache.get(memoryKey);
+            if (img == null) {
+                img = new Image(defaultUrl.toExternalForm(), w > 0 ? w : 0, h > 0 ? h : 0, true, true, false);
+                memoryCache.put(memoryKey, img);
+            }
+            return img;
         } catch (Exception e) {
-            target.setImage(null);
+            return null;
         }
+    }
+
+    /**
+     * Indica si el ImageView sigue esperando la imagen con esa clave (no se ha
+     * pedido otra entretanto, p. ej. al reciclar una celda de tabla).
+     */
+    private static boolean esVigente(ImageView target, String memoryKey) {
+        return memoryKey.equals(target.getProperties().get(CLAVE_DESTINO));
+    }
+
+    /**
+     * Calcula la clave de caché en memoria. Para archivos locales incluye la
+     * fecha de modificación, de forma que al reemplazar una portada en la
+     * misma ruta (p. ej. {@code covers/<id>.jpg}) se muestre la nueva y no la
+     * que quedó en caché.
+     */
+    private static String claveMemoria(String urlOrPath, double w, double h) {
+        String base = urlOrPath + "_" + w + "x" + h;
+        if (isValidUrl(urlOrPath)) {
+            return base;
+        }
+        File local = resolverArchivoLocal(urlOrPath);
+        return local != null ? base + "@" + local.lastModified() : base;
     }
 
     /**
@@ -251,7 +305,8 @@ public class ImageLoader {
                     if (parent != null && !parent.exists()) {
                         parent.mkdirs();
                     }
-                    File tmp = new File(archivoDestino.getAbsolutePath() + ".tmp");
+                    // Nombre temporal único: dos vistas pueden descargar la misma portada a la vez
+                    File tmp = new File(archivoDestino.getAbsolutePath() + "." + java.util.UUID.randomUUID() + ".tmp");
                     Files.write(tmp.toPath(), bytes);
                     try {
                         Files.move(tmp.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
@@ -284,9 +339,11 @@ public class ImageLoader {
             return;
         }
 
-        stopSkeleton(target);
+        detenerAnimaciones(target);
 
         if (urlOrPath == null || urlOrPath.isEmpty() || urlOrPath.contains("default_cover")) {
+            // Registrar la petición para que una carga anterior aún en curso no la pise
+            target.getProperties().put(CLAVE_DESTINO, "DEFAULT");
             loadDefault(target, w, h);
             return;
         }
@@ -294,11 +351,13 @@ public class ImageLoader {
         // Tamaño de miniatura para la caché si no se especifica
         double loadW = (w > 0) ? w : 110;
         double loadH = (h > 0) ? h : 160;
-        String memoryKey = urlOrPath + "_" + loadW + "x" + loadH;
+        String memoryKey = claveMemoria(urlOrPath, loadW, loadH);
+        target.getProperties().put(CLAVE_DESTINO, memoryKey);
 
-        // 1. Respuesta instantánea desde caché en memoria
-        if (memoryCache.containsKey(memoryKey)) {
-            target.setImage(memoryCache.get(memoryKey));
+        // 1. Respuesta instantánea desde caché en memoria (sin fundido: ya se vio antes)
+        Image enMemoria = memoryCache.get(memoryKey);
+        if (enMemoria != null) {
+            target.setImage(enMemoria);
             return;
         }
 
@@ -337,7 +396,6 @@ public class ImageLoader {
             handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
         } else {
             // Descargar en segundo plano con cliente HTTP robusto
-            target.getProperties().put("target_image_key", memoryKey);
             Task<Boolean> downloadTask = new Task<>() {
                 @Override
                 protected Boolean call() {
@@ -346,18 +404,22 @@ public class ImageLoader {
 
                 @Override
                 protected void succeeded() {
+                    // El ImageView pudo reutilizarse para otro libro durante la descarga
+                    if (!esVigente(target, memoryKey)) {
+                        return;
+                    }
                     if (Boolean.TRUE.equals(getValue()) && cacheFile.exists()) {
                         handleLocalImage(cacheFile.getAbsolutePath(), target, w, h, memoryKey);
                     } else {
-                        stopSkeleton(target);
-                        loadDefault(target, w, h);
+                        mostrarPorDefectoConFundido(target, w, h);
                     }
                 }
 
                 @Override
                 protected void failed() {
-                    stopSkeleton(target);
-                    loadDefault(target, w, h);
+                    if (esVigente(target, memoryKey)) {
+                        mostrarPorDefectoConFundido(target, w, h);
+                    }
                 }
             };
             executor.submit(downloadTask);
@@ -379,11 +441,42 @@ public class ImageLoader {
     private static void handleLocalImage(String path, ImageView target, double w, double h, String memoryKey) {
         File file = resolverArchivoLocal(path);
         if (file == null || !file.exists() || !file.isFile()) {
-            stopSkeleton(target);
+            detenerAnimaciones(target);
             loadDefault(target, w, h);
             return;
         }
         loadImageAsync(file.toURI().toString(), target, w, h, memoryKey);
+    }
+
+    /**
+     * Muestra la portada por defecto con un fundido suave, para que el paso del
+     * marcador de carga a la imagen final no sea brusco.
+     */
+    private static void mostrarPorDefectoConFundido(ImageView target, double w, double h) {
+        detenerAnimaciones(target);
+        Image img = imagenPorDefecto(w, h);
+        if (img == null) {
+            target.setImage(null);
+        } else {
+            mostrarConFundido(target, img);
+        }
+    }
+
+    /**
+     * Sustituye la imagen del ImageView y la hace aparecer con un fundido
+     * corto (ease-out).
+     */
+    private static void mostrarConFundido(ImageView target, Image image) {
+        detenerAnimaciones(target);
+        target.setImage(image);
+        target.setOpacity(0.0);
+        FadeTransition ft = new FadeTransition(DURACION_FUNDIDO, target);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        ft.setInterpolator(javafx.animation.Interpolator.EASE_OUT);
+        ft.setOnFinished(e -> target.getProperties().remove(CLAVE_FUNDIDO));
+        target.getProperties().put(CLAVE_FUNDIDO, ft);
+        ft.play();
     }
 
     /**
@@ -398,39 +491,61 @@ public class ImageLoader {
      * memoria.
      */
     private static void loadImageAsync(String uri, ImageView target, double w, double h, String memoryKey) {
-        target.getProperties().put("target_image_key", memoryKey);
         Image image = new Image(uri, w, h, true, true, true);
 
         // Caso rápido: la imagen ya estaba lista al crearse (caché del SO)
         if (image.getProgress() >= 1.0 && !image.isError()) {
-            stopSkeleton(target);
+            detenerAnimaciones(target);
             memoryCache.put(memoryKey, image);
             target.setImage(image);
             return;
         }
         if (image.isError()) {
-            stopSkeleton(target);
-            loadDefault(target, w, h);
+            mostrarPorDefectoConFundido(target, w, h);
             return;
         }
 
-        // Caso asíncrono: registrar listener solo si aún no está completa
+        // Caso asíncrono. Se escucha también el error: si la decodificación
+        // falla, el progreso puede no llegar nunca a 1 y el marcador de carga
+        // se quedaría parpadeando indefinidamente.
+        java.util.concurrent.atomic.AtomicBoolean resuelta = new java.util.concurrent.atomic.AtomicBoolean(false);
+        Runnable alTerminar = () -> {
+            if (!resuelta.compareAndSet(false, true)) {
+                return;
+            }
+            if (!image.isError()) {
+                memoryCache.put(memoryKey, image);
+            }
+            if (!esVigente(target, memoryKey)) {
+                return;
+            }
+            if (image.isError()) {
+                mostrarPorDefectoConFundido(target, w, h);
+            } else {
+                mostrarConFundido(target, image);
+            }
+        };
+        Runnable enHiloFx = () -> {
+            if (javafx.application.Platform.isFxApplicationThread()) {
+                alTerminar.run();
+            } else {
+                javafx.application.Platform.runLater(alTerminar);
+            }
+        };
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0) {
-                javafx.application.Platform.runLater(() -> {
-                    if (memoryKey.equals(target.getProperties().get("target_image_key"))) {
-                        if (!image.isError()) {
-                            stopSkeleton(target);
-                            memoryCache.put(memoryKey, image);
-                            target.setImage(image);
-                        } else {
-                            stopSkeleton(target);
-                            loadDefault(target, w, h);
-                        }
-                    }
-                });
+                enHiloFx.run();
             }
         });
+        image.errorProperty().addListener((obs, oldVal, newVal) -> {
+            if (Boolean.TRUE.equals(newVal)) {
+                enHiloFx.run();
+            }
+        });
+        // Por si terminó entre la creación y el registro de los listeners
+        if (image.getProgress() >= 1.0 || image.isError()) {
+            enHiloFx.run();
+        }
     }
 
     /**
@@ -759,43 +874,46 @@ public class ImageLoader {
      * @param h Alto deseado para el marcador de posición
      */
     private static void startSkeleton(ImageView target, double w, double h) {
-        if (target.getProperties().containsKey("skeleton_anim")) {
+        if (target.getProperties().containsKey(CLAVE_SKELETON)) {
             return;
         }
 
         int width = (w > 0) ? (int) w : 110;
         int height = (h > 0) ? (int) h : 160;
 
-        // Crear placeholder gris con buffer (O(1) vs antiguo O(w*h) por pixel)
-        WritableImage placeholder = new WritableImage(width, height);
-        int[] buffer = new int[width * height];
-        int gray = 0xFFEBEBEB; // ARGB for rgb(235,235,235)
-        java.util.Arrays.fill(buffer, gray);
-        placeholder.getPixelWriter().setPixels(0, 0, width, height,
-                javafx.scene.image.PixelFormat.getIntArgbInstance(), buffer, 0, width);
+        // Un único marcador por tamaño, compartido por todas las tarjetas
+        WritableImage placeholder = placeholders.computeIfAbsent(width + "x" + height, k -> {
+            WritableImage img = new WritableImage(width, height);
+            int[] buffer = new int[width * height];
+            java.util.Arrays.fill(buffer, COLOR_SKELETON);
+            img.getPixelWriter().setPixels(0, 0, width, height,
+                    javafx.scene.image.PixelFormat.getIntArgbInstance(), buffer, 0, width);
+            return img;
+        });
         target.setImage(placeholder);
 
-        FadeTransition ft = new FadeTransition(Duration.millis(800), target);
-        ft.setFromValue(0.3);
-        ft.setToValue(0.8);
+        FadeTransition ft = new FadeTransition(Duration.millis(900), target);
+        ft.setFromValue(0.55);
+        ft.setToValue(1.0);
         ft.setCycleCount(Animation.INDEFINITE);
         ft.setAutoReverse(true);
+        ft.setInterpolator(javafx.animation.Interpolator.EASE_BOTH);
         ft.play();
-        target.getProperties().put("skeleton_anim", ft);
+        target.getProperties().put(CLAVE_SKELETON, ft);
     }
 
     /**
-     * Detiene y elimina la animación de skeleton loading del ImageView
-     * especificado, restaurando su opacidad al valor original (1.0). Si no hay
-     * animación activa, no realiza ninguna acción.
+     * Detiene el marcador de carga y cualquier fundido en curso del ImageView,
+     * restaurando su opacidad a 1.0.
      *
-     * @param target ImageView del que se detendrá la animación de skeleton.
+     * @param target ImageView cuyas animaciones se detienen.
      */
-    private static void stopSkeleton(ImageView target) {
-        if (target.getProperties().containsKey("skeleton_anim")) {
-            FadeTransition ft = (FadeTransition) target.getProperties().get("skeleton_anim");
-            ft.stop();
-            target.getProperties().remove("skeleton_anim");
+    private static void detenerAnimaciones(ImageView target) {
+        for (String clave : new String[]{CLAVE_SKELETON, CLAVE_FUNDIDO}) {
+            Object anim = target.getProperties().remove(clave);
+            if (anim instanceof Animation a) {
+                a.stop();
+            }
         }
         target.setOpacity(1.0);
     }
