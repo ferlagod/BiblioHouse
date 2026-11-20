@@ -1,6 +1,6 @@
 # ![BiblioHouse Logo](https://imgur.com/ibLRiqI.png) BiblioHouse
 
-[![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-blue.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)
+[![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-blue.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg?style=flat-square)](https://adoptium.net/)
 [![JavaFX 21.0.5](https://img.shields.io/badge/JavaFX-21.0.5-blue.svg?style=flat-square)](https://openjfx.io/)
 [![Tests](https://img.shields.io/badge/Tests-58%2F58%20Passing-brightgreen.svg?style=flat-square)](https://forjalibre.eu/ferlagod/BiblioHouse)

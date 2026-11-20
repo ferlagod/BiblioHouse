@@ -11,8 +11,8 @@
         <javafx.version>21.0.5</javafx.version>
         <test.excluded.groups>integration</test.excluded.groups>
         <!-- Versión de la aplicación: única fuente de verdad (instalador, Acerca de y comprobador de actualizaciones) -->
-        <app.version>2.2.0</app.version>
-        <app.version.short>2.2</app.version.short>
+        <app.version>2.3.0</app.version>
+        <app.version.short>2.3</app.version.short>
     </properties>
 
     <dependencyManagement>
