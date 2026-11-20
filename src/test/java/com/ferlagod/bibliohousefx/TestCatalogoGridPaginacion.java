@@ -150,6 +150,33 @@ public class TestCatalogoGridPaginacion {
     }
 
     @Test
+    @DisplayName("Se restauran y se recuerdan la vista, el orden, el chip y el tamaño de página")
+    public void testPreferenciasRecordadas() {
+        java.util.Map<String, String> prefs = new java.util.HashMap<>();
+        prefs.put("catalogo.orden", "autor");
+        prefs.put("catalogo.chip", "LEYENDO");
+        prefs.put("catalogo.por_pagina", "24");
+        prefs.put("catalogo.vista", "lista");
+
+        CatalogoGridController controller = new CatalogoGridController();
+        controller.setPanelMisLibros(new FlowPane());
+        controller.setPreferencias(prefs);
+
+        assertEquals("autor", controller.getOrdenActual());
+        assertEquals(CatalogoGridController.FiltroChip.LEYENDO, controller.getFiltroChipActual());
+        assertEquals(24, controller.getLibrosPorPagina());
+        assertTrue(controller.isVistaLista());
+
+        // Los cambios posteriores se escriben en el mismo mapa
+        controller.ordenarPorAnio();
+        controller.filtrarChipTodos();
+        controller.cambiarAVistaCuadricula();
+        assertEquals("anio", prefs.get("catalogo.orden"));
+        assertEquals("TODOS", prefs.get("catalogo.chip"));
+        assertEquals("cuadricula", prefs.get("catalogo.vista"));
+    }
+
+    @Test
     @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
     public void testOrdenPorRecientes() {
         CatalogoGridController controller = new CatalogoGridController();

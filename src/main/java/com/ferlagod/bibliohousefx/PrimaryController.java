@@ -566,6 +566,7 @@ public class PrimaryController implements Initializable {
                         sidebarController.initData(jsonManager, listaLibrosCompleta, preferencias, resources);
                     }
                     if (catalogoGridController != null) {
+                        catalogoGridController.setPreferencias(preferencias);
                         catalogoGridController.initData(PrimaryController.this, jsonManager, listaLibrosCompleta, listaDeseos, rutaUsuario, resources);
                     }
                     if (gestionLibrosController != null) {

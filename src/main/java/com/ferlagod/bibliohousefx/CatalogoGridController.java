@@ -188,6 +188,24 @@ public class CatalogoGridController {
      */
     private final Map<Libro, Object[]> cacheTarjetas = new java.util.IdentityHashMap<>();
 
+    // Preferencias del catálogo que se recuerdan entre sesiones
+    static final String PREF_VISTA = "catalogo.vista";
+    static final String PREF_ORDEN = "catalogo.orden";
+    static final String PREF_CHIP = "catalogo.chip";
+    static final String PREF_POR_PAGINA = "catalogo.por_pagina";
+    static final String ORDEN_TITULO_AZ = "titulo_az";
+    static final String ORDEN_TITULO_ZA = "titulo_za";
+    static final String ORDEN_AUTOR = "autor";
+    static final String ORDEN_ANIO = "anio";
+    static final String ORDEN_RECIENTES = "reciente";
+
+    /**
+     * Mapa de preferencias del usuario (compartido con el controlador
+     * principal, que lo guarda en disco al cerrar). Puede ser {@code null}.
+     */
+    private Map<String, String> preferencias;
+    private String ordenActual = ORDEN_TITULO_AZ;
+
     @FXML
     public void initialize() {
         if (txtBuscarMisLibros != null) {
@@ -212,6 +230,7 @@ public class CatalogoGridController {
                         librosPorPagina = 48;
                     }
                 }
+                guardarPreferencia(PREF_POR_PAGINA, librosPorPagina == Integer.MAX_VALUE ? "todos" : String.valueOf(librosPorPagina));
                 paginaActual = 1;
                 refrescarCuadricula(true);
             });
@@ -354,9 +373,7 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorTituloAZ() {
-        currentComparator = Comparator.comparing(l -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase);
-        paginaActual = 1;
-        refrescarCuadricula(true);
+        cambiarOrden(ORDEN_TITULO_AZ);
     }
 
     /**
@@ -365,9 +382,7 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorTituloZA() {
-        currentComparator = Comparator.comparing((Libro l) -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase).reversed();
-        paginaActual = 1;
-        refrescarCuadricula(true);
+        cambiarOrden(ORDEN_TITULO_ZA);
     }
 
     /**
@@ -376,9 +391,7 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorAutor() {
-        currentComparator = Comparator.comparing((Libro l) -> l.getAutor() != null ? l.getAutor() : "", String::compareToIgnoreCase);
-        paginaActual = 1;
-        refrescarCuadricula(true);
+        cambiarOrden(ORDEN_AUTOR);
     }
 
     /**
@@ -387,13 +400,7 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorAnio() {
-        currentComparator = (l1, l2) -> {
-            String a1 = l1.getAño() != null ? l1.getAño() : "";
-            String a2 = l2.getAño() != null ? l2.getAño() : "";
-            return a2.compareTo(a1); // Descendente
-        };
-        paginaActual = 1;
-        refrescarCuadricula(true);
+        cambiarOrden(ORDEN_ANIO);
     }
 
     /**
@@ -402,12 +409,156 @@ public class CatalogoGridController {
      */
     @FXML
     public void ordenarPorReciente() {
-        // Antes se usaba indexOf() dentro del comparador (O(n² log n)): con
-        // bibliotecas grandes la cuadrícula tardaba segundos en ordenarse.
-        // Ahora la posición de cada libro se calcula una vez por refresco.
-        currentComparator = ORDEN_RECIENTE;
+        cambiarOrden(ORDEN_RECIENTES);
+    }
+
+    private void cambiarOrden(String clave) {
+        aplicarOrden(clave);
+        guardarPreferencia(PREF_ORDEN, ordenActual);
         paginaActual = 1;
         refrescarCuadricula(true);
+    }
+
+    /**
+     * Fija el comparador correspondiente a la clave de orden y muestra el orden
+     * activo en el botón «Ordenar».
+     */
+    private void aplicarOrden(String clave) {
+        Comparator<Libro> porTitulo = Comparator.comparing((Libro l) -> l.getTitulo() != null ? l.getTitulo() : "", String::compareToIgnoreCase);
+        int indiceMenu;
+        switch (clave == null ? "" : clave) {
+            case ORDEN_TITULO_ZA -> {
+                currentComparator = porTitulo.reversed();
+                indiceMenu = 1;
+            }
+            case ORDEN_AUTOR -> {
+                currentComparator = Comparator.comparing((Libro l) -> l.getAutor() != null ? l.getAutor() : "", String::compareToIgnoreCase);
+                indiceMenu = 2;
+            }
+            case ORDEN_ANIO -> {
+                currentComparator = (l1, l2) -> {
+                    String a1 = l1.getAño() != null ? l1.getAño() : "";
+                    String a2 = l2.getAño() != null ? l2.getAño() : "";
+                    return a2.compareTo(a1); // Descendente
+                };
+                indiceMenu = 3;
+            }
+            case ORDEN_RECIENTES -> {
+                // Antes se usaba indexOf() dentro del comparador (O(n² log n)).
+                // Ahora la posición de cada libro se calcula una vez por refresco.
+                currentComparator = ORDEN_RECIENTE;
+                indiceMenu = 4;
+            }
+            default -> {
+                clave = ORDEN_TITULO_AZ;
+                currentComparator = porTitulo;
+                indiceMenu = 0;
+            }
+        }
+        ordenActual = clave;
+        if (btnOrdenar != null && indiceMenu < btnOrdenar.getItems().size()) {
+            btnOrdenar.setText("⇅ " + btnOrdenar.getItems().get(indiceMenu).getText());
+        }
+    }
+
+    /**
+     * Clave del orden activo (por ejemplo {@code "autor"}).
+     *
+     * @return Clave del orden.
+     */
+    public String getOrdenActual() {
+        return ordenActual;
+    }
+
+    // =========================================================================
+    // PREFERENCIAS RECORDADAS
+    // =========================================================================
+    /**
+     * Recibe el mapa de preferencias del usuario y restaura la vista, el orden,
+     * el chip de filtro y el tamaño de página de la última sesión. Debe
+     * llamarse antes de {@link #initData}.
+     *
+     * @param preferencias Mapa de preferencias (se modifica al cambiar
+     * opciones; el controlador principal lo guarda al cerrar).
+     */
+    public void setPreferencias(Map<String, String> preferencias) {
+        if (this.preferencias == preferencias) {
+            return; // Ya aplicadas (p. ej. al recargar tras sincronizar)
+        }
+        this.preferencias = preferencias;
+        if (preferencias == null) {
+            return;
+        }
+        aplicarOrden(preferencias.get(PREF_ORDEN));
+
+        String chip = preferencias.get(PREF_CHIP);
+        if (chip != null) {
+            try {
+                FiltroChip filtro = FiltroChip.valueOf(chip);
+                activarChip(botonDeChip(filtro), filtro);
+            } catch (IllegalArgumentException ignored) {
+                // Valor de una versión anterior: se mantiene «Todos»
+            }
+        }
+
+        String porPagina = preferencias.get(PREF_POR_PAGINA);
+        if (porPagina != null) {
+            if ("todos".equals(porPagina)) {
+                librosPorPagina = Integer.MAX_VALUE;
+            } else {
+                try {
+                    librosPorPagina = Math.max(1, Integer.parseInt(porPagina));
+                } catch (NumberFormatException ignored) {
+                    // Se conserva el valor por defecto
+                }
+            }
+            if (comboLibrosPorPagina != null) {
+                String valor = librosPorPagina == Integer.MAX_VALUE
+                        ? LanguageManager.getString("catalog.per_page.all", "Todos")
+                        : String.valueOf(librosPorPagina);
+                if (comboLibrosPorPagina.getItems().contains(valor)) {
+                    comboLibrosPorPagina.setValue(valor);
+                }
+            }
+        }
+
+        if ("lista".equals(preferencias.get(PREF_VISTA))) {
+            cambiarAVistaLista();
+        }
+    }
+
+    private void guardarPreferencia(String clave, String valor) {
+        if (preferencias != null) {
+            preferencias.put(clave, valor);
+        }
+    }
+
+    private Button botonDeChip(FiltroChip filtro) {
+        return switch (filtro) {
+            case LEYENDO -> chipLeyendo;
+            case LEIDOS -> chipLeidos;
+            case PENDIENTES -> chipPendientes;
+            case DIGITALES -> chipDigitales;
+            default -> chipTodos;
+        };
+    }
+
+    /**
+     * Chip de filtro rápido activo.
+     *
+     * @return Filtro activo.
+     */
+    public FiltroChip getFiltroChipActual() {
+        return filtroChipActual;
+    }
+
+    /**
+     * Indica si está activa la vista de lista (en lugar de la cuadrícula).
+     *
+     * @return {@code true} en vista de lista.
+     */
+    public boolean isVistaLista() {
+        return esVistaLista;
     }
 
     // =========================================================================
@@ -697,6 +848,7 @@ public class CatalogoGridController {
     @FXML
     public void cambiarAVistaCuadricula() {
         esVistaLista = false;
+        guardarPreferencia(PREF_VISTA, "cuadricula");
         if (btnVistaCuadricula != null) {
             btnVistaCuadricula.getStyleClass().remove("active-view-btn");
             btnVistaCuadricula.getStyleClass().add("active-view-btn");
@@ -718,6 +870,7 @@ public class CatalogoGridController {
     @FXML
     public void cambiarAVistaLista() {
         esVistaLista = true;
+        guardarPreferencia(PREF_VISTA, "lista");
         if (btnVistaLista != null) {
             btnVistaLista.getStyleClass().remove("active-view-btn");
             btnVistaLista.getStyleClass().add("active-view-btn");
@@ -763,6 +916,7 @@ public class CatalogoGridController {
 
     private void activarChip(Button btnActivo, FiltroChip nuevoFiltro) {
         filtroChipActual = nuevoFiltro;
+        guardarPreferencia(PREF_CHIP, nuevoFiltro.name());
         Button[] chips = {chipTodos, chipLeyendo, chipLeidos, chipPendientes, chipDigitales};
         for (Button chip : chips) {
             if (chip != null) {
