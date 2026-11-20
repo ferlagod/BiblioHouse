@@ -265,6 +265,33 @@ public class TestCatalogoGridPaginacion {
     }
 
     @Test
+    @DisplayName("Scroll continuo: carga por lotes y conserva lo cargado al refrescar datos")
+    public void testScrollContinuo() {
+        CatalogoGridController controller = new CatalogoGridController();
+        controller.setPanelMisLibros(new FlowPane());
+        controller.setListaLibrosCompleta(crearListaLibros(100));
+        assertTrue(controller.isModoContinuo(), "El scroll continuo es el modo por defecto");
+
+        controller.refrescarCuadricula();
+        assertEquals(CatalogoGridController.LOTE_CONTINUO, controller.getPanelMisLibros().getChildren().size());
+        assertEquals(1, controller.getTotalPaginas());
+
+        assertTrue(controller.cargarMasContinuo());
+        assertEquals(96, controller.getPanelMisLibros().getChildren().size());
+        assertTrue(controller.cargarMasContinuo());
+        assertEquals(100, controller.getPanelMisLibros().getChildren().size());
+        assertFalse(controller.cargarMasContinuo(), "No hay más libros que cargar");
+
+        // Un cambio de datos no debe devolver al usuario al principio
+        controller.refrescarCuadricula();
+        assertEquals(100, controller.getPanelMisLibros().getChildren().size());
+
+        // Un cambio de filtro u orden sí vuelve al primer lote
+        controller.ordenarPorAutor();
+        assertEquals(CatalogoGridController.LOTE_CONTINUO, controller.getPanelMisLibros().getChildren().size());
+    }
+
+    @Test
     @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
     public void testOrdenPorRecientes() {
         CatalogoGridController controller = new CatalogoGridController();

@@ -150,6 +150,15 @@ public class CatalogoGridController {
     // Estado de paginación para virtualización fluida
     private int paginaActual = 1;
     private int librosPorPagina = 48;
+
+    /**
+     * Scroll continuo (modo por defecto): en lugar de páginas se pintan
+     * {@link #LOTE_CONTINUO} tarjetas y se añaden más al acercarse al final.
+     */
+    private boolean modoContinuo = true;
+    static final int LOTE_CONTINUO = 48;
+    /** Número de tarjetas pintadas en modo continuo. */
+    private int cargadosContinuo = LOTE_CONTINUO;
     private int totalPaginas = 1;
     private int totalLibrosFiltrados = 0;
 
@@ -249,10 +258,14 @@ public class CatalogoGridController {
 
         if (comboLibrosPorPagina != null) {
             String opcionTodos = LanguageManager.getString("catalog.per_page.all", "Todos");
-            comboLibrosPorPagina.getItems().setAll("24", "48", "96", opcionTodos);
-            comboLibrosPorPagina.setValue(String.valueOf(librosPorPagina));
+            String opcionContinuo = LanguageManager.getString("catalog.per_page.continuous", "Continuo");
+            comboLibrosPorPagina.getItems().setAll(opcionContinuo, "24", "48", "96", opcionTodos);
+            comboLibrosPorPagina.setValue(modoContinuo ? opcionContinuo : String.valueOf(librosPorPagina));
             comboLibrosPorPagina.valueProperty().addListener((obs, oldVal, newVal) -> {
-                if (opcionTodos.equals(newVal)) {
+                modoContinuo = opcionContinuo.equals(newVal);
+                if (modoContinuo) {
+                    cargadosContinuo = LOTE_CONTINUO;
+                } else if (opcionTodos.equals(newVal)) {
                     librosPorPagina = Integer.MAX_VALUE;
                 } else if (newVal != null) {
                     try {
@@ -261,7 +274,8 @@ public class CatalogoGridController {
                         librosPorPagina = 48;
                     }
                 }
-                guardarPreferencia(PREF_POR_PAGINA, librosPorPagina == Integer.MAX_VALUE ? "todos" : String.valueOf(librosPorPagina));
+                guardarPreferencia(PREF_POR_PAGINA, modoContinuo ? "continuo"
+                        : librosPorPagina == Integer.MAX_VALUE ? "todos" : String.valueOf(librosPorPagina));
                 paginaActual = 1;
                 refrescarCuadricula(true);
             });
@@ -269,6 +283,13 @@ public class CatalogoGridController {
 
         configurarTablaMisLibros();
         configurarBarraSeleccion();
+        if (scrollMisLibros != null) {
+            scrollMisLibros.vvalueProperty().addListener((obs, antes, ahora) -> {
+                if (modoContinuo && ahora.doubleValue() >= 0.9 && cargarMasContinuo()) {
+                    rellenarSiCabe();
+                }
+            });
+        }
         configurarAccesibilidadControles();
 
         // Suscripción al bus de eventos para reaccionar a cambios
@@ -535,7 +556,12 @@ public class CatalogoGridController {
 
         String porPagina = preferencias.get(PREF_POR_PAGINA);
         if (porPagina != null) {
-            if ("todos".equals(porPagina)) {
+            modoContinuo = "continuo".equals(porPagina);
+            if (modoContinuo) {
+                if (comboLibrosPorPagina != null) {
+                    comboLibrosPorPagina.setValue(LanguageManager.getString("catalog.per_page.continuous", "Continuo"));
+                }
+            } else if ("todos".equals(porPagina)) {
                 librosPorPagina = Integer.MAX_VALUE;
             } else {
                 try {
@@ -544,7 +570,7 @@ public class CatalogoGridController {
                     // Se conserva el valor por defecto
                 }
             }
-            if (comboLibrosPorPagina != null) {
+            if (comboLibrosPorPagina != null && !modoContinuo) {
                 String valor = librosPorPagina == Integer.MAX_VALUE
                         ? LanguageManager.getString("catalog.per_page.all", "Todos")
                         : String.valueOf(librosPorPagina);
@@ -669,6 +695,19 @@ public class CatalogoGridController {
      */
     private void actualizarBarraPaginacion(int inicio, int fin, int total) {
         if (boxPaginacion == null) {
+            return;
+        }
+        // En modo continuo no hay páginas: se ocultan los botones de navegación
+        for (Button b : new Button[]{btnPrimeraPagina, btnAnterior, btnSiguiente, btnUltima}) {
+            if (b != null) {
+                b.setVisible(!modoContinuo);
+                b.setManaged(!modoContinuo);
+            }
+        }
+        if (modoContinuo && total > 0) {
+            if (lblInfoPaginacion != null) {
+                lblInfoPaginacion.setText(String.format(LanguageManager.getString("catalog.continuous.info", "%d de %d libros"), fin, total));
+            }
             return;
         }
 
@@ -1078,6 +1117,11 @@ public class CatalogoGridController {
             return;
         }
 
+        if (modoContinuo) {
+            pintarContinuo(filtrados, animar);
+            return;
+        }
+
         // Calcular paginación para virtualización
         int pageSize = librosPorPagina > 0 ? librosPorPagina : Integer.MAX_VALUE;
         totalPaginas = (int) Math.ceil((double) filtrados.size() / pageSize);
@@ -1127,6 +1171,85 @@ public class CatalogoGridController {
         if (animar) {
             animarEntradaContenido();
         }
+    }
+
+    // =========================================================================
+    // SCROLL CONTINUO
+    // =========================================================================
+    /**
+     * Pinta las primeras tarjetas de la lista filtrada. Al navegar (filtro,
+     * orden, búsqueda) se vuelve al primer lote; en refrescos por cambios de
+     * datos se conservan las ya cargadas para no perder la posición.
+     */
+    private void pintarContinuo(List<Libro> filtrados, boolean reiniciar) {
+        totalPaginas = 1;
+        paginaActual = 1;
+        if (reiniciar) {
+            cargadosContinuo = LOTE_CONTINUO;
+            scrollearArriba();
+        }
+        int hasta = Math.min(Math.max(cargadosContinuo, LOTE_CONTINUO), filtrados.size());
+        cargadosContinuo = hasta;
+        panelMisLibros.getChildren().setAll(filtrados.subList(0, hasta).stream()
+                .map(this::obtenerTarjeta)
+                .collect(Collectors.toList()));
+        podarCacheTarjetas();
+        actualizarBarraPaginacion(1, hasta, filtrados.size());
+
+        // La lista ya está virtualizada por TableView: muestra todos los libros
+        if (tablaMisLibros != null) {
+            sincronizandoTabla = true;
+            try {
+                tablaMisLibros.setItems(FXCollections.observableArrayList(filtrados));
+                filtrados.stream().filter(seleccion::contains).forEach(l -> tablaMisLibros.getSelectionModel().select(l));
+            } finally {
+                sincronizandoTabla = false;
+            }
+        }
+        aplicarEstiloSeleccion();
+        actualizarBarraSeleccion();
+        if (reiniciar) {
+            animarEntradaContenido();
+        }
+        rellenarSiCabe();
+    }
+
+    /**
+     * Añade el siguiente lote de tarjetas al final de la cuadrícula sin
+     * reconstruir las existentes.
+     *
+     * @return {@code true} si se añadió alguna tarjeta.
+     */
+    public boolean cargarMasContinuo() {
+        if (!modoContinuo || panelMisLibros == null || cargadosContinuo >= librosFiltradosActuales.size()) {
+            return false;
+        }
+        int desde = cargadosContinuo;
+        int hasta = Math.min(desde + LOTE_CONTINUO, librosFiltradosActuales.size());
+        List<Node> nuevas = librosFiltradosActuales.subList(desde, hasta).stream()
+                .map(this::obtenerTarjeta)
+                .collect(Collectors.toList());
+        panelMisLibros.getChildren().addAll(nuevas);
+        cargadosContinuo = hasta;
+        aplicarEstiloSeleccion();
+        actualizarBarraPaginacion(1, hasta, librosFiltradosActuales.size());
+        return true;
+    }
+
+    /**
+     * Si las tarjetas pintadas no llenan la ventana (pantallas grandes), no
+     * habría scroll con el que pedir más: se cargan lotes hasta llenarla.
+     */
+    private void rellenarSiCabe() {
+        if (scrollMisLibros == null || scrollMisLibros.getScene() == null) {
+            return;
+        }
+        Platform.runLater(() -> {
+            double alto = scrollMisLibros.getViewportBounds() != null ? scrollMisLibros.getViewportBounds().getHeight() : 0;
+            if (modoContinuo && alto > 0 && panelMisLibros.getHeight() < alto && cargarMasContinuo()) {
+                rellenarSiCabe();
+            }
+        });
     }
 
     // =========================================================================
@@ -1544,6 +1667,27 @@ public class CatalogoGridController {
      */
     public void setLibrosPorPagina(int librosPorPagina) {
         this.librosPorPagina = librosPorPagina;
+        this.modoContinuo = false;
+    }
+
+    /**
+     * Activa o desactiva el scroll continuo.
+     *
+     * @param continuo {@code true} para cargar tarjetas al hacer scroll en
+     * lugar de paginar.
+     */
+    public void setModoContinuo(boolean continuo) {
+        this.modoContinuo = continuo;
+        this.cargadosContinuo = LOTE_CONTINUO;
+    }
+
+    /**
+     * Indica si está activo el scroll continuo.
+     *
+     * @return {@code true} en modo continuo.
+     */
+    public boolean isModoContinuo() {
+        return modoContinuo;
     }
 
     /**
@@ -2013,6 +2157,9 @@ public class CatalogoGridController {
             return;
         }
         int idx = panelMisLibros.getChildren().indexOf(actual);
+        if (idx == panelMisLibros.getChildren().size() - 1) {
+            cargarMasContinuo(); // Al llegar al final en modo continuo
+        }
         if (idx >= 0 && idx < panelMisLibros.getChildren().size() - 1) {
             Node siguiente = panelMisLibros.getChildren().get(idx + 1);
             siguiente.requestFocus();
@@ -2101,6 +2248,11 @@ public class CatalogoGridController {
         if (mejorCandidato != null) {
             mejorCandidato.requestFocus();
             asegurarVisibilidadEnScroll(mejorCandidato);
+        } else if (abajo && cargarMasContinuo()) {
+            // Última fila en modo continuo: cargar más y bajar cuando se maqueten
+            panelMisLibros.applyCss();
+            panelMisLibros.layout();
+            navegarTarjetaFila(actual, true);
         }
     }
 
