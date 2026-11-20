@@ -322,7 +322,7 @@ public class DetalleLibroController {
             }
 
             libroActual.setPaginaActual(nuevaPagina);
-            this.wasModified = true;
+            marcarModificado();
 
             actualizarUIProgreso();
 
@@ -427,7 +427,7 @@ public class DetalleLibroController {
             // Si guardó los cambios, refrescamos la vista de detalles
             if (controller.isGuardado()) {
                 cargarDatos();
-                this.wasModified = true;
+                marcarModificado();
             }
 
         } catch (IOException e) {
@@ -455,8 +455,53 @@ public class DetalleLibroController {
      */
     @FXML
     private void cerrar(ActionEvent event) {
+        if (onCerrar != null) {
+            // Panel lateral: lo cierra la ventana principal
+            onCerrar.run();
+            return;
+        }
         Stage stage = (Stage) lblTitulo.getScene().getWindow();
         stage.close();
+    }
+
+    private Runnable onCerrar;
+    private Runnable onModificado;
+
+    /**
+     * Acción de cierre cuando la ficha se muestra en el panel lateral de la
+     * ventana principal (en lugar de en una ventana propia).
+     *
+     * @param onCerrar Acción a ejecutar al pulsar «Cerrar».
+     */
+    public void setOnCerrar(Runnable onCerrar) {
+        this.onCerrar = onCerrar;
+    }
+
+    /**
+     * Acción que se ejecuta en cuanto el libro se modifica (edición, notas,
+     * archivo digital...). En el panel lateral no hay un «al cerrar la
+     * ventana» en el que guardar, así que se guarda en el momento.
+     *
+     * @param onModificado Acción a ejecutar tras cada modificación.
+     */
+    public void setOnModificado(Runnable onModificado) {
+        this.onModificado = onModificado;
+    }
+
+    /**
+     * Libro mostrado actualmente.
+     *
+     * @return El libro, o {@code null} si aún no se ha asignado.
+     */
+    public Libro getLibro() {
+        return libroActual;
+    }
+
+    private void marcarModificado() {
+        this.wasModified = true;
+        if (onModificado != null) {
+            onModificado.run();
+        }
     }
 
     /**
@@ -499,7 +544,7 @@ public class DetalleLibroController {
                     if (onSyncRequested != null) {
                         onSyncRequested.run();
                     }
-                    wasModified = true;
+                    marcarModificado();
                 });
 
                 Stage stage = new Stage();
@@ -593,7 +638,7 @@ public class DetalleLibroController {
             ok.show();
 
             libroActual.setRutaArchivoDigital(task.getValue().getAbsolutePath());
-            wasModified = true;
+            marcarModificado();
             if (onSyncRequested != null) {
                 onSyncRequested.run();
             }
@@ -661,7 +706,7 @@ public class DetalleLibroController {
             if (listaDiario != null) {
                 listaDiario.getItems().setAll(libroActual.getDiario());
             }
-            wasModified = true;
+            marcarModificado();
             if (onSyncRequested != null) {
                 onSyncRequested.run();
             }

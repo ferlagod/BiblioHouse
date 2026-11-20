@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Ficha de libro en panel lateral (ventana principal). Usa el mismo
+  controlador que la ventana de detalle (detalle_libro.fxml) con los mismos
+  fx:id, pero en disposición vertical para un ancho de ~440 px.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="raizPanel" styleClass="detail-panel" prefWidth="440.0" minWidth="360.0" maxWidth="440.0" accessibleRole="PARENT" accessibleText="Ficha del libro" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ferlagod.bibliohousefx.DetalleLibroController">
+    <children>
+        <!-- Cabecera fija con el botón de cierre -->
+        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="detail-panel-header">
+            <children>
+                <Label styleClass="detail-panel-caption" text="%detail.panel.title" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnCerrarPanel" accessibleText="Cerrar ficha" onAction="#cerrar" styleClass="flat, detail-panel-close" text="✕" />
+            </children>
+        </HBox>
+
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="detail-panel-scroll" VBox.vgrow="ALWAYS">
+            <content>
+                <VBox spacing="12.0">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="8.0" />
+                    </padding>
+                    <children>
+                        <!-- Portada e insignias -->
+                        <VBox alignment="TOP_CENTER" spacing="8.0">
+                            <children>
+                                <ImageView fx:id="imgPortada" fitHeight="260.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" styleClass="detail-panel-cover" />
+                                <FlowPane alignment="CENTER" hgap="6.0" vgap="6.0">
+                                    <children>
+                                        <Label fx:id="lblEstadoLectura" styleClass="detail-panel-pill" text="%book.state.read" visible="false" />
+                                        <Label fx:id="lblBadgeDigital" managed="false" visible="false" styleClass="detail-panel-pill, detail-panel-pill-digital" text="%shelf.digital" />
+                                    </children>
+                                </FlowPane>
+                            </children>
+                        </VBox>
+
+                        <!-- Título y autor -->
+                        <VBox spacing="2.0">
+                            <children>
+                                <Label fx:id="lblTitulo" styleClass="detail-panel-title" text="%book.title.default" wrapText="true" />
+                                <Label fx:id="lblAutor" styleClass="detail-panel-author" text="%book.author.default" wrapText="true" />
+                                <Label fx:id="lblEstrellas" styleClass="detail-panel-stars" text="★★★★☆" />
+                            </children>
+                        </VBox>
+
+                        <!-- Acciones principales -->
+                        <FlowPane hgap="8.0" vgap="8.0">
+                            <children>
+                                <Button fx:id="btnLeerDigital" managed="false" visible="false" onAction="#abrirArchivoDigital" styleClass="accent" text="%btn.read" />
+                                <Button onAction="#editarLibro" text="%ctx.edit" />
+                                <Button fx:id="btnConvertirDigital" managed="false" visible="false" onAction="#convertirFormato" text="%btn.convert" />
+                            </children>
+                        </FlowPane>
+
+                        <!-- Progreso de lectura -->
+                        <VBox fx:id="boxProgreso" spacing="8.0" styleClass="detail-panel-card">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                        <Label style="-fx-font-weight: bold;" text="%book.progress.title" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="lblPorcentajeProgreso" style="-fx-text-fill: -color-fg-muted; -fx-font-weight: bold;" text="0%" />
+                                    </children>
+                                </HBox>
+                                <ProgressBar fx:id="progressBarLectura" maxWidth="Infinity" prefHeight="8.0" progress="0.0" styleClass="book-card-progress" />
+                                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                                    <children>
+                                        <Label text="%book.page.label" />
+                                        <TextField fx:id="txtPaginaActual" prefWidth="64.0" />
+                                        <Label fx:id="lblPaginasTotalesProgreso" style="-fx-text-fill: -color-fg-muted;" text="de ?" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Button onAction="#actualizarProgresoRapido" styleClass="accent" text="%btn.update" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+
+                        <Separator />
+
+                        <!-- Datos bibliográficos -->
+                        <GridPane hgap="12.0" vgap="6.0">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="80.0" maxWidth="110.0" />
+                                <ColumnConstraints hgrow="ALWAYS" />
+                            </columnConstraints>
+                            <children>
+                                <Label styleClass="detail-panel-key" text="%book.publisher" />
+                                <Label fx:id="lblEditorial" text="-" wrapText="true" GridPane.columnIndex="1" />
+
+                                <Label styleClass="detail-panel-key" text="%book.year" GridPane.rowIndex="1" />
+                                <Label fx:id="lblAnio" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                <Label styleClass="detail-panel-key" text="%book.genre" GridPane.rowIndex="2" />
+                                <Label fx:id="lblGenero" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                <Label styleClass="detail-panel-key" text="%book.isbn" GridPane.rowIndex="3" />
+                                <Label fx:id="lblIsbn" text="-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                <Label fx:id="lblFormatoLabel" managed="false" visible="false" styleClass="detail-panel-key" text="%book.format.label" GridPane.rowIndex="4" />
+                                <Label fx:id="lblFormato" managed="false" visible="false" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                <Label fx:id="lblArchivoLabel" managed="false" visible="false" styleClass="detail-panel-key" text="%book.file.label" GridPane.rowIndex="5" />
+                                <Label fx:id="lblArchivo" managed="false" visible="false" style="-fx-text-fill: -color-fg-muted; -fx-font-size: 11px;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                <Label fx:id="lblUbicacionLabel" styleClass="detail-panel-key" text="%book.location.label" GridPane.rowIndex="6" />
+                                <Label fx:id="lblUbicacion" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                            </children>
+                        </GridPane>
+
+                        <!-- Reseña y diario de lectura -->
+                        <TabPane fx:id="tabPaneDetalles" minHeight="260.0" prefHeight="300.0" tabClosingPolicy="UNAVAILABLE">
+                            <tabs>
+                                <Tab text="%book.review">
+                                    <content>
+                                        <VBox style="-fx-padding: 8 0 0 0;">
+                                            <children>
+                                                <TextArea fx:id="txtResena" editable="false" wrapText="true" style="-fx-background-color: transparent; -fx-control-inner-background: -color-bg-subtle;" VBox.vgrow="ALWAYS" />
+                                            </children>
+                                        </VBox>
+                                    </content>
+                                </Tab>
+                                <Tab text="%book.diary.title">
+                                    <content>
+                                        <VBox spacing="8.0" style="-fx-padding: 8 0 0 0;">
+                                            <children>
+                                                <HBox alignment="CENTER_RIGHT">
+                                                    <children>
+                                                        <Button onAction="#abrirDialogoNuevaNota" text="%book.diary.add" />
+                                                    </children>
+                                                </HBox>
+                                                <ListView fx:id="listaDiario" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                            </children>
+                                        </VBox>
+                                    </content>
+                                </Tab>
+                            </tabs>
+                        </TabPane>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>

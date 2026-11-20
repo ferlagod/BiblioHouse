@@ -189,6 +189,80 @@
     -fx-text-fill: -color-danger-fg;
 }
 
+/* --- PANEL LATERAL DE FICHA --- */
+.detail-panel {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 0 0 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 14, 0, -3, 0);
+}
+
+.detail-panel-header {
+    -fx-padding: 10 10 6 20;
+}
+
+.detail-panel-caption {
+    -fx-text-fill: -color-fg-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.detail-panel-close {
+    -fx-font-size: 13px;
+    -fx-padding: 2 8;
+    -fx-cursor: hand;
+}
+
+.detail-panel-scroll,
+.detail-panel-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.detail-panel-cover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 12, 0, 0, 4);
+}
+
+.detail-panel-pill {
+    -fx-background-radius: 12;
+    -fx-padding: 3 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.detail-panel-pill-digital {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1565c0;
+}
+
+.detail-panel-title {
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-default;
+}
+
+.detail-panel-author {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+.detail-panel-stars {
+    -fx-font-size: 16px;
+    -fx-text-fill: #d97706;
+}
+
+.detail-panel-card {
+    -fx-padding: 12;
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-border-subtle;
+    -fx-border-radius: 10;
+}
+
+.detail-panel-key {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+}
+
 /* --- ESTADO VACÍO DEL CATÁLOGO --- */
 .catalog-empty-state {
     -fx-padding: 60 0 60 0;

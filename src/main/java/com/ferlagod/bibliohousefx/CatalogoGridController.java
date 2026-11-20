@@ -2310,6 +2310,11 @@ public class CatalogoGridController {
             return;
         }
 
+        // 0. Ver ficha (panel lateral)
+        MenuItem itemFicha = new MenuItem(LanguageManager.getString("ctx.details", "Ver ficha"));
+        itemFicha.setOnAction(e -> abrirDetalle(libro));
+        contextMenuLibros.getItems().addAll(itemFicha, new SeparatorMenuItem());
+
         // 1. Leer (si es ebook)
         boolean isEbook = libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isEmpty();
         if (isEbook) {

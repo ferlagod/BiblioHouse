@@ -170,6 +170,9 @@ public class PrimaryController implements Initializable {
     /** Temporizador que oculta la notificación emergente. */
     private PauseTransition ocultarNotificacion;
 
+    /** Controlador de la ficha mostrada en el panel lateral (null si está cerrado). */
+    private DetalleLibroController panelDetalleController;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.resources = rb;
@@ -185,6 +188,9 @@ public class PrimaryController implements Initializable {
             }
         });
         AppEventBus.getInstance().subscribe(this, AppEventBus.LibroEliminadoEvent.class, e -> {
+            if (isPanelDetalleAbierto() && panelDetalleController.getLibro() == e.getLibro()) {
+                cerrarPanelDetalle();
+            }
             guardarLibrosEnDisco();
             actualizarComboLibrosDisponibles();
             if (pestanaSagasController != null) {
@@ -226,6 +232,10 @@ public class PrimaryController implements Initializable {
             return;
         }
         mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, anterior, nueva) -> {
+            // La ficha lateral pertenece al catálogo: se cierra al cambiar de pestaña
+            if (mainTabPane.getSelectionModel().getSelectedIndex() != 0) {
+                cerrarPanelDetalle();
+            }
             if (nueva == null || nueva.getContent() == null) {
                 return;
             }
@@ -618,6 +628,14 @@ public class PrimaryController implements Initializable {
             Window window = getWindow();
             if (window != null && window.getScene() != null) {
                 Scene scene = window.getScene();
+                // Escape cierra la ficha lateral si nadie más ha usado la tecla
+                // (la búsqueda y la selección del catálogo la consumen antes)
+                scene.addEventHandler(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
+                    if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE && isPanelDetalleAbierto()) {
+                        cerrarPanelDetalle();
+                        e.consume();
+                    }
+                });
                 // Cmd+K / Ctrl+K -> Paleta de comandos global Spotlight/Raycast
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+K"), this::abrirPaletaComandos);
                 // Cmd+, / Ctrl+, -> Preferencias y configuración
@@ -675,10 +693,10 @@ public class PrimaryController implements Initializable {
             return;
         }
         this.libroSeleccionado = libro;
-        seleccionarPestanaDirecta(1);
-        if (gestionLibrosController != null) {
-            gestionLibrosController.rellenarFormularioManual(libro);
-        }
+        // Desde la paleta de comandos (Cmd/Ctrl+K): mostrar la ficha en el
+        // panel lateral del catálogo. Antes rellenaba el formulario de alta.
+        seleccionarPestanaDirecta(0);
+        mostrarDetalleLibro(libro);
     }
 
     public void abrirConfiguracion() {
@@ -759,6 +777,11 @@ public class PrimaryController implements Initializable {
      */
     public void seleccionarLibro(Libro libro) {
         this.libroSeleccionado = libro;
+        // Con la ficha lateral abierta, seleccionar otro libro la actualiza
+        // (patrón lista-detalle), también al moverse con las flechas.
+        if (libro != null && isPanelDetalleAbierto() && panelDetalleController.getLibro() != libro) {
+            mostrarDetalleLibro(libro);
+        }
     }
 
     /**
@@ -1152,6 +1175,110 @@ public class PrimaryController implements Initializable {
      * @param libro Libro del que se mostrarán los detalles.
      */
     public void mostrarDetalleLibro(Libro libro) {
+        if (libro == null) {
+            return;
+        }
+        if (mainContainer == null) {
+            mostrarDetalleEnVentana(libro);
+            return;
+        }
+        try {
+            // Una vista nueva por libro: el controlador de la ficha no está
+            // pensado para reutilizarse y así no arrastra estado del anterior.
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("panel_detalle.fxml"));
+            loader.setResources(this.resources);
+            Parent panel = loader.load();
+            DetalleLibroController controller = loader.getController();
+            controller.setListaGlobalEstanterias(jsonManager.cargarEstanterias());
+            controller.setRutaUsuario(this.rutaUsuario);
+            controller.setOnSyncRequested(() -> {
+                jsonManager.guardarProgresoLecturaDebounced(libro.getId(), libro.getPaginaActual(), libro.getPaginasTotales());
+                AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
+            });
+            controller.setOnModificado(() -> {
+                guardarLibrosEnDisco();
+                AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
+            });
+            controller.setOnCerrar(this::cerrarPanelDetalle);
+            controller.setLibro(libro);
+            panel.setOnKeyPressed(e -> {
+                if (e.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                    cerrarPanelDetalle();
+                    e.consume();
+                }
+            });
+
+            boolean yaAbierto = panelDetalleController != null && mainContainer.getRight() != null;
+            if (yaAbierto) {
+                jsonManager.flushProgresoLectura();
+            }
+            panelDetalleController = controller;
+            mainContainer.setRight(panel);
+
+            // Entrada: deslizamiento desde la derecha al abrir; fundido al
+            // cambiar de libro con el panel ya abierto.
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(yaAbierto ? 140 : 200), panel);
+            fade.setFromValue(yaAbierto ? 0.4 : 0.0);
+            fade.setToValue(1.0);
+            fade.setInterpolator(Interpolator.EASE_OUT);
+            if (yaAbierto) {
+                fade.play();
+            } else {
+                javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(220), panel);
+                slide.setFromX(48);
+                slide.setToX(0);
+                slide.setInterpolator(Interpolator.EASE_OUT);
+                new javafx.animation.ParallelTransition(fade, slide).play();
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "No se pudo abrir el panel de detalle; se usa la ventana", e);
+            mostrarDetalleEnVentana(libro);
+        }
+    }
+
+    /**
+     * Cierra el panel lateral de la ficha (si está abierto), guardando antes
+     * el progreso de lectura pendiente.
+     */
+    public void cerrarPanelDetalle() {
+        if (mainContainer == null || mainContainer.getRight() == null) {
+            return;
+        }
+        if (jsonManager != null) {
+            jsonManager.flushProgresoLectura();
+        }
+        javafx.scene.Node panel = mainContainer.getRight();
+        panelDetalleController = null;
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(150), panel);
+        fade.setToValue(0.0);
+        javafx.animation.TranslateTransition slide = new javafx.animation.TranslateTransition(Duration.millis(150), panel);
+        slide.setToX(48);
+        javafx.animation.ParallelTransition salida = new javafx.animation.ParallelTransition(fade, slide);
+        salida.setInterpolator(Interpolator.EASE_IN);
+        salida.setOnFinished(e -> {
+            if (mainContainer.getRight() == panel) {
+                mainContainer.setRight(null);
+            }
+        });
+        salida.play();
+    }
+
+    /**
+     * Indica si el panel lateral de la ficha está abierto.
+     *
+     * @return {@code true} si está visible.
+     */
+    public boolean isPanelDetalleAbierto() {
+        return panelDetalleController != null && mainContainer != null && mainContainer.getRight() != null;
+    }
+
+    /**
+     * Abre la ficha completa en una ventana propia (modo anterior), por
+     * ejemplo si el panel lateral no puede cargarse.
+     *
+     * @param libro Libro del que se mostrarán los detalles.
+     */
+    public void mostrarDetalleEnVentana(Libro libro) {
         if (libro == null) {
             return;
         }
