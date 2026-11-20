@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * ante manipulación de datos (tampering).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class TestSeguridadUtilGcm {
 

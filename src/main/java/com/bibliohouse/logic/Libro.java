@@ -30,7 +30,7 @@ import java.util.UUID;
  * y todo eso.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class Libro {
 

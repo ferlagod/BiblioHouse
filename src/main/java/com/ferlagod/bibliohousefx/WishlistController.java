@@ -33,7 +33,7 @@ import javafx.scene.layout.VBox;
  * acciones de los libros que el usuario quiere guardar para el futuro.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class WishlistController {
 

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * crear uno nuevo por tarea, y todos son daemon para no impedir el cierre.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public final class Hilos {
 

@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Grande / Accesible). 4. Soporte para temas de alto contraste (WCAG AA/AAA).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class TestAccesibilidad {
 

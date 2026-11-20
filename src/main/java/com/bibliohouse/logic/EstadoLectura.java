@@ -27,7 +27,7 @@ import java.text.Normalizer;
  * mostradas en la interfaz de usuario.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public enum EstadoLectura {
 

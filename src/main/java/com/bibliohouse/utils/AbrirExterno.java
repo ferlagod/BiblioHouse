@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  * invocarlas desde él puede bloquear la interfaz (especialmente en macOS).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public final class AbrirExterno {
 

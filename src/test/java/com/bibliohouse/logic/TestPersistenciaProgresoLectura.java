@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * del seguimiento de lectura en BiblioHouse.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 class TestPersistenciaProgresoLectura {
 

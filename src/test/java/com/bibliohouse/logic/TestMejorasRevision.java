@@ -31,6 +31,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * sincronización, fusión de socios y préstamos, validación de nombres remotos,
  * protección XXE, búsqueda sin tildes, token del servidor EPUB y volcado de
  * guardados pendientes al cerrar.
+ *
+ * @author ferlagod (Fernando Lago Dávila)
+ * @version 2.3
  */
 class TestMejorasRevision {
 

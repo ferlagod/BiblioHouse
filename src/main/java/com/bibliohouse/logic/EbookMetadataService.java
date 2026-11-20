@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * No requiere dependencias externas adicionales.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class EbookMetadataService {
 

@@ -42,7 +42,7 @@ import java.util.Map;
  * imprimir etiquetas con información detallada de cada libro.
  * 
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class ServicioEtiquetasFisicas {
 

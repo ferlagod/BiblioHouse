@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * incremental.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class NextCloudSyncService {
 

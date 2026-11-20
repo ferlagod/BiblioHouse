@@ -37,7 +37,7 @@ import javafx.stage.Stage;
  * sesión/registrarse o usar la aplicación en modo invitado (sin registro).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class WelcomeController {
 

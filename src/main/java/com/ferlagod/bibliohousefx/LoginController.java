@@ -44,7 +44,7 @@ import javafx.stage.Stage;
  * nuevos usuarios. Si no tienes llave, no pasas.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class LoginController {
 

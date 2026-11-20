@@ -32,7 +32,7 @@ import javafx.application.Platform;
  * actual y notifica el resultado mediante un callback.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class UpdateChecker {
 
@@ -44,7 +44,7 @@ public class UpdateChecker {
     /**
      * Devuelve la versión empaquetada en {@code version.properties}.
      *
-     * @return Versión de la aplicación (p. ej. "2.2.0").
+     * @return Versión de la aplicación (p. ej. "2.3.0").
      */
     public static String getVersionActual() {
         return VERSION_ACTUAL;

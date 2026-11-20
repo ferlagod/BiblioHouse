@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * cambios en disco.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class LibroService {
 

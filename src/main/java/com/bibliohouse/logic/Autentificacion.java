@@ -37,7 +37,7 @@ import org.mindrot.jbcrypt.BCrypt;
  * Los nuevos hashes siempre usan BCrypt (factor de coste 12).</p>
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class Autentificacion {
 

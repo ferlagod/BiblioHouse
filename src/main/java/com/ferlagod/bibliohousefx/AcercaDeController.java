@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  * autobombo y pongo mi contacto.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class AcercaDeController {
 

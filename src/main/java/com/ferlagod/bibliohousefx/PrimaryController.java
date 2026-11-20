@@ -91,7 +91,7 @@ import com.bibliohouse.utils.SystemNotificationService;
  * Historial, Wishlist y Sagas).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.3
  */
 public class PrimaryController implements Initializable {
 

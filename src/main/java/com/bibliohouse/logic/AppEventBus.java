@@ -30,7 +30,7 @@ import javafx.application.Platform;
  * manejadores que actualicen la interfaz se invoquen en el hilo de JavaFX.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class AppEventBus {
 

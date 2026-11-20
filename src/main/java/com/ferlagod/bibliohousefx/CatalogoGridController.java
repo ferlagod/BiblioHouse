@@ -83,7 +83,7 @@ import org.kordamp.ikonli.feather.Feather;
  * menú contextual sobre cada libro.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class CatalogoGridController {
 

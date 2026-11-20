@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Liberación de matrices nativas de OpenCV.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class TestEscanerOptimizacion {
 

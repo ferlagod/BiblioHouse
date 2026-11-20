@@ -33,7 +33,7 @@ import java.util.prefs.Preferences;
  * notifica a los componentes visuales mediante AppEventBus.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class LanguageManager {
 

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * Utilidades de texto para búsquedas tolerantes a mayúsculas y tildes.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public final class TextoUtil {
 

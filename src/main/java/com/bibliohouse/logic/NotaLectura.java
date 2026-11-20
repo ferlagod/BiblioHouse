@@ -27,7 +27,7 @@ import java.util.UUID;
  * en la que lo hicimos. ¡Como tener un diario de lectura!
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class NotaLectura {
 

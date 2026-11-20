@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * comprobación de vencimientos.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class PrestamoService {
 

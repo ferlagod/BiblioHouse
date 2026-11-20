@@ -48,7 +48,7 @@ import javafx.scene.layout.VBox;
  * los filtros por categoría y el widget interactivo del reto de lectura anual.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class SidebarController {
 

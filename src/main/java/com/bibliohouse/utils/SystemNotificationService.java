@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * Action Center vía SystemTray).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class SystemNotificationService {
 

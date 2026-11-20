@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * compatibilidad de rutas multiplataforma y sincronización de portadas.
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 class TestSincronizacionYPortadas {
 

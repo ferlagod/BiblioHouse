@@ -49,7 +49,7 @@ import javafx.stage.Window;
  * Ctrl+K en Windows/Linux).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.2
+ * @version 2.3
  */
 public class PaletaComandosDialog {
 

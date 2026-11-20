@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * por ID y timestamp de última modificación (Merge no destructivo).
  *
  * @author ferlagod (Fernando Lago Dávila)
- * @version 2.1
+ * @version 2.3
  */
 public class TestSincronizacionYMerge {
 
