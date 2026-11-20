@@ -1300,6 +1300,84 @@ public class PrimaryController implements Initializable {
      * Elimina el libro de la biblioteca y ofrece deshacerlo durante unos
      * segundos.
      */
+    /**
+     * Elimina varios libros de una vez tras confirmarlo, y ofrece deshacerlo
+     * (vuelven todos a su posición original).
+     *
+     * @param libros Libros a eliminar.
+     */
+    public void eliminarLibros(List<Libro> libros) {
+        if (libros == null || libros.isEmpty() || listaLibrosCompleta == null) {
+            return;
+        }
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(LanguageManager.getString("ui.eliminar_libro", "Eliminar Libro"));
+        alert.setHeaderText(String.format(LanguageManager.getString("bulk.delete_confirm", "¿Eliminar %d libros?"), libros.size()));
+        alert.setContentText(LanguageManager.getString("bulk.delete_confirm_detail", "Podrás deshacerlo durante unos segundos."));
+        alert.initOwner(getWindow());
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+        // Posiciones originales, de menor a mayor, para reinsertar en el mismo orden
+        // Búsqueda por identidad: Libro redefine equals() y removeAll() podría
+        // llevarse otros ejemplares iguales que no estaban seleccionados.
+        java.util.TreeMap<Integer, Libro> posiciones = new java.util.TreeMap<>();
+        java.util.Set<Libro> aBorrar = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        aBorrar.addAll(libros);
+        for (int i = 0; i < listaLibrosCompleta.size(); i++) {
+            if (aBorrar.contains(listaLibrosCompleta.get(i))) {
+                posiciones.put(i, listaLibrosCompleta.get(i));
+            }
+        }
+        for (Integer i : posiciones.descendingKeySet()) {
+            listaLibrosCompleta.remove(i.intValue());
+        }
+        guardarLibrosEnDisco();
+        posiciones.values().forEach(l -> AppEventBus.getInstance().publish(new AppEventBus.LibroEliminadoEvent(l)));
+        ofrecerDeshacer(String.format(LanguageManager.getString("bulk.deleted", "%d libros eliminados"), posiciones.size()), () -> {
+            // De menor a mayor posición: cada uno vuelve exactamente a su sitio
+            posiciones.forEach((indice, l) -> listaLibrosCompleta.add(Math.min(indice, listaLibrosCompleta.size()), l));
+            AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, true));
+        });
+    }
+
+    /**
+     * Genera un único PDF con las etiquetas de varios libros físicos (los
+     * digitales se omiten).
+     *
+     * @param libros Libros seleccionados.
+     */
+    public void generarEtiquetasFisicas(List<Libro> libros) {
+        List<Libro> fisicos = libros == null ? List.of() : libros.stream().filter(l -> !l.isEsDigital()).toList();
+        if (fisicos.isEmpty()) {
+            mostrarAlertaPublic(LanguageManager.getString("ui.sin_libros_fisicos", "Sin libros físicos"),
+                    LanguageManager.getString("bulk.labels_none", "Ninguno de los libros seleccionados es físico."));
+            return;
+        }
+        if (fisicos.size() == 1) {
+            generarEtiquetaFisica(fisicos.get(0));
+            return;
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(LanguageManager.getString("ui.guardar_etiqueta_pdf", "Guardar Etiqueta PDF"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivo PDF", "*.pdf"));
+        fileChooser.setInitialFileName("Etiquetas_BiblioHouse.pdf");
+        File file = fileChooser.showSaveDialog(getWindow());
+        if (file == null) {
+            return;
+        }
+        try {
+            ServicioEtiquetasFisicas.generarEtiquetasPDF(fisicos, file);
+            notificar(String.format(LanguageManager.getString("bulk.labels_done", "PDF con %d etiquetas generado."), fisicos.size()));
+            try {
+                com.bibliohouse.utils.AbrirExterno.abrir(file);
+            } catch (IOException ignored) {
+            }
+        } catch (Exception e) {
+            mostrarAlertaPublic(LanguageManager.getString("ui.error", "Error"), LanguageManager.getString("ui.hubo_un_problema_al_generar_la", "Hubo un problema al generar la etiqueta: ") + e.getMessage());
+        }
+    }
+
     private void eliminarSinConfirmar(Libro libro) {
         int indice = listaLibrosCompleta.indexOf(libro);
         libroService.borrarTotalmente(libro);

@@ -161,6 +161,34 @@
     -fx-background-color: rgba(255, 255, 255, 0.36);
 }
 
+/* --- SELECCIÓN MÚLTIPLE --- */
+.book-card:selected {
+    -fx-background-color: -color-accent-emphasis, -color-accent-subtle;
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 12px, 10px;
+}
+
+.book-card:selected:focused {
+    -fx-background-insets: 0, 2.5;
+}
+
+.selection-bar {
+    -fx-padding: 6 10 6 14;
+    -fx-background-color: -color-accent-subtle;
+    -fx-background-radius: 10;
+    -fx-border-color: -color-accent-muted;
+    -fx-border-radius: 10;
+}
+
+.selection-bar-count {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-accent-fg;
+}
+
+.context-menu .menu-item.danger > .label {
+    -fx-text-fill: -color-danger-fg;
+}
+
 /* --- ESTADO VACÍO DEL CATÁLOGO --- */
 .catalog-empty-state {
     -fx-padding: 60 0 60 0;

@@ -207,6 +207,22 @@ public class CatalogoGridController {
     private Map<String, String> preferencias;
     private String ordenActual = ORDEN_TITULO_AZ;
 
+    // Selección múltiple
+    static final String PROP_LIBRO = "catalogo.libro";
+    private static final javafx.css.PseudoClass SELECCIONADA = javafx.css.PseudoClass.getPseudoClass("selected");
+    /** Libros seleccionados (por identidad: dos ejemplares iguales son libros distintos). */
+    private final java.util.Set<Libro> seleccion = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    /** Último libro pulsado sin Mayús: origen de la selección por rango. */
+    private Libro anclaSeleccion;
+    /** Libros que pasan los filtros actuales, en el orden mostrado. */
+    private List<Libro> librosFiltradosActuales = List.of();
+    /** Evita que el listener de la tabla pise la selección mientras se repinta. */
+    private boolean sincronizandoTabla;
+
+    @FXML
+    private HBox barraSeleccion;
+    private Label lblSeleccion;
+
     @FXML
     public void initialize() {
         if (txtBuscarMisLibros != null) {
@@ -252,6 +268,7 @@ public class CatalogoGridController {
         }
 
         configurarTablaMisLibros();
+        configurarBarraSeleccion();
         configurarAccesibilidadControles();
 
         // Suscripción al bus de eventos para reaccionar a cambios
@@ -858,12 +875,33 @@ public class CatalogoGridController {
             });
             return row;
         });
+
+        // Selección múltiple nativa de la tabla (Cmd/Ctrl/Mayús + clic)
+        tablaMisLibros.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
+        tablaMisLibros.getSelectionModel().getSelectedItems().addListener((javafx.collections.ListChangeListener<Libro>) c -> {
+            if (sincronizandoTabla || !esVistaLista) {
+                return;
+            }
+            seleccion.clear();
+            seleccion.addAll(tablaMisLibros.getSelectionModel().getSelectedItems());
+            actualizarBarraSeleccion();
+        });
+        tablaMisLibros.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.DELETE || e.getCode() == KeyCode.BACK_SPACE) {
+                eliminarSeleccion();
+                e.consume();
+            } else if (e.getCode() == KeyCode.ESCAPE) {
+                limpiarSeleccion();
+                e.consume();
+            }
+        });
     }
 
     @FXML
     public void cambiarAVistaCuadricula() {
         esVistaLista = false;
         guardarPreferencia(PREF_VISTA, "cuadricula");
+        seleccion.clear();
         if (btnVistaCuadricula != null) {
             btnVistaCuadricula.getStyleClass().remove("active-view-btn");
             btnVistaCuadricula.getStyleClass().add("active-view-btn");
@@ -886,6 +924,7 @@ public class CatalogoGridController {
     public void cambiarAVistaLista() {
         esVistaLista = true;
         guardarPreferencia(PREF_VISTA, "lista");
+        seleccion.clear();
         if (btnVistaLista != null) {
             btnVistaLista.getStyleClass().remove("active-view-btn");
             btnVistaLista.getStyleClass().add("active-view-btn");
@@ -1014,6 +1053,8 @@ public class CatalogoGridController {
                 .collect(Collectors.toList());
 
         totalLibrosFiltrados = filtrados.size();
+        librosFiltradosActuales = filtrados;
+        podarSeleccion(filtrados);
 
         // Estado vacío
         if (filtrados.isEmpty()) {
@@ -1030,6 +1071,7 @@ public class CatalogoGridController {
                 tablaMisLibros.setItems(FXCollections.emptyObservableList());
                 tablaMisLibros.setPlaceholder(crearEstadoVacio(hayFiltros));
             }
+            actualizarBarraSeleccion();
             if (animar) {
                 animarEntradaContenido();
             }
@@ -1068,10 +1110,282 @@ public class CatalogoGridController {
 
         // Actualizar la tabla para la vista de lista compacta
         if (tablaMisLibros != null) {
-            tablaMisLibros.setItems(FXCollections.observableArrayList(paginaLibros));
+            sincronizandoTabla = true;
+            try {
+                tablaMisLibros.setItems(FXCollections.observableArrayList(paginaLibros));
+                for (Libro l : paginaLibros) {
+                    if (seleccion.contains(l)) {
+                        tablaMisLibros.getSelectionModel().select(l);
+                    }
+                }
+            } finally {
+                sincronizandoTabla = false;
+            }
         }
+        aplicarEstiloSeleccion();
+        actualizarBarraSeleccion();
         if (animar) {
             animarEntradaContenido();
+        }
+    }
+
+    // =========================================================================
+    // SELECCIÓN MÚLTIPLE Y ACCIONES EN LOTE
+    // =========================================================================
+    /**
+     * Libros seleccionados actualmente, en el orden en que se muestran.
+     *
+     * @return Copia de la selección.
+     */
+    public List<Libro> getSeleccion() {
+        return librosFiltradosActuales.stream().filter(seleccion::contains).collect(Collectors.toList());
+    }
+
+    /** Selecciona solo este libro (clic normal). */
+    public void seleccionarSolo(Libro libro) {
+        seleccion.clear();
+        seleccion.add(libro);
+        anclaSeleccion = libro;
+        alCambiarSeleccion();
+    }
+
+    /** Añade o quita el libro de la selección (Cmd/Ctrl + clic). */
+    public void alternarSeleccion(Libro libro) {
+        if (!seleccion.remove(libro)) {
+            seleccion.add(libro);
+        }
+        anclaSeleccion = libro;
+        alCambiarSeleccion();
+    }
+
+    /**
+     * Selecciona todos los libros entre el último pulsado y este, según el
+     * orden actual (Mayús + clic). Incluye libros de otras páginas.
+     */
+    public void seleccionarRango(Libro libro) {
+        int fin = indiceEnFiltrados(libro);
+        int inicio = anclaSeleccion != null ? indiceEnFiltrados(anclaSeleccion) : -1;
+        if (fin < 0) {
+            return;
+        }
+        if (inicio < 0) {
+            seleccionarSolo(libro);
+            return;
+        }
+        seleccion.clear();
+        for (int i = Math.min(inicio, fin); i <= Math.max(inicio, fin); i++) {
+            seleccion.add(librosFiltradosActuales.get(i));
+        }
+        alCambiarSeleccion();
+    }
+
+    /** Selecciona todos los libros que pasan los filtros (Cmd/Ctrl + A). */
+    public void seleccionarTodo() {
+        seleccion.clear();
+        seleccion.addAll(librosFiltradosActuales);
+        alCambiarSeleccion();
+    }
+
+    /** Vacía la selección (Escape o botón ✕ de la barra). */
+    public void limpiarSeleccion() {
+        seleccion.clear();
+        anclaSeleccion = null;
+        if (tablaMisLibros != null) {
+            sincronizandoTabla = true;
+            tablaMisLibros.getSelectionModel().clearSelection();
+            sincronizandoTabla = false;
+        }
+        alCambiarSeleccion();
+    }
+
+    private int indiceEnFiltrados(Libro libro) {
+        for (int i = 0; i < librosFiltradosActuales.size(); i++) {
+            if (librosFiltradosActuales.get(i) == libro) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Quita de la selección los libros que ya no se muestran. */
+    private void podarSeleccion(List<Libro> visibles) {
+        if (seleccion.isEmpty()) {
+            return;
+        }
+        java.util.Set<Libro> vivos = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        vivos.addAll(visibles);
+        seleccion.retainAll(vivos);
+    }
+
+    private void alCambiarSeleccion() {
+        aplicarEstiloSeleccion();
+        actualizarBarraSeleccion();
+    }
+
+    /** Marca visualmente las tarjetas seleccionadas de la página actual. */
+    private void aplicarEstiloSeleccion() {
+        if (panelMisLibros == null) {
+            return;
+        }
+        for (Node n : panelMisLibros.getChildren()) {
+            Object l = n.getProperties().get(PROP_LIBRO);
+            n.pseudoClassStateChanged(SELECCIONADA, l instanceof Libro libro && seleccion.contains(libro));
+        }
+    }
+
+    /**
+     * Crea el contenido de la barra de selección (oculta hasta que haya dos o
+     * más libros seleccionados).
+     */
+    private void configurarBarraSeleccion() {
+        if (barraSeleccion == null) {
+            return;
+        }
+        lblSeleccion = new Label();
+        lblSeleccion.getStyleClass().add("selection-bar-count");
+
+        MenuButton marcar = new MenuButton(LanguageManager.getString("ctx.mark_as", "Marcar como..."));
+        marcar.setOnShowing(e -> marcar.getItems().setAll(crearItemsEstado()));
+        MenuButton estanteria = new MenuButton(LanguageManager.getString("bulk.add_to_shelf", "Añadir a estantería"));
+        estanteria.setOnShowing(e -> estanteria.getItems().setAll(crearItemsEstanteria()));
+        Button etiquetas = new Button(LanguageManager.getString("bulk.labels", "Imprimir etiquetas"));
+        etiquetas.setOnAction(e -> imprimirEtiquetasSeleccion());
+        Button eliminar = new Button(LanguageManager.getString("ctx.delete", "Eliminar"));
+        eliminar.getStyleClass().add("danger");
+        eliminar.setOnAction(e -> eliminarSeleccion());
+        Button cerrar = new Button("✕");
+        cerrar.getStyleClass().add("flat");
+        cerrar.setAccessibleText(LanguageManager.getString("bulk.clear", "Quitar selección"));
+        cerrar.setTooltip(new javafx.scene.control.Tooltip(cerrar.getAccessibleText()));
+        cerrar.setOnAction(e -> limpiarSeleccion());
+
+        Region hueco = new Region();
+        HBox.setHgrow(hueco, javafx.scene.layout.Priority.ALWAYS);
+        barraSeleccion.getChildren().setAll(lblSeleccion, hueco, marcar, estanteria, etiquetas, eliminar, cerrar);
+        barraSeleccion.setVisible(false);
+        barraSeleccion.setManaged(false);
+    }
+
+    private void actualizarBarraSeleccion() {
+        if (barraSeleccion == null || lblSeleccion == null) {
+            return;
+        }
+        int n = seleccion.size();
+        boolean mostrar = n > 1;
+        if (mostrar) {
+            lblSeleccion.setText(String.format(LanguageManager.getString("bulk.count", "%d libros seleccionados"), n));
+        }
+        if (barraSeleccion.isVisible() != mostrar) {
+            barraSeleccion.setVisible(mostrar);
+            barraSeleccion.setManaged(mostrar);
+            if (mostrar) {
+                javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(Duration.millis(150), barraSeleccion);
+                ft.setFromValue(0);
+                ft.setToValue(1);
+                ft.play();
+            }
+        }
+    }
+
+    private List<MenuItem> crearItemsEstado() {
+        List<MenuItem> items = new java.util.ArrayList<>();
+        for (EstadoLectura est : EstadoLectura.values()) {
+            MenuItem item = new MenuItem(est.getEtiqueta());
+            item.setOnAction(e -> marcarSeleccionComo(est));
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<MenuItem> crearItemsEstanteria() {
+        List<String> estanterias = jsonManager != null ? jsonManager.cargarEstanterias() : List.of();
+        List<MenuItem> items = new java.util.ArrayList<>();
+        if (estanterias == null || estanterias.isEmpty()) {
+            MenuItem vacio = new MenuItem(LanguageManager.getString("bulk.no_shelves", "No hay estanterías creadas"));
+            vacio.setDisable(true);
+            items.add(vacio);
+            return items;
+        }
+        for (String nombre : estanterias) {
+            MenuItem item = new MenuItem(nombre);
+            item.setOnAction(e -> anadirSeleccionAEstanteria(nombre));
+            items.add(item);
+        }
+        return items;
+    }
+
+    /** Opciones del menú contextual cuando hay varios libros seleccionados. */
+    private List<MenuItem> crearItemsAccionesLote() {
+        Menu estado = new Menu(LanguageManager.getString("ctx.mark_as", "Marcar como..."));
+        estado.getItems().setAll(crearItemsEstado());
+        Menu estanteria = new Menu(LanguageManager.getString("bulk.add_to_shelf", "Añadir a estantería"));
+        estanteria.getItems().setAll(crearItemsEstanteria());
+        MenuItem etiquetas = new MenuItem(LanguageManager.getString("bulk.labels", "Imprimir etiquetas"));
+        etiquetas.setOnAction(e -> imprimirEtiquetasSeleccion());
+        MenuItem eliminar = new MenuItem(String.format(LanguageManager.getString("bulk.delete_n", "Eliminar %d libros"), seleccion.size()));
+        eliminar.getStyleClass().add("danger");
+        eliminar.setOnAction(e -> eliminarSeleccion());
+        return List.of(estado, estanteria, etiquetas, new SeparatorMenuItem(), eliminar);
+    }
+
+    /**
+     * Cambia el estado de lectura de todos los libros seleccionados.
+     *
+     * @param estado Nuevo estado.
+     */
+    public void marcarSeleccionComo(EstadoLectura estado) {
+        List<Libro> libros = getSeleccion();
+        if (libros.isEmpty()) {
+            return;
+        }
+        libros.forEach(l -> l.setEstadoLecturaEnum(estado));
+        AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, false));
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(String.format(
+                LanguageManager.getString("bulk.marked", "%d libros marcados como %s"), libros.size(), estado.getEtiqueta())));
+    }
+
+    /**
+     * Añade todos los libros seleccionados a una estantería (sin duplicarla en
+     * los que ya la tienen).
+     *
+     * @param estanteria Nombre de la estantería.
+     */
+    public void anadirSeleccionAEstanteria(String estanteria) {
+        List<Libro> libros = getSeleccion();
+        if (libros.isEmpty() || estanteria == null) {
+            return;
+        }
+        for (Libro l : libros) {
+            List<String> actuales = l.getEstanterias() != null ? new java.util.ArrayList<>(l.getEstanterias()) : new java.util.ArrayList<>();
+            if (!actuales.contains(estanteria)) {
+                actuales.add(estanteria);
+                l.setEstanterias(actuales);
+            }
+        }
+        AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(null, false));
+        AppEventBus.getInstance().publish(new AppEventBus.StatusMessageEvent(String.format(
+                LanguageManager.getString("bulk.shelved", "%d libros añadidos a «%s»"), libros.size(), estanteria)));
+    }
+
+    private void imprimirEtiquetasSeleccion() {
+        if (mainController != null) {
+            mainController.generarEtiquetasFisicas(getSeleccion());
+        }
+    }
+
+    /**
+     * Elimina los libros seleccionados (o el enfocado si no hay selección),
+     * con opción de deshacer.
+     */
+    public void eliminarSeleccion() {
+        List<Libro> libros = getSeleccion();
+        if (libros.isEmpty() || mainController == null) {
+            return;
+        }
+        if (libros.size() == 1) {
+            mainController.eliminarLibro(libros.get(0));
+        } else {
+            mainController.eliminarLibros(libros);
         }
     }
 
@@ -1335,6 +1649,7 @@ public class CatalogoGridController {
         tarjeta.setAlignment(Pos.TOP_CENTER);
         tarjeta.setPrefWidth(146);
         tarjeta.getStyleClass().add("book-card");
+        tarjeta.getProperties().put(PROP_LIBRO, libro);
         tarjeta.setFocusTraversable(true);
         tarjeta.setAccessibleRole(AccessibleRole.BUTTON);
 
@@ -1362,6 +1677,24 @@ public class CatalogoGridController {
         // Eventos de teclado (A11y): Enter/Espacio para abrir detalle, Flechas para navegar por la cuadrícula
         tarjeta.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
+            if (code == KeyCode.A && event.isShortcutDown()) {
+                seleccionarTodo();
+                event.consume();
+                return;
+            }
+            if (code == KeyCode.DELETE || code == KeyCode.BACK_SPACE) {
+                if (!seleccion.contains(libro)) {
+                    seleccionarSolo(libro);
+                }
+                eliminarSeleccion();
+                event.consume();
+                return;
+            }
+            if (code == KeyCode.ESCAPE && !seleccion.isEmpty()) {
+                limpiarSeleccion();
+                event.consume();
+                return;
+            }
             if (code == KeyCode.ENTER || code == KeyCode.SPACE) {
                 if (mainController != null) {
                     mainController.seleccionarLibro(libro);
@@ -1415,13 +1748,24 @@ public class CatalogoGridController {
                 if (mainController != null) {
                     mainController.seleccionarLibro(libro);
                 }
-                if (e.getClickCount() == 2) {
-                    abrirDetalle(libro);
+                if (e.isShortcutDown()) {
+                    alternarSeleccion(libro);
+                } else if (e.isShiftDown()) {
+                    seleccionarRango(libro);
+                } else {
+                    seleccionarSolo(libro);
+                    if (e.getClickCount() == 2) {
+                        abrirDetalle(libro);
+                    }
                 }
+                tarjeta.requestFocus();
                 e.consume();
             } else if (e.getButton() == MouseButton.SECONDARY) {
                 if (mainController != null) {
                     mainController.seleccionarLibro(libro);
+                }
+                if (!seleccion.contains(libro)) {
+                    seleccionarSolo(libro);
                 }
                 mostrarContextMenu(tarjeta, libro, e.getScreenX(), e.getScreenY());
                 e.consume();
@@ -1431,6 +1775,9 @@ public class CatalogoGridController {
         tarjeta.setOnContextMenuRequested(e -> {
             if (mainController != null) {
                 mainController.seleccionarLibro(libro);
+            }
+            if (!seleccion.contains(libro)) {
+                seleccionarSolo(libro);
             }
             mostrarContextMenu(tarjeta, libro, e.getScreenX(), e.getScreenY());
             e.consume();
@@ -1805,6 +2152,12 @@ public class CatalogoGridController {
         }
         contextMenuLibros.getItems().clear();
 
+        if (seleccion.size() > 1 && seleccion.contains(libro)) {
+            contextMenuLibros.getItems().setAll(crearItemsAccionesLote());
+            contextMenuLibros.show(owner, screenX, screenY);
+            return;
+        }
+
         // 1. Leer (si es ebook)
         boolean isEbook = libro.isEsDigital() && libro.getRutaArchivoDigital() != null && !libro.getRutaArchivoDigital().isEmpty();
         if (isEbook) {
@@ -1859,7 +2212,7 @@ public class CatalogoGridController {
 
         // 7. Eliminar
         MenuItem itemEliminar = new MenuItem(resources != null && resources.containsKey("ctx.delete") ? resources.getString("ctx.delete") : "Eliminar");
-        itemEliminar.setStyle("-fx-text-fill: red;");
+        itemEliminar.getStyleClass().add("danger");
         itemEliminar.setOnAction(e -> {
             if (mainController != null) {
                 mainController.eliminarLibro(libro);

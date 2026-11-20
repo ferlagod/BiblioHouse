@@ -65,6 +65,9 @@
 
         <Separator />
 
+        <!-- Barra de selección múltiple (se muestra con 2 o más libros seleccionados) -->
+        <HBox fx:id="barraSeleccion" alignment="CENTER_LEFT" spacing="8.0" styleClass="selection-bar" managed="false" visible="false" />
+
         <!-- Contenedor central: Cuadrícula o Lista Compacta -->
         <StackPane VBox.vgrow="ALWAYS">
             <children>

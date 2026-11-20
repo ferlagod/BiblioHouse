@@ -220,6 +220,51 @@ public class TestCatalogoGridPaginacion {
     }
 
     @Test
+    @DisplayName("Selección múltiple: alternar, rango, todo, acciones en lote y poda al filtrar")
+    public void testSeleccionMultiple() {
+        CatalogoGridController controller = new CatalogoGridController();
+        controller.setPanelMisLibros(new FlowPane());
+        ObservableList<Libro> libros = crearListaLibros(10);
+        controller.setListaLibrosCompleta(libros);
+        controller.setLibrosPorPagina(4);
+        controller.refrescarCuadricula();
+        // Orden A-Z: #1, #10, #2, #3, ... (comparación de texto)
+        List<Libro> orden = new ArrayList<>(libros);
+        orden.sort(java.util.Comparator.comparing(Libro::getTitulo, String::compareToIgnoreCase));
+
+        controller.seleccionarSolo(orden.get(1));
+        controller.seleccionarRango(orden.get(6));
+        assertEquals(orden.subList(1, 7), controller.getSeleccion(), "Mayús+clic selecciona el rango, también de otras páginas");
+
+        controller.alternarSeleccion(orden.get(3));
+        assertEquals(5, controller.getSeleccion().size());
+        assertFalse(controller.getSeleccion().contains(orden.get(3)));
+
+        long marcadas = controller.getPanelMisLibros().getChildren().stream()
+                .filter(n -> n.getPseudoClassStates().contains(javafx.css.PseudoClass.getPseudoClass("selected")))
+                .count();
+        assertEquals(2, marcadas, "En la página 1 (4 tarjetas) están seleccionadas la 2.ª y la 3.ª");
+
+        controller.marcarSeleccionComo(com.bibliohouse.logic.EstadoLectura.LEIDO);
+        assertTrue(controller.getSeleccion().stream().allMatch(l -> l.getEstadoLecturaEnum() == com.bibliohouse.logic.EstadoLectura.LEIDO));
+
+        controller.anadirSeleccionAEstanteria("Favoritos");
+        controller.anadirSeleccionAEstanteria("Favoritos");
+        assertTrue(controller.getSeleccion().stream().allMatch(l -> l.getEstanterias().equals(List.of("Favoritos"))),
+                "La estantería se añade una sola vez");
+
+        controller.seleccionarTodo();
+        assertEquals(10, controller.getSeleccion().size());
+
+        // Al filtrar, la selección se queda solo con los libros visibles
+        controller.filtrarChipLeidos();
+        assertEquals(5, controller.getSeleccion().size());
+
+        controller.limpiarSeleccion();
+        assertTrue(controller.getSeleccion().isEmpty());
+    }
+
+    @Test
     @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
     public void testOrdenPorRecientes() {
         CatalogoGridController controller = new CatalogoGridController();
