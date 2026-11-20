@@ -632,7 +632,16 @@ public class ImageLoader {
         try {
             if (isValidUrl(urlOrPath)) {
                 File tmpDescarga = new File(dirCovers, safeId + "_download.tmp");
-                boolean descargado = descargarImagenWeb(urlOrPath, tmpDescarga);
+                // Si la vista previa ya la descargó a la caché, se reutiliza en
+                // lugar de volver a pedirla por red (guardar es instantáneo).
+                File enCache = cacheDir != null ? new File(cacheDir, hashUrl(urlOrPath)) : null;
+                boolean descargado;
+                if (enCache != null && enCache.isFile() && enCache.length() > 200) {
+                    Files.copy(enCache.toPath(), tmpDescarga.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    descargado = true;
+                } else {
+                    descargado = descargarImagenWeb(urlOrPath, tmpDescarga);
+                }
                 if (descargado && tmpDescarga.exists()) {
                     boolean optimizado = redimensionarYComprimirPortada(tmpDescarga, archivoDestino);
                     try {
@@ -663,7 +672,10 @@ public class ImageLoader {
 
                     // OWASP A01: Validación de extensión para evitar Arbitrary File Read/Copy
                     String name = archivoOrigen.getName().toLowerCase(java.util.Locale.ROOT);
-                    if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp")) {
+                    // .gif incluido: el editor de libros lo ofrece y ImageIO lo
+                    // decodifica; antes se rechazaba y la portada quedaba
+                    // apuntando al archivo original fuera de la biblioteca.
+                    if (!name.endsWith(".png") && !name.endsWith(".jpg") && !name.endsWith(".jpeg") && !name.endsWith(".webp") && !name.endsWith(".gif")) {
                         return urlOrPath;
                     }
 

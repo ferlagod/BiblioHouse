@@ -529,12 +529,11 @@ public class EditarLibroController {
                 javafx.application.Platform.runLater(() -> {
                     btnBuscarPortada.setDisable(false);
                     if (!portadaDefinitiva.isEmpty()) {
-                        // Generar ID único si el libro no tiene ID
-                        String idLibro = (libro != null && libro.getId() != null) ? libro.getId() : java.util.UUID.randomUUID().toString();
-                        // Descargar y guardar localmente la portada
-                        String rutaLocal = com.bibliohouse.utils.ImageLoader.hacerPortadaLocalOffline(portadaDefinitiva, idLibro, this.rutaUsuario);
-
-                        rutaPortadaActual = rutaLocal;
+                        // Solo se previsualiza la URL (ImageLoader la descarga en
+                        // segundo plano). La copia local se hace en guardar():
+                        // antes se descargaba aquí, en el hilo de la UI, y se
+                        // sobrescribía covers/<id>.jpg aunque luego se cancelara.
+                        rutaPortadaActual = portadaDefinitiva;
                         com.bibliohouse.utils.ImageLoader.load(rutaPortadaActual, imgPortada, 300, 450);
                     } else {
                         mostrarAlerta(LanguageManager.getString("ui.sin_resultados", "Sin resultados"), LanguageManager.getString("ui.ninguna_de_las_tres_bases_de", "Ninguna de las tres bases de datos (Google, OpenLibrary, Inventaire) tiene una portada registrada para esta búsqueda. Tendrás que descargarla y añadirla manualmente."));
