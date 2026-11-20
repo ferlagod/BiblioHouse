@@ -29,7 +29,7 @@
                 <Region HBox.hgrow="ALWAYS" />
                 
                 <!-- Búsqueda rápida con estilo píldora -->
-                <TextField fx:id="txtBuscarMisLibros" accessibleRole="TEXT_FIELD" accessibleText="Buscar libros por título o autor" prefWidth="260.0" promptText="%book.search.placeholder" style="-fx-background-radius: 18; -fx-padding: 6 16; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-background-color: -color-bg-default;" />
+                <TextField fx:id="txtBuscarMisLibros" accessibleRole="TEXT_FIELD" accessibleText="Buscar libros por título o autor" prefWidth="320.0" promptText="%catalog.search.placeholder" style="-fx-background-radius: 18; -fx-padding: 6 16; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-background-color: -color-bg-default;" />
                 
                 <!-- Botón de Ordenar -->
                 <MenuButton fx:id="btnOrdenar" accessibleRole="BUTTON" accessibleText="Menú de ordenación de libros" text="%main.sort.title" style="-fx-background-color: transparent; -fx-border-color: -color-border-default; -fx-border-radius: 18; -fx-padding: 4 12; -fx-cursor: hand;">

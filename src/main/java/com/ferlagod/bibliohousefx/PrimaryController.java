@@ -624,9 +624,13 @@ public class PrimaryController implements Initializable {
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+,"), this::abrirConfiguracion);
                 // Cmd+N / Ctrl+N -> Añadir nuevo libro / Gestión de libros
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+N"), this::irAGestionLibros);
-                // Cmd+F / Ctrl+F -> Foco en búsqueda (Tab 1: Gestionar Libros)
+                // Cmd+F / Ctrl+F -> Buscar en la propia biblioteca (pestaña «Mis libros»).
+                // Antes llevaba a «Gestionar libros», que busca en internet.
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+F"), () -> {
-                    seleccionarPestanaDirecta(1);
+                    seleccionarPestanaDirecta(0);
+                    if (catalogoGridController != null) {
+                        catalogoGridController.enfocarBusqueda();
+                    }
                 });
                 // Cmd+L / Ctrl+L -> Pestaña Préstamos
                 scene.getAccelerators().put(KeyCombination.keyCombination("Shortcut+L"), () -> {

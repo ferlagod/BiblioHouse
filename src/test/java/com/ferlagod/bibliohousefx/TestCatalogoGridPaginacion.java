@@ -177,6 +177,27 @@ public class TestCatalogoGridPaginacion {
     }
 
     @Test
+    @DisplayName("La búsqueda rápida encuentra por ISBN sin guiones, género, serie y sin tildes")
+    public void testBusquedaAmpliada() {
+        Libro l = new Libro();
+        l.setTitulo("Cien años de soledad");
+        l.setAutor("Gabriel García Márquez");
+        l.setIsbn("978-84-376-0494-7");
+        l.setGenero("Realismo mágico");
+        l.setSerie("Macondo");
+
+        java.util.function.Predicate<String> busca = q -> CatalogoGridController.coincideBusqueda(l,
+                com.bibliohouse.utils.TextoUtil.normalizarBusqueda(q));
+        assertTrue(busca.test("garcia marquez"));
+        assertTrue(busca.test("9788437604947"), "ISBN sin guiones");
+        assertTrue(busca.test("84-376"), "Fragmento de ISBN con guiones");
+        assertTrue(busca.test("magico"), "Género sin tildes");
+        assertTrue(busca.test("MACONDO"), "Serie sin distinguir mayúsculas");
+        assertFalse(busca.test("tolkien"));
+        assertTrue(busca.test(""), "Consulta vacía coincide siempre");
+    }
+
+    @Test
     @DisplayName("Ordenar por recientes muestra primero el último libro añadido")
     public void testOrdenPorRecientes() {
         CatalogoGridController controller = new CatalogoGridController();

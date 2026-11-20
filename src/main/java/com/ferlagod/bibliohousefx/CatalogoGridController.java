@@ -214,6 +214,20 @@ public class CatalogoGridController {
                 refrescarCuadricula(true);
             });
             txtBuscarMisLibros.textProperty().addListener((obs, oldVal, newVal) -> esperaBusqueda.playFromStart());
+            txtBuscarMisLibros.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ESCAPE && !txtBuscarMisLibros.getText().isEmpty()) {
+                    // Escape borra la búsqueda y aplica el cambio al instante
+                    txtBuscarMisLibros.clear();
+                    esperaBusqueda.stop();
+                    paginaActual = 1;
+                    refrescarCuadricula(true);
+                    e.consume();
+                } else if (e.getCode() == KeyCode.DOWN && panelMisLibros != null && !panelMisLibros.getChildren().isEmpty() && !esVistaLista) {
+                    // Flecha abajo salta de la búsqueda a la primera tarjeta
+                    panelMisLibros.getChildren().get(0).requestFocus();
+                    e.consume();
+                }
+            });
         }
 
         if (comboLibrosPorPagina != null) {
@@ -994,14 +1008,7 @@ public class CatalogoGridController {
                             true;
                     };
                 })
-                .filter(l -> {
-                    // Filtro de texto
-                    if (busquedaRapida.isEmpty()) {
-                        return true;
-                    }
-                    return TextoUtil.contiene(l.getTitulo(), busquedaRapida)
-                            || TextoUtil.contiene(l.getAutor(), busquedaRapida);
-                })
+                .filter(l -> coincideBusqueda(l, busquedaRapida))
                 .sorted(comparador)
                 .collect(Collectors.toList());
 
@@ -1064,6 +1071,44 @@ public class CatalogoGridController {
         }
         if (animar) {
             animarEntradaContenido();
+        }
+    }
+
+    /**
+     * Indica si un libro coincide con la búsqueda rápida. Busca en título,
+     * autor, género, serie y editorial (sin distinguir tildes ni mayúsculas) y
+     * en el ISBN ignorando guiones y espacios, de modo que «978-84-376» y
+     * «97884376» encuentran el mismo libro.
+     *
+     * @param l Libro a comprobar.
+     * @param consulta Consulta ya normalizada con
+     * {@link TextoUtil#normalizarBusqueda(String)}.
+     * @return {@code true} si coincide o la consulta está vacía.
+     */
+    static boolean coincideBusqueda(Libro l, String consulta) {
+        if (consulta == null || consulta.isEmpty()) {
+            return true;
+        }
+        if (TextoUtil.contiene(l.getTitulo(), consulta)
+                || TextoUtil.contiene(l.getAutor(), consulta)
+                || TextoUtil.contiene(l.getGenero(), consulta)
+                || TextoUtil.contiene(l.getSerie(), consulta)
+                || TextoUtil.contiene(l.getEditorial(), consulta)) {
+            return true;
+        }
+        String isbnConsulta = consulta.replaceAll("[\\s-]", "");
+        return !isbnConsulta.isEmpty() && l.getIsbn() != null
+                && l.getIsbn().replaceAll("[\\s-]", "").toLowerCase(java.util.Locale.ROOT).contains(isbnConsulta);
+    }
+
+    /**
+     * Lleva el foco al campo de búsqueda del catálogo y selecciona su texto,
+     * para escribir directamente una nueva búsqueda.
+     */
+    public void enfocarBusqueda() {
+        if (txtBuscarMisLibros != null) {
+            txtBuscarMisLibros.requestFocus();
+            txtBuscarMisLibros.selectAll();
         }
     }
 
