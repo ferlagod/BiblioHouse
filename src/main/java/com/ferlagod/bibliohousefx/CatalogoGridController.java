@@ -199,10 +199,11 @@ public class CatalogoGridController {
         }
 
         if (comboLibrosPorPagina != null) {
-            comboLibrosPorPagina.getItems().setAll("24", "48", "96", "Todos");
+            String opcionTodos = LanguageManager.getString("catalog.per_page.all", "Todos");
+            comboLibrosPorPagina.getItems().setAll("24", "48", "96", opcionTodos);
             comboLibrosPorPagina.setValue(String.valueOf(librosPorPagina));
             comboLibrosPorPagina.valueProperty().addListener((obs, oldVal, newVal) -> {
-                if ("Todos".equalsIgnoreCase(newVal)) {
+                if (opcionTodos.equals(newVal)) {
                     librosPorPagina = Integer.MAX_VALUE;
                 } else if (newVal != null) {
                     try {

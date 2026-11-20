@@ -55,11 +55,11 @@
         <!-- Fila 2: Chips / Píldoras de Filtrado Rápido -->
         <HBox fx:id="boxFiltrosRapidos" alignment="CENTER_LEFT" spacing="8.0">
             <children>
-                <Button fx:id="chipTodos" accessibleRole="BUTTON" accessibleText="Filtrar todos los libros" onAction="#filtrarChipTodos" styleClass="chip-button, chip-active" text="Todos" />
-                <Button fx:id="chipLeyendo" accessibleRole="BUTTON" accessibleText="Filtrar libros que estás leyendo" onAction="#filtrarChipLeyendo" styleClass="chip-button" text="📖 Leyendo" />
-                <Button fx:id="chipLeidos" accessibleRole="BUTTON" accessibleText="Filtrar libros ya leídos" onAction="#filtrarChipLeidos" styleClass="chip-button" text="✓ Leídos" />
-                <Button fx:id="chipPendientes" accessibleRole="BUTTON" accessibleText="Filtrar libros pendientes de lectura" onAction="#filtrarChipPendientes" styleClass="chip-button" text="⏳ Pendientes" />
-                <Button fx:id="chipDigitales" accessibleRole="BUTTON" accessibleText="Filtrar libros digitales e-books" onAction="#filtrarChipDigitales" styleClass="chip-button" text="📱 E-books" />
+                <Button fx:id="chipTodos" accessibleRole="BUTTON" accessibleText="Filtrar todos los libros" onAction="#filtrarChipTodos" styleClass="chip-button, chip-active" text="%catalog.chip.all" />
+                <Button fx:id="chipLeyendo" accessibleRole="BUTTON" accessibleText="Filtrar libros que estás leyendo" onAction="#filtrarChipLeyendo" styleClass="chip-button" text="%catalog.chip.reading" />
+                <Button fx:id="chipLeidos" accessibleRole="BUTTON" accessibleText="Filtrar libros ya leídos" onAction="#filtrarChipLeidos" styleClass="chip-button" text="%catalog.chip.read" />
+                <Button fx:id="chipPendientes" accessibleRole="BUTTON" accessibleText="Filtrar libros pendientes de lectura" onAction="#filtrarChipPendientes" styleClass="chip-button" text="%catalog.chip.pending" />
+                <Button fx:id="chipDigitales" accessibleRole="BUTTON" accessibleText="Filtrar libros digitales e-books" onAction="#filtrarChipDigitales" styleClass="chip-button" text="%catalog.chip.ebooks" />
             </children>
         </HBox>
 
@@ -80,8 +80,8 @@
                         <TableColumn fx:id="colAutor" prefWidth="180.0" text="%book.author" />
                         <TableColumn fx:id="colGenero" prefWidth="120.0" text="%book.genre" />
                         <TableColumn fx:id="colEstado" prefWidth="130.0" text="%col.status" />
-                        <TableColumn fx:id="colProgreso" prefWidth="140.0" text="Progreso" />
-                        <TableColumn fx:id="colCalificacion" prefWidth="110.0" text="Valoración" />
+                        <TableColumn fx:id="colProgreso" prefWidth="140.0" text="%catalog.col.progress" />
+                        <TableColumn fx:id="colCalificacion" prefWidth="110.0" text="%catalog.col.rating" />
                     </columns>
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -99,7 +99,7 @@
                 <Button fx:id="btnSiguiente" accessibleRole="BUTTON" accessibleText="Ir a la página siguiente" onAction="#irPaginaSiguiente" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="›" />
                 <Button fx:id="btnUltima" accessibleRole="BUTTON" accessibleText="Ir a la última página" onAction="#irUltimaPagina" style="-fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 5 12; -fx-font-weight: bold;" text="»" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="Por pág.:" />
+                <Label style="-fx-font-size: 12px; -fx-text-fill: -color-fg-muted;" text="%catalog.per_page" />
                 <ComboBox fx:id="comboLibrosPorPagina" accessibleRole="COMBO_BOX" accessibleText="Seleccionar cantidad de libros por página" prefWidth="95.0" style="-fx-background-radius: 8; -fx-cursor: hand;" />
             </children>
         </HBox>
