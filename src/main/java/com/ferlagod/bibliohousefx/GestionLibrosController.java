@@ -46,7 +46,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -289,7 +288,10 @@ public class GestionLibrosController {
         File file = fileChooser.showOpenDialog(vboxManual.getScene().getWindow());
         if (file != null) {
             this.rutaPortadaTemporal = file.getAbsolutePath();
-            imgPortadaManual.setImage(new Image(file.toURI().toString()));
+            // Antes se decodificaba la imagen a resolución completa en el hilo de
+            // la UI: una foto de móvil de 4000 px congelaba el formulario y
+            // ocupaba decenas de MB. Ahora se carga escalada y en segundo plano.
+            ImageLoader.load(file.getAbsolutePath(), imgPortadaManual, 150, 220);
         }
     }
 

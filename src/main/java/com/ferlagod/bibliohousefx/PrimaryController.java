@@ -167,6 +167,9 @@ public class PrimaryController implements Initializable {
      */
     private final AtomicBoolean autoSyncFallando = new AtomicBoolean(false);
 
+    /** Temporizador que oculta la notificación emergente. */
+    private PauseTransition ocultarNotificacion;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         this.resources = rb;
@@ -210,6 +213,29 @@ public class PrimaryController implements Initializable {
             btnSyncRapido.setGraphic(lblSyncIcon);
             btnSyncRapido.setText(LanguageManager.getString("ui.sincronizar", " Sincronizar"));
         }
+
+        configurarTransicionPestanas();
+    }
+
+    /**
+     * Hace que el contenido de cada pestaña entre con un fundido corto al
+     * seleccionarla, en lugar de aparecer de golpe.
+     */
+    private void configurarTransicionPestanas() {
+        if (mainTabPane == null) {
+            return;
+        }
+        mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, anterior, nueva) -> {
+            if (nueva == null || nueva.getContent() == null) {
+                return;
+            }
+            javafx.scene.Node contenido = nueva.getContent();
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.millis(160), contenido);
+            fade.setFromValue(0.0);
+            fade.setToValue(1.0);
+            fade.setInterpolator(Interpolator.EASE_OUT);
+            fade.play();
+        });
     }
 
     /**
@@ -765,9 +791,13 @@ public class PrimaryController implements Initializable {
         if (notificationPane != null) {
             notificationPane.setText(mensaje);
             notificationPane.show();
-            PauseTransition delay = new PauseTransition(Duration.seconds(3));
-            delay.setOnFinished(e -> notificationPane.hide());
-            delay.play();
+            // Un único temporizador reiniciado en cada aviso: antes cada aviso
+            // creaba el suyo y el del anterior ocultaba el nuevo antes de tiempo.
+            if (ocultarNotificacion == null) {
+                ocultarNotificacion = new PauseTransition(Duration.seconds(3));
+                ocultarNotificacion.setOnFinished(e -> notificationPane.hide());
+            }
+            ocultarNotificacion.playFromStart();
         }
         SystemNotificationService.notificarInfo("BiblioHouse", mensaje);
     }
@@ -1145,11 +1175,21 @@ public class PrimaryController implements Initializable {
 
         File file = fileChooser.showOpenDialog(getWindow());
         if (file != null) {
-            String rutaLocal = ImageLoader.hacerPortadaLocalOffline(file.getAbsolutePath(), libro.getId(), this.rutaUsuario);
-            libro.setPortadaURL(rutaLocal);
-            guardarLibrosEnDisco();
-            AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
-            mostrarAlertaPublic(LanguageManager.getString("ui.exito", "Éxito"), LanguageManager.getString("ui.portada_actualizada", "Portada actualizada."));
+            // Redimensionar y comprimir una foto grande puede tardar: se hace en
+            // segundo plano para no congelar la ventana. El resultado se avisa
+            // con una notificación en lugar de un diálogo modal.
+            setMensajeEstado(LanguageManager.getString("ui.procesando_portada", "Procesando portada…"));
+            String rutaUsuarioActual = this.rutaUsuario;
+            com.bibliohouse.utils.Hilos.ejecutar(() -> {
+                String rutaLocal = ImageLoader.hacerPortadaLocalOffline(file.getAbsolutePath(), libro.getId(), rutaUsuarioActual);
+                Platform.runLater(() -> {
+                    libro.setPortadaURL(rutaLocal);
+                    AppEventBus.getInstance().publish(new AppEventBus.LibroModificadoEvent(libro, false));
+                    String ok = LanguageManager.getString("ui.portada_actualizada", "Portada actualizada.");
+                    setMensajeEstado(ok);
+                    notificar(ok);
+                });
+            });
         }
     }
 
